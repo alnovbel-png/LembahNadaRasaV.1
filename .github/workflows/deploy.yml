@@ -1,0 +1,41 @@
+name: Deploy Game ke GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Mengambil kode
+        uses: actions/checkout@v4
+
+      - name: Memasang Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Menginstal bahan-bahan
+        run: bun install
+
+      - name: Meracik game (Build)
+        run: bun run build
+
+      - name: Menyiapkan Pages
+        uses: actions/configure-pages@v4
+
+      - name: Mengunggah hasil racikan
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+
+      - name: Rilis ke GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
