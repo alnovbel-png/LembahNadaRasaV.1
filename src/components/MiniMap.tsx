@@ -431,7 +431,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
           <div className="flex items-center justify-between text-[8px] text-slate-400 px-1">
             <div className="flex items-center gap-2">
               <span className="flex items-center gap-0.5 text-emerald-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Kamu
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Ezzel (Kamu)
               </span>
               <span className="flex items-center gap-0.5 text-amber-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" /> Warga

@@ -1,8 +1,9 @@
-import React from 'react';
-import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X } from 'lucide-react';
 
 interface VirtualControlsProps {
   onDirectionPress: (dir: 'up' | 'down' | 'left' | 'right', pressed: boolean) => void;
+  onJoystickMove?: (vector: { x: number; y: number } | null) => void;
   onActionPress: () => void;
   onCompassToggle: () => void;
   isCompassActive: boolean;
@@ -18,6 +19,7 @@ interface VirtualControlsProps {
 
 export const VirtualControls: React.FC<VirtualControlsProps> = ({
   onDirectionPress,
+  onJoystickMove,
   onActionPress,
   onCompassToggle,
   isCompassActive,
@@ -30,196 +32,545 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   isGameCompleted = false,
   onOpenRegulation,
 }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Joystick state & refs
+  const joystickBaseRef = useRef<HTMLDivElement | null>(null);
+  const activeTouchIdRef = useRef<number | null>(null);
+  const centerRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [knobOffset, setKnobOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const isMouseDownRef = useRef(false);
+
+  const MAX_RADIUS = 36; // maximum stick displacement in px
+  const DEADZONE = 0.12;
+
+  // Process coordinates relative to joystick center
+  const processPosition = useCallback(
+    (clientX: number, clientY: number) => {
+      const dx = clientX - centerRef.current.x;
+      const dy = clientY - centerRef.current.y;
+      const dist = Math.hypot(dx, dy);
+      const angle = Math.atan2(dy, dx);
+      const clampedDist = Math.min(dist, MAX_RADIUS);
+
+      const kx = Math.cos(angle) * clampedDist;
+      const ky = Math.sin(angle) * clampedDist;
+      setKnobOffset({ x: kx, y: ky });
+
+      const normDist = clampedDist / MAX_RADIUS;
+      if (normDist < DEADZONE) {
+        onJoystickMove?.(null);
+        onDirectionPress('up', false);
+        onDirectionPress('down', false);
+        onDirectionPress('left', false);
+        onDirectionPress('right', false);
+      } else {
+        const vx = Math.cos(angle) * normDist;
+        const vy = Math.sin(angle) * normDist;
+        onJoystickMove?.({ x: vx, y: vy });
+
+        // Direction mapping for legacy handlers
+        const threshold = 0.35;
+        onDirectionPress('right', vx > threshold);
+        onDirectionPress('left', vx < -threshold);
+        onDirectionPress('down', vy > threshold);
+        onDirectionPress('up', vy < -threshold);
+      }
+    },
+    [onJoystickMove, onDirectionPress]
+  );
+
+  const resetJoystick = useCallback(() => {
+    activeTouchIdRef.current = null;
+    isMouseDownRef.current = false;
+    setIsDragging(false);
+    setKnobOffset({ x: 0, y: 0 });
+    onJoystickMove?.(null);
+    onDirectionPress('up', false);
+    onDirectionPress('down', false);
+    onDirectionPress('left', false);
+    onDirectionPress('right', false);
+  }, [onJoystickMove, onDirectionPress]);
+
+  // Touch handlers for joystick
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (activeTouchIdRef.current !== null) return;
+    const touch = e.changedTouches[0];
+    if (!touch || !joystickBaseRef.current) return;
+
+    activeTouchIdRef.current = touch.identifier;
+    const rect = joystickBaseRef.current.getBoundingClientRect();
+    centerRef.current = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
+    setIsDragging(true);
+    processPosition(touch.clientX, touch.clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (activeTouchIdRef.current === null) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const touch = e.changedTouches[i];
+      if (touch.identifier === activeTouchIdRef.current) {
+        processPosition(touch.clientX, touch.clientY);
+        break;
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (activeTouchIdRef.current === null) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === activeTouchIdRef.current) {
+        resetJoystick();
+        break;
+      }
+    }
+  };
+
+  // Mouse handlers for desktop browser / emulation testing
+  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!joystickBaseRef.current) return;
+    isMouseDownRef.current = true;
+    const rect = joystickBaseRef.current.getBoundingClientRect();
+    centerRef.current = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+    };
+    setIsDragging(true);
+    processPosition(e.clientX, e.clientY);
+  };
+
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!isMouseDownRef.current) return;
+      processPosition(e.clientX, e.clientY);
+    };
+
+    const handleGlobalMouseUp = () => {
+      if (isMouseDownRef.current) {
+        resetJoystick();
+      }
+    };
+
+    const handleGlobalTouchEnd = (e: TouchEvent) => {
+      if (activeTouchIdRef.current !== null) {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          if (e.changedTouches[i].identifier === activeTouchIdRef.current) {
+            resetJoystick();
+            break;
+          }
+        }
+      }
+    };
+
+    const handleOrientationChange = () => {
+      resetJoystick();
+    };
+
+    window.addEventListener('mousemove', handleGlobalMouseMove);
+    window.addEventListener('mouseup', handleGlobalMouseUp);
+    window.addEventListener('touchend', handleGlobalTouchEnd);
+    window.addEventListener('touchcancel', handleGlobalTouchEnd);
+    window.addEventListener('resize', handleOrientationChange);
+    window.addEventListener('orientationchange', handleOrientationChange);
+
+    return () => {
+      window.removeEventListener('mousemove', handleGlobalMouseMove);
+      window.removeEventListener('mouseup', handleGlobalMouseUp);
+      window.removeEventListener('touchend', handleGlobalTouchEnd);
+      window.removeEventListener('touchcancel', handleGlobalTouchEnd);
+      window.removeEventListener('resize', handleOrientationChange);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
+  }, [processPosition, resetJoystick]);
+
   return (
     <>
-      {/* Top Bar Controls - High contrast, non-overlapping header */}
-      <div className="fixed top-2.5 sm:top-3 left-2.5 sm:left-4 right-2.5 sm:right-4 flex items-center justify-between z-30 pointer-events-none gap-2">
-        {/* Left: App Title / Quest Tag */}
-        <div className="bg-slate-950/95 border border-slate-800 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-xl backdrop-blur-md pointer-events-auto flex items-center gap-1.5 sm:gap-2 shrink-0">
+      {/* Top Bar Controls - Fits neatly on all screen sizes and mobile orientations */}
+      <header className="fixed top-2 sm:top-3 left-2 sm:left-4 right-2 sm:right-4 flex items-center justify-between z-30 pointer-events-none gap-1.5 sm:gap-2">
+        {/* Left: Brand / Title Badge */}
+        <div className="bg-slate-950/95 border border-slate-800 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl backdrop-blur-md pointer-events-auto flex items-center gap-1.5 shrink-0">
           <span className="text-xs sm:text-sm">🧭</span>
-          <span className="font-pixel text-[9px] sm:text-[10px] text-amber-400 font-bold tracking-tight">
+          <span className="font-pixel text-[8.5px] sm:text-[10px] text-amber-400 font-bold tracking-tight whitespace-nowrap">
             Lembah Nada Rasa
           </span>
-          <span className="text-slate-600 hidden md:inline">|</span>
-          <span className="text-slate-400 text-[11px] hidden md:inline font-medium">PSE Kelas 4</span>
+          <span className="text-slate-700 hidden md:inline">|</span>
+          <span className="text-emerald-400 text-[10.5px] hidden md:inline font-semibold">🎒 Ezzel</span>
         </div>
 
-        {/* Center: Compass Toggle Button (Integrated in Header - No More Overlap!) */}
+        {/* Center: Compass Toggle Button */}
         <div className="pointer-events-auto">
           <button
             id="toggle-resonance-btn"
             onClick={onCompassToggle}
             title="Aktifkan Kompas Resonansi Hati [Spasi]"
-            className={`px-2.5 sm:px-3.5 py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold ${
+            className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
               isCompassActive
                 ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.6)] font-bold'
                 : 'bg-slate-950/90 text-amber-300 border-amber-500/40 hover:bg-slate-900'
             }`}
           >
             <Compass className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isCompassActive ? 'animate-spin' : ''}`} />
-            <span className="font-pixel text-[8px] sm:text-[9px]">
+            <span className="font-pixel text-[8px] sm:text-[9px] whitespace-nowrap">
               {isCompassActive ? 'KOMPAS AKTIF' : 'KOMPAS HATI'}
             </span>
-            <span className="hidden lg:inline text-[10px] text-slate-400 font-mono">
+            <span className="hidden xl:inline text-[10px] text-slate-400 font-mono">
               [Spasi]
             </span>
           </button>
         </div>
 
-        {/* Right: Map, Sound, Journal, Offline Export & Help */}
+        {/* Right: Unified Single Button on Mobile (and Desktop buttons on large screens) */}
         <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto shrink-0">
-          {onToggleMiniMap && (
+          {/* SINGLE UNIFIED BUTTON FOR MOBILE (Vertical & Horizontal mode) */}
+          <div className="flex lg:hidden">
             <button
-              id="top-map-toggle-btn"
-              onClick={onToggleMiniMap}
-              title={isMiniMapOpen ? 'Sembunyikan Peta Mini [M]' : 'Buka Peta Mini [M]'}
-              className={`p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold ${
-                isMiniMapOpen
-                  ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-                  : 'bg-slate-950/90 border-slate-700 hover:bg-slate-900 text-slate-300'
-              }`}
+              id="top-unified-menu-btn"
+              onClick={() => setIsMenuOpen(true)}
+              aria-label="Buka Menu Game"
+              className="px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 active:bg-amber-500/20 text-amber-300 shadow-xl backdrop-blur-md transition flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95"
             >
-              <MapIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-              <span className="hidden sm:inline text-xs">Peta</span>
-              <span className="hidden lg:inline text-[10px] text-slate-400 font-mono">[M]</span>
+              <Menu className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+              <span className="font-pixel text-[8px] sm:text-[9px] tracking-tight">MENU</span>
             </button>
-          )}
+          </div>
 
-          {/* Emotional Regulation Toolkit Button */}
-          {onOpenRegulation && (
+          {/* Desktop Toolbar (lg+ screens) */}
+          <div className="hidden lg:flex items-center gap-1.5 sm:gap-2">
+            {onToggleMiniMap && (
+              <button
+                id="top-map-toggle-btn"
+                onClick={onToggleMiniMap}
+                title={isMiniMapOpen ? 'Sembunyikan Peta Mini [M]' : 'Buka Peta Mini [M]'}
+                className={`px-2.5 py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
+                  isMiniMapOpen
+                    ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                    : 'bg-slate-950/90 border-slate-700 hover:bg-slate-900 text-slate-300'
+                }`}
+              >
+                <MapIcon className="w-4 h-4 text-amber-400" />
+                <span>Peta</span>
+                <span className="text-[10px] text-slate-400 font-mono">[M]</span>
+              </button>
+            )}
+
+            {onOpenRegulation && (
+              <button
+                id="top-regulation-btn"
+                onClick={onOpenRegulation}
+                title="Buka Studio Regulasi Emosi & Relaksasi [R]"
+                className="px-2.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:bg-cyan-900/90 text-cyan-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+              >
+                <Wind className="w-4 h-4 text-cyan-300" />
+                <span>Regulasi</span>
+                <span className="text-[10px] text-cyan-400/80 font-mono">[R]</span>
+              </button>
+            )}
+
             <button
-              id="top-regulation-btn"
-              onClick={onOpenRegulation}
-              title="Buka Studio Regulasi Emosi & Relaksasi [R]"
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:bg-cyan-900/90 text-cyan-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold"
+              id="top-journal-btn"
+              onClick={onOpenJournal}
+              title="Buka Jurnal Kompas Hati & Tas [J]"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:bg-slate-900 text-amber-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
             >
-              <Wind className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-300" />
-              <span className="hidden sm:inline text-xs">Regulasi</span>
-              <span className="hidden lg:inline text-[10px] text-cyan-400/80 font-mono">[R]</span>
+              <BookOpen className="w-4 h-4 text-amber-400" />
+              <span>Jurnal</span>
+              <span className="text-[10px] text-amber-400/80 font-mono">[J]</span>
             </button>
-          )}
 
-          <button
-            id="top-journal-btn"
-            onClick={onOpenJournal}
-            title="Buka Jurnal Kompas Hati & Tas [J]"
-            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:bg-slate-900 text-amber-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
-          >
-            <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden sm:inline text-xs">Jurnal</span>
-            <span className="hidden lg:inline text-[10px] text-amber-400/80 font-mono">[J]</span>
-          </button>
+            {isGameCompleted && onOpenEnding && (
+              <button
+                id="top-ending-btn"
+                onClick={onOpenEnding}
+                title="Buka Sertifikat Kelulusan & Menu Akhir Kisah"
+                className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 border border-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.6)] font-bold transition flex items-center gap-1.5 text-xs cursor-pointer"
+              >
+                <Award className="w-4 h-4 text-slate-950" />
+                <span>Sertifikat</span>
+              </button>
+            )}
 
-          {/* Graduation Certificate / Ending button (visible in Free Roam or completed game) */}
-          {isGameCompleted && onOpenEnding && (
             <button
-              id="top-ending-btn"
-              onClick={onOpenEnding}
-              title="Buka Sertifikat Kelulusan & Menu Akhir Kisah"
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 border border-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.6)] font-bold transition flex items-center gap-1.5 text-xs cursor-pointer"
+              id="top-settings-btn"
+              onClick={onOpenSettings}
+              title="Menu Pengaturan: Misi, Pencapaian, Audio & Kontrol [O]"
+              className="px-3 py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
             >
-              <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950" />
-              <span className="hidden sm:inline text-xs">Sertifikat</span>
+              <Sliders className="w-4 h-4 text-amber-400" />
+              <span>Pengaturan</span>
+              <span className="text-[10px] text-slate-400 font-mono">[O]</span>
             </button>
-          )}
-
-          {/* Unified Game Settings Button (Quests, Achievements, Audio, Controls) */}
-          <button
-            id="top-settings-btn"
-            onClick={onOpenSettings}
-            title="Menu Pengaturan: Misi, Pencapaian, Audio & Kontrol [O]"
-            className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
-          >
-            <Sliders className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
-            <span className="text-xs">Pengaturan</span>
-            <span className="hidden lg:inline text-[10px] text-slate-400 font-mono">[O]</span>
-          </button>
+          </div>
         </div>
-      </div>
+      </header>
 
-
-      {/* On-Screen Mobile D-Pad (Hidden when dialogue is open to prevent clutter) */}
-      {!isDialogueOpen && (
-        <div className="fixed bottom-4 left-4 z-30 flex flex-col items-center pointer-events-auto select-none sm:hidden">
-          <div className="grid grid-cols-3 gap-1.5 w-32 h-32 bg-slate-950/70 p-1.5 rounded-2xl border border-slate-800 backdrop-blur-sm">
-            <div />
-            <button
-              id="dpad-up"
-              onTouchStart={() => onDirectionPress('up', true)}
-              onTouchEnd={() => onDirectionPress('up', false)}
-              onMouseDown={() => onDirectionPress('up', true)}
-              onMouseUp={() => onDirectionPress('up', false)}
-              className="bg-slate-800 active:bg-amber-500 rounded-lg text-slate-200 active:text-slate-950 font-bold flex items-center justify-center text-lg border border-slate-700"
-            >
-              ▲
-            </button>
-            <div />
-
-            <button
-              id="dpad-left"
-              onTouchStart={() => onDirectionPress('left', true)}
-              onTouchEnd={() => onDirectionPress('left', false)}
-              onMouseDown={() => onDirectionPress('left', true)}
-              onMouseUp={() => onDirectionPress('left', false)}
-              className="bg-slate-800 active:bg-amber-500 rounded-lg text-slate-200 active:text-slate-950 font-bold flex items-center justify-center text-lg border border-slate-700"
-            >
-              ◀
-            </button>
-            <div className="bg-slate-900/60 rounded-lg flex items-center justify-center text-[9px] text-slate-500 font-mono">
-              PAD
+      {/* Unified Mobile Menu Sheet (Opens from top right) */}
+      {isMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150 pointer-events-auto"
+          onClick={() => setIsMenuOpen(false)}
+        >
+          <div
+            className="bg-slate-900/98 border border-amber-500/60 rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md overflow-hidden text-slate-100 flex flex-col max-h-[90vh] mt-10 sm:mt-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Menu Header */}
+            <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/90">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-sm">
+                  🎒
+                </div>
+                <div>
+                  <h3 className="font-pixel text-[10px] text-amber-300 font-bold">
+                    Menu Petualangan
+                  </h3>
+                  <p className="text-[10px] text-slate-400">
+                    Ezzel • Lembah Nada Rasa
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsMenuOpen(false)}
+                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 flex items-center justify-center transition cursor-pointer"
+                aria-label="Tutup Menu"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-            <button
-              id="dpad-right"
-              onTouchStart={() => onDirectionPress('right', true)}
-              onTouchEnd={() => onDirectionPress('right', false)}
-              onMouseDown={() => onDirectionPress('right', true)}
-              onMouseUp={() => onDirectionPress('right', false)}
-              className="bg-slate-800 active:bg-amber-500 rounded-lg text-slate-200 active:text-slate-950 font-bold flex items-center justify-center text-lg border border-slate-700"
-            >
-              ▶
-            </button>
 
-            <div />
-            <button
-              id="dpad-down"
-              onTouchStart={() => onDirectionPress('down', true)}
-              onTouchEnd={() => onDirectionPress('down', false)}
-              onMouseDown={() => onDirectionPress('down', true)}
-              onMouseUp={() => onDirectionPress('down', false)}
-              className="bg-slate-800 active:bg-amber-500 rounded-lg text-slate-200 active:text-slate-950 font-bold flex items-center justify-center text-lg border border-slate-700"
-            >
-              ▼
-            </button>
-            <div />
+            {/* Menu Action Cards */}
+            <div className="p-3.5 space-y-2 overflow-y-auto">
+              {/* Option 1: Peta Mini Lembah */}
+              {onToggleMiniMap && (
+                <button
+                  onClick={() => {
+                    onToggleMiniMap();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-amber-500/50 flex items-center justify-between text-left transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300">
+                      <MapIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-xs text-amber-200 flex items-center gap-1.5">
+                        <span>Peta Lembah</span>
+                        {isMiniMapOpen && (
+                          <span className="text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-bold">
+                            Aktif
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10.5px] text-slate-400">
+                        Lihat lokasi warga, jembatan, dan menara jam
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-slate-500 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                    [M]
+                  </span>
+                </button>
+              )}
+
+              {/* Option 2: Studio Regulasi Emosi */}
+              {onOpenRegulation && (
+                <button
+                  onClick={() => {
+                    onOpenRegulation();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-cyan-500/40 hover:border-cyan-400/80 flex items-center justify-between text-left transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+                      <Wind className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-xs text-cyan-200">
+                        Studio Regulasi Emosi
+                      </div>
+                      <div className="text-[10.5px] text-slate-400">
+                        Latihan napas balon, relaksasi 4-7-8 & grounding
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-cyan-400/80 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                    [R]
+                  </span>
+                </button>
+              )}
+
+              {/* Option 3: Jurnal Kompas Hati & Tas */}
+              <button
+                onClick={() => {
+                  onOpenJournal();
+                  setIsMenuOpen(false);
+                }}
+                className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-amber-500/40 hover:border-amber-400/80 flex items-center justify-between text-left transition cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+                    <BookOpen className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-xs text-amber-200">
+                      Jurnal & Tas Petualang
+                    </div>
+                    <div className="text-[10.5px] text-slate-400">
+                      Kamus emosi PSE, barang pusaka & wawasan empati
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] text-amber-400/80 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                  [J]
+                </span>
+              </button>
+
+              {/* Option 4: Sertifikat Kelulusan (jika tamat) */}
+              {isGameCompleted && onOpenEnding && (
+                <button
+                  onClick={() => {
+                    onOpenEnding();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:bg-amber-500/40 border border-amber-400 flex items-center justify-between text-left transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
+                      <Award className="w-5 h-5 text-slate-950" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-xs text-amber-300">
+                        Sertifikat Kelulusan PSE
+                      </div>
+                      <div className="text-[10.5px] text-amber-200/80">
+                        Piagam Duta Empati Emas Ezzel
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[9px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.5 rounded">
+                    LULUS
+                  </span>
+                </button>
+              )}
+
+              {/* Option 5: Pengaturan Game, Misi & Audio */}
+              <button
+                onClick={() => {
+                  onOpenSettings();
+                  setIsMenuOpen(false);
+                }}
+                className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-slate-500 flex items-center justify-between text-left transition cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center text-slate-200">
+                    <Sliders className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-xs text-slate-200">
+                      Pengaturan, Misi & Bantuan
+                    </div>
+                    <div className="text-[10.5px] text-slate-400">
+                      Daftar misi, pencapaian lencana, audio & ekspor offline
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                  [O]
+                </span>
+              </button>
+            </div>
+
+            {/* Menu Footer */}
+            <div className="px-4 py-2.5 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
+              <span>Karakter Utama: <strong className="text-emerald-400">Ezzel</strong></span>
+              <span>Kompas Hati: <strong className="text-amber-400">{isCompassActive ? 'Aktif' : 'Siaga'}</strong></span>
+            </div>
           </div>
         </div>
       )}
 
-      {/* On-Screen Mobile Action Buttons */}
+      {/* VIRTUAL ANALOG JOYSTICK (Universal for Mobile Portrait & Landscape) */}
       {!isDialogueOpen && (
-        <div className="fixed bottom-4 right-4 z-30 flex items-center gap-3 pointer-events-auto select-none sm:hidden">
+        <div className="fixed bottom-3 sm:bottom-5 left-3 sm:left-5 z-30 pointer-events-auto select-none touch-none">
+          <div
+            ref={joystickBaseRef}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            className={`relative w-26 h-26 sm:w-28 sm:h-28 rounded-full bg-slate-950/80 border-2 transition-colors duration-150 backdrop-blur-md flex items-center justify-center shadow-[0_8px_24px_rgba(0,0,0,0.6)] ${
+              isDragging ? 'border-amber-400/80 shadow-[0_0_16px_rgba(245,158,11,0.3)]' : 'border-slate-700/70'
+            }`}
+            style={{ touchAction: 'none' }}
+          >
+            {/* Outer Directional Indicator Notches */}
+            <span className="absolute top-1 text-[8px] font-pixel text-slate-500/70">▲</span>
+            <span className="absolute bottom-1 text-[8px] font-pixel text-slate-500/70">▼</span>
+            <span className="absolute left-1.5 text-[8px] font-pixel text-slate-500/70">◀</span>
+            <span className="absolute right-1.5 text-[8px] font-pixel text-slate-500/70">▶</span>
+
+            {/* Inner Ring Guide */}
+            <div className="w-16 h-16 rounded-full border border-slate-700/40 pointer-events-none" />
+
+            {/* Movable Thumbstick Knob */}
+            <div
+              className={`absolute w-12 h-12 rounded-full border-2 flex items-center justify-center transition-transform ${
+                isDragging ? 'duration-0 scale-105' : 'duration-150 ease-out'
+              } ${
+                isDragging
+                  ? 'bg-gradient-to-br from-amber-400 to-amber-600 border-amber-200 shadow-[0_0_12px_rgba(245,158,11,0.7)]'
+                  : 'bg-gradient-to-br from-slate-700 to-slate-900 border-slate-500 shadow-md'
+              }`}
+              style={{
+                transform: `translate(${knobOffset.x}px, ${knobOffset.y}px)`,
+                pointerEvents: 'none',
+              }}
+            >
+              {/* Tactile Grip Texture on Knob */}
+              <div className="grid grid-cols-2 gap-1 pointer-events-none">
+                <span className={`w-1.5 h-1.5 rounded-full ${isDragging ? 'bg-amber-950/60' : 'bg-slate-400/60'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${isDragging ? 'bg-amber-950/60' : 'bg-slate-400/60'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${isDragging ? 'bg-amber-950/60' : 'bg-slate-400/60'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${isDragging ? 'bg-amber-950/60' : 'bg-slate-400/60'}`} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* On-Screen Mobile Action Buttons (Bottom Right - Ergonomic for Right Thumb) */}
+      {!isDialogueOpen && (
+        <div className="fixed bottom-3 sm:bottom-5 right-3 sm:right-5 z-30 flex items-center gap-2.5 sm:gap-3 pointer-events-auto select-none touch-none">
           {/* Button B: Resonance Compass */}
           <button
             id="btn-compass-mobile"
             onClick={onCompassToggle}
-            className={`w-13 h-13 rounded-full border-2 flex flex-col items-center justify-center text-xs font-bold shadow-lg transition active:scale-95 ${
+            aria-label="Kompas Hati"
+            className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full border-2 flex flex-col items-center justify-center text-xs font-bold shadow-lg transition active:scale-95 cursor-pointer ${
               isCompassActive
-                ? 'bg-amber-500 text-slate-950 border-amber-300'
-                : 'bg-slate-900/90 text-amber-300 border-amber-400/70'
+                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.6)]'
+                : 'bg-slate-950/90 text-amber-300 border-amber-400/70 hover:bg-slate-900'
             }`}
           >
-            <Compass className="w-5 h-5" />
-            <span className="text-[8px] font-pixel">HATI</span>
+            <Compass className={`w-4.5 h-4.5 sm:w-5 sm:h-5 ${isCompassActive ? 'animate-spin' : ''}`} />
+            <span className="text-[7.5px] font-pixel tracking-tighter">HATI</span>
           </button>
 
           {/* Button A: Interact / Speak */}
           <button
             id="btn-action-mobile"
             onClick={onActionPress}
-            className="w-14 h-14 rounded-full bg-emerald-600 active:bg-emerald-400 text-white active:text-slate-950 border-2 border-emerald-300 flex flex-col items-center justify-center text-xs font-bold shadow-xl active:scale-95 transition"
+            aria-label="Aksi / Berbicara"
+            className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-emerald-600 active:bg-emerald-400 text-white active:text-slate-950 border-2 border-emerald-300 flex flex-col items-center justify-center text-xs font-bold shadow-xl active:scale-95 transition cursor-pointer"
           >
-            <span className="text-base font-black">A</span>
-            <span className="text-[8px] font-pixel">AKSI</span>
+            <span className="text-sm sm:text-base font-black">A</span>
+            <span className="text-[7.5px] font-pixel tracking-tighter">AKSI</span>
           </button>
         </div>
       )}

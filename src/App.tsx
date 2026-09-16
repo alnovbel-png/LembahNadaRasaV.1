@@ -861,6 +861,20 @@ export default function App() {
     }
   }, [currentDialogue, processDialogueTriggers]);
 
+  // Analog virtual joystick vector for smooth mobile & touch movement
+  const joystickVectorRef = useRef<{ x: number; y: number } | null>(null);
+
+  const handleJoystickMove = useCallback((vec: { x: number; y: number } | null) => {
+    joystickVectorRef.current = vec;
+    if (vec && (Math.abs(vec.x) > 0.05 || Math.abs(vec.y) > 0.05)) {
+      sound.unlockAudio();
+      if (targetPosRef.current) {
+        targetPosRef.current = null;
+        rendererRef.current?.clearDestination();
+      }
+    }
+  }, [sound]);
+
   // Handle directional virtual pad inputs
   const handleDirectionPress = (
     dir: 'up' | 'down' | 'left' | 'right',
@@ -966,47 +980,63 @@ export default function App() {
       let dx = 0;
       let dy = 0;
 
+      // 1. Virtual Analog Joystick movement (smooth 360-degree vector)
       if (
-        keysPressed.current['ArrowUp'] ||
-        keysPressed.current['KeyW'] ||
-        keysPressed.current['w'] ||
-        keysPressed.current['W']
+        joystickVectorRef.current &&
+        (Math.abs(joystickVectorRef.current.x) > 0.05 || Math.abs(joystickVectorRef.current.y) > 0.05)
       ) {
-        dy -= speed;
-        p.facing = 'up';
-      }
-      if (
-        keysPressed.current['ArrowDown'] ||
-        keysPressed.current['KeyS'] ||
-        keysPressed.current['s'] ||
-        keysPressed.current['S']
-      ) {
-        dy += speed;
-        p.facing = 'down';
-      }
-      if (
-        keysPressed.current['ArrowLeft'] ||
-        keysPressed.current['KeyA'] ||
-        keysPressed.current['a'] ||
-        keysPressed.current['A']
-      ) {
-        dx -= speed;
-        p.facing = 'left';
-      }
-      if (
-        keysPressed.current['ArrowRight'] ||
-        keysPressed.current['KeyD'] ||
-        keysPressed.current['d'] ||
-        keysPressed.current['D']
-      ) {
-        dx += speed;
-        p.facing = 'right';
-      }
+        dx = joystickVectorRef.current.x * speed;
+        dy = joystickVectorRef.current.y * speed;
 
-      // Normalize diagonal movement speed
-      if (dx !== 0 && dy !== 0) {
-        dx *= 0.7071;
-        dy *= 0.7071;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          p.facing = dx > 0 ? 'right' : 'left';
+        } else {
+          p.facing = dy > 0 ? 'down' : 'up';
+        }
+      } else {
+        // 2. Keyboard directional inputs
+        if (
+          keysPressed.current['ArrowUp'] ||
+          keysPressed.current['KeyW'] ||
+          keysPressed.current['w'] ||
+          keysPressed.current['W']
+        ) {
+          dy -= speed;
+          p.facing = 'up';
+        }
+        if (
+          keysPressed.current['ArrowDown'] ||
+          keysPressed.current['KeyS'] ||
+          keysPressed.current['s'] ||
+          keysPressed.current['S']
+        ) {
+          dy += speed;
+          p.facing = 'down';
+        }
+        if (
+          keysPressed.current['ArrowLeft'] ||
+          keysPressed.current['KeyA'] ||
+          keysPressed.current['a'] ||
+          keysPressed.current['A']
+        ) {
+          dx -= speed;
+          p.facing = 'left';
+        }
+        if (
+          keysPressed.current['ArrowRight'] ||
+          keysPressed.current['KeyD'] ||
+          keysPressed.current['d'] ||
+          keysPressed.current['D']
+        ) {
+          dx += speed;
+          p.facing = 'right';
+        }
+
+        // Normalize diagonal movement speed for keyboard
+        if (dx !== 0 && dy !== 0) {
+          dx *= 0.7071;
+          dy *= 0.7071;
+        }
       }
 
       // Movement & collision resolution
@@ -1362,14 +1392,14 @@ export default function App() {
         </div>
       </main>
 
-      {/* Dynamic Quest Tracker Banner - Dedicated Tier 2 with Pixel Font */}
-      <div className="fixed top-13 sm:top-15 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-[94%] max-w-lg">
-        <div className="bg-slate-950/95 border border-amber-500/60 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 shadow-2xl backdrop-blur-md flex items-center gap-2 sm:gap-2.5">
-          <div className="flex items-center gap-1 bg-amber-500/20 border border-amber-400/40 rounded px-1.5 py-0.5 text-amber-300 font-pixel text-[8px] sm:text-[9px] shrink-0">
-            <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+      {/* Dynamic Quest Tracker Banner - Dedicated Tier 2 with Pixel Font (Optimized for Mobile Portrait & Landscape) */}
+      <div className="fixed top-11 sm:top-14 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-[92%] max-w-md">
+        <div className="bg-slate-950/90 border border-amber-500/50 rounded-lg sm:rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl backdrop-blur-md flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 bg-amber-500/20 border border-amber-400/40 rounded px-1 sm:px-1.5 py-0.5 text-amber-300 font-pixel text-[7.5px] sm:text-[8.5px] shrink-0">
+            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400 shrink-0" />
             <span>MISI</span>
           </div>
-          <p className="text-amber-100 font-pixel text-[8px] sm:text-[9px] leading-relaxed tracking-tight line-clamp-2 sm:line-clamp-none flex-1 text-left sm:text-center">
+          <p className="text-amber-100 font-pixel text-[7.5px] sm:text-[8.5px] leading-tight sm:leading-relaxed tracking-tight truncate sm:line-clamp-2 flex-1 text-left sm:text-center">
             {questHint}
           </p>
         </div>
@@ -1378,6 +1408,7 @@ export default function App() {
       {/* Virtual Controls for Mobile & Desktop Toolbar */}
       <VirtualControls
         onDirectionPress={handleDirectionPress}
+        onJoystickMove={handleJoystickMove}
         onActionPress={handleInteract}
         onCompassToggle={handleToggleCompass}
         isCompassActive={isCompassActive}

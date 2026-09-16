@@ -387,10 +387,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({
                   Tujuan & Mekanik Utama Game
                 </h3>
                 <p className="text-slate-300 leading-relaxed text-xs">
-                  Kamu menjelajahi <strong>Lembah Nada Rasa</strong> yang kehilangan warnanya akibat kabut
-                  kesalahpahaman. Gunakan <strong>Kompas Resonansi Emosi [Spasi]</strong> untuk melihat lapisan
-                  perasaan terdalam dari karakter. Setiap kali kamu membantu warga mengenali dan meregulasi
-                  emosinya, warna dan harmoni kawasan tersebut akan pulih!
+                  Kamu berperan sebagai <strong>Ezzel</strong>, seorang murid petualang berhati tulus yang menjelajahi <strong>Lembah Nada Rasa</strong>. Lembah kehilangan warnanya akibat kabut kesalahpahaman. Gunakan <strong>Kompas Resonansi Emosi [Spasi]</strong> untuk melihat lapisan perasaan terdalam dari karakter. Setiap kali Ezzel membantu warga mengenali dan meregulasi emosinya, warna dan harmoni kawasan tersebut akan pulih!
                 </p>
               </section>
 
@@ -413,10 +410,10 @@ export const HelpModal: React.FC<HelpModalProps> = ({
                   <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 space-y-1">
                     <span className="font-bold text-amber-300 block">Layar Sentuh (Ponsel/Tablet):</span>
                     <div>• Ketuk Lantai: Berjalan langsung ke titik ketuk</div>
-                    <div>• D-Pad kiri: Navigasi arah manual</div>
+                    <div>• Joystick Analog Kiri: Navigasi 360° yang mulus (mode tegak & mendatar)</div>
                     <div>• Tombol A: Bicara / Interaksi</div>
-                    <div>• Tombol HATI: Kompas Resonansi</div>
-                    <div>• Header: Peta, Jurnal, dan Pengaturan Suara</div>
+                    <div>• Tombol HATI: Kompas Resonansi Emosi</div>
+                    <div>• Tombol MENU (Kanan Atas): Akses satu tombol untuk Peta, Jurnal, Regulasi, dan Pengaturan</div>
                   </div>
                 </div>
               </section>

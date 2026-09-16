@@ -80,7 +80,7 @@ export function downloadOfflineGameHtml() {
       <canvas id="game-canvas" width="640" height="480"></canvas>
       
       <div class="top-bar">
-        <div class="title-tag">🧭 Lembah Nada Rasa</div>
+        <div class="title-tag">🧭 Lembah Nada Rasa | 🎒 Ezzel</div>
         <div style="display:flex; gap:6px;">
           <button class="btn-action" id="btn-toggle-map" onclick="toggleMiniMap()">PETA [M]</button>
           <button class="btn-action" id="btn-toggle-compass" onclick="toggleCompass()">KOMPAS [Spasi]</button>
@@ -320,7 +320,7 @@ export function downloadOfflineGameHtml() {
         b1.onclick = () => {
           npc.resolved = true;
           zoneRestored.tower = true;
-          document.getElementById('dia-text').innerText = 'LONCENG BERDENTANG! Seluruh Lembah Nada Rasa pulih penuh warna! Kamu Lulus Duta Empati!';
+          document.getElementById('dia-text').innerText = 'LONCENG BERDENTANG! Seluruh Lembah Nada Rasa pulih penuh warna! Selamat, Ezzel! Kamu Lulus Duta Empati Emas!';
           choicesContainer.innerHTML = '';
           nextBtn.style.display = 'block';
           playTone(880, 0.6, 'triangle');
@@ -454,6 +454,10 @@ export function downloadOfflineGameHtml() {
       ctx.fillRect(player.x - 10, player.y - 10, 20, 20);
       ctx.fillStyle = '#ef4444';
       ctx.fillRect(player.x - 6, player.y - 12, 12, 4); // scarf
+      ctx.fillStyle = '#6ee7b7';
+      ctx.font = 'bold 9px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('Ezzel', player.x, player.y - 16);
 
       ctx.restore();
 

@@ -1501,6 +1501,23 @@ export class GameRenderer {
     // Golden compass attached to belt, glowing
     ctx.fillStyle = '#fbbf24';
     ctx.fillRect(px + 14, py + 22 + bob, 4, 4);
+
+    // Protagonist Name Badge: Ezzel
+    ctx.save();
+    ctx.font = '8px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    const pName = 'Ezzel';
+    const pNameW = ctx.measureText(pName).width;
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.88)';
+    ctx.fillRect(px + 16 - pNameW / 2 - 4, py - 10 + bob, pNameW + 8, 11);
+    ctx.strokeStyle = '#10b981';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(px + 16 - pNameW / 2 - 4, py - 10 + bob, pNameW + 8, 11);
+
+    ctx.fillStyle = '#6ee7b7';
+    ctx.fillText(pName, px + 16, py - 10 + 8 + bob);
+    ctx.restore();
   }
 
   // Draw unique NPCs with distinct expressive sprites, dynamic breathing, and turning animations

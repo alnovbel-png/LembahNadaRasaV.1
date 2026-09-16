@@ -12,8 +12,8 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
   },
   intro_start_2: {
     id: 'intro_start_2',
-    speaker: 'Rian / Tara',
-    speakerRole: 'Murid Kelas 4',
+    speaker: 'Ezzel',
+    speakerRole: 'Murid Petualang Kelas 4',
     portrait: 'player',
     text: 'Hah?! Apa yang terjadi pada desa kita? Lihat, ada benda berkilau yang jatuh di depanku... ini seperti Kompas Kristal bertuliskan "KOMPAS HATI"!',
     nextId: 'intro_start_3',
@@ -89,8 +89,8 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
   },
   kiki_breathe_prep: {
     id: 'kiki_breathe_prep',
-    speaker: 'Rian / Tara',
-    speakerRole: 'Murid Kelas 4',
+    speaker: 'Ezzel',
+    speakerRole: 'Murid Petualang Kelas 4',
     portrait: 'player',
     text: 'Ingat pelajaran di sekolah, Kiki! Tarik napas lewat hidung 4 detik, bayangkan meniup balon di perut, tahan sebentar, lalu hembuskan perlahan.',
     triggerBreathing: true,
@@ -101,7 +101,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kiki',
     speakerRole: 'Tupai Pos Cilik',
     portrait: 'squirrel',
-    text: 'Fiuuuh... ajaib! Detak jantungku mulai melambat. Otakku terasa lebih jernih sekarang! Terima kasih sudah menemaniku bernapas!',
+    text: 'Fiuuuh... ajaib! Detak jantungku mulai melambat. Otakku terasa lebih jernih sekarang! Terima kasih sudah menemaniku bernapas, Ezzel!',
     triggerColorRestoreZone: 'plaza',
     triggerQuestProgress: 'quest_start',
     nextId: 'kiki_reward',
@@ -111,7 +111,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kiki',
     speakerRole: 'Tupai Pos Cilik',
     portrait: 'squirrel',
-    text: 'Lihat! Air mancur plaza kembali memancarkan air jernih dan warna rumput di sekitar kita kembali hijau bersinar! Ini "Surat Wasiat Kuno" yang kutemukan, sepertinya penting untuk Kakek Ranu di Jembatan!',
+    text: 'Lihat, Ezzel! Air mancur plaza kembali memancarkan air jernih dan warna rumput di sekitar kita kembali hijau bersinar! Ini "Surat Wasiat Kuno" yang kutemukan, sepertinya penting untuk Kakek Ranu di Jembatan!',
     givesItem: 'item_letter',
   },
 
@@ -160,7 +160,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kakek Ranu',
     speakerRole: 'Tukang Kayu Desa',
     portrait: 'old_man',
-    text: 'A... apa katamu tadi? Kalian... menghargaiku? (Kakek Ranu mengusap sudut matanya). Sudah bertahun-tahun tidak ada yang menanyakan kabarku selain meminta jembatan dibetulkan...',
+    text: 'A... apa katamu tadi, Nak Ezzel? Kalian... menghargaiku? (Kakek Ranu mengusap sudut matanya). Sudah bertahun-tahun tidak ada yang menanyakan kabarku selain meminta jembatan dibetulkan...',
     nextId: 'ranu_path_empathy_2',
   },
   ranu_path_empathy_2: {
@@ -207,7 +207,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Bimo',
     speakerRole: 'Murid Kelas 4',
     portrait: 'boy_glasses',
-    text: '(Sesenggukan di balik pohon)... Huwaaa! Aku ceroboh sekali! Roda gigi jam desa jatuh ke semak-semak dan sekarang jamnya mati. Aku pantas dijauhi semua orang...',
+    text: '(Sesenggukan di balik pohon)... Huwaaa! Ezzel, aku ceroboh sekali! Roda gigi jam desa jatuh ke semak-semak dan sekarang jamnya mati. Aku pantas dijauhi semua orang...',
     thoughtBubble: 'Pasti semua teman menertawakanku... aku merasa sangat malu dan tak berharga...',
     emotionAura: 'sedih',
     choices: [
@@ -252,7 +252,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Bimo',
     speakerRole: 'Murid Kelas 4',
     portrait: 'boy_glasses',
-    text: 'Perkataanmu benar... Guru di kelas selalu mengingatkan tentang "Growth Mindset" (Pola Pikir Berkembang): Kesalahan adalah bukti bahwa kita sedang berusaha!',
+    text: 'Perkataanmu benar, Ezzel... Guru di kelas selalu mengingatkan tentang "Growth Mindset" (Pola Pikir Berkembang): Kesalahan adalah bukti bahwa kita sedang berusaha!',
     nextId: 'bimo_growth_mindset_2',
   },
   bimo_growth_mindset_2: {
@@ -260,7 +260,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Bimo',
     speakerRole: 'Murid Kelas 4',
     portrait: 'boy_glasses',
-    text: 'Ini dia! Aku berhasil menyelamatkan "Roda Gigi Emas Pusaka"! Bawalah ke Menara Jam di timur laut. Mari kembalikan dentang waktu dan warna desa kita!',
+    text: 'Ini dia, Ezzel! Aku berhasil menyelamatkan "Roda Gigi Emas Pusaka"! Bawalah ke Menara Jam di timur laut. Mari kembalikan dentang waktu dan warna desa kita!',
     triggerColorRestoreZone: 'forest',
     triggerQuestProgress: 'quest_bimo',
     givesItem: 'item_gold_gear',
@@ -386,7 +386,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Nenek Wilis',
     speakerRole: 'Pustakawan Sepuh Desa',
     portrait: 'grandmother',
-    text: 'Kini Roda Gigi Emas ada di tanganmu. Pilihan terakhir ada padamu: Pesan apa yang ingin kau canangkan saat lonceng harmoni berdentang?',
+    text: 'Kini Roda Gigi Emas ada di tanganmu, Ezzel. Pilihan terakhir ada padamu: Pesan apa yang ingin kau canangkan saat lonceng harmoni berdentang?',
     choices: [
       {
         id: 'choice_ending_perfect',
@@ -427,14 +427,14 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Nenek Wilis & Seluruh Warga',
     speakerRole: 'Pesta Harmoni',
     portrait: 'celebration',
-    text: 'Selamat! Berkat kebijaksanaan dan empati kalian, Lembah Nada Rasa kembali hidup penuh warna! Kamu telah dianugerahi gelar: "DUTA EMPATI EMAS KELAS 4 SD"!',
+    text: 'Selamat, Ezzel! Berkat kebijaksanaan dan empatimu, Lembah Nada Rasa kembali hidup penuh warna! Kamu telah dianugerahi gelar: "DUTA EMPATI EMAS KELAS 4 SD"!',
   },
   ending_summary_resilient: {
     id: 'ending_summary_resilient',
     speaker: 'Nenek Wilis & Seluruh Warga',
     speakerRole: 'Pesta Harmoni',
     portrait: 'celebration',
-    text: 'Luar biasa! Lembah telah pulih dari kabut prasangka. Semua warga belajar bahwa mendengar dan memaafkan adalah kunci kedamaian. Kamu dianugerahi gelar: "PENJELAJAH HATI TANGGUH"!',
+    text: 'Luar biasa, Ezzel! Lembah telah pulih dari kabut prasangka. Semua warga belajar bahwa mendengar dan memaafkan adalah kunci kedamaian. Kamu dianugerahi gelar: "PENJELAJAH HATI TANGGUH"!',
   },
 
   // --- KAK CITRA (4 ZONA REGULASI EMOSI) ---
@@ -443,7 +443,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kak Citra',
     speakerRole: 'Konselor Cilik Lembah',
     portrait: 'girl_counselor',
-    text: 'Halo teman! Kamu sedang menjelajahi desa ya? Lihatlah bunga-bunga ini. Seperti bunga yang mekar aneka rupa, perasaan kita juga memiliki "4 Zona Warna" yang semuanya berharga!',
+    text: 'Halo Ezzel! Kamu sedang menjelajahi desa ya? Lihatlah bunga-bunga ini. Seperti bunga yang mekar aneka rupa, perasaan kita juga memiliki "4 Zona Warna" yang semuanya berharga!',
     choices: [
       {
         id: 'citra_c1',
@@ -510,7 +510,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kak Citra',
     speakerRole: 'Konselor Cilik Lembah',
     portrait: 'girl_counselor',
-    text: 'Tepat sekali! Luar biasa! Kamu telah menguasai Kesadaran Diri (Self-Awareness) tentang 4 Zona Regulasi. Terimalah lencana penghargaan ini di Buku Catatanmu!',
+    text: 'Tepat sekali, Ezzel! Luar biasa! Kamu telah menguasai Kesadaran Diri (Self-Awareness) tentang 4 Zona Regulasi. Terimalah lencana penghargaan ini di Buku Catatanmu!',
     unlocksBadge: 'badge_counselor_zones',
   },
 
@@ -520,7 +520,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kakek Damai',
     speakerRole: 'Praktisi Mindful & Bonsai',
     portrait: 'zen_master',
-    text: 'Salam damai, anak muda. Lihatlah air sungai yang mengalir ini... batu tak pernah memarahi air, dan air tak memaksa batu bergeser. Pernahkah kamu mendengar tentang "Lingkaran Kendali"?',
+    text: 'Salam damai, anak muda Ezzel. Lihatlah air sungai yang mengalir ini... batu tak pernah memarahi air, dan air tak memaksa batu bergeser. Pernahkah kamu mendengar tentang "Lingkaran Kendali"?',
     choices: [
       {
         id: 'damai_c1',
@@ -597,7 +597,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Moka',
     speakerRole: 'Kucing Pustakawan Lembut',
     portrait: 'cat_librarian',
-    text: 'Purrr... Meow! Duduklah di sampingku sejenak di bangku kayu ini. Kadang kita begitu sibuk menyiapkan jawaban di kepala saat orang lain berbicara, sampai lupa MENDENGAR sungguhan.',
+    text: 'Purrr... Meow! Duduklah di sampingku sejenak di bangku kayu ini, Ezzel. Kadang kita begitu sibuk menyiapkan jawaban di kepala saat orang lain berbicara, sampai lupa MENDENGAR sungguhan.',
     choices: [
       {
         id: 'moka_c1',

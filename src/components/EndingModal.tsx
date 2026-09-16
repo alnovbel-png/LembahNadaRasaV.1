@@ -19,7 +19,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
   branchTag,
   endingType,
 }) => {
-  const [studentName, setStudentName] = useState('Petualang Cilik');
+  const [studentName, setStudentName] = useState('Ezzel');
 
   if (!isOpen) return null;
 
@@ -83,7 +83,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
                 className="w-full bg-slate-900/80 border border-amber-400/60 rounded px-3 py-1.5 text-sm font-bold text-amber-200 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                placeholder="Ketik namamu di sini..."
+                placeholder="Ezzel (atau ketik namamu)..."
               />
             </div>
 

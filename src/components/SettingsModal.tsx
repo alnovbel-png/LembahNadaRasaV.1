@@ -691,13 +691,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     • <strong>Ketuk Lantai:</strong> Karakter langsung berjalan ke titik yang kamu ketuk
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    • <strong>D-Pad Virtual:</strong> Navigasi arah langkah manual di sisi kiri layar
+                    • <strong>Joystick Virtual Analog:</strong> Navigasi analog 360° yang mulus di sisi kiri layar (mendukung mode vertikal & horizontal)
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     • <strong>Tombol [AKSI]:</strong> Berinteraksi dengan warga desa, pohon, dan item
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    • <strong>Tombol [KOMPAS]:</strong> Mengaktifkan Kompas Hati untuk memindai emosi
+                    • <strong>Tombol [KOMPAS / HATI]:</strong> Mengaktifkan Kompas Hati untuk memindai emosi
+                  </div>
+                  <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    • <strong>Tombol [MENU] Atas:</strong> Satu tombol ringkas untuk Peta, Regulasi, Jurnal, dan Pengaturan
                   </div>
                 </div>
               </div>
