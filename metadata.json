@@ -1,0 +1,6 @@
+{
+  "name": "Lembah Nada Rasa: Ekspedisi Kompas Hati",
+  "description": "Game petualangan pixel 2D edukatif Pembelajaran Sosial Emosional (PSE) untuk kelas 4 SD dengan mekanik Kompas Resonansi Emosi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
