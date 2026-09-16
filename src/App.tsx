@@ -31,6 +31,7 @@ import { EndingModal } from './components/EndingModal';
 import { VirtualControls } from './components/VirtualControls';
 import { MiniMap } from './components/MiniMap';
 import { Sparkles, Compass } from 'lucide-react';
+import { downloadOfflineGameHtml } from './utils/exportOfflineHtml';
 
 const GAME_ZOOM = 1.35; // Focused zoom on main character for rich exploration feel
 
@@ -872,15 +873,19 @@ export default function App() {
       right: 'ArrowRight',
     };
     keysPressed.current[keyMap[dir]] = pressed;
-    if (pressed && targetPosRef.current) {
-      targetPosRef.current = null;
-      rendererRef.current?.clearDestination();
+    if (pressed) {
+      sound.unlockAudio();
+      if (targetPosRef.current) {
+        targetPosRef.current = null;
+        rendererRef.current?.clearDestination();
+      }
     }
   };
 
   // Keyboard Event Listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      sound.unlockAudio();
       keysPressed.current[e.key] = true;
       keysPressed.current[e.code] = true;
 
@@ -1398,6 +1403,7 @@ export default function App() {
         zoneStatus={zoneStatus}
         mapLayout={mapLayout}
         onNavigateToTile={handleMiniMapNavigate}
+        isCompassActive={isCompassActive}
       />
 
       {/* Dialogue System Box */}
@@ -1455,7 +1461,7 @@ export default function App() {
         stats={stats}
       />
 
-      {/* Unified Settings Modal (Quests, Achievements, Audio, Controls Guide) */}
+      {/* Unified Settings Modal (Quests, Achievements, Audio, Controls Guide, Offline Export) */}
       <SettingsModal
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
@@ -1463,8 +1469,12 @@ export default function App() {
         quests={quests}
         stats={stats}
         zoneStatus={zoneStatus}
+        npcs={npcs}
+        unlockedBadges={stats.unlockedBadges}
+        empathyScore={stats.empathyScore}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
+        onExportOffline={downloadOfflineGameHtml}
       />
 
       {/* Ending Celebration & Certificate Modal */}

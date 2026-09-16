@@ -2185,6 +2185,7 @@ export class GameRenderer {
     // Name badge / interaction prompt floating above NPC (smoothly bobs with headBob)
     ctx.font = '9px "Press Start 2P", monospace';
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
     const displayName = npc.isResolved ? `✨ ${npc.name}` : npc.name;
     const textW = ctx.measureText(displayName).width;
     ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -2195,6 +2196,69 @@ export class GameRenderer {
 
     ctx.fillStyle = npc.isResolved ? '#4ade80' : '#fef08a';
     ctx.fillText(displayName, nx + 16, ny + headBob);
+
+    // Indikator visual 'tanda tanya' (?) melayang di atas NPC yang belum terselesaikan konfliknya
+    if (!npc.isResolved) {
+      const qPhase = this.tickCount * 0.12 + npc.x * 2.3;
+      const qBob = Math.sin(qPhase) * 3.5;
+      const qCenterX = nx + 16;
+      const qCenterY = ny - 24 + qBob;
+
+      // Soft pulsating glow halo behind the question mark
+      const glowPulse = 0.35 + Math.sin(qPhase) * 0.18;
+      ctx.fillStyle = `rgba(245, 158, 11, ${glowPulse})`;
+      ctx.beginPath();
+      ctx.arc(qCenterX, qCenterY, 11, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Shadow under question balloon
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.beginPath();
+      ctx.arc(qCenterX, qCenterY + 1.5, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Golden Circular Balloon
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(qCenterX, qCenterY, 8.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Inner bright highlight
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(qCenterX - 2, qCenterY - 2, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Balloon pointer tip pointing down toward NPC head
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.moveTo(qCenterX - 3, qCenterY + 7);
+      ctx.lineTo(qCenterX + 3, qCenterY + 7);
+      ctx.lineTo(qCenterX, qCenterY + 11);
+      ctx.closePath();
+      ctx.fill();
+
+      // Balloon dark outline
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(qCenterX, qCenterY, 8.5, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Bold, crisp '?' (tanda tanya) in deep navy contrast
+      ctx.font = 'bold 11px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#1e1b4b';
+      ctx.fillText('?', qCenterX, qCenterY + 1);
+
+      // Tiny animated sparkle star
+      const sparkleFrame = Math.floor((this.tickCount * 0.1 + npc.y) % 4);
+      if (sparkleFrame === 0 || sparkleFrame === 2) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(qCenterX + 7, qCenterY - 7, 2, 2);
+      }
+    }
   }
 
   // Draw the Resonance Compass Auras & Deep Emotions

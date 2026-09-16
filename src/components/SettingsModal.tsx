@@ -16,36 +16,48 @@ import {
   Heart,
   BookOpen,
   MapPin,
-  HelpCircle,
+  Download,
+  ShieldCheck,
+  Check,
 } from 'lucide-react';
 import { useAudioSettings } from '../utils/audio';
-import { GameQuest, ZoneColorStatus, NPC } from '../types/game';
+import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
 import { PSE_ACHIEVEMENTS } from '../game/constants';
+import { downloadOfflineGameHtml } from '../utils/exportOfflineHtml';
 
 export type SettingsModalTab = 'quest' | 'achievements' | 'audio' | 'controls';
 
-interface SettingsModalProps {
+export interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: SettingsModalTab;
-  quests: GameQuest[];
-  zoneStatus: ZoneColorStatus;
-  unlockedBadges: string[];
-  empathyScore: number;
-  npcs: NPC[];
+  quests?: GameQuest[];
+  zoneStatus?: ZoneColorStatus;
+  stats?: PlayerStats;
+  npcs?: NPC[];
+  unlockedBadges?: string[];
+  empathyScore?: number;
+  isMuted?: boolean;
+  onToggleMute?: () => void;
+  onExportOffline?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
   initialTab = 'quest',
-  quests,
-  zoneStatus,
+  quests = [],
+  zoneStatus = { plaza: false, bridge: false, forest: false, tower: false },
+  stats,
+  npcs = [],
   unlockedBadges,
   empathyScore,
-  npcs,
+  onExportOffline,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
+  const [isExporting, setIsExporting] = useState<boolean>(false);
+  const [exportSuccess, setExportSuccess] = useState<boolean>(false);
+
   const {
     bgmVolume,
     sfxVolume,
@@ -61,6 +73,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setActiveTab(initialTab);
+      setExportSuccess(false);
     }
   }, [isOpen, initialTab]);
 
@@ -78,17 +91,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const bgmPercent = Math.round(bgmVolume * 100);
-  const sfxPercent = Math.round(sfxVolume * 100);
-  const unlockedCount = unlockedBadges.length;
+  // Safe fallback extractions
+  const effectiveBadges: string[] =
+    unlockedBadges ?? (stats && Array.isArray(stats.unlockedBadges) ? stats.unlockedBadges : []);
+  const effectiveEmpathy: number =
+    typeof empathyScore === 'number'
+      ? empathyScore
+      : stats && typeof stats.empathyScore === 'number'
+      ? stats.empathyScore
+      : 0;
+  const effectiveNpcs: NPC[] = Array.isArray(npcs) ? npcs : [];
+  const effectiveQuests: GameQuest[] = Array.isArray(quests) ? quests : [];
+  const effectiveZoneStatus: ZoneColorStatus = zoneStatus ?? {
+    plaza: false,
+    bridge: false,
+    forest: false,
+    tower: false,
+  };
+
+  const bgmPercent = Math.round((bgmVolume ?? 0.3) * 100);
+  const sfxPercent = Math.round((sfxVolume ?? 0.65) * 100);
+  const unlockedCount = effectiveBadges.length;
   const totalBadges = PSE_ACHIEVEMENTS.length;
-  const badgeProgressPercent = Math.round((unlockedCount / totalBadges) * 100);
+  const badgeProgressPercent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
+
+  const handleExport = () => {
+    setIsExporting(true);
+    try {
+      if (onExportOffline) {
+        onExportOffline();
+      } else {
+        downloadOfflineGameHtml();
+      }
+      setExportSuccess(true);
+      setTimeout(() => setExportSuccess(false), 4000);
+    } catch (err) {
+      console.error('Failed to export offline HTML:', err);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-3">
-      <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+      <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between">
+        <div className="px-5 py-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-amber-400" />
             <h2 className="font-bold text-base text-amber-300">
@@ -105,63 +153,63 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
         </div>
 
-        {/* Unified Tab Navigation Bar */}
-        <div className="flex items-center border-b border-slate-800 bg-slate-950/70 px-3 pt-2 gap-1 overflow-x-auto">
+        {/* Submenu Grid - Clean 4-Column Layout, Never Covered by Any Horizontal Slider */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 sm:p-3.5 bg-slate-950/90 border-b border-slate-800 shrink-0">
           <button
             id="settings-tab-quest-btn"
             onClick={() => setActiveTab('quest')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-t-xl text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-center ${
               activeTab === 'quest'
-                ? 'bg-slate-900 text-amber-300 border-amber-400 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/40'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
+                : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
             }`}
           >
-            <Target className="w-4 h-4 text-amber-400" />
-            <span>Misi & Objektif</span>
+            <Target className="w-4 h-4 shrink-0" />
+            <span className="truncate">Misi & Objektif</span>
           </button>
 
           <button
             id="settings-tab-achievements-btn"
             onClick={() => setActiveTab('achievements')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-t-xl text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-center ${
               activeTab === 'achievements'
-                ? 'bg-slate-900 text-amber-300 border-amber-400 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/40'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
+                : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
             }`}
           >
-            <Award className="w-4 h-4 text-amber-400" />
-            <span>Pencapaian ({unlockedCount}/{totalBadges})</span>
+            <Award className="w-4 h-4 shrink-0" />
+            <span className="truncate">Pencapaian ({unlockedCount}/{totalBadges})</span>
           </button>
 
           <button
             id="settings-tab-audio-btn"
             onClick={() => setActiveTab('audio')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-t-xl text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-center ${
               activeTab === 'audio'
-                ? 'bg-slate-900 text-amber-300 border-amber-400 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/40'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
+                : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
             }`}
           >
-            <Volume2 className="w-4 h-4 text-amber-400" />
-            <span>Audio & Suara</span>
+            <Volume2 className="w-4 h-4 shrink-0" />
+            <span className="truncate">Audio & Ekspor</span>
           </button>
 
           <button
             id="settings-tab-controls-btn"
             onClick={() => setActiveTab('controls')}
-            className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 rounded-t-xl text-xs sm:text-sm font-semibold transition border-b-2 whitespace-nowrap cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-center ${
               activeTab === 'controls'
-                ? 'bg-slate-900 text-amber-300 border-amber-400 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 border-transparent hover:bg-slate-900/40'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
+                : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
             }`}
           >
-            <Gamepad2 className="w-4 h-4 text-amber-400" />
-            <span>Panduan Kontrol</span>
+            <Gamepad2 className="w-4 h-4 shrink-0" />
+            <span className="truncate">Panduan & Sains</span>
           </button>
         </div>
 
-        {/* Tab Content Body */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+        {/* Tab Content Body with sleek custom scrollbar */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scrollbar pr-3 sm:pr-5">
           {/* TAB 1: MISI & OBJEKTIF */}
           {activeTab === 'quest' && (
             <div className="space-y-5">
@@ -172,21 +220,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   Status Pemulihan Warna Lembah
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${zoneStatus.plaza ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
+                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${effectiveZoneStatus.plaza ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
                     <span className="font-bold">Alun-Alun</span>
-                    <span className="text-[10px] mt-1">{zoneStatus.plaza ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
+                    <span className="text-[10px] mt-1">{effectiveZoneStatus.plaza ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
                   </div>
-                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${zoneStatus.bridge ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
+                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${effectiveZoneStatus.bridge ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
                     <span className="font-bold">Jembatan Kayu</span>
-                    <span className="text-[10px] mt-1">{zoneStatus.bridge ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
+                    <span className="text-[10px] mt-1">{effectiveZoneStatus.bridge ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
                   </div>
-                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${zoneStatus.forest ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
+                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${effectiveZoneStatus.forest ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
                     <span className="font-bold">Hutan Sunyi</span>
-                    <span className="text-[10px] mt-1">{zoneStatus.forest ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
+                    <span className="text-[10px] mt-1">{effectiveZoneStatus.forest ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
                   </div>
-                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${zoneStatus.tower ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
+                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${effectiveZoneStatus.tower ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
                     <span className="font-bold">Menara Jam</span>
-                    <span className="text-[10px] mt-1">{zoneStatus.tower ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
+                    <span className="text-[10px] mt-1">{effectiveZoneStatus.tower ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
                   </div>
                 </div>
               </div>
@@ -198,7 +246,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   Alur Misi Utama Kisah
                 </h3>
                 <div className="space-y-3">
-                  {quests.map((q) => (
+                  {effectiveQuests.map((q) => (
                     <div
                       key={q.id}
                       className={`p-3.5 rounded-xl border transition ${
@@ -242,50 +290,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Misi Eksplorasi Warga & Hutan */}
-              <div>
-                <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
-                  Eksplorasi Warga Desa, Hutan, & Sungai
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                  {npcs.map((npc) => (
-                    <div
-                      key={npc.id}
-                      className={`p-3 rounded-xl border flex items-center justify-between gap-2 ${
-                        npc.isResolved
-                          ? 'bg-emerald-950/20 border-emerald-500/40'
-                          : 'bg-slate-950/50 border-slate-800'
-                      }`}
-                    >
-                      <div>
-                        <div className="font-bold text-slate-200 flex items-center gap-1.5">
-                          <span>{npc.isResolved ? '✨' : '💬'}</span>
-                          <span>{npc.name}</span>
-                          <span className="text-[10px] text-slate-400 font-normal">({npc.role})</span>
-                        </div>
-                        <div className="text-[11px] text-slate-400 mt-0.5">
-                          {npc.isResolved
-                            ? '✅ Hati terbuka & harmonis'
-                            : `Belum selesai: Emosi "${npc.emotionProfile.surfaceEmotion}"`}
-                        </div>
-                      </div>
-                      <span
-                        className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
+              {effectiveNpcs.length > 0 && (
+                <div>
+                  <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    Eksplorasi Warga Desa, Hutan, & Sungai
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+                    {effectiveNpcs.map((npc) => (
+                      <div
+                        key={npc.id}
+                        className={`p-3 rounded-xl border flex items-center justify-between gap-2 ${
                           npc.isResolved
-                            ? 'bg-emerald-900/60 text-emerald-300'
-                            : 'bg-slate-800 text-slate-400'
+                            ? 'bg-emerald-950/20 border-emerald-500/40'
+                            : 'bg-slate-950/50 border-slate-800'
                         }`}
                       >
-                        {npc.isResolved ? 'Selesai' : 'Belum'}
-                      </span>
-                    </div>
-                  ))}
+                        <div>
+                          <div className="font-bold text-slate-200 flex items-center gap-1.5">
+                            <span>{npc.isResolved ? '✨' : '💬'}</span>
+                            <span>{npc.name}</span>
+                            <span className="text-[10px] text-slate-400 font-normal">({npc.role})</span>
+                          </div>
+                          <div className="text-[11px] text-slate-400 mt-0.5">
+                            {npc.isResolved
+                              ? '✅ Hati terbuka & harmonis'
+                              : `Belum selesai: Emosi "${npc.emotionProfile?.surfaceEmotion || 'resah'}"`}
+                          </div>
+                        </div>
+                        <span
+                          className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                            npc.isResolved
+                              ? 'bg-emerald-900/60 text-emerald-300'
+                              : 'bg-slate-800 text-slate-400'
+                          }`}
+                        >
+                          {npc.isResolved ? 'Selesai' : 'Belum'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
-          {/* TAB 2: PENCAPAIAN / ACHIVEMENTS */}
+          {/* TAB 2: PENCAPAIAN / ACHIEVEMENTS */}
           {activeTab === 'achievements' && (
             <div className="space-y-5">
               {/* Header Progress Bar */}
@@ -294,7 +344,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div className="text-xs text-slate-400 font-medium">Total Skor Empati & Wawasan</div>
                   <div className="text-xl font-bold text-amber-300 flex items-center gap-2 mt-0.5">
                     <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
-                    <span>{empathyScore} Poin Empati</span>
+                    <span>{effectiveEmpathy} Poin Empati</span>
                   </div>
                 </div>
 
@@ -315,7 +365,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {/* Grid of PSE Badges */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {PSE_ACHIEVEMENTS.map((badge) => {
-                  const isUnlocked = unlockedBadges.includes(badge.id);
+                  const isUnlocked = effectiveBadges.includes(badge.id);
                   return (
                     <div
                       key={badge.id}
@@ -363,7 +413,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
-          {/* TAB 3: AUDIO & SUARA */}
+          {/* TAB 3: AUDIO & EKSPOR OFFLINE */}
           {activeTab === 'audio' && (
             <div className="space-y-6">
               {/* Master Mute Card */}
@@ -420,14 +470,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   className="w-full accent-amber-400 h-2 bg-slate-800 rounded-lg cursor-pointer"
                 />
 
-                <div className="flex justify-end pt-1">
+                <div className="flex justify-between items-center pt-1">
+                  <span className="text-[10px] text-slate-500 font-mono">0% (Senyap) - 100% (Maks)</span>
                   <button
                     id="settings-test-bgm-btn"
-                    onClick={playTestBgm}
+                    onClick={() => {
+                      if (isMuted) setMuted(false);
+                      playTestBgm();
+                    }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Uji Nada Musik</span>
+                    <span>Uji Melodi BGM</span>
                   </button>
                 </div>
               </div>
@@ -436,12 +490,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Volume2 className="w-4 h-4 text-amber-400" />
+                    <Volume2 className="w-4 h-4 text-cyan-400" />
                     <span className="font-bold text-sm text-slate-200">
                       Volume Efek Suara (SFX)
                     </span>
                   </div>
-                  <span className="text-xs font-mono font-bold text-amber-300">
+                  <span className="text-xs font-mono font-bold text-cyan-300">
                     {sfxPercent}%
                   </span>
                 </div>
@@ -454,40 +508,134 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   step="0.01"
                   value={sfxVolume}
                   onChange={(e) => setSfxVolume(parseFloat(e.target.value))}
-                  className="w-full accent-amber-400 h-2 bg-slate-800 rounded-lg cursor-pointer"
+                  className="w-full accent-cyan-400 h-2 bg-slate-800 rounded-lg cursor-pointer"
                 />
 
-                <div className="flex justify-end pt-1">
+                <div className="flex justify-between items-center pt-1">
+                  <span className="text-[10px] text-slate-500 font-mono">0% (Bisu) - 100% (Maks)</span>
                   <button
                     id="settings-test-sfx-btn"
-                    onClick={playTestSfx}
+                    onClick={() => {
+                      if (isMuted) setMuted(false);
+                      playTestSfx();
+                    }}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer"
                   >
-                    <Play className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Uji Efek Koin/Langkah</span>
+                    <Play className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Uji Denting SFX</span>
                   </button>
                 </div>
               </div>
 
-              {/* Reset to Default */}
-              <div className="flex justify-end">
+              {/* Quick Audio Presets */}
+              <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
+                <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                  <span>Preset Keseimbangan Cepat:</span>
+                  <button
+                    id="settings-reset-audio-btn"
+                    onClick={() => {
+                      setBgmVolume(0.3);
+                      setSfxVolume(0.65);
+                      setMuted(false);
+                    }}
+                    className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 transition cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>Reset Default</span>
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <button
+                    id="preset-balanced-btn"
+                    onClick={() => {
+                      setMuted(false);
+                      setBgmVolume(0.65);
+                      setSfxVolume(0.8);
+                      playTestSfx();
+                    }}
+                    className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer"
+                  >
+                    <span className="font-bold text-amber-300 block">🎮 Seimbang</span>
+                    <span className="text-[10px] text-slate-400">BGM 65% / SFX 80%</span>
+                  </button>
+                  <button
+                    id="preset-story-btn"
+                    onClick={() => {
+                      setMuted(false);
+                      setBgmVolume(0.3);
+                      setSfxVolume(0.9);
+                      playTestSfx();
+                    }}
+                    className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer"
+                  >
+                    <span className="font-bold text-cyan-300 block">🎧 Dialog Cerita</span>
+                    <span className="text-[10px] text-slate-400">BGM 30% / SFX 90%</span>
+                  </button>
+                  <button
+                    id="preset-ambient-btn"
+                    onClick={() => {
+                      setMuted(false);
+                      setBgmVolume(0.85);
+                      setSfxVolume(0.35);
+                      playTestBgm();
+                    }}
+                    className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer"
+                  >
+                    <span className="font-bold text-emerald-300 block">🍃 Santai Alami</span>
+                    <span className="text-[10px] text-slate-400">BGM 85% / SFX 35%</span>
+                  </button>
+                  <button
+                    id="preset-mute-btn"
+                    onClick={() => setMuted(true)}
+                    className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer"
+                  >
+                    <span className="font-bold text-rose-300 block">🔇 Hening Total</span>
+                    <span className="text-[10px] text-slate-400">Audio Bisu (0%)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* OFFLINE HTML EXPORT CARD */}
+              <div className="bg-emerald-950/40 border-2 border-emerald-500/50 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                    <h4 className="font-bold text-sm text-emerald-300">
+                      Mainkan Tanpa Kuota Internet (Versi Offline)
+                    </h4>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                    Unduh game ke dalam satu berkas <code>.html</code> mandiri. Dapat disimpan di flashdisk, dibuka di laptop sekolah, atau ponsel kapan saja tanpa perlu internet!
+                  </p>
+                </div>
+
                 <button
-                  id="settings-reset-audio-btn"
-                  onClick={() => {
-                    setBgmVolume(0.3);
-                    setSfxVolume(0.65);
-                    setMuted(false);
-                  }}
-                  className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-amber-300 transition cursor-pointer"
+                  id="settings-download-offline-btn"
+                  onClick={handleExport}
+                  disabled={isExporting}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs shrink-0 flex items-center gap-2 shadow-lg transition cursor-pointer ${
+                    exportSuccess
+                      ? 'bg-emerald-400 text-slate-950 shadow-emerald-500/30'
+                      : 'bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950'
+                  }`}
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Kembalikan Volume Default (BGM: 30%, SFX: 65%)</span>
+                  {exportSuccess ? (
+                    <>
+                      <Check className="w-4 h-4 text-slate-950" />
+                      <span>Berhasil Diunduh!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 text-slate-950" />
+                      <span>{isExporting ? 'Menyiapkan...' : 'Unduh File HTML Game'}</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
           )}
 
-          {/* TAB 4: PANDUAN KONTROL & PSE */}
+          {/* TAB 4: PANDUAN KONTROL & SAINS PSE */}
           {activeTab === 'controls' && (
             <div className="space-y-5">
               {/* Keyboard & Mouse Guide */}
@@ -532,6 +680,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
+              {/* Layar Sentuh Mobile */}
+              <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+                <h3 className="text-xs font-bold text-cyan-300 uppercase tracking-wider mb-2.5 flex items-center gap-2">
+                  <Gamepad2 className="w-4 h-4 text-cyan-400" />
+                  Kontrol Layar Sentuh (Smartphone / Tablet)
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
+                  <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    • <strong>Ketuk Lantai:</strong> Karakter langsung berjalan ke titik yang kamu ketuk
+                  </div>
+                  <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    • <strong>D-Pad Virtual:</strong> Navigasi arah langkah manual di sisi kiri layar
+                  </div>
+                  <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    • <strong>Tombol [AKSI]:</strong> Berinteraksi dengan warga desa, pohon, dan item
+                  </div>
+                  <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    • <strong>Tombol [KOMPAS]:</strong> Mengaktifkan Kompas Hati untuk memindai emosi
+                  </div>
+                </div>
+              </div>
+
               {/* Fakta Sains PSE */}
               <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
                 <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
@@ -560,6 +730,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       Fokuskan energi pada apa yang bisa kamu kendalikan: kata-katamu, usahamu, dan responmu. Jangan habiskan energimu meratapi hal di luar kendalimu.
                     </p>
                   </div>
+
+                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="font-bold text-purple-300">4. Mendengarkan Aktif (Active Listening):</span>
+                    <p className="text-slate-400 mt-1 leading-relaxed">
+                      Mendengarkan bukan sekadar menunggu giliran bicara, tetapi memahami isi hati lawan bicara dengan kontak mata, empati, dan tidak memotong pembicaraan.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -568,7 +745,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Footer */}
         <div className="px-5 py-3 bg-slate-800/80 border-t border-slate-700 flex items-center justify-between text-xs text-slate-400">
-          <span>Lembah Nada Rasa • PSE Kelas 4</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Lembah Nada Rasa • PSE Kelas 4</span>
+          </span>
           <button
             id="settings-close-bottom-btn"
             onClick={onClose}

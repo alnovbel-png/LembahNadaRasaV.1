@@ -223,34 +223,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           </button>
         </div>
       )}
-
-      {/* Desktop Keyboard Hints (Bottom Left) */}
-      <div className="hidden sm:flex fixed bottom-3 left-3 z-30 bg-slate-900/80 border border-slate-800 rounded-lg px-3 py-1.5 text-[11px] text-slate-400 gap-3 backdrop-blur-sm pointer-events-none">
-        <span>
-          <strong className="text-slate-200">WASD / Panah:</strong> Jalan
-        </span>
-        <span>
-          <strong className="text-slate-200">[E / Enter]:</strong> Bicara / Interaksi
-        </span>
-        <span>
-          <strong className="text-slate-200">[Spasi]:</strong> Kompas Resonansi
-        </span>
-        <span>
-          <strong className="text-slate-200">[M]:</strong> Peta
-        </span>
-        <span>
-          <strong className="text-slate-200">[J]:</strong> Jurnal PSE
-        </span>
-        <span>
-          <strong className="text-slate-200">[R]:</strong> Regulasi Emosi
-        </span>
-        <span>
-          <strong className="text-slate-200">[O]:</strong> Audio
-        </span>
-        <span>
-          <strong className="text-slate-200">[H]:</strong> Panduan
-        </span>
-      </div>
     </>
   );
 };

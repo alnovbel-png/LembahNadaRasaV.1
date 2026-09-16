@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Map as MapIcon, X, MapPin, Sparkles, Navigation } from 'lucide-react';
+import { Map as MapIcon, X, MapPin, Sparkles, Navigation, Compass } from 'lucide-react';
 import { NPC, ZoneColorStatus } from '../types/game';
 import { Player } from '../game/renderer';
 import { MAP_COLS, MAP_ROWS, TILE } from '../game/constants';
@@ -12,6 +12,7 @@ interface MiniMapProps {
   zoneStatus: ZoneColorStatus;
   mapLayout: number[][];
   onNavigateToTile?: (tileX: number, tileY: number) => void;
+  isCompassActive?: boolean;
 }
 
 const TILE_PX = 5; // 5px per tile -> 36 cols * 5 = 180px width, 28 rows * 5 = 140px height
@@ -26,6 +27,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   zoneStatus,
   mapLayout,
   onNavigateToTile,
+  isCompassActive = false,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const staticMapCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -311,9 +313,15 @@ export const MiniMap: React.FC<MiniMapProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
             <div className="flex items-center gap-1.5">
-              <MapPin className="w-3.5 h-3.5 text-amber-400" />
+              <Compass
+                className={`w-3.5 h-3.5 ${
+                  isCompassActive
+                    ? 'text-amber-300 animate-spin-slow drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]'
+                    : 'text-amber-400'
+                }`}
+              />
               <span className="font-pixel text-[8px] text-amber-300 font-bold tracking-tight">
-                PETA LEMBAH
+                PETA & KOMPAS
               </span>
             </div>
             <div className="flex items-center gap-1">
@@ -336,6 +344,58 @@ export const MiniMap: React.FC<MiniMapProps> = ({
 
           {/* Interactive Mini-Map Canvas */}
           <div className="relative rounded-lg overflow-hidden border border-slate-800 bg-slate-900 shadow-inner group">
+            {/* Cardinal Direction Indicators along map edges */}
+            <div className="absolute top-0 inset-x-0 flex justify-center pointer-events-none z-10">
+              <span className="font-pixel text-[6px] font-bold px-1 bg-slate-950/75 text-rose-400 rounded-b border-x border-b border-slate-800">
+                U (Utara)
+              </span>
+            </div>
+            <div className="absolute bottom-0 inset-x-0 flex justify-center pointer-events-none z-10">
+              <span className="font-pixel text-[6px] font-bold px-1 bg-slate-950/75 text-slate-400 rounded-t border-x border-t border-slate-800">
+                S (Selatan)
+              </span>
+            </div>
+            <div className="absolute left-0 inset-y-0 flex items-center pointer-events-none z-10">
+              <span className="font-pixel text-[6px] font-bold py-0.5 px-0.5 bg-slate-950/75 text-slate-400 rounded-r border-y border-r border-slate-800">
+                B
+              </span>
+            </div>
+            <div className="absolute right-0 inset-y-0 flex items-center pointer-events-none z-10">
+              <span className="font-pixel text-[6px] font-bold py-0.5 px-0.5 bg-slate-950/75 text-amber-300 rounded-l border-y border-l border-slate-800">
+                T
+              </span>
+            </div>
+
+            {/* Visual Compass Rose Dial Overlay (Top-Right) */}
+            <div
+              className={`absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-slate-950/90 border ${
+                isCompassActive
+                  ? 'border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.7)] ring-1 ring-amber-300/60'
+                  : 'border-slate-700/80 shadow-md'
+              } backdrop-blur-xs flex items-center justify-center pointer-events-auto transition-all`}
+              title="Kompas Navigasi: U = Utara, S = Selatan, T = Timur, B = Barat"
+            >
+              {/* Compass Cardinal Points */}
+              <span className="absolute top-0.5 text-[6px] font-black text-rose-400 leading-none">U</span>
+              <span className="absolute bottom-0.5 text-[5px] font-bold text-slate-400 leading-none">S</span>
+              <span className="absolute right-0.5 text-[5px] font-bold text-amber-300 leading-none">T</span>
+              <span className="absolute left-0.5 text-[5px] font-bold text-slate-400 leading-none">B</span>
+
+              {/* Central Dual-Tipped Compass Needle */}
+              <div
+                className={`relative w-1 h-5 flex flex-col items-center justify-center ${
+                  isCompassActive ? 'animate-pulse' : ''
+                }`}
+              >
+                {/* North Needle Point (Crimson Red) */}
+                <div className="w-0 h-0 border-l-[2.5px] border-l-transparent border-r-[2.5px] border-r-transparent border-b-[8px] border-b-rose-500 drop-shadow-[0_0_2px_rgba(244,63,94,0.9)]" />
+                {/* Center Pivot Pin */}
+                <div className="w-1 h-1 rounded-full bg-amber-300 border border-amber-500 z-10 my-[-0.5px]" />
+                {/* South Needle Point (Silver Slate) */}
+                <div className="w-0 h-0 border-l-[2.5px] border-l-transparent border-r-[2.5px] border-r-transparent border-t-[8px] border-t-slate-300" />
+              </div>
+            </div>
+
             <canvas
               ref={canvasRef}
               width={MAP_W}
@@ -350,12 +410,21 @@ export const MiniMap: React.FC<MiniMapProps> = ({
             </div>
           </div>
 
-          {/* Current Player Zone Location Tag */}
+          {/* Current Player Zone Location Tag & Compass Mode */}
           <div className="flex items-center justify-between text-[9px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-lg border border-slate-800/80">
             <div className="flex items-center gap-1 truncate">
               <Navigation className="w-3 h-3 text-emerald-400 shrink-0" />
               <span className="truncate font-medium text-slate-200">{currentZoneName}</span>
             </div>
+            <span
+              className={`text-[7px] font-pixel px-1 py-0.5 rounded border shrink-0 ${
+                isCompassActive
+                  ? 'text-amber-300 bg-amber-950/60 border-amber-500/60 animate-pulse'
+                  : 'text-slate-400 bg-slate-800/60 border-slate-700/60'
+              }`}
+            >
+              {isCompassActive ? 'RESONANSI' : 'KOMPAS'}
+            </span>
           </div>
 
           {/* Legend & Shortcut Hint */}

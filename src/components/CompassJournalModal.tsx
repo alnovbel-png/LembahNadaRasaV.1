@@ -38,81 +38,88 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-3">
-      <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-xl w-full max-h-[85vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+      <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-2xl sm:max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
         {/* Header */}
-        <div className="px-5 py-4 bg-slate-800/80 border-b border-slate-700 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Compass className="w-5 h-5 text-amber-400 animate-spin-slow" />
-            <h2 className="font-bold text-base text-amber-300">
-              Jurnal Kompas Hati & Kamus PSE
-            </h2>
+        <div className="px-5 py-4 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-amber-500/20 border border-amber-400/40">
+              <Compass className="w-5 h-5 text-amber-400 animate-spin-slow" />
+            </div>
+            <div>
+              <h2 className="font-bold text-base text-amber-300">
+                Jurnal Kompas Hati & Kamus PSE
+              </h2>
+              <p className="text-[11px] text-slate-400">
+                Wawasan emosional, pencapaian lencana PSE, tas petualangan, & harmoni lembah
+              </p>
+            </div>
           </div>
           <button
             id="close-journal-btn"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700/50"
+            className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-700/60 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex border-b border-slate-800 bg-slate-900 px-4 pt-2 gap-1 sm:gap-2 text-xs font-semibold overflow-x-auto">
+        {/* Tab Navigation Grid (Fully visible 4 columns, no overflow scrollbar overlapping) */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 bg-slate-950/90 border-b border-slate-800 shrink-0">
           <button
             id="tab-kamus"
             onClick={() => setActiveTab('kamus')}
-            className={`px-2.5 sm:px-3 py-2 rounded-t-lg border-b-2 flex items-center gap-1.5 whitespace-nowrap transition ${
+            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all ${
               activeTab === 'kamus'
-                ? 'border-amber-400 text-amber-300 bg-slate-800/60'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-amber-400/80 text-amber-300 bg-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
             }`}
           >
-            <Brain className="w-4 h-4" />
-            <span>Kamus PSE</span>
+            <Brain className="w-4 h-4 shrink-0 text-amber-400" />
+            <span className="truncate">Kamus PSE</span>
           </button>
 
           <button
             id="tab-lencana"
             onClick={() => setActiveTab('lencana')}
-            className={`px-2.5 sm:px-3 py-2 rounded-t-lg border-b-2 flex items-center gap-1.5 whitespace-nowrap transition ${
+            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all ${
               activeTab === 'lencana'
-                ? 'border-amber-400 text-amber-300 bg-slate-800/60'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-amber-400/80 text-amber-300 bg-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
             }`}
           >
-            <Award className="w-4 h-4 text-amber-400" />
-            <span>Lencana ({unlockedBadgesCount}/{PSE_ACHIEVEMENTS.length})</span>
+            <Award className="w-4 h-4 shrink-0 text-amber-400" />
+            <span className="truncate">Lencana ({unlockedBadgesCount}/{PSE_ACHIEVEMENTS.length})</span>
           </button>
 
           <button
             id="tab-tas"
             onClick={() => setActiveTab('tas')}
-            className={`px-2.5 sm:px-3 py-2 rounded-t-lg border-b-2 flex items-center gap-1.5 whitespace-nowrap transition ${
+            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all ${
               activeTab === 'tas'
-                ? 'border-amber-400 text-amber-300 bg-slate-800/60'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-amber-400/80 text-amber-300 bg-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
             }`}
           >
-            <BookOpen className="w-4 h-4" />
-            <span>Tas ({items.length})</span>
+            <BookOpen className="w-4 h-4 shrink-0 text-amber-400" />
+            <span className="truncate">Tas ({items.length})</span>
           </button>
 
           <button
             id="tab-harmoni"
             onClick={() => setActiveTab('harmoni')}
-            className={`px-2.5 sm:px-3 py-2 rounded-t-lg border-b-2 flex items-center gap-1.5 whitespace-nowrap transition ${
+            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all ${
               activeTab === 'harmoni'
-                ? 'border-amber-400 text-amber-300 bg-slate-800/60'
-                : 'border-transparent text-slate-400 hover:text-slate-200'
+                ? 'border-amber-400/80 text-amber-300 bg-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]'
+                : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
             }`}
           >
-            <Sparkles className="w-4 h-4" />
-            <span>Harmoni ({harmonyPercent}%)</span>
+            <Sparkles className="w-4 h-4 shrink-0 text-amber-400" />
+            <span className="truncate">Harmoni ({harmonyPercent}%)</span>
           </button>
         </div>
 
         {/* Tab Contents */}
-        <div className="p-4 overflow-y-auto flex-1 space-y-3">
+        <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3 custom-scrollbar pr-3 sm:pr-4">
           {activeTab === 'kamus' && (
             <div className="space-y-3">
               <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200">

@@ -191,12 +191,73 @@ class SoundSystem {
   // Footstep grass/stone/wood rustle with left/right cadence and surface acoustics
   public playFootstep(isLeftFoot: boolean = true, surface: 'grass' | 'stone' | 'wood' = 'grass') {
     if (this.isMuted || this.sfxVolume <= 0.001) return;
-    const baseFreq = surface === 'stone' ? 220 : surface === 'wood' ? 180 : 135;
-    const footOffset = isLeftFoot ? -12 : 12;
-    const jitter = (Math.random() - 0.5) * 16;
-    const duration = surface === 'stone' ? 0.045 : 0.055;
-    const waveType: OscillatorType = surface === 'stone' ? 'sine' : 'triangle';
-    this.playTone(baseFreq + footOffset + jitter, waveType, duration, 0.035, 0, false);
+    this.initCtx();
+    if (!this.ctx) return;
+
+    try {
+      const t = this.ctx.currentTime;
+      const vol = this.sfxVolume;
+
+      let startFreq = 220;
+      let endFreq = 95;
+      let duration = 0.052;
+      let peakGain = 0.09 * vol;
+      let oscType: OscillatorType = 'triangle';
+
+      if (surface === 'stone') {
+        startFreq = isLeftFoot ? 420 : 460;
+        endFreq = 180;
+        duration = 0.045;
+        peakGain = 0.095 * vol;
+        oscType = 'sine';
+      } else if (surface === 'wood') {
+        startFreq = isLeftFoot ? 290 : 320;
+        endFreq = 120;
+        duration = 0.055;
+        peakGain = 0.11 * vol;
+        oscType = 'triangle';
+      } else {
+        // grass / earth
+        startFreq = isLeftFoot ? 230 : 255;
+        endFreq = 95;
+        duration = 0.05;
+        peakGain = 0.095 * vol;
+        oscType = 'triangle';
+      }
+
+      // 1. Primary body oscillator with snappy pitch drop (thud/patter)
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = oscType;
+      osc.frequency.setValueAtTime(startFreq, t);
+      osc.frequency.exponentialRampToValueAtTime(Math.max(25, endFreq), t + duration);
+
+      gain.gain.setValueAtTime(peakGain, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc.start(t);
+      osc.stop(t + duration);
+
+      // 2. High-frequency tactile transient tap for stone pavers & wood bridge
+      if (surface === 'stone' || surface === 'wood') {
+        const clickOsc = this.ctx.createOscillator();
+        const clickGain = this.ctx.createGain();
+        clickOsc.type = 'sine';
+        clickOsc.frequency.setValueAtTime(surface === 'stone' ? 920 : 680, t);
+        clickGain.gain.setValueAtTime(0.04 * vol, t);
+        clickGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.018);
+        clickOsc.connect(clickGain);
+        clickGain.connect(this.ctx.destination);
+        clickOsc.start(t);
+        clickOsc.stop(t + 0.018);
+      }
+    } catch {
+      // Audio context might be restricted before user gesture
+    }
   }
 
   // Alias for backward compatibility
