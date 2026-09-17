@@ -30,8 +30,10 @@ import { SettingsModal, SettingsModalTab } from './components/SettingsModal';
 import { EndingModal } from './components/EndingModal';
 import { VirtualControls } from './components/VirtualControls';
 import { MiniMap } from './components/MiniMap';
+import { StartMenuModal } from './components/StartMenuModal';
 import { Sparkles, Compass } from 'lucide-react';
 import { downloadOfflineGameHtml } from './utils/exportOfflineHtml';
+import { isMobileOrTabletDevice } from './utils/device';
 
 const GAME_ZOOM = 1.35; // Focused zoom on main character for rich exploration feel
 
@@ -113,6 +115,7 @@ export default function App() {
   });
 
   // Active UI states
+  const [showStartMenu, setShowStartMenu] = useState<boolean>(true);
   const [isCompassActive, setIsCompassActive] = useState<boolean>(false);
   const [currentDialogue, setCurrentDialogue] = useState<DialogueNode | null>(null);
   const [showBreathingMiniGame, setShowBreathingMiniGame] = useState<boolean>(false);
@@ -126,7 +129,7 @@ export default function App() {
   const [endingType, setEndingType] = useState<'perfect' | 'resilient'>('perfect');
   const [branchChoice, setBranchChoice] = useState<string>('empathy_first');
   const [isMuted, setIsMuted] = useState<boolean>(() => sound.isMuted);
-  const [showMiniMap, setShowMiniMap] = useState<boolean>(() => window.innerWidth >= 768);
+  const [showMiniMap, setShowMiniMap] = useState<boolean>(() => !isMobileOrTabletDevice());
   const [questHint, setQuestHint] = useState<string>(
     'Pusaka Kompas Hati terjatuh di depanmu! Tekan [Spasi] atau tombol Kompas untuk menggunakannya.'
   );
@@ -137,6 +140,23 @@ export default function App() {
       setIsMuted(sound.isMuted);
     });
     return unsub;
+  }, []);
+
+  // Handler for starting the game adventure directly into the story from opening menu
+  const handleStartGame = useCallback(() => {
+    sound.unlockAudio();
+    sound.playCompassChime();
+    setShowStartMenu(false);
+    // Enter the story immediately with prologue dialogue & golden sparkles
+    setTimeout(() => {
+      setCurrentDialogue(GAME_DIALOGUES.intro_start);
+      rendererRef.current?.addSparkle(
+        playerRef.current.x + 16,
+        playerRef.current.y + 16,
+        '#f59e0b',
+        30
+      );
+    }, 120);
   }, []);
 
   const handleOpenRegulation = useCallback(
@@ -247,11 +267,6 @@ export default function App() {
   useEffect(() => {
     if (canvasRef.current && !rendererRef.current) {
       rendererRef.current = new GameRenderer(canvasRef.current);
-      // Start prologue dialogue automatically within 1 second so player is immediately hooked
-      setTimeout(() => {
-        setCurrentDialogue(GAME_DIALOGUES.intro_start);
-        sound.playCompassChime();
-      }, 500);
     }
   }, []);
 
@@ -1339,7 +1354,8 @@ export default function App() {
     setNpcs(INITIAL_NPCS);
     setShowEnding(false);
     setIsFreeRoamActive(false);
-    setCurrentDialogue(GAME_DIALOGUES.intro_start);
+    setShowStartMenu(true);
+    setCurrentDialogue(null);
   };
 
   // Enter free roam mode after game completion
@@ -1360,7 +1376,11 @@ export default function App() {
     if (isFreeRoamActive) {
       setQuestHint('🌿 Mode Jelajah Bebas: Seluruh Lembah Nada Rasa telah pulih! Nikmati keindahan desa.');
     } else if (!zoneStatus.plaza) {
-      setQuestHint('Misi 1: Dekati Kiki si tupai di barat air mancur. Gunakan [Spasi] Kompas Hati.');
+      setQuestHint(
+        isCompassActive
+          ? 'Misi 1: Dekati Kiki si tupai di barat air mancur dan ajak ia berbicara.'
+          : 'Misi 1: Dekati Kiki si tupai di barat air mancur. Aktifkan Kompas Hati [Spasi / Tombol Hati].'
+      );
     } else if (!zoneStatus.bridge) {
       setQuestHint('Misi 2: Pergi ke timur menuju Jembatan Kayu. Bicara dengan Kakek Ranu.');
     } else if (!zoneStatus.forest) {
@@ -1370,7 +1390,7 @@ export default function App() {
     } else {
       setQuestHint('Harmoni Lembah Pulih Sepenuhnya! Bicaralah pada warga untuk merayakan!');
     }
-  }, [zoneStatus, isFreeRoamActive]);
+  }, [zoneStatus, isFreeRoamActive, isCompassActive]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans flex items-center justify-center">
@@ -1392,50 +1412,64 @@ export default function App() {
         </div>
       </main>
 
-      {/* Dynamic Quest Tracker Banner - Dedicated Tier 2 with Pixel Font (Optimized for Mobile Portrait & Landscape) */}
-      <div className="fixed top-11 sm:top-14 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-[92%] max-w-md">
-        <div className="bg-slate-950/90 border border-amber-500/50 rounded-lg sm:rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl backdrop-blur-md flex items-center gap-1.5 sm:gap-2">
-          <div className="flex items-center gap-1 bg-amber-500/20 border border-amber-400/40 rounded px-1 sm:px-1.5 py-0.5 text-amber-300 font-pixel text-[7.5px] sm:text-[8.5px] shrink-0">
-            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-amber-400 shrink-0" />
-            <span>MISI</span>
+      {/* Dynamic Quest Tracker Banner - Full text visible across all screen sizes without truncation */}
+      {!showStartMenu && (
+        <div className="fixed top-12 sm:top-14 md:top-16 left-1/2 -translate-x-1/2 z-20 w-[94%] max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl pointer-events-none">
+          <div
+            onClick={() => handleOpenSettings('quest')}
+            title="Klik untuk melihat detail misi & objektif"
+            className="bg-slate-950/95 border border-amber-500/60 hover:border-amber-400 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 shadow-2xl backdrop-blur-md flex items-center gap-2 sm:gap-3 pointer-events-auto cursor-pointer transition active:scale-[0.99] group"
+          >
+            <div className="flex items-center gap-1.5 bg-amber-500/20 border border-amber-400/50 rounded-lg px-2 py-0.5 text-amber-300 font-pixel text-[8px] sm:text-[9px] shrink-0 tracking-wider shadow-sm group-hover:bg-amber-500/30 transition-colors">
+              <Sparkles className="w-3 h-3 text-amber-400 shrink-0 animate-pulse" />
+              <span>MISI</span>
+            </div>
+            <p
+              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+              className="text-amber-100 text-xs sm:text-[13px] md:text-sm font-medium leading-normal sm:leading-relaxed tracking-normal break-words whitespace-normal flex-1 text-left sm:text-center select-text"
+            >
+              {questHint}
+            </p>
           </div>
-          <p className="text-amber-100 font-pixel text-[7.5px] sm:text-[8.5px] leading-tight sm:leading-relaxed tracking-tight truncate sm:line-clamp-2 flex-1 text-left sm:text-center">
-            {questHint}
-          </p>
         </div>
-      </div>
+      )}
 
       {/* Virtual Controls for Mobile & Desktop Toolbar */}
-      <VirtualControls
-        onDirectionPress={handleDirectionPress}
-        onJoystickMove={handleJoystickMove}
-        onActionPress={handleInteract}
-        onCompassToggle={handleToggleCompass}
-        isCompassActive={isCompassActive}
-        onOpenJournal={() => setShowJournal(true)}
-        onOpenSettings={() => handleOpenSettings('quest')}
-        isDialogueOpen={!!currentDialogue}
-        onToggleMiniMap={() => setShowMiniMap((prev) => !prev)}
-        isMiniMapOpen={showMiniMap}
-        onOpenEnding={() => setShowEnding(true)}
-        isGameCompleted={
-          isFreeRoamActive ||
-          (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)
-        }
-        onOpenRegulation={() => handleOpenRegulation('Pemain', 'breathing')}
-      />
+      {!showStartMenu && (
+        <VirtualControls
+          onDirectionPress={handleDirectionPress}
+          onJoystickMove={handleJoystickMove}
+          onActionPress={handleInteract}
+          onCompassToggle={handleToggleCompass}
+          isCompassActive={isCompassActive}
+          onOpenJournal={() => setShowJournal(true)}
+          onOpenSettings={() => handleOpenSettings('quest')}
+          isDialogueOpen={!!currentDialogue}
+          onToggleMiniMap={() => setShowMiniMap((prev) => !prev)}
+          isMiniMapOpen={showMiniMap}
+          onOpenEnding={() => setShowEnding(true)}
+          isGameCompleted={
+            isFreeRoamActive ||
+            (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)
+          }
+          onOpenRegulation={() => handleOpenRegulation('Pemain', 'breathing')}
+          onOpenStartMenu={() => setShowStartMenu(true)}
+        />
+      )}
 
       {/* Toggleable Mini-Map Overlay in the Corner */}
-      <MiniMap
-        isOpen={showMiniMap}
-        onToggle={() => setShowMiniMap((prev) => !prev)}
-        playerRef={playerRef}
-        npcs={npcs}
-        zoneStatus={zoneStatus}
-        mapLayout={mapLayout}
-        onNavigateToTile={handleMiniMapNavigate}
-        isCompassActive={isCompassActive}
-      />
+      {!showStartMenu && (
+        <MiniMap
+          isOpen={showMiniMap}
+          onToggle={() => setShowMiniMap((prev) => !prev)}
+          playerRef={playerRef}
+          npcs={npcs}
+          zoneStatus={zoneStatus}
+          mapLayout={mapLayout}
+          onNavigateToTile={handleMiniMapNavigate}
+          isCompassActive={isCompassActive}
+        />
+      )}
 
       {/* Dialogue System Box */}
       {currentDialogue && (
@@ -1516,6 +1550,16 @@ export default function App() {
         stats={stats}
         branchTag={branchChoice}
         endingType={endingType}
+      />
+
+      {/* Opening Start Menu Modal (Displayed before entering the game story) */}
+      <StartMenuModal
+        isOpen={showStartMenu}
+        onStartGame={handleStartGame}
+        onOpenControls={() => handleOpenSettings('controls')}
+        onOpenAudioSettings={() => handleOpenSettings('audio')}
+        onExportOffline={downloadOfflineGameHtml}
+        isSettingsOpen={showSettings}
       />
     </div>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X } from 'lucide-react';
+import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X, Home } from 'lucide-react';
+import { useIsMobileOrTablet } from '../utils/device';
 
 interface VirtualControlsProps {
   onDirectionPress: (dir: 'up' | 'down' | 'left' | 'right', pressed: boolean) => void;
@@ -15,6 +16,7 @@ interface VirtualControlsProps {
   onOpenEnding?: () => void;
   isGameCompleted?: boolean;
   onOpenRegulation?: () => void;
+  onOpenStartMenu?: () => void;
 }
 
 export const VirtualControls: React.FC<VirtualControlsProps> = ({
@@ -31,8 +33,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   onOpenEnding,
   isGameCompleted = false,
   onOpenRegulation,
+  onOpenStartMenu,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isMobileOrTablet = useIsMobileOrTablet();
 
   // Joystick state & refs
   const joystickBaseRef = useRef<HTMLDivElement | null>(null);
@@ -197,8 +201,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           <span className="font-pixel text-[8.5px] sm:text-[10px] text-amber-400 font-bold tracking-tight whitespace-nowrap">
             Lembah Nada Rasa
           </span>
-          <span className="text-slate-700 hidden md:inline">|</span>
-          <span className="text-emerald-400 text-[10.5px] hidden md:inline font-semibold">🎒 Ezzel</span>
         </div>
 
         {/* Center: Compass Toggle Button */}
@@ -251,8 +253,11 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     : 'bg-slate-950/90 border-slate-700 hover:bg-slate-900 text-slate-300'
                 }`}
               >
-                <MapIcon className="w-4 h-4 text-amber-400" />
-                <span>Peta</span>
+                <MapIcon
+                  style={{ backgroundColor: '#000000' }}
+                  className="w-4 h-4 text-amber-400 rounded-sm"
+                />
+                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Peta</span>
                 <span className="text-[10px] text-slate-400 font-mono">[M]</span>
               </button>
             )}
@@ -265,7 +270,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 className="px-2.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:bg-cyan-900/90 text-cyan-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
               >
                 <Wind className="w-4 h-4 text-cyan-300" />
-                <span>Regulasi</span>
+                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Regulasi</span>
                 <span className="text-[10px] text-cyan-400/80 font-mono">[R]</span>
               </button>
             )}
@@ -277,7 +282,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:bg-slate-900 text-amber-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-amber-400" />
-              <span>Jurnal</span>
+              <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Jurnal</span>
               <span className="text-[10px] text-amber-400/80 font-mono">[J]</span>
             </button>
 
@@ -300,7 +305,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               className="px-3 py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
             >
               <Sliders className="w-4 h-4 text-amber-400" />
-              <span>Pengaturan</span>
+              <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Pengaturan</span>
               <span className="text-[10px] text-slate-400 font-mono">[O]</span>
             </button>
           </div>
@@ -483,6 +488,34 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   [O]
                 </span>
               </button>
+
+              {/* Option 6: Menu Awal / Opening Start */}
+              {onOpenStartMenu && (
+                <button
+                  onClick={() => {
+                    onOpenStartMenu();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full p-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 active:bg-slate-750 border border-amber-500/40 hover:border-amber-400 flex items-center justify-between text-left transition cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+                      <Home className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-xs text-amber-300">
+                        Menu Awal / Opening Start
+                      </div>
+                      <div className="text-[10.5px] text-slate-400">
+                        Buka layar pembuka, sinopsis & opsi game
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[9px] text-amber-400 font-mono bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">
+                    TITLE
+                  </span>
+                </button>
+              )}
             </div>
 
             {/* Menu Footer */}
@@ -494,8 +527,8 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
         </div>
       )}
 
-      {/* VIRTUAL ANALOG JOYSTICK (Universal for Mobile Portrait & Landscape) */}
-      {!isDialogueOpen && (
+      {/* VIRTUAL ANALOG JOYSTICK (Mobile and Tablet mode only) */}
+      {!isDialogueOpen && isMobileOrTablet && (
         <div className="fixed bottom-3 sm:bottom-5 left-3 sm:left-5 z-30 pointer-events-auto select-none touch-none">
           <div
             ref={joystickBaseRef}
@@ -544,8 +577,8 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
         </div>
       )}
 
-      {/* On-Screen Mobile Action Buttons (Bottom Right - Ergonomic for Right Thumb) */}
-      {!isDialogueOpen && (
+      {/* On-Screen Action Buttons: Hati & Aksi (Mobile and Tablet mode only) */}
+      {!isDialogueOpen && isMobileOrTablet && (
         <div className="fixed bottom-3 sm:bottom-5 right-3 sm:right-5 z-30 flex items-center gap-2.5 sm:gap-3 pointer-events-auto select-none touch-none">
           {/* Button B: Resonance Compass */}
           <button

@@ -80,7 +80,7 @@ export function downloadOfflineGameHtml() {
       <canvas id="game-canvas" width="640" height="480"></canvas>
       
       <div class="top-bar">
-        <div class="title-tag">🧭 Lembah Nada Rasa | 🎒 Ezzel</div>
+        <div class="title-tag">🧭 Lembah Nada Rasa</div>
         <div style="display:flex; gap:6px;">
           <button class="btn-action" id="btn-toggle-map" onclick="toggleMiniMap()">PETA [M]</button>
           <button class="btn-action" id="btn-toggle-compass" onclick="toggleCompass()">KOMPAS [Spasi]</button>
@@ -122,6 +122,23 @@ export function downloadOfflineGameHtml() {
       <p style="color:#cbd5e1; font-size: 12px; max-width: 320px;">Tarik napas perlahan lewat hidung, tahan, dan hembuskan untuk menenangkan amigdala.</p>
       <div class="breath-circle" id="breath-ball">4</div>
       <div id="breath-label" style="color:#38bdf8; font-weight:bold; font-size:14px;">Tarik Napas...</div>
+    </div>
+
+    <!-- Opening Start Screen Overlay -->
+    <div id="start-screen" style="position:absolute; inset:0; background:rgba(2,6,23,0.92); z-index:60; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center;">
+      <div style="max-width:440px; width:92%; background:#0f172a; border:2px solid #f59e0b; border-radius:16px; padding:20px; box-shadow:0 0 35px rgba(245,158,11,0.3);">
+        <div style="color:#fbbf24; font-family:'Press Start 2P',monospace; font-size:8px; margin-bottom:8px;">🧭 EDISI PETUALANGAN OFFLINE</div>
+        <h1 style="color:#f59e0b; font-family:'Press Start 2P',monospace; font-size:15px; margin:6px 0 10px; line-height:1.4;">LEMBAH NADA RASA</h1>
+        <p style="color:#cbd5e1; font-size:11.5px; line-height:1.6; margin-bottom:16px;">
+          Gunakan Pusaka Kompas Hati untuk membaca resonansi emosi para sahabat lembah dan pulihkan harmoni desa!
+        </p>
+        <button id="btn-start-offline" onclick="startGameStory()" style="width:100%; background:linear-gradient(to right, #f59e0b, #fbbf24); color:#020617; font-family:'Press Start 2P',monospace; font-size:10px; padding:12px; border:none; border-radius:10px; font-weight:bold; cursor:pointer; box-shadow:0 0 15px rgba(245,158,11,0.4); margin-bottom:10px;">
+          ▶ MULAI PETUALANGAN
+        </button>
+        <div style="font-size:10px; color:#94a3b8; line-height:1.5;">
+          Kontrol: [WASD / Panah] Gerak • [Spasi] Kompas • [M] Peta
+        </div>
+      </div>
     </div>
 
     <!-- Mobile Controls -->
@@ -228,7 +245,24 @@ export function downloadOfflineGameHtml() {
       keys[dir] = val;
     }
 
+    let isStartScreenActive = true;
+    function startGameStory() {
+      isStartScreenActive = false;
+      const scr = document.getElementById('start-screen');
+      if (scr) scr.style.display = 'none';
+      playTone(587, 0.25, 'triangle');
+      setTimeout(() => playTone(880, 0.4, 'triangle'), 150);
+      setTimeout(() => {
+        startDialogueWith(npcs[0]);
+      }, 300);
+    }
+
     window.addEventListener('keydown', (e) => {
+      if (isStartScreenActive && (e.key === 'Enter' || e.code === 'Space')) {
+        e.preventDefault();
+        startGameStory();
+        return;
+      }
       if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') keys.up = true;
       if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') keys.down = true;
       if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;

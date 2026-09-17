@@ -3,6 +3,7 @@ import { Map as MapIcon, X, MapPin, Sparkles, Navigation, Compass } from 'lucide
 import { NPC, ZoneColorStatus } from '../types/game';
 import { Player } from '../game/renderer';
 import { MAP_COLS, MAP_ROWS, TILE } from '../game/constants';
+import { useIsMobileOrTablet, useIsPortrait } from '../utils/device';
 
 interface MiniMapProps {
   isOpen: boolean;
@@ -281,6 +282,26 @@ export const MiniMap: React.FC<MiniMapProps> = ({
     }
   };
 
+  // Touch on mini-map for mobile / tablet auto-navigation
+  const handleTouchMap = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (!onNavigateToTile || !canvasRef.current) return;
+    const touch = e.touches[0] || e.changedTouches[0];
+    if (!touch) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const scaleX = MAP_W / rect.width;
+    const scaleY = MAP_H / rect.height;
+
+    const clickX = (touch.clientX - rect.left) * scaleX;
+    const clickY = (touch.clientY - rect.top) * scaleY;
+
+    const tileX = Math.floor(clickX / TILE_PX);
+    const tileY = Math.floor(clickY / TILE_PX);
+
+    if (tileX >= 0 && tileX < MAP_COLS && tileY >= 0 && tileY < MAP_ROWS) {
+      onNavigateToTile(tileX, tileY);
+    }
+  };
+
   // Restored zones count
   const restoredCount = [
     zoneStatus.plaza,
@@ -289,15 +310,34 @@ export const MiniMap: React.FC<MiniMapProps> = ({
     zoneStatus.tower,
   ].filter(Boolean).length;
 
+  // Accurately determine mobile/tablet vs desktop and orientation
+  const isMobileOrTablet = useIsMobileOrTablet();
+  const isPortrait = useIsPortrait();
+
+  // Positioning strategy:
+  // - On mobile & tablet in vertical (portrait) orientation:
+  //   Position at bottom-[76px] sm:bottom-[84px] right-3 sm:right-5.
+  //   This sits cleanly above the Hati & Aksi buttons (which sit at bottom-3 with height ~56px),
+  //   leaving an 8px clearance, and keeps the button completely away from the quest banner at the top!
+  // - On mobile & tablet in horizontal (landscape) orientation:
+  //   Position at bottom-[72px] sm:bottom-[78px] right-3 sm:right-5.
+  // - On desktop:
+  //   Standard bottom-4 right-4 corner.
+  const containerPosition = isMobileOrTablet
+    ? isPortrait
+      ? 'bottom-[76px] sm:bottom-[84px] right-3 sm:right-5'
+      : 'bottom-[72px] sm:bottom-[78px] right-3 sm:right-5'
+    : 'bottom-4 right-4';
+
   return (
     <>
-      {/* Floating Toggle Button (Always accessible) */}
+      {/* Floating Toggle Button (Always accessible & never obstructed by mobile buttons) */}
       {!isOpen ? (
         <button
           id="btn-open-minimap"
           onClick={onToggle}
           title="Buka Peta Mini [M]"
-          className="fixed top-24 sm:top-auto sm:bottom-4 right-2.5 sm:right-4 z-20 pointer-events-auto bg-slate-950/95 border border-amber-500/60 hover:bg-slate-900 text-amber-300 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-xl backdrop-blur-md flex items-center gap-1.5 transition active:scale-95 group"
+          className={`fixed ${containerPosition} z-30 pointer-events-auto bg-slate-950/95 border border-amber-500/60 hover:bg-slate-900 active:bg-amber-500/20 text-amber-300 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-xl backdrop-blur-md flex items-center gap-1.5 transition active:scale-95 group`}
         >
           <MapIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
           <span className="font-pixel text-[8px] sm:text-[9px] font-bold">PETA</span>
@@ -305,10 +345,10 @@ export const MiniMap: React.FC<MiniMapProps> = ({
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
         </button>
       ) : (
-        /* Expanded Mini-Map HUD Card */
+        /* Expanded Mini-Map HUD Card (Positioned safely above bottom touch controls) */
         <div
           id="minimap-overlay-container"
-          className="fixed top-24 sm:top-auto sm:bottom-4 right-2.5 sm:right-4 z-20 pointer-events-auto select-none bg-slate-950/95 border-2 border-amber-500/70 rounded-2xl p-2 sm:p-2.5 shadow-[0_0_30px_rgba(0,0,0,0.85)] backdrop-blur-md w-[204px] flex flex-col gap-1.5 animate-in fade-in zoom-in-95 duration-150"
+          className={`fixed ${containerPosition} z-30 pointer-events-auto select-none bg-slate-950/95 border-2 border-amber-500/70 rounded-2xl p-2 sm:p-2.5 shadow-[0_0_30px_rgba(0,0,0,0.85)] backdrop-blur-md w-[204px] flex flex-col gap-1.5 animate-in fade-in zoom-in-95 duration-150`}
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
@@ -401,7 +441,8 @@ export const MiniMap: React.FC<MiniMapProps> = ({
               width={MAP_W}
               height={MAP_H}
               onClick={handleMapClick}
-              className="block w-[184px] h-[143px] cursor-crosshair object-contain"
+              onTouchEnd={handleTouchMap}
+              className="block w-[184px] h-[143px] cursor-crosshair object-contain touch-none"
               title="Klik peta untuk berjalan ke titik tujuan"
             />
             {/* Quick click-to-move overlay hint on hover */}

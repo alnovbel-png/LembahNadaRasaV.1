@@ -133,13 +133,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-3">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-3">
       <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
         {/* Header */}
         <div className="px-5 py-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-amber-400" />
-            <h2 className="font-bold text-base text-amber-300">
+            <h2
+              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+              className="font-bold text-base text-amber-300 tracking-wide"
+            >
               Pengaturan Game & Petualangan
             </h2>
           </div>
@@ -165,7 +168,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             <Target className="w-4 h-4 shrink-0" />
-            <span className="truncate">Misi & Objektif</span>
+            <span
+              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+              className="truncate"
+            >
+              Misi & Objektif
+            </span>
           </button>
 
           <button
@@ -178,7 +186,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             <Award className="w-4 h-4 shrink-0" />
-            <span className="truncate">Pencapaian ({unlockedCount}/{totalBadges})</span>
+            <span
+              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+              className="truncate"
+            >
+              Pencapaian ({unlockedCount}/{totalBadges})
+            </span>
           </button>
 
           <button
@@ -191,7 +204,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             <Volume2 className="w-4 h-4 shrink-0" />
-            <span className="truncate">Audio & Ekspor</span>
+            <span
+              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+              className="truncate"
+            >
+              Audio & Ekspor
+            </span>
           </button>
 
           <button
@@ -204,7 +222,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             <Gamepad2 className="w-4 h-4 shrink-0" />
-            <span className="truncate">Panduan & Sains</span>
+            <span
+              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+              className="truncate"
+            >
+              Panduan & Sains
+            </span>
           </button>
         </div>
 
@@ -512,7 +535,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 />
 
                 <div className="flex justify-between items-center pt-1">
-                  <span className="text-[10px] text-slate-500 font-mono">0% (Bisu) - 100% (Maks)</span>
+                  <span
+                    style={{ fontSize: '14px' }}
+                    className="text-slate-500 font-mono"
+                  >
+                    0% (Bisu) - 100% (Maks)
+                  </span>
                   <button
                     id="settings-test-sfx-btn"
                     onClick={() => {
@@ -530,7 +558,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {/* Quick Audio Presets */}
               <div className="bg-slate-950/50 border border-slate-800 rounded-xl p-3.5 space-y-2.5">
                 <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
-                  <span>Preset Keseimbangan Cepat:</span>
+                  <span
+                    style={{
+                      fontSize: '13px',
+                      fontFamily: "'Geist Pixel', 'Pixelify Sans', monospace, sans-serif",
+                    }}
+                  >
+                    Preset Keseimbangan Cepat:
+                  </span>
                   <button
                     id="settings-reset-audio-btn"
                     onClick={() => {
