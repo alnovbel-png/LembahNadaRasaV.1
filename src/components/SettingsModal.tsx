@@ -641,15 +641,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Bergerak / Jalan</span>
-                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">W / A / S / D / Panah</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">W / A / S / D</span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Navigasi Titik Layar</span>
                     <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">Klik / Ketuk Lantai</span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    <span className="text-slate-300">Kompas Resonansi Hati</span>
+                    <span className="text-slate-300">Interaksi / Bicara</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">E</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="text-slate-300">Lanjut / Lewati Teks Dialog</span>
                     <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">Spasi</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="text-slate-300">Pilih Opsi Dialog</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">Angka 1 - 5</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="text-slate-300">Kompas Resonansi Hati</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">C</span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Studio Regulasi Emosi</span>
@@ -665,11 +677,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Buka Menu Pengaturan</span>
-                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">O / Esc</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">O</span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    <span className="text-slate-300">Interaksi / Lanjut Dialog</span>
-                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">E / Enter / Spasi</span>
+                    <span className="text-slate-300">Panduan Kontrol Cepat</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">H</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="text-slate-300">Tutup Dialog / Menu</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">Esc</span>
                   </div>
                 </div>
               </div>

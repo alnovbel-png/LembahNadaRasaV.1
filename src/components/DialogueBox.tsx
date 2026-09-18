@@ -78,7 +78,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           return;
         }
 
-        if (e.code === 'Space' || e.key === 'Enter') {
+        if (e.code === 'Space') {
           if (isTyping) {
             e.preventDefault();
             setDisplayedText(dialogue.text);
@@ -86,7 +86,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           }
         }
       } else {
-        if (e.code === 'Space' || e.key === 'Enter') {
+        if (e.code === 'Space') {
           e.preventDefault();
           if (isTyping) {
             // Finish typing immediately

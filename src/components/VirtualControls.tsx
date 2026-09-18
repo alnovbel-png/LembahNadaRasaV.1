@@ -208,7 +208,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           <button
             id="toggle-resonance-btn"
             onClick={onCompassToggle}
-            title="Aktifkan Kompas Resonansi Hati [Spasi]"
+            title="Aktifkan Kompas Resonansi Hati [C]"
             className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
               isCompassActive
                 ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.6)] font-bold'
@@ -220,7 +220,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               {isCompassActive ? 'KOMPAS AKTIF' : 'KOMPAS HATI'}
             </span>
             <span className="hidden xl:inline text-[10px] text-slate-400 font-mono">
-              [Spasi]
+              [C]
             </span>
           </button>
         </div>

@@ -36,7 +36,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
     if (!isOpen || isSettingsOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' || e.key === ' ') {
+      if (e.key === 'Enter') {
         e.preventDefault();
         onStartGame();
       }

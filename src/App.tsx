@@ -32,13 +32,15 @@ import { VirtualControls } from './components/VirtualControls';
 import { MiniMap } from './components/MiniMap';
 import { StartMenuModal } from './components/StartMenuModal';
 import { Sparkles, Compass } from 'lucide-react';
-import { isMobileOrTabletDevice } from './utils/device';
+import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
 
 const GAME_ZOOM = 1.35; // Focused zoom on main character for rich exploration feel
 
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
+  const isPortrait = useIsPortrait();
+  const isMobile = useIsMobileOrTablet();
 
   // Game World State
   const [mapLayout] = useState<number[][]>(() => generateMapLayout());
@@ -130,7 +132,7 @@ export default function App() {
   const [isMuted, setIsMuted] = useState<boolean>(() => sound.isMuted);
   const [showMiniMap, setShowMiniMap] = useState<boolean>(() => !isMobileOrTabletDevice());
   const [questHint, setQuestHint] = useState<string>(
-    'Pusaka Kompas Hati terjatuh di depanmu! Tekan [Spasi] atau tombol Kompas untuk menggunakannya.'
+    'Pusaka Kompas Hati terjatuh di depanmu! Tekan [C] atau tombol Kompas untuk menggunakannya.'
   );
 
   // Sync mute state with sound system
@@ -231,6 +233,8 @@ export default function App() {
   const canvasContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Handle Container & Window Resize for crisp, proportional canvas rendering
+  // Mode vertikal: Rasio 9:16 (0.5625)
+  // Mode horizontal: Rasio 16:9 (1.7778)
   useEffect(() => {
     const updateDimensions = () => {
       const container = canvasContainerRef.current;
@@ -241,34 +245,35 @@ export default function App() {
       const ch = container.clientHeight;
       if (cw <= 0 || ch <= 0) return;
 
-      // Maintain a clean, proportional 16:9 widescreen pixel-art aspect ratio
-      // Prevents canvas distortion or out-of-bounds rendering on ultra-wide (21:9, 32:9)
-      // or tall portrait displays.
-      const TARGET_ASPECT = 16 / 9;
+      // Deteksi orientasi vertikal vs horizontal:
+      // Mode mobile vertikal -> Rasio 9:16
+      // Mode mobile horizontal (dan desktop widescreen) -> Rasio 16:9
+      const isVertical = window.innerHeight > window.innerWidth || ch > cw;
+      const TARGET_ASPECT = isVertical ? 9 / 16 : 16 / 9;
       const containerAspect = cw / ch;
 
       let renderW: number;
       let renderH: number;
 
       if (containerAspect > TARGET_ASPECT) {
-        // Ultra-wide container: fit to height, constrain width (pillarbox inside container)
+        // Container lebih lebar dari target rasio: fit tinggi, sesuaikan lebar (pillarbox)
         renderH = ch;
         renderW = Math.round(ch * TARGET_ASPECT);
       } else {
-        // Taller container: fit to width, constrain height (letterbox inside container)
+        // Container lebih tinggi dari target rasio: fit lebar, sesuaikan tinggi (letterbox)
         renderW = cw;
         renderH = Math.round(cw / TARGET_ASPECT);
       }
 
-      // Keep pixel dimensions even for crisp pixel-grid alignment without jitter
+      // Pastikan ukuran genap untuk rendering pixel-art tajam tanpa subpixel blur/jitter
       renderW = renderW % 2 === 0 ? renderW : renderW - 1;
       renderH = renderH % 2 === 0 ? renderH : renderH - 1;
 
-      // Scale CSS presentation to exact proportional bounds
+      // Terapkan dimensi CSS display
       canvas.style.width = `${renderW}px`;
       canvas.style.height = `${renderH}px`;
 
-      // Set internal rendering buffer
+      // Terapkan resolusi buffer render canvas internal
       canvas.width = renderW;
       canvas.height = renderH;
 
@@ -286,11 +291,13 @@ export default function App() {
     }
 
     window.addEventListener('resize', updateDimensions);
+    window.addEventListener('orientationchange', updateDimensions);
     return () => {
       window.removeEventListener('resize', updateDimensions);
+      window.removeEventListener('orientationchange', updateDimensions);
       ro?.disconnect();
     };
-  }, []);
+  }, [isPortrait]);
 
   // Initialize Canvas Renderer
   useEffect(() => {
@@ -352,6 +359,62 @@ export default function App() {
       return false;
     },
     [mapLayout, zoneStatus.bridge]
+  );
+
+  // Calculate safe, walkable talk position near an NPC without colliding with any obstacles/assets
+  const getSafeNPCTalkPosition = useCallback(
+    (npc: NPC, playerCenterX: number, playerCenterY: number): { x: number; y: number } => {
+      const nx = npc.x * TILE_SIZE + 16;
+      const ny = npc.y * TILE_SIZE + 16;
+      const idealDist = 34; // comfortable distance from NPC center in pixels
+
+      // 1. Direct approach angle
+      const directAngle = Math.atan2(playerCenterY - ny, playerCenterX - nx);
+      const directX = nx + Math.cos(directAngle) * idealDist;
+      const directY = ny + Math.sin(directAngle) * idealDist;
+
+      // If the direct approach spot is completely walkable and collision-free, use it!
+      if (!checkCollision(directX - 16, directY - 16)) {
+        return { x: directX, y: directY };
+      }
+
+      // 2. Otherwise, check candidate standing positions around the NPC (cardinals & diagonals at distances 32-42px)
+      const candidateDistances = [34, 38, 30, 42];
+      const validSpots: Array<{ x: number; y: number; distToPlayer: number }> = [];
+
+      for (const d of candidateDistances) {
+        const offsets = [
+          { dx: 0, dy: d },        // South (in front/below)
+          { dx: -d, dy: 0 },       // West (left)
+          { dx: d, dy: 0 },        // East (right)
+          { dx: 0, dy: -d },       // North (above)
+          { dx: -d * 0.707, dy: d * 0.707 },
+          { dx: d * 0.707, dy: d * 0.707 },
+          { dx: -d * 0.707, dy: -d * 0.707 },
+          { dx: d * 0.707, dy: -d * 0.707 },
+        ];
+
+        for (const offset of offsets) {
+          const cx = nx + offset.dx;
+          const cy = ny + offset.dy;
+          if (!checkCollision(cx - 16, cy - 16)) {
+            const dist = Math.hypot(cx - playerCenterX, cy - playerCenterY);
+            validSpots.push({ x: cx, y: cy, distToPlayer: dist });
+          }
+        }
+        if (validSpots.length > 0) break;
+      }
+
+      if (validSpots.length > 0) {
+        // Pick the safe spot closest to the player's current location
+        validSpots.sort((a, b) => a.distToPlayer - b.distToPlayer);
+        return { x: validSpots[0].x, y: validSpots[0].y };
+      }
+
+      // Fallback in case all angles are tight: south offset
+      return { x: nx, y: ny + 32 };
+    },
+    [checkCollision]
   );
 
   // Main interaction trigger: Talk to nearest NPC or examine object
@@ -430,6 +493,15 @@ export default function App() {
     }
 
     if (nearestNPC) {
+      const nx = nearestNPC.x * TILE_SIZE + 16;
+      const ny = nearestNPC.y * TILE_SIZE + 16;
+      if (Math.abs(nx - px) > Math.abs(ny - py)) {
+        p.facing = nx > px ? 'right' : 'left';
+      } else {
+        p.facing = ny > py ? 'down' : 'up';
+      }
+      nearestNPC.facing = px > nx ? 'right' : 'left';
+
       sound.playVoiceBlip();
       const dialogueKey = nearestNPC.currentDialogueId || `${nearestNPC.id}_intro`;
       const node = GAME_DIALOGUES[dialogueKey] || GAME_DIALOGUES[`${nearestNPC.id}_intro`];
@@ -587,7 +659,15 @@ export default function App() {
         const distToPlayer = Math.hypot(nx - px, ny - py);
 
         if (distToPlayer < 65) {
-          // Close enough to talk immediately!
+          // Close enough to talk immediately without moving!
+          const p = playerRef.current;
+          if (Math.abs(nx - px) > Math.abs(ny - py)) {
+            p.facing = nx > px ? 'right' : 'left';
+          } else {
+            p.facing = ny > py ? 'down' : 'up';
+          }
+          clickedNPC.facing = px > nx ? 'right' : 'left';
+
           sound.playVoiceBlip();
           const dialogueKey = clickedNPC.currentDialogueId || `${clickedNPC.id}_intro`;
           const node = GAME_DIALOGUES[dialogueKey] || GAME_DIALOGUES[`${clickedNPC.id}_intro`];
@@ -595,14 +675,12 @@ export default function App() {
           targetPosRef.current = null;
           rendererRef.current?.clearDestination();
         } else {
-          // Walk towards NPC with golden 'interact' marker
-          const angle = Math.atan2(py - ny, px - nx);
-          const targetX = nx + Math.cos(angle) * 36;
-          const targetY = ny + Math.sin(angle) * 36;
+          // Walk towards NPC using safe non-colliding coordinates
+          const safeSpot = getSafeNPCTalkPosition(clickedNPC, px, py);
 
-          targetPosRef.current = { x: targetX, y: targetY, targetNPC: clickedNPC };
-          rendererRef.current?.setDestination(targetX, targetY, 'interact');
-          rendererRef.current?.addSparkle(targetX, targetY, '#f59e0b', 6);
+          targetPosRef.current = { x: safeSpot.x, y: safeSpot.y, targetNPC: clickedNPC };
+          rendererRef.current?.setDestination(safeSpot.x, safeSpot.y, 'interact');
+          rendererRef.current?.addSparkle(safeSpot.x, safeSpot.y, '#f59e0b', 6);
         }
         return;
       }
@@ -615,7 +693,7 @@ export default function App() {
       rendererRef.current?.setDestination(clampedX, clampedY, 'walk');
       rendererRef.current?.addSparkle(clampedX, clampedY, '#38bdf8', 5);
     },
-    [currentDialogue, npcs, zoneStatus]
+    [currentDialogue, npcs, zoneStatus, getSafeNPCTalkPosition]
   );
 
   // Mouse move handler for interactive object hover hints and cursor styling
@@ -1043,43 +1121,47 @@ export default function App() {
         }
       }
 
-      // Toggle Compass
-      if (e.code === 'Space') {
-        e.preventDefault();
-        handleToggleCompass();
+      // Toggle Compass - Single dedicated key [C]
+      if (e.key === 'c' || e.key === 'C' || e.code === 'KeyC') {
+        if (!currentDialogue) {
+          e.preventDefault();
+          handleToggleCompass();
+        }
       }
 
-      // Interact / Talk
-      if (e.key === 'e' || e.key === 'E' || e.key === 'Enter') {
+      // Interact / Talk - Single dedicated key [E]
+      if (e.key === 'e' || e.key === 'E' || e.code === 'KeyE') {
         if (!currentDialogue) {
           handleInteract();
         }
       }
 
-      // Open Journal
-      if (e.key === 'j' || e.key === 'J') {
-        setShowJournal((prev) => !prev);
+      // Open Journal - Single dedicated key [J]
+      if (e.key === 'j' || e.key === 'J' || e.code === 'KeyJ') {
+        if (!currentDialogue) {
+          setShowJournal((prev) => !prev);
+        }
       }
 
-      // Toggle Mini-Map
-      if (e.key === 'm' || e.key === 'M') {
+      // Toggle Mini-Map - Single dedicated key [M]
+      if (e.key === 'm' || e.key === 'M' || e.code === 'KeyM') {
         setShowMiniMap((prev) => !prev);
       }
 
-      // Open Emotional Regulation Toolkit
-      if (e.key === 'r' || e.key === 'R') {
+      // Open Emotional Regulation Toolkit - Single dedicated key [R]
+      if (e.key === 'r' || e.key === 'R' || e.code === 'KeyR') {
         if (!currentDialogue) {
           handleOpenRegulation('Pemain', 'breathing');
         }
       }
 
-      // Open Unified Settings Menu [O]
-      if (e.key === 'o' || e.key === 'O') {
+      // Open Unified Settings Menu - Single dedicated key [O]
+      if (e.key === 'o' || e.key === 'O' || e.code === 'KeyO') {
         setShowSettings((prev) => !prev);
       }
 
-      // Open Controls Guide via [H] inside Settings Modal
-      if (e.key === 'h' || e.key === 'H') {
+      // Open Controls Guide via [H] inside Settings Modal - Single dedicated key [H]
+      if (e.key === 'h' || e.key === 'H' || e.code === 'KeyH') {
         setSettingsTab('controls');
         setShowSettings(true);
       }
@@ -1214,22 +1296,42 @@ export default function App() {
         const distY = target.y - pCenterY;
         const dist = Math.hypot(distX, distY);
 
-        if (dist <= 4) {
-          // Destination reached!
-          const reachedTarget = target;
+        const reachedTarget = target;
+        const reachedNPC = reachedTarget.targetNPC;
+        let npcDist = Infinity;
+        if (reachedNPC) {
+          const nx = reachedNPC.x * TILE_SIZE + 16;
+          const ny = reachedNPC.y * TILE_SIZE + 16;
+          npcDist = Math.hypot(nx - pCenterX, ny - pCenterY);
+        }
+
+        // Destination reached:
+        // 1. Reached close to target (dist <= 5)
+        // 2. OR when approaching an NPC and already in speaking distance (npcDist <= 46px)
+        // This stops the player comfortably in front of the NPC and prevents walking into any asset/obstacle!
+        if (dist <= 5 || (reachedNPC && npcDist <= 46)) {
           targetPosRef.current = null;
           rendererRef.current?.clearDestination();
           p.isMoving = false;
 
           // If walking towards an NPC or secret, initiate interaction
-          if (reachedTarget.targetNPC) {
+          if (reachedNPC) {
+            const nx = reachedNPC.x * TILE_SIZE + 16;
+            const ny = reachedNPC.y * TILE_SIZE + 16;
+            if (Math.abs(nx - pCenterX) > Math.abs(ny - pCenterY)) {
+              p.facing = nx > pCenterX ? 'right' : 'left';
+            } else {
+              p.facing = ny > pCenterY ? 'down' : 'up';
+            }
+            reachedNPC.facing = pCenterX > nx ? 'right' : 'left';
+
             sound.playVoiceBlip();
             const dialogueKey =
-              reachedTarget.targetNPC.currentDialogueId ||
-              `${reachedTarget.targetNPC.id}_intro`;
+              reachedNPC.currentDialogueId ||
+              `${reachedNPC.id}_intro`;
             const node =
               GAME_DIALOGUES[dialogueKey] ||
-              GAME_DIALOGUES[`${reachedTarget.targetNPC.id}_intro`];
+              GAME_DIALOGUES[`${reachedNPC.id}_intro`];
             if (node) setCurrentDialogue(node);
           } else if (reachedTarget.targetType === 'tree') {
             sound.playSecretFound();
@@ -1273,16 +1375,28 @@ export default function App() {
             p.x += stepX;
             p.y += stepY;
             moved = true;
-          } else {
+          } else if (Math.abs(stepX) > 0.1 && !checkCollision(p.x + stepX, p.y)) {
             // 2. Try sliding horizontally
-            if (Math.abs(stepX) > 0.1 && !checkCollision(p.x + stepX, p.y)) {
-              p.x += stepX;
-              moved = true;
-            }
+            p.x += stepX;
+            moved = true;
+          } else if (Math.abs(stepY) > 0.1 && !checkCollision(p.x, p.y + stepY)) {
             // 3. Try sliding vertically
-            if (Math.abs(stepY) > 0.1 && !checkCollision(p.x, p.y + stepY)) {
-              p.y += stepY;
-              moved = true;
+            p.y += stepY;
+            moved = true;
+          } else {
+            // 4. Try corner sliding along alternative axis to navigate around asset corners
+            if (Math.abs(distX) >= Math.abs(distY)) {
+              const altY = (distY !== 0 ? Math.sign(distY) : 1) * moveStep;
+              if (!checkCollision(p.x, p.y + altY)) {
+                p.y += altY;
+                moved = true;
+              }
+            } else {
+              const altX = (distX !== 0 ? Math.sign(distX) : 1) * moveStep;
+              if (!checkCollision(p.x + altX, p.y)) {
+                p.x += altX;
+                moved = true;
+              }
             }
           }
 
@@ -1306,7 +1420,36 @@ export default function App() {
               sound.playFootstep(isLeft, surface);
             }
           } else {
-            // Blocked by obstacle (e.g. wall/unopened bridge), stop moving
+            // Blocked by obstacle (e.g. wall/unopened bridge), check if already in speaking range of NPC
+            if (targetPosRef.current?.targetNPC) {
+              const blockedNPC = targetPosRef.current.targetNPC;
+              const bnx = blockedNPC.x * TILE_SIZE + 16;
+              const bny = blockedNPC.y * TILE_SIZE + 16;
+              const bDist = Math.hypot(bnx - pCenterX, bny - pCenterY);
+              // If already within conversational reach (<= 64px), start dialogue gracefully
+              if (bDist <= 64) {
+                targetPosRef.current = null;
+                rendererRef.current?.clearDestination();
+                p.isMoving = false;
+
+                if (Math.abs(bnx - pCenterX) > Math.abs(bny - pCenterY)) {
+                  p.facing = bnx > pCenterX ? 'right' : 'left';
+                } else {
+                  p.facing = bny > pCenterY ? 'down' : 'up';
+                }
+                blockedNPC.facing = pCenterX > bnx ? 'right' : 'left';
+
+                sound.playVoiceBlip();
+                const dialogueKey =
+                  blockedNPC.currentDialogueId ||
+                  `${blockedNPC.id}_intro`;
+                const node =
+                  GAME_DIALOGUES[dialogueKey] ||
+                  GAME_DIALOGUES[`${blockedNPC.id}_intro`];
+                if (node) setCurrentDialogue(node);
+                return;
+              }
+            }
             targetPosRef.current = null;
             rendererRef.current?.clearDestination();
             p.isMoving = false;
@@ -1507,7 +1650,7 @@ export default function App() {
       setQuestHint(
         isCompassActive
           ? 'Misi 1: Dekati Kiki si tupai di barat air mancur dan ajak ia berbicara.'
-          : 'Misi 1: Dekati Kiki si tupai di barat air mancur. Aktifkan Kompas Hati [Spasi / Tombol Hati].'
+          : 'Misi 1: Dekati Kiki si tupai di barat air mancur. Aktifkan Kompas Hati [C / Tombol Hati].'
       );
     } else if (!zoneStatus.bridge) {
       setQuestHint('Misi 2: Pergi ke timur menuju Jembatan Kayu. Bicara dengan Kakek Ranu.');
@@ -1526,7 +1669,11 @@ export default function App() {
       <main className="relative w-full h-full flex items-center justify-center p-0 md:p-3 lg:p-5 select-none overflow-hidden">
         <div
           ref={canvasContainerRef}
-          className="relative w-full h-full md:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] md:max-h-[85vh] lg:max-h-[88vh] md:rounded-2xl md:border-2 md:border-slate-800 md:shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-slate-950 overflow-hidden flex items-center justify-center"
+          className={`relative w-full h-full ${
+            isPortrait
+              ? 'sm:max-w-[560px] sm:max-h-[96vh]'
+              : 'md:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] md:max-h-[85vh] lg:max-h-[88vh]'
+          } md:rounded-2xl md:border-2 md:border-slate-800 md:shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-slate-950 overflow-hidden flex items-center justify-center`}
         >
           <canvas
             ref={canvasRef}
