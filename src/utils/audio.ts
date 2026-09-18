@@ -945,6 +945,82 @@ class SoundSystem {
     });
   }
 
+  // Grand celebratory fanfare when all 10 badges are unlocked
+  public playAllBadgesFanfare() {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    // Triumphant multi-stage ascending fanfare
+    const fanfareNotes = [
+      { f: 523.25, d: 0.16, type: 'triangle' as OscillatorType }, // C5
+      { f: 659.25, d: 0.16, type: 'triangle' as OscillatorType }, // E5
+      { f: 783.99, d: 0.18, type: 'triangle' as OscillatorType }, // G5
+      { f: 1046.5, d: 0.35, type: 'square' as OscillatorType },   // C6
+      { f: 880.0, d: 0.18, type: 'triangle' as OscillatorType },  // A5
+      { f: 1046.5, d: 0.18, type: 'triangle' as OscillatorType }, // C6
+      { f: 1174.66, d: 0.22, type: 'square' as OscillatorType },  // D6
+      { f: 1318.51, d: 0.65, type: 'sine' as OscillatorType },    // E6
+    ];
+
+    let delay = 0;
+    fanfareNotes.forEach((n) => {
+      setTimeout(() => {
+        this.playTone(n.f, n.type, n.d, 0.08, 0, false);
+      }, delay * 1000);
+      delay += n.d * 0.78;
+    });
+
+    // Golden wind chimes cascade during the climax
+    setTimeout(() => {
+      const chimes = [1046.5, 1318.51, 1567.98, 2093.0, 2637.02];
+      chimes.forEach((f, idx) => {
+        setTimeout(() => {
+          this.playWindChime(f, 0);
+        }, idx * 65);
+      });
+    }, 1100);
+  }
+
+  // Camera shutter click & flash sparkle for Abadikan Momen
+  public playCameraShutter() {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    try {
+      // First mechanical click (shutter open)
+      const osc1 = this.ctx.createOscillator();
+      const g1 = this.ctx.createGain();
+      osc1.type = 'triangle';
+      osc1.frequency.setValueAtTime(1600, t);
+      osc1.frequency.exponentialRampToValueAtTime(300, t + 0.04);
+      g1.gain.setValueAtTime(0.08, t);
+      g1.gain.linearRampToValueAtTime(0.0001, t + 0.04);
+      osc1.connect(g1);
+      g1.connect(this.ctx.destination);
+      osc1.start(t);
+      osc1.stop(t + 0.05);
+
+      // Second mechanical click (shutter close)
+      const osc2 = this.ctx.createOscillator();
+      const g2 = this.ctx.createGain();
+      osc2.type = 'square';
+      osc2.frequency.setValueAtTime(1200, t + 0.06);
+      osc2.frequency.exponentialRampToValueAtTime(200, t + 0.11);
+      g2.gain.setValueAtTime(0.06, t + 0.06);
+      g2.gain.linearRampToValueAtTime(0.0001, t + 0.12);
+      osc2.connect(g2);
+      g2.connect(this.ctx.destination);
+      osc2.start(t + 0.06);
+      osc2.stop(t + 0.13);
+
+      // Flash sparkle chime
+      setTimeout(() => {
+        this.playWindChime(1760, 0);
+        this.playWindChime(2637, 0.08);
+      }, 90);
+    } catch {}
+  }
+
   // Color restored: majestic warm swell & fanfare chime
   public playColorRestore() {
     if (this.isMuted || this.sfxVolume <= 0.001) return;

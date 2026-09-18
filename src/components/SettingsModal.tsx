@@ -16,6 +16,8 @@ import {
   Heart,
   BookOpen,
   MapPin,
+  Trophy,
+  Camera,
 } from 'lucide-react';
 import { useAudioSettings, BgmPhase } from '../utils/audio';
 import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
@@ -35,6 +37,9 @@ export interface SettingsModalProps {
   empathyScore?: number;
   isMuted?: boolean;
   onToggleMute?: () => void;
+  onOpenAllBadgesCelebration?: () => void;
+  onUnlockAllBadges?: () => void;
+  onCaptureMoment?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -47,6 +52,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   npcs = [],
   unlockedBadges,
   empathyScore,
+  onOpenAllBadgesCelebration,
+  onUnlockAllBadges,
+  onCaptureMoment,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
 
@@ -123,14 +131,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               Pengaturan Game & Petualangan
             </h2>
           </div>
-          <button
-            id="close-settings-btn"
-            onClick={onClose}
-            aria-label="Tutup menu pengaturan"
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700/50 transition cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {onCaptureMoment && (
+              <button
+                id="settings-header-capture-moment-btn"
+                onClick={onCaptureMoment}
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-95 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition cursor-pointer"
+                title="Ambil screenshot area game saat ini dengan bingkai dekoratif"
+              >
+                <Camera className="w-4 h-4 text-slate-950" />
+                <span>Abadikan Momen</span>
+              </button>
+            )}
+            <button
+              id="close-settings-btn"
+              onClick={onClose}
+              aria-label="Tutup menu pengaturan"
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700/50 transition cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Submenu Grid - Clean 4-Column Layout, Never Covered by Any Horizontal Slider */}
@@ -218,6 +239,33 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB 1: MISI & OBJEKTIF */}
           {activeTab === 'quest' && (
             <div className="space-y-5">
+              {/* Card Abadikan Momen */}
+              {onCaptureMoment && (
+                <div className="bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border border-amber-400/50 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-amber-500/20 border border-amber-400/40 rounded-xl text-amber-300">
+                      <Camera className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-amber-300 text-xs sm:text-sm">
+                        Abadikan Momen Petualangan
+                      </h4>
+                      <p className="text-[11px] text-slate-300 mt-0.5">
+                        Ambil screenshot pemandangan game saat ini dengan bingkai dekoratif eksklusif Lembah Nada Rasa!
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    id="settings-tab-capture-moment-btn"
+                    onClick={onCaptureMoment}
+                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-xs shrink-0 shadow transition cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Camera className="w-4 h-4" />
+                    <span>Abadikan Sekarang</span>
+                  </button>
+                </div>
+              )}
+
               {/* Status Wilayah Lembah */}
               <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
                 <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-2.5 flex items-center gap-2">
@@ -366,6 +414,56 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
               </div>
+
+              {/* All Badges Unlocked Special Banner & Action */}
+              {unlockedCount === totalBadges ? (
+                <div className="bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-slate-950 border-2 border-amber-400 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl p-1.5 bg-amber-500/20 rounded-xl border border-amber-400/50">
+                      👑
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-amber-300 text-sm">
+                        Pencapaian Agung: Seluruh 10 Lencana Terkumpul!
+                      </h4>
+                      <p className="text-xs text-amber-200/80 mt-0.5">
+                        Gelar Duta Besar Empati Paripurna disematkan oleh Nenek Wilis dan seluruh warga desa.
+                      </p>
+                    </div>
+                  </div>
+                  {onOpenAllBadgesCelebration && (
+                    <button
+                      id="settings-open-appreciation-modal-btn"
+                      onClick={() => {
+                        onClose();
+                        onOpenAllBadgesCelebration();
+                      }}
+                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 shadow transition cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Trophy className="w-4 h-4" />
+                      <span>Buka Dialog Apresiasi</span>
+                    </button>
+                  )}
+                </div>
+              ) : (
+                onUnlockAllBadges && (
+                  <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
+                    <div className="text-slate-300 text-center sm:text-left">
+                      💡 <span className="font-semibold text-amber-300">Uji Coba Pengembang / Guru:</span> Ingin melihat dialog apresiasi dan piagam 10 lencana langsung?
+                    </div>
+                    <button
+                      id="unlock-all-badges-test-btn"
+                      onClick={() => {
+                        onUnlockAllBadges();
+                      }}
+                      className="px-3.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-bold text-xs shrink-0 transition cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Kumpulkan Semua (10/10)</span>
+                    </button>
+                  </div>
+                )
+              )}
 
               {/* Grid of PSE Badges */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -827,6 +925,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Panduan Kontrol Cepat</span>
                     <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">H</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="text-slate-300">Abadikan Momen (Foto)</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">P / Menu Settings</span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Tutup Dialog / Menu</span>

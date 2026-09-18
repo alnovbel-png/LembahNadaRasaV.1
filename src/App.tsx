@@ -29,11 +29,14 @@ import { EmotionRegulationModal, RegulationMode } from './components/EmotionRegu
 import { CompassJournalModal } from './components/CompassJournalModal';
 import { SettingsModal, SettingsModalTab } from './components/SettingsModal';
 import { EndingModal } from './components/EndingModal';
+import { AllBadgesCelebrationModal } from './components/AllBadgesCelebrationModal';
+import { CaptureMomentModal } from './components/CaptureMomentModal';
 import { VirtualControls } from './components/VirtualControls';
 import { MiniMap } from './components/MiniMap';
 import { StartMenuModal } from './components/StartMenuModal';
 import { Sparkles, Compass } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
+import { PSE_ACHIEVEMENTS } from './game/constants';
 
 const GAME_ZOOM = 1.35; // Focused zoom on main character for rich exploration feel
 
@@ -129,6 +132,9 @@ export default function App() {
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [settingsTab, setSettingsTab] = useState<SettingsModalTab>('quest');
   const [showEnding, setShowEnding] = useState<boolean>(false);
+  const [showAllBadgesCelebration, setShowAllBadgesCelebration] = useState<boolean>(false);
+  const hasSeenAllBadgesCelebrationRef = useRef<boolean>(false);
+  const pendingAllBadgesCelebrationRef = useRef<boolean>(false);
   const [isFreeRoamActive, setIsFreeRoamActive] = useState<boolean>(false);
   const [endingType, setEndingType] = useState<'perfect' | 'resilient'>('perfect');
   const [branchChoice, setBranchChoice] = useState<string>('empathy_first');
@@ -137,6 +143,72 @@ export default function App() {
   const [questHint, setQuestHint] = useState<string>(
     'Pusaka Kompas Hati terjatuh di depanmu! Tekan [C] atau tombol Kompas untuk menggunakannya.'
   );
+
+  // Capture Moment state
+  const [showCaptureMoment, setShowCaptureMoment] = useState<boolean>(false);
+  const [screenshotDataUrl, setScreenshotDataUrl] = useState<string | null>(null);
+  const [capturedLocationName, setCapturedLocationName] = useState<string>('Alun-alun & Air Mancur Desa');
+  const [showCameraFlash, setShowCameraFlash] = useState<boolean>(false);
+
+  // Helper to determine location for screenshot metadata
+  const getCurrentLocationName = useCallback((): string => {
+    const p = playerRef.current;
+    const col = Math.floor(p.x / 32);
+    const row = Math.floor(p.y / 32);
+    if (row < 12 && col < 18) return 'Hutan Sahabat Purba';
+    if (row < 12 && col >= 20) return 'Kawasan Menara Jam Harmoni';
+    if (row >= 12 && row <= 18 && col >= 20 && col <= 26) return 'Jembatan Kedamaian & Sungai';
+    if (row >= 17 && col < 18) return 'Kebun Harapan Pak Joko';
+    if (row >= 17 && col >= 18) return 'Pondok Desa & Kebun Buah Ibu Sari';
+    return 'Alun-alun & Air Mancur Desa';
+  }, []);
+
+  // Action to capture current game area screenshot
+  const handleCaptureMoment = useCallback(() => {
+    sound.playCameraShutter();
+    setShowCameraFlash(true);
+    setTimeout(() => setShowCameraFlash(false), 300);
+
+    // If Settings is open, close it so player can review their photo
+    setShowSettings(false);
+
+    if (canvasRef.current) {
+      try {
+        const dataUrl = canvasRef.current.toDataURL('image/png');
+        setScreenshotDataUrl(dataUrl);
+        setCapturedLocationName(getCurrentLocationName());
+        setShowCaptureMoment(true);
+      } catch (err) {
+        console.error('Failed to capture canvas screenshot:', err);
+      }
+    }
+  }, [getCurrentLocationName]);
+
+  // Trigger Grand Celebration when all 10 badges are collected
+  const triggerAllBadgesCelebration = useCallback(() => {
+    hasSeenAllBadgesCelebrationRef.current = true;
+    pendingAllBadgesCelebrationRef.current = false;
+    sound.playAllBadgesFanfare();
+    rendererRef.current?.triggerScreenShake(8, 24);
+    rendererRef.current?.addSparkle(
+      playerRef.current.x + 16,
+      playerRef.current.y + 16,
+      '#f59e0b',
+      35
+    );
+    setShowAllBadgesCelebration(true);
+  }, []);
+
+  // Developer / Teacher shortcut to unlock all badges and immediately view appreciation dialogue
+  const handleUnlockAllBadgesTest = useCallback(() => {
+    const allIds = PSE_ACHIEVEMENTS.map((b) => b.id);
+    setStats((prev) => ({
+      ...prev,
+      unlockedBadges: allIds,
+      empathyScore: Math.max(prev.empathyScore, 220),
+    }));
+    triggerAllBadgesCelebration();
+  }, [triggerAllBadgesCelebration]);
 
   // Sync mute state with sound system
   useEffect(() => {
@@ -235,14 +307,22 @@ export default function App() {
         );
       }
       if (!stats.unlockedBadges.includes('badge_laughter_medicine')) {
-        setStats((prev) => ({
-          ...prev,
-          unlockedBadges: [...(prev.unlockedBadges || []), 'badge_laughter_medicine'],
-          empathyScore: prev.empathyScore + 20,
-        }));
+        setStats((prev) => {
+          const updated = [...(prev.unlockedBadges || []), 'badge_laughter_medicine'];
+          if (updated.length >= PSE_ACHIEVEMENTS.length && !hasSeenAllBadgesCelebrationRef.current) {
+            setTimeout(() => {
+              triggerAllBadgesCelebration();
+            }, 350);
+          }
+          return {
+            ...prev,
+            unlockedBadges: updated,
+            empathyScore: prev.empathyScore + 20,
+          };
+        });
       }
     }
-  }, [inventory, npcs, stats.unlockedBadges, resolveNPC]);
+  }, [inventory, npcs, stats.unlockedBadges, resolveNPC, triggerAllBadgesCelebration]);
 
   // Click on mini-map to auto-navigate
   const handleMiniMapNavigate = useCallback(
@@ -1319,9 +1399,13 @@ export default function App() {
             '#f59e0b',
             20
           );
+          const updatedBadges = [...existing, bId];
+          if (updatedBadges.length >= PSE_ACHIEVEMENTS.length && !hasSeenAllBadgesCelebrationRef.current) {
+            pendingAllBadgesCelebrationRef.current = true;
+          }
           return {
             ...prev,
-            unlockedBadges: [...existing, bId],
+            unlockedBadges: updatedBadges,
             empathyScore: prev.empathyScore + 20,
           };
         });
@@ -1507,9 +1591,13 @@ export default function App() {
           '#f59e0b',
           20
         );
+        const updatedBadges = [...existing, badgeId];
+        if (updatedBadges.length >= PSE_ACHIEVEMENTS.length && !hasSeenAllBadgesCelebrationRef.current) {
+          pendingAllBadgesCelebrationRef.current = true;
+        }
         return {
           ...prev,
-          unlockedBadges: [...existing, badgeId],
+          unlockedBadges: updatedBadges,
           empathyScore: prev.empathyScore + 20,
         };
       });
@@ -1566,9 +1654,13 @@ export default function App() {
         setTimeout(() => {
           setShowEnding(true);
         }, 400);
+      } else if (pendingAllBadgesCelebrationRef.current) {
+        setTimeout(() => {
+          triggerAllBadgesCelebration();
+        }, 350);
       }
     }
-  }, [currentDialogue, processDialogueTriggers]);
+  }, [currentDialogue, processDialogueTriggers, triggerAllBadgesCelebration]);
 
   // Skip regulation directly to dialogue after-regulation node
   const handleSkipRegulation = useCallback(() => {
@@ -1602,8 +1694,12 @@ export default function App() {
       setTimeout(() => {
         setShowEnding(true);
       }, 400);
+    } else if (pendingAllBadgesCelebrationRef.current) {
+      setTimeout(() => {
+        triggerAllBadgesCelebration();
+      }, 350);
     }
-  }, [currentDialogue]);
+  }, [currentDialogue, triggerAllBadgesCelebration]);
 
   // Analog virtual joystick vector for smooth mobile & touch movement
   const joystickVectorRef = useRef<{ x: number; y: number } | null>(null);
@@ -1702,6 +1798,13 @@ export default function App() {
         setSettingsTab('controls');
         setShowSettings(true);
       }
+
+      // Abadikan Momen (Screenshot game dengan overlay dekoratif) - Hotkey [P]
+      if (e.key === 'p' || e.key === 'P' || e.code === 'KeyP') {
+        if (!currentDialogue) {
+          handleCaptureMoment();
+        }
+      }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -1725,7 +1828,7 @@ export default function App() {
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, [currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation]);
+  }, [currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleCaptureMoment]);
 
   // Main 60 FPS Game Loop
   useEffect(() => {
@@ -2393,6 +2496,7 @@ export default function App() {
           npcs={npcs}
           zoneStatus={zoneStatus}
           mapLayout={mapLayout}
+          quests={quests}
           onNavigateToTile={handleMiniMapNavigate}
           isCompassActive={isCompassActive}
         />
@@ -2462,6 +2566,7 @@ export default function App() {
         items={inventory}
         zoneStatus={zoneStatus}
         stats={stats}
+        onOpenAllBadgesCelebration={() => setShowAllBadgesCelebration(true)}
       />
 
       {/* Unified Settings Modal (Quests, Achievements, Audio, Controls Guide, Offline Export) */}
@@ -2477,6 +2582,40 @@ export default function App() {
         empathyScore={stats.empathyScore}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
+        onOpenAllBadgesCelebration={() => setShowAllBadgesCelebration(true)}
+        onUnlockAllBadges={handleUnlockAllBadgesTest}
+        onCaptureMoment={handleCaptureMoment}
+      />
+
+      {/* Capture Moment / Abadikan Momen Modal with decorative overlay */}
+      <CaptureMomentModal
+        isOpen={showCaptureMoment}
+        onClose={() => setShowCaptureMoment(false)}
+        screenshotDataUrl={screenshotDataUrl}
+        locationName={capturedLocationName}
+        stats={stats}
+        zoneStatus={zoneStatus}
+        onRetake={handleCaptureMoment}
+      />
+
+      {/* Camera shutter flash effect */}
+      {showCameraFlash && (
+        <div className="fixed inset-0 bg-white pointer-events-none z-[9999] transition-opacity duration-300 opacity-90 animate-pulse" />
+      )}
+
+      {/* Grand 10/10 Badges Appreciation Celebration Modal */}
+      <AllBadgesCelebrationModal
+        isOpen={showAllBadgesCelebration}
+        onClose={() => setShowAllBadgesCelebration(false)}
+        stats={stats}
+        onOpenJournal={() => {
+          setShowAllBadgesCelebration(false);
+          setShowJournal(true);
+        }}
+        onFreeRoam={() => {
+          setShowAllBadgesCelebration(false);
+          handleFreeRoam();
+        }}
       />
 
       {/* Ending Celebration & Certificate Modal */}

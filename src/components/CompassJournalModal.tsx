@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { SEL_GLOSSARY, PSE_ACHIEVEMENTS } from '../game/constants';
 import { Item, ZoneColorStatus, PlayerStats } from '../types/game';
-import { BookOpen, Compass, Sparkles, X, Brain, CheckCircle2, Lock, Award } from 'lucide-react';
+import { BookOpen, Compass, Sparkles, X, Brain, CheckCircle2, Lock, Award, Trophy } from 'lucide-react';
 
 interface CompassJournalModalProps {
   isOpen: boolean;
@@ -9,6 +9,7 @@ interface CompassJournalModalProps {
   items: Item[];
   zoneStatus: ZoneColorStatus;
   stats: PlayerStats;
+  onOpenAllBadgesCelebration?: () => void;
 }
 
 export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
@@ -17,6 +18,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
   items,
   zoneStatus,
   stats,
+  onOpenAllBadgesCelebration,
 }) => {
   const [activeTab, setActiveTab] = useState<'kamus' | 'lencana' | 'tas' | 'harmoni'>('kamus');
 
@@ -150,9 +152,39 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
 
           {activeTab === 'lencana' && (
             <div className="space-y-3">
-              <div className="bg-amber-950/40 border border-amber-500/40 rounded-xl p-3 text-xs text-amber-200">
-                ⭐ <strong>Lencana Wawasan PSE</strong>: Bicaralah dengan mentor opsional di desa (Kak Citra di Alun-alun, Kakek Damai di tepi sungai, dan Moka si Kucing di Hutan) untuk mengumpulkan pengetahuan dan membuka semua achievement!
-              </div>
+              {/* All 10 Badges Celebration Banner */}
+              {unlockedBadgesCount === PSE_ACHIEVEMENTS.length ? (
+                <div className="bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-slate-900 border-2 border-amber-400 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+                  <div className="flex items-center gap-2.5">
+                    <div className="text-2xl p-1 bg-amber-500/20 rounded-lg border border-amber-400/40">👑</div>
+                    <div>
+                      <h4 className="font-bold text-amber-300 text-xs sm:text-sm">
+                        Seluruh 10 Lencana Terkumpul! (Duta Besar Empati)
+                      </h4>
+                      <p className="text-[11px] text-amber-200/80">
+                        Kamu telah menguasai seluruh dimensi Pembelajaran Sosial Emosional di lembah ini.
+                      </p>
+                    </div>
+                  </div>
+                  {onOpenAllBadgesCelebration && (
+                    <button
+                      id="journal-open-appreciation-btn"
+                      onClick={() => {
+                        onClose();
+                        onOpenAllBadgesCelebration();
+                      }}
+                      className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 shadow transition cursor-pointer flex items-center gap-1.5"
+                    >
+                      <Trophy className="w-3.5 h-3.5" />
+                      <span>Buka Dialog Apresiasi</span>
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="bg-amber-950/40 border border-amber-500/40 rounded-xl p-3 text-xs text-amber-200">
+                  ⭐ <strong>Lencana Wawasan PSE</strong>: Bicaralah dengan mentor opsional di desa (Kak Citra di Alun-alun, Kakek Damai di tepi sungai, dan Moka si Kucing di Hutan) untuk mengumpulkan pengetahuan dan membuka semua achievement!
+                </div>
+              )}
 
               <div className="grid grid-cols-1 gap-2.5">
                 {PSE_ACHIEVEMENTS.map((badge) => {
