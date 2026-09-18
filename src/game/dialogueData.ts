@@ -698,6 +698,178 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     text: '📍 Plang Kawasan Pertanian & Perkebunan: [⬅️ Barat: Pondok Petani & Tumpukan Jerami] [⬇️ Selatan: Ladang Wortel, Kubis Segar, Gandum Emas & Sumur Air] [➡️ Timur: Alun-Alun & Perkebunan Apel/Jeruk].',
   },
 
+  // --- MENARA JAM HARMONI (WORLD EXAMINE & ASPEK INFORMASI EDUKATIF) ---
+  tower_examine: {
+    id: 'tower_examine',
+    speaker: 'Menara Jam Harmoni',
+    speakerRole: 'Monumen Kuno Lembah (Abad ke-18)',
+    portrait: 'clock_tower',
+    emotionAura: 'tenang',
+    thoughtBubble: 'Detak waktu bukan sekadar jarum yang berputar, melainkan denyut kebersamaan dan keterhubungan setiap jiwa di lembah ini.',
+    text: '🏛️ Kamu berdiri di hadapan Menara Jam Harmoni yang menjulang setinggi 20 meter dengan arsitektur batu andesit berukir. Di puncaknya, jarum jam raksasa dan Lonceng Perunggu kuno tampak membeku, menanti pulihnya dialog hati antarwarga.',
+    choices: [
+      {
+        id: 'c_tw_hist',
+        text: '📜 Baca Prasasti Sejarah & Filosofi Menara',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_history',
+      },
+      {
+        id: 'c_tw_mech',
+        text: '⚙️ Periksa 4 Roda Gigi & Makna Pembelajaran (PSE)',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_mechanics',
+      },
+      {
+        id: 'c_tw_bell',
+        text: '🔔 Dengarkan Dentang Resonansi Lonceng Kuno',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_bell',
+      },
+      {
+        id: 'c_tw_exit',
+        text: '🚪 Selesai Memeriksa Menara (Lanjut Petualangan)',
+        impactScore: 0,
+        resultDialogueId: '',
+      },
+    ],
+  },
+  tower_examine_history: {
+    id: 'tower_examine_history',
+    speaker: 'Prasasti Batu Pendiri Menara',
+    speakerRole: 'Catatan Sejarah Lembah (1785)',
+    portrait: 'scroll',
+    text: '📜 "Didirikan tahun 1785 oleh Ki Waskita dan para perintis lembah. Menara ini dirancang sebagai Barometer Harmoni Batin. Pendulum jam melambangkan Keseimbangan Emosi (Emotional Equilibrium): amarah dan kekecewaan bisa mengayunkan jiwa ke tepi, namun melalui jeda napas sadar, kita selalu bisa kembali ke titik pusat yang damai."',
+    choices: [
+      {
+        id: 'c_twh_mech',
+        text: '⚙️ Bagaimana cara kerja 4 Roda Gigi jam ini?',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_mechanics',
+      },
+      {
+        id: 'c_twh_bell',
+        text: '🔔 Ingin mendengarkan resonansi lonceng menara',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_bell',
+      },
+      {
+        id: 'c_twh_back',
+        text: '🔙 Kembali ke menu pengamatan menara',
+        impactScore: 0,
+        resultDialogueId: 'tower_examine',
+      },
+      {
+        id: 'c_twh_exit',
+        text: '🚪 Selesai Membaca & Lanjut Eksplorasi Desa',
+        impactScore: 0,
+        resultDialogueId: '',
+      },
+    ],
+  },
+  tower_examine_mechanics: {
+    id: 'tower_examine_mechanics',
+    speaker: 'Mekanisme Jam Harmoni',
+    speakerRole: '4 Pilar Keselarasan Sosial Emosional (PSE)',
+    portrait: 'clock_tower',
+    text: '⚙️ Ruang mesin jam digerakkan oleh 4 Roda Gigi Utama:\n1. 🌟 Roda Alun-Alun: Kesadaran Diri (Mengenali emosi diri tanpa menghakimi).\n2. 🤝 Roda Jembatan: Empati & Menghargai (Memahami perasaan orang lain).\n3. 🌱 Roda Kebun & Hutan: Regulasi Emosi & Growth Mindset (Mengelola respon & belajar dari kesalahan).\n4. 🕊️ Roda Puncak Menara: Rekonsiliasi & Resolusi Konflik (Mendengarkan dengan hati terbuka).',
+    choices: [
+      {
+        id: 'c_twm_hist',
+        text: '📜 Baca prasasti sejarah menara',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_history',
+      },
+      {
+        id: 'c_twm_bell',
+        text: '🔔 Bunyikan lonceng untuk jeda sadar (Mindful Pause)',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_bell',
+      },
+      {
+        id: 'c_twm_back',
+        text: '🔙 Kembali ke menu pengamatan menara',
+        impactScore: 0,
+        resultDialogueId: 'tower_examine',
+      },
+      {
+        id: 'c_twm_exit',
+        text: '🚪 Selesai Memeriksa & Lanjut Petualangan',
+        impactScore: 0,
+        resultDialogueId: '',
+      },
+    ],
+  },
+  tower_examine_bell: {
+    id: 'tower_examine_bell',
+    speaker: 'Lonceng Harmoni Perunggu',
+    speakerRole: 'Jeda Sadar (The Power of Pause)',
+    portrait: 'clock_tower',
+    emotionAura: 'tenang',
+    text: '🔔 *DUNGGGG...* Gema merdu lonceng perunggu bergetar jernih menembus lembah. Ambil napas dalam 4 hitungan... tahan 2 hitungan... hembuskan perlahan 6 hitungan. Rasakan ketegangan menguap dan ketenangan menara meresap ke dalam dada.',
+    choices: [
+      {
+        id: 'c_twb_again',
+        text: '🔔 Dengarkan dentang lonceng sekali lagi',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_bell',
+      },
+      {
+        id: 'c_twb_mech',
+        text: '⚙️ Periksa roda gigi jam',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_mechanics',
+      },
+      {
+        id: 'c_twb_back',
+        text: '🔙 Kembali ke menu pengamatan menara',
+        impactScore: 0,
+        resultDialogueId: 'tower_examine',
+      },
+      {
+        id: 'c_twb_exit',
+        text: '🚪 Selesai & Lanjut Eksplorasi Desa',
+        impactScore: 0,
+        resultDialogueId: '',
+      },
+    ],
+  },
+  tower_examine_restored: {
+    id: 'tower_examine_restored',
+    speaker: 'Menara Jam Harmoni (Telah Pulih!)',
+    speakerRole: 'Pusat Cahaya Keemasan Lembah',
+    portrait: 'clock_tower',
+    emotionAura: 'gembira',
+    thoughtBubble: 'Seluruh roda gigi berputar anggun! Langit biru membentang cerah dan detak waktu mengalir dalam kedamaian.',
+    text: '✨ Luar biasa! Menara Jam Harmoni kini memancarkan cahaya keemasan hangat dari dial kristalnya. Keempat roda gigi utama berputar selaras, panji-panji lembah berkibar gagah ditiup angin sepoi, dan kabut abu-abu telah sirna selamanya!',
+    choices: [
+      {
+        id: 'c_twr_hist',
+        text: '📜 Baca prasasti sejarah & filosofi menara',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_history',
+      },
+      {
+        id: 'c_twr_mech',
+        text: '⚙️ Pelajari 4 pilar roda gigi PSE',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_mechanics',
+      },
+      {
+        id: 'c_twr_bell',
+        text: '🔔 Dentangkan Lonceng Harmoni Perayaan',
+        impactScore: 10,
+        resultDialogueId: 'tower_examine_bell',
+      },
+      {
+        id: 'c_twr_exit',
+        text: '🚪 Selesai Menikmati & Lanjut Petualangan',
+        impactScore: 0,
+        resultDialogueId: '',
+      },
+    ],
+  },
+
   // --- PAK JOKO (PETANI KEBUN HARAPAN - GROWTH MINDSET) ---
   joko_intro: {
     id: 'joko_intro',

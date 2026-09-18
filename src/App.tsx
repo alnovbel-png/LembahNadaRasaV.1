@@ -32,7 +32,6 @@ import { VirtualControls } from './components/VirtualControls';
 import { MiniMap } from './components/MiniMap';
 import { StartMenuModal } from './components/StartMenuModal';
 import { Sparkles, Compass } from 'lucide-react';
-import { downloadOfflineGameHtml } from './utils/exportOfflineHtml';
 import { isMobileOrTabletDevice } from './utils/device';
 
 const GAME_ZOOM = 1.35; // Focused zoom on main character for rich exploration feel
@@ -231,19 +230,49 @@ export default function App() {
   const [viewportSize, setViewportSize] = useState({ width: 800, height: 600 });
   const canvasContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // Handle Container & Window Resize for crisp, centered canvas
+  // Handle Container & Window Resize for crisp, proportional canvas rendering
   useEffect(() => {
     const updateDimensions = () => {
       const container = canvasContainerRef.current;
-      const w = container ? container.clientWidth : window.innerWidth;
-      const h = container ? container.clientHeight : window.innerHeight;
-      if (w > 0 && h > 0) {
-        setViewportSize({ width: w, height: h });
-        if (canvasRef.current) {
-          canvasRef.current.width = w;
-          canvasRef.current.height = h;
-        }
+      const canvas = canvasRef.current;
+      if (!container || !canvas) return;
+
+      const cw = container.clientWidth;
+      const ch = container.clientHeight;
+      if (cw <= 0 || ch <= 0) return;
+
+      // Maintain a clean, proportional 16:9 widescreen pixel-art aspect ratio
+      // Prevents canvas distortion or out-of-bounds rendering on ultra-wide (21:9, 32:9)
+      // or tall portrait displays.
+      const TARGET_ASPECT = 16 / 9;
+      const containerAspect = cw / ch;
+
+      let renderW: number;
+      let renderH: number;
+
+      if (containerAspect > TARGET_ASPECT) {
+        // Ultra-wide container: fit to height, constrain width (pillarbox inside container)
+        renderH = ch;
+        renderW = Math.round(ch * TARGET_ASPECT);
+      } else {
+        // Taller container: fit to width, constrain height (letterbox inside container)
+        renderW = cw;
+        renderH = Math.round(cw / TARGET_ASPECT);
       }
+
+      // Keep pixel dimensions even for crisp pixel-grid alignment without jitter
+      renderW = renderW % 2 === 0 ? renderW : renderW - 1;
+      renderH = renderH % 2 === 0 ? renderH : renderH - 1;
+
+      // Scale CSS presentation to exact proportional bounds
+      canvas.style.width = `${renderW}px`;
+      canvas.style.height = `${renderH}px`;
+
+      // Set internal rendering buffer
+      canvas.width = renderW;
+      canvas.height = renderH;
+
+      setViewportSize({ width: renderW, height: renderH });
     };
 
     updateDimensions();
@@ -344,8 +373,8 @@ export default function App() {
       return;
     }
 
-    // Check Farm Signpost (c=7, r=17)
-    const farmSignX = 7 * TILE_SIZE + 16;
+    // Check Farm Signpost (c=6, r=17 di sebelah jalan)
+    const farmSignX = 6 * TILE_SIZE + 16;
     const farmSignY = 17 * TILE_SIZE + 16;
     if (Math.hypot(farmSignX - px, farmSignY - py) < 55) {
       sound.playSecretFound();
@@ -353,9 +382,9 @@ export default function App() {
       return;
     }
 
-    // Check Forest Signpost (c=9, r=12)
-    const forestSignX = 9 * TILE_SIZE + 16;
-    const forestSignY = 12 * TILE_SIZE + 16;
+    // Check Forest Signpost (c=10, r=9 di sebelah jalan)
+    const forestSignX = 10 * TILE_SIZE + 16;
+    const forestSignY = 9 * TILE_SIZE + 16;
     if (Math.hypot(forestSignX - px, forestSignY - py) < 55) {
       sound.playSecretFound();
       setCurrentDialogue(GAME_DIALOGUES.signpost_forest);
@@ -368,6 +397,21 @@ export default function App() {
     if (Math.hypot(fountainX - px, fountainY - py) < 55) {
       sound.playSecretFound();
       setCurrentDialogue(GAME_DIALOGUES.fountain_examine);
+      return;
+    }
+
+    // Check Grand Clock Tower (c=30, r=6)
+    const towerDoorX = 30 * TILE_SIZE + 16;
+    const towerDoorY = 6 * TILE_SIZE + 16;
+    if (Math.hypot(towerDoorX - px, towerDoorY - py) < 80) {
+      sound.playTowerBell();
+      rendererRef.current?.triggerScreenShake(4, 12);
+      rendererRef.current?.addSparkle(towerDoorX, towerDoorY, '#fbbf24', 12);
+      setCurrentDialogue(
+        zoneStatus.tower
+          ? GAME_DIALOGUES.tower_examine_restored
+          : GAME_DIALOGUES.tower_examine
+      );
       return;
     }
 
@@ -393,7 +437,7 @@ export default function App() {
         setCurrentDialogue(node);
       }
     }
-  }, [currentDialogue, npcs]);
+  }, [currentDialogue, npcs, zoneStatus]);
 
   // Click / Tap on Floor or NPC/Props to walk there automatically
   const handleCanvasClick = useCallback(
@@ -406,8 +450,14 @@ export default function App() {
       const screenX = e.clientX - rect.left;
       const screenY = e.clientY - rect.top;
 
-      const worldX = screenX / GAME_ZOOM + cameraRef.current.x;
-      const worldY = screenY / GAME_ZOOM + cameraRef.current.y;
+      // Precise coordinate mapping accounting for scale between CSS display and canvas buffer
+      const scaleX = rect.width > 0 ? canvas.width / rect.width : 1;
+      const scaleY = rect.height > 0 ? canvas.height / rect.height : 1;
+      const canvasX = screenX * scaleX;
+      const canvasY = screenY * scaleY;
+
+      const worldX = canvasX / GAME_ZOOM + cameraRef.current.x;
+      const worldY = canvasY / GAME_ZOOM + cameraRef.current.y;
 
       const p = playerRef.current;
       const px = p.x + 16;
@@ -450,9 +500,9 @@ export default function App() {
         return;
       }
 
-      // 3. Check if clicking on the Forest Signpost (c=9, r=12)
-      const signX = 9 * TILE_SIZE + 16;
-      const signY = 12 * TILE_SIZE + 16;
+      // 3. Check if clicking on the Forest Signpost (c=10, r=9 di sebelah jalan)
+      const signX = 10 * TILE_SIZE + 16;
+      const signY = 9 * TILE_SIZE + 16;
       if (Math.hypot(signX - worldX, signY - worldY) < 26) {
         if (Math.hypot(signX - px, signY - py) < 60) {
           sound.playSecretFound();
@@ -460,15 +510,16 @@ export default function App() {
           targetPosRef.current = null;
           rendererRef.current?.clearDestination();
         } else {
-          targetPosRef.current = { x: signX, y: signY + 28, targetType: 'signpost' };
-          rendererRef.current?.setDestination(signX, signY + 28, 'examine');
-          rendererRef.current?.addSparkle(signX, signY + 28, '#a7f3d0', 6);
+          // Karakter berjalan mendekati plang di pinggir jalan c=11, r=9
+          targetPosRef.current = { x: 11 * TILE_SIZE + 16, y: 9 * TILE_SIZE + 16, targetType: 'signpost' };
+          rendererRef.current?.setDestination(11 * TILE_SIZE + 16, 9 * TILE_SIZE + 16, 'examine');
+          rendererRef.current?.addSparkle(signX, signY, '#a7f3d0', 6);
         }
         return;
       }
 
-      // 3b. Check if clicking on the Farm Signpost (c=7, r=17)
-      const farmSignX = 7 * TILE_SIZE + 16;
+      // 3b. Check if clicking on the Farm Signpost (c=6, r=17 di sebelah jalan)
+      const farmSignX = 6 * TILE_SIZE + 16;
       const farmSignY = 17 * TILE_SIZE + 16;
       if (Math.hypot(farmSignX - worldX, farmSignY - worldY) < 26) {
         if (Math.hypot(farmSignX - px, farmSignY - py) < 60) {
@@ -477,9 +528,44 @@ export default function App() {
           targetPosRef.current = null;
           rendererRef.current?.clearDestination();
         } else {
-          targetPosRef.current = { x: farmSignX, y: farmSignY + 28, targetType: 'farm_signpost' };
-          rendererRef.current?.setDestination(farmSignX, farmSignY + 28, 'examine');
-          rendererRef.current?.addSparkle(farmSignX, farmSignY + 28, '#f59e0b', 6);
+          // Karakter berjalan mendekati plang di pinggir jalan c=7, r=17
+          targetPosRef.current = { x: 7 * TILE_SIZE + 16, y: 17 * TILE_SIZE + 16, targetType: 'farm_signpost' };
+          rendererRef.current?.setDestination(7 * TILE_SIZE + 16, 17 * TILE_SIZE + 16, 'examine');
+          rendererRef.current?.addSparkle(farmSignX, farmSignY, '#f59e0b', 6);
+        }
+        return;
+      }
+
+      // 3c. Check if clicking on the Grand Clock Tower (c: 28..32, r: 2..6)
+      const towerMinX = 28 * TILE_SIZE;
+      const towerMaxX = 33 * TILE_SIZE;
+      const towerMinY = 2 * TILE_SIZE - 16;
+      const towerMaxY = 7 * TILE_SIZE;
+      const towerDoorX = 30 * TILE_SIZE + 16;
+      const towerDoorY = 6 * TILE_SIZE + 16;
+
+      if (
+        (worldX >= towerMinX && worldX <= towerMaxX && worldY >= towerMinY && worldY <= towerMaxY) ||
+        Math.hypot(towerDoorX - worldX, towerDoorY - worldY) < 45
+      ) {
+        if (Math.hypot(towerDoorX - px, towerDoorY - py) < 85) {
+          sound.playTowerBell();
+          rendererRef.current?.triggerScreenShake(4, 12);
+          rendererRef.current?.addSparkle(towerDoorX, towerDoorY, '#fbbf24', 12);
+          setCurrentDialogue(
+            zoneStatus.tower
+              ? GAME_DIALOGUES.tower_examine_restored
+              : GAME_DIALOGUES.tower_examine
+          );
+          targetPosRef.current = null;
+          rendererRef.current?.clearDestination();
+        } else {
+          // Walk up to the main portal entrance of the clock tower (c=30, r=7)
+          const walkX = 30 * TILE_SIZE + 16;
+          const walkY = 7 * TILE_SIZE + 16;
+          targetPosRef.current = { x: walkX, y: walkY, targetType: 'tower' };
+          rendererRef.current?.setDestination(walkX, walkY, 'examine');
+          rendererRef.current?.addSparkle(towerDoorX, towerDoorY, '#f59e0b', 8);
         }
         return;
       }
@@ -529,7 +615,7 @@ export default function App() {
       rendererRef.current?.setDestination(clampedX, clampedY, 'walk');
       rendererRef.current?.addSparkle(clampedX, clampedY, '#38bdf8', 5);
     },
-    [currentDialogue, npcs]
+    [currentDialogue, npcs, zoneStatus]
   );
 
   // Mouse move handler for interactive object hover hints and cursor styling
@@ -546,8 +632,14 @@ export default function App() {
       const screenX = e.clientX - rect.left;
       const screenY = e.clientY - rect.top;
 
-      const worldX = screenX / GAME_ZOOM + cameraRef.current.x;
-      const worldY = screenY / GAME_ZOOM + cameraRef.current.y;
+      // Precise coordinate mapping accounting for scale between CSS display and canvas buffer
+      const scaleX = rect.width > 0 ? canvas.width / rect.width : 1;
+      const scaleY = rect.height > 0 ? canvas.height / rect.height : 1;
+      const canvasX = screenX * scaleX;
+      const canvasY = screenY * scaleY;
+
+      const worldX = canvasX / GAME_ZOOM + cameraRef.current.x;
+      const worldY = canvasY / GAME_ZOOM + cameraRef.current.y;
 
       // 1. Check hover on NPCs
       for (const npc of npcs) {
@@ -579,13 +671,13 @@ export default function App() {
         return;
       }
 
-      // 3. Check hover on Signpost (c=9, r=12)
-      const sx = 9 * TILE_SIZE + 16;
-      const sy = 12 * TILE_SIZE + 16;
+      // 3. Check hover on Forest Signpost (c=10, r=9 di sebelah jalan)
+      const sx = 10 * TILE_SIZE + 16;
+      const sy = 9 * TILE_SIZE + 16;
       if (Math.hypot(sx - worldX, sy - worldY) < 26) {
         rendererRef.current?.setHover({
           type: 'signpost',
-          name: 'Plang Petunjuk Hutan',
+          name: 'Plang Petunjuk Hutan & Persimpangan',
           x: sx,
           y: sy,
         });
@@ -593,8 +685,8 @@ export default function App() {
         return;
       }
 
-      // 3b. Check hover on Farm Signpost (c=7, r=17)
-      const fsx = 7 * TILE_SIZE + 16;
+      // 3b. Check hover on Farm Signpost (c=6, r=17 di sebelah jalan)
+      const fsx = 6 * TILE_SIZE + 16;
       const fsy = 17 * TILE_SIZE + 16;
       if (Math.hypot(fsx - worldX, fsy - worldY) < 26) {
         rendererRef.current?.setHover({
@@ -616,6 +708,28 @@ export default function App() {
           name: 'Pohon Keramat Sahabat',
           x: tx,
           y: ty,
+        });
+        canvas.style.cursor = 'pointer';
+        return;
+      }
+
+      // 4b. Check hover on Grand Clock Tower (c: 28..32, r: 2..6)
+      const towerMinX = 28 * TILE_SIZE;
+      const towerMaxX = 33 * TILE_SIZE;
+      const towerMinY = 2 * TILE_SIZE - 16;
+      const towerMaxY = 7 * TILE_SIZE;
+      const towerDoorX = 30 * TILE_SIZE + 16;
+      const towerDoorY = 6 * TILE_SIZE + 16;
+
+      if (
+        (worldX >= towerMinX && worldX <= towerMaxX && worldY >= towerMinY && worldY <= towerMaxY) ||
+        Math.hypot(towerDoorX - worldX, towerDoorY - worldY) < 45
+      ) {
+        rendererRef.current?.setHover({
+          type: 'tower',
+          name: 'Menara Jam Harmoni',
+          x: towerDoorX,
+          y: towerDoorY,
         });
         canvas.style.cursor = 'pointer';
         return;
@@ -1130,6 +1244,15 @@ export default function App() {
           } else if (reachedTarget.targetType === 'farm_signpost') {
             sound.playSecretFound();
             setCurrentDialogue(GAME_DIALOGUES.signpost_farm);
+          } else if (reachedTarget.targetType === 'tower') {
+            sound.playTowerBell();
+            rendererRef.current?.triggerScreenShake(4, 12);
+            rendererRef.current?.addSparkle(30 * TILE_SIZE + 16, 6 * TILE_SIZE + 16, '#fbbf24', 12);
+            setCurrentDialogue(
+              zoneStatus.tower
+                ? GAME_DIALOGUES.tower_examine_restored
+                : GAME_DIALOGUES.tower_examine
+            );
           }
         } else {
           const moveStep = Math.min(speed, dist);
@@ -1309,6 +1432,10 @@ export default function App() {
 
       // Render Frame with focused zoom
       if (rendererRef.current) {
+        const isMissionCompleted =
+          isFreeRoamActive ||
+          (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower);
+
         rendererRef.current.render(
           mapLayout,
           p,
@@ -1319,7 +1446,8 @@ export default function App() {
           camY,
           viewportSize.width,
           viewportSize.height,
-          GAME_ZOOM
+          GAME_ZOOM,
+          isMissionCompleted
         );
       }
 
@@ -1328,7 +1456,7 @@ export default function App() {
 
     animationFrameId = requestAnimationFrame(gameLoop);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [mapLayout, npcs, zoneStatus, isCompassActive, viewportSize, checkCollision]);
+  }, [mapLayout, npcs, zoneStatus, isCompassActive, viewportSize, checkCollision, isFreeRoamActive]);
 
   // Restart game for replayability
   const handleRestart = () => {
@@ -1398,12 +1526,12 @@ export default function App() {
       <main className="relative w-full h-full flex items-center justify-center p-0 md:p-3 lg:p-5 select-none overflow-hidden">
         <div
           ref={canvasContainerRef}
-          className="relative w-full h-full md:max-w-5xl lg:max-w-6xl md:max-h-[85vh] lg:max-h-[88vh] md:rounded-2xl md:border-2 md:border-slate-800 md:shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-slate-900 overflow-hidden flex items-center justify-center"
+          className="relative w-full h-full md:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] md:max-h-[85vh] lg:max-h-[88vh] md:rounded-2xl md:border-2 md:border-slate-800 md:shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-slate-950 overflow-hidden flex items-center justify-center"
         >
           <canvas
             ref={canvasRef}
             id="main-pixel-canvas"
-            className="block w-full h-full cursor-crosshair"
+            className="block max-w-full max-h-full shrink-0 cursor-crosshair"
             onClick={handleCanvasClick}
             onMouseMove={handleCanvasMouseMove}
             onMouseLeave={handleCanvasMouseLeave}
@@ -1477,6 +1605,7 @@ export default function App() {
           dialogue={currentDialogue}
           onChoiceSelect={handleChoiceSelect}
           onNext={handleDialogueNext}
+          onClose={() => setCurrentDialogue(null)}
           isCompassActive={isCompassActive}
         />
       )}
@@ -1539,7 +1668,6 @@ export default function App() {
         empathyScore={stats.empathyScore}
         isMuted={isMuted}
         onToggleMute={handleToggleMute}
-        onExportOffline={downloadOfflineGameHtml}
       />
 
       {/* Ending Celebration & Certificate Modal */}
@@ -1558,7 +1686,6 @@ export default function App() {
         onStartGame={handleStartGame}
         onOpenControls={() => handleOpenSettings('controls')}
         onOpenAudioSettings={() => handleOpenSettings('audio')}
-        onExportOffline={downloadOfflineGameHtml}
         isSettingsOpen={showSettings}
       />
     </div>

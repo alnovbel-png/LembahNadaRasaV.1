@@ -42,6 +42,10 @@ export const TILE = {
   ORCHARD_ORANGE: 32,
   HOUSE_DOOR: 33,
   HOUSE_WINDOW: 34,
+  TOWER_ROOF: 35,
+  TOWER_CLOCK: 36,
+  TOWER_DOOR: 37,
+  TOWER_WINDOW: 38,
 };
 
 // Map layout definition (28 rows x 36 cols)
@@ -70,9 +74,30 @@ export function generateMapLayout(): number[][] {
         continue;
       }
 
-      // Clock Tower area (top right, r: 2..8, c: 26..33)
-      if (r >= 3 && r <= 6 && c >= 28 && c <= 32) {
-        row.push(r === 3 ? TILE.HOUSE_ROOF : TILE.TOWER_WALL);
+      // --- KAWASAN MONUMEN MENARA JAM HARMONI (Ancient Clocktower of Harmony: r: 2..6, c: 28..32) ---
+      // Redesain arsitektur menara katedral/kastel klasik:
+      // r=2: Puncak Menara (Spire megah berornamen atap tembaga & weathervane emas penunjuk mata angin)
+      // r=3: Kamar Lonceng Perunggu (Belfry arches c=29,31 & pedimen jam c=30)
+      // r=4: Jam Harmoni Raksasa (Astronomical golden clock c=30 & dinding penopang panji c=28,32)
+      // r=5: Dinding Tengah (Jendela kaca patri gotik c=30 & dinding batu berhias obor besi)
+      // r=6: Gerbang Utama Menara (Pintu kayu ek berkait besi lengkung c=30 & fondasi batu kokoh)
+      if (r >= 2 && r <= 6 && c >= 28 && c <= 32) {
+        if (r === 2) {
+          row.push(TILE.TOWER_ROOF);
+        } else if (r === 3) {
+          if (c === 29 || c === 31) row.push(TILE.TOWER_WINDOW);
+          else if (c === 30) row.push(TILE.TOWER_ROOF);
+          else row.push(TILE.TOWER_WALL);
+        } else if (r === 4) {
+          if (c === 30) row.push(TILE.TOWER_CLOCK);
+          else row.push(TILE.TOWER_WALL);
+        } else if (r === 5) {
+          if (c === 30) row.push(TILE.TOWER_WINDOW);
+          else row.push(TILE.TOWER_WALL);
+        } else if (r === 6) {
+          if (c === 30) row.push(TILE.TOWER_DOOR);
+          else row.push(TILE.TOWER_WALL);
+        }
         continue;
       }
 
@@ -98,37 +123,40 @@ export function generateMapLayout(): number[][] {
         }
       }
 
-      // --- RUMAH WARGA 1: RUMAH PETANI / PONDOK JERAMI (South-West: r: 18..20, c: 3..7) ---
-      if (r >= 18 && r <= 20 && c >= 3 && c <= 7) {
+      // --- RUMAH WARGA 1: RUMAH PAK JOKO (PONDOK JERAMI & KEBUN) (South-West: r: 18..20, c: 2..6) ---
+      // Dipindahkan 1 kotak ke kiri agar kolom 7 (jalan setapak plaza & desa) bebas hambatan
+      if (r >= 18 && r <= 20 && c >= 2 && c <= 6) {
         if (r === 18) {
           row.push(TILE.HOUSE_ROOF);
         } else if (r === 19) {
-          if (c === 4 || c === 6) row.push(TILE.HOUSE_WINDOW);
+          if (c === 3 || c === 5) row.push(TILE.HOUSE_WINDOW);
           else row.push(TILE.HOUSE_WALL);
         } else if (r === 20) {
-          if (c === 5) row.push(TILE.HOUSE_DOOR);
+          if (c === 4) row.push(TILE.HOUSE_DOOR);
           else row.push(TILE.HOUSE_WALL);
         }
         continue;
       }
 
-      // --- RUMAH WARGA 2: PONDOK PENGRAJIN & TEH (South-East: r: 19..21, c: 29..33) ---
-      if (r >= 19 && r <= 21 && c >= 29 && c <= 33) {
+      // --- RUMAH WARGA 2: PONDOK KAKEK DAMAI (TEH & MINDFUL) (South-East: r: 19..21, c: 28..32) ---
+      // Dipindahkan dan diselaraskan persis dengan koordinat horizontal Menara Jam (c: 28..32)
+      // agar jalan utama dari Menara Jam lurus sempurna ke depan pintu pondok
+      if (r >= 19 && r <= 21 && c >= 28 && c <= 32) {
         if (r === 19) {
           row.push(TILE.HOUSE_ROOF);
         } else if (r === 20) {
-          if (c === 30 || c === 32) row.push(TILE.HOUSE_WINDOW);
+          if (c === 29 || c === 31) row.push(TILE.HOUSE_WINDOW);
           else row.push(TILE.HOUSE_WALL);
         } else if (r === 21) {
-          if (c === 31) row.push(TILE.HOUSE_DOOR);
+          if (c === 30) row.push(TILE.HOUSE_DOOR);
           else row.push(TILE.HOUSE_WALL);
         }
         continue;
       }
 
       // --- KAWASAN PERTANIAN & PERKEBUNAN SAYUR (South-West: r: 21..26, c: 2..15) ---
-      // Hay bales beside farmhouse
-      if ((r === 21 && (c === 3 || c === 4)) || (r === 22 && c === 2)) {
+      // Hay bales di sebelah kiri pondok Pak Joko (c=2)
+      if ((r === 21 && c === 2) || (r === 22 && c === 2)) {
         row.push(TILE.HAY_BALE);
         continue;
       }
@@ -139,11 +167,11 @@ export function generateMapLayout(): number[][] {
         continue;
       }
 
-      // Farm protective perimeter fences (Columns 6, 7, 8 left open for spacious entrance!)
+      // Farm protective perimeter fences (Pintu masuk perkebunan terbuka luas untuk navigasi)
       if (
-        (r === 21 && (c === 2 || c === 3 || c === 4 || (c >= 10 && c <= 14))) ||
+        (r === 21 && (c >= 10 && c <= 14)) ||
         (r === 26 && c >= 2 && c <= 14) ||
-        (c === 2 && r >= 22 && r <= 25) ||
+        (c === 2 && r >= 23 && r <= 25) ||
         (c === 14 && r >= 22 && r <= 25)
       ) {
         row.push(TILE.FENCE);
@@ -153,6 +181,12 @@ export function generateMapLayout(): number[][] {
       // Scarecrow placed beside carrot plot (r=22, c=3) so the central path is 100% free!
       if (r === 22 && c === 3) {
         row.push(TILE.SCARECROW);
+        continue;
+      }
+
+      // Jalan setapak teras depan rumah Pak Joko ke jalan desa
+      if (r === 21 && c >= 4 && c <= 7) {
+        row.push(TILE.PATH_STONE);
         continue;
       }
 
@@ -192,14 +226,14 @@ export function generateMapLayout(): number[][] {
         continue;
       }
 
-      // Crossroads Signpost
-      if (r === 9 && c === 11) {
+      // Plang Persimpangan & Hutan: Diletakkan di sebelah jalan pada rumput (c=10, r=9), TIDAK menutupi jalan c=11
+      if (r === 9 && c === 10) {
         row.push(TILE.SIGNPOST);
         continue;
       }
 
-      // Farm area signpost
-      if (r === 17 && c === 7) {
+      // Plang Kawasan Pertanian & Kebun: Diletakkan di sebelah jalan pada rumput (c=6, r=17), TIDAK menutupi jalan c=7 / r=17
+      if (r === 17 && c === 6) {
         row.push(TILE.SIGNPOST);
         continue;
       }
@@ -212,23 +246,28 @@ export function generateMapLayout(): number[][] {
 
       // Alun-Alun Plaza features & perimeter
       if (r >= 12 && r <= 16 && c >= 8 && c <= 14) {
-        // Plaza corner street lamps
+        // Plaza corner street lamps (lampu di sudut plaza)
         if ((r === 12 && c === 8) || (r === 12 && c === 14) || (r === 16 && c === 8) || (r === 16 && c === 14)) {
           row.push(TILE.LAMP_POST);
           continue;
         }
-        // Wooden park benches at plaza sides
-        if ((r === 12 && c === 11) || (r === 16 && c === 11)) {
+        // Bangku taman diletakkan di sisi sayap plaza agar jalur utama keluar-masuk (c=10..12) plong dan mudah dilewati
+        if ((r === 13 && c === 9) || (r === 13 && c === 13)) {
           row.push(TILE.BENCH);
           continue;
         }
-        // Market flower cart at plaza corner
-        if (r === 16 && c === 9) {
+        // Gerobak bunga pasar di sudut tenggara dekat lampu, tidak menghalangi jalur jalan
+        if (r === 16 && c === 13) {
           row.push(TILE.FLOWER_CART);
           continue;
         }
-        // Outer decorative plaza border
-        if (r === 12 || r === 16 || c === 8 || c === 14) {
+        // Outer decorative plaza border (hanya di batas tepi luar yang bukan akses jalan)
+        if (
+          (r === 12 && (c <= 9 || c >= 13)) ||
+          (r === 16 && (c <= 9 || c >= 13)) ||
+          (c === 8 && (r < 14 || r > 15)) ||
+          (c === 14 && (r < 14 || r > 16))
+        ) {
           row.push(TILE.PLAZA_BORDER);
           continue;
         }
@@ -242,50 +281,62 @@ export function generateMapLayout(): number[][] {
       }
 
       // Stone paths connecting areas
-      // Horizontal plaza path (r: 15, c: 3..21)
-      if (r === 15 && c >= 3 && c <= 21) {
+      // Horizontal plaza path (r: 14..15, c: 3..8)
+      if ((r === 14 || r === 15) && c >= 3 && c <= 8) {
         row.push(TILE.PATH_STONE);
         continue;
       }
-      // Vertical path to North Forest (c: 11, r: 8..15)
-      if (c === 11 && r >= 8 && r <= 15) {
+      // Jalan penghubung Alun-Alun ke Jembatan Kayu (3 petak lebar r: 14..16, c: 14..21 agar karakter bergerak leluasa)
+      if (r >= 14 && r <= 16 && c >= 14 && c <= 21) {
         row.push(TILE.PATH_STONE);
         continue;
       }
-      // Vertical path down to Farm & Village (c: 7, r: 15..20)
+      // Vertical path to North Forest (c: 10..12, r: 8..12 & c: 11, r: 8..15)
+      if ((c >= 10 && c <= 12 && r >= 8 && r <= 12) || (c === 11 && r >= 8 && r <= 15)) {
+        row.push(TILE.PATH_STONE);
+        continue;
+      }
+      // Vertical path down to Farm & Village (c: 7, r: 15..20 bebas hambatan setelah rumah Pak Joko digeser)
       if (c === 7 && r >= 15 && r <= 20) {
         row.push(TILE.PATH_STONE);
         continue;
       }
-      // Village square connection path (r: 17, c: 7..11)
-      if (r === 17 && c >= 7 && c <= 11) {
+      // Village square connection path (r: 17, c: 7..11 & c: 10..11, r: 16..17)
+      if ((r === 17 && c >= 7 && c <= 11) || ((c === 10 || c === 11) && r >= 16 && r <= 17)) {
         row.push(TILE.PATH_STONE);
         continue;
       }
-      // Path leading from bridge to Tower (r: 15..8, c: 24..30)
-      if ((r === 15 && c >= 24 && c <= 30) || (c === 30 && r >= 7 && r <= 15)) {
+      // Jalan Menara Jam ke Jembatan & Rumah Kakek Damai:
+      // Jalan lurus sempurna di kolom c=30 dari Menara Jam (r=7) turun melewati jembatan (r=15)
+      // hingga depan pintu pondok Kakek Damai (r=18) dan teras depan (r=22)
+      if (c === 30 && r >= 7 && r <= 18) {
         row.push(TILE.PATH_STONE);
         continue;
       }
-      // Path leading to East Cottage & Orchard (c: 31, r: 16..22)
-      if (c === 31 && r >= 16 && r <= 22) {
+      // Jalan penghubung jembatan ke jalan Menara (r: 15, c: 24..30)
+      if (r === 15 && c >= 24 && c <= 30) {
         row.push(TILE.PATH_STONE);
         continue;
       }
-      // Orchard connecting path (r: 22, c: 24..31)
-      if (r === 22 && c >= 24 && c <= 31) {
+      // Jalan ke area Kakek Damai & kebun bonsai (r: 18, c: 26..30 & c: 27, r: 18..22)
+      if ((r === 18 && c >= 26 && c <= 30) || (c === 27 && r >= 18 && r <= 22)) {
+        row.push(TILE.PATH_STONE);
+        continue;
+      }
+      // Teras depan pintu Rumah Kakek Damai & penghubung kebun buah (r: 22, c: 24..30)
+      if (r === 22 && c >= 24 && c <= 30) {
         row.push(TILE.PATH_STONE);
         continue;
       }
 
       // Benches along riverbank and village
-      if ((r === 16 && c === 6) || (r === 18 && c === 27) || (r === 22 && c === 32)) {
+      if ((r === 16 && c === 6) || (r === 18 && c === 25) || (r === 22 && c === 32)) {
         row.push(TILE.BENCH);
         continue;
       }
 
-      // Streetlamps along paths
-      if ((r === 14 && c === 19) || (r === 14 && c === 25) || (r === 10 && c === 30) || (r === 20 && c === 28)) {
+      // Streetlamps along paths (diletakkan di pinggir jalan, tidak memblokir lajur)
+      if ((r === 14 && c === 19) || (r === 14 && c === 25) || (r === 10 && c === 29) || (r === 18 && c === 31)) {
         row.push(TILE.LAMP_POST);
         continue;
       }
@@ -335,6 +386,10 @@ export function isTileSolid(tile: number): boolean {
     tile === TILE.FOUNTAIN ||
     tile === TILE.FENCE ||
     tile === TILE.TOWER_WALL ||
+    tile === TILE.TOWER_ROOF ||
+    tile === TILE.TOWER_CLOCK ||
+    tile === TILE.TOWER_DOOR ||
+    tile === TILE.TOWER_WINDOW ||
     tile === TILE.BENCH ||
     tile === TILE.LAMP_POST ||
     tile === TILE.FLOWER_CART ||

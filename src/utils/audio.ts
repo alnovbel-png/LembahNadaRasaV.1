@@ -320,6 +320,20 @@ class SoundSystem {
     });
   }
 
+  // Ancient Tower Bell & Clock Chime: Resonant soothing cathedral chime
+  public playTowerBell() {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    const bellTones = [220, 440, 528, 659.25, 880];
+    bellTones.forEach((freq, i) => {
+      this.playTone(freq, i % 2 === 0 ? 'sine' : 'triangle', 2.4 - i * 0.3, 0.09 / (i + 1), 0, false);
+    });
+    setTimeout(() => {
+      this.playTone(330, 'sine', 1.8, 0.05, 0, false);
+      this.playTone(660, 'sine', 1.5, 0.03, 0, false);
+    }, 120);
+  }
+
   // Breathing cue: inhale ascending gentle wave, exhale descending
   public playBreatheIn() {
     if (this.isMuted) return;

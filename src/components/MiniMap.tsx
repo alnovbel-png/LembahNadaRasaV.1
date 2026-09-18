@@ -111,6 +111,10 @@ export const MiniMap: React.FC<MiniMapProps> = ({
             color = '#ec4899';
             break;
           case TILE.TOWER_WALL:
+          case TILE.TOWER_ROOF:
+          case TILE.TOWER_CLOCK:
+          case TILE.TOWER_DOOR:
+          case TILE.TOWER_WINDOW:
             color = zoneStatus.tower ? '#fbbf24' : '#6b21a8';
             break;
           case TILE.SECRET_TREE:

@@ -28,7 +28,7 @@ export interface Particle {
 export type DestinationType = 'walk' | 'interact' | 'examine';
 
 export interface HoverTarget {
-  type: 'npc' | 'fountain' | 'signpost' | 'tree';
+  type: 'npc' | 'fountain' | 'signpost' | 'tree' | 'tower';
   name: string;
   x: number;
   y: number;
@@ -45,6 +45,7 @@ export class GameRenderer {
   private shakeDuration: number = 0;
   private shakeElapsed: number = 0;
   private playerStepTick: number = 0;
+  private isAllMissionsCompleted: boolean = false;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -327,9 +328,16 @@ export class GameRenderer {
     cameraY: number,
     viewportW: number,
     viewportH: number,
-    zoom: number = 1.35
+    zoom: number = 1.35,
+    isMissionCompleted?: boolean
   ) {
     this.tickCount++;
+    this.isAllMissionsCompleted =
+      isMissionCompleted ??
+      (zoneColorStatus.plaza &&
+        zoneColorStatus.bridge &&
+        zoneColorStatus.forest &&
+        zoneColorStatus.tower);
     const ctx = this.ctx;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
@@ -373,7 +381,9 @@ export class GameRenderer {
     const startRow = Math.max(0, Math.floor(effectiveCamY / TILE_SIZE) - 2);
     const endRow = Math.min(MAP_ROWS - 1, Math.ceil((effectiveCamY + worldH) / TILE_SIZE) + 2);
 
-    // 1. Draw Map Tiles
+    // 1. Draw Map Base & Floor Tiles
+    const structuresToRender: Array<{ tile: number; x: number; y: number; isColored: boolean; r: number; c: number }> = [];
+
     for (let r = startRow; r <= endRow; r++) {
       for (let c = startCol; c <= endCol; c++) {
         const tile = map[r]?.[c] ?? TILE.GRASS;
@@ -383,8 +393,19 @@ export class GameRenderer {
         // Is this zone restored to color?
         const isRestored = this.isZoneColored(c, r, zoneColorStatus);
 
-        this.drawTile(tile, screenX, screenY, isRestored);
+        if (tile === TILE.FOUNTAIN) {
+          // Render plaza mosaic floor under the fountain so floor extends continuously
+          this.drawTile(TILE.PLAZA_MOSAIC, screenX, screenY, isRestored, r, c);
+          structuresToRender.push({ tile, x: screenX, y: screenY, isColored: isRestored, r, c });
+        } else {
+          this.drawTile(tile, screenX, screenY, isRestored, r, c);
+        }
       }
+    }
+
+    // 1b. Render Plaza Structures (Fountain) after all floor tiles so no floor tiles overlap
+    for (const s of structuresToRender) {
+      this.drawTile(s.tile, s.x, s.y, s.isColored, s.r, s.c);
     }
 
     // 2. Draw Decorative Bridge Details & Water Ripple
@@ -447,7 +468,7 @@ export class GameRenderer {
   }
 
   // Draw procedural pixel tile
-  private drawTile(tile: number, x: number, y: number, isColored: boolean) {
+  private drawTile(tile: number, x: number, y: number, isColored: boolean, r: number = 0, c: number = 0) {
     const ctx = this.ctx;
 
     // If not colored, shift to grayscale/cool muted tones
@@ -656,12 +677,10 @@ export class GameRenderer {
         const stoneHighlight = isColored ? '#e2e8f0' : '#94a3b8';
 
         ctx.fillStyle = stoneDark;
-        ctx.fillRect(fx + 6, fy + 6, fw - 12, fh - 12);
-        // Beveled corners
-        ctx.clearRect(fx + 6, fy + 6, 6, 6);
-        ctx.clearRect(fx + fw - 12, fy + 6, 6, 6);
-        ctx.clearRect(fx + 6, fy + fh - 12, 6, 6);
-        ctx.clearRect(fx + fw - 12, fy + fh - 12, 6, 6);
+        // Octagonal base without clearRect to preserve underlying ground mosaic
+        ctx.fillRect(fx + 12, fy + 6, fw - 24, fh - 12);
+        ctx.fillRect(fx + 6, fy + 12, fw - 12, fh - 24);
+        ctx.fillRect(fx + 8, fy + 8, fw - 16, fh - 16);
 
         // Stone rim
         ctx.fillStyle = stoneMid;
@@ -764,22 +783,56 @@ export class GameRenderer {
         ctx.fillRect(x + 11, y + 9, 10, 2);
         ctx.fillRect(x + 12, y + 2, 8, 8);
 
-        // Glowing lantern glass
-        if (isColored) {
+        // Lampu taman: Menyala saat sedang kabut, dimatikan ketika misi sudah selesai
+        const isLampLit = !this.isAllMissionsCompleted;
+
+        if (isLampLit) {
+          // Sedang kabut: Lampu taman menyala dengan pendaran cahaya hangat menembus kabut
+          const pulse = Math.sin(this.tickCount * 0.08 + (x + y) * 0.05);
+          const haloAlpha = 0.2 + pulse * 0.05;
+
+          // Pendaran radial gradien memancar menembus lapisan kabut
+          const gradient = ctx.createRadialGradient(x + 16, y + 6, 2, x + 16, y + 6, 24);
+          gradient.addColorStop(0, `rgba(254, 240, 138, ${haloAlpha * 1.6})`);
+          gradient.addColorStop(0.5, `rgba(245, 158, 11, ${haloAlpha * 0.8})`);
+          gradient.addColorStop(1, 'rgba(245, 158, 11, 0)');
+          ctx.fillStyle = gradient;
+          ctx.beginPath();
+          ctx.arc(x + 16, y + 6, 24, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Kaca lentera menyala kuning keemasan terang
           ctx.fillStyle = '#fef08a';
           ctx.fillRect(x + 14, y + 4, 4, 5);
-          ctx.fillStyle = 'rgba(254, 240, 138, 0.15)';
-          ctx.fillRect(x + 4, y - 4, 24, 22);
+
+          // Inti filamen lampu putih berkilau
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x + 15, y + 5, 2, 3);
         } else {
-          ctx.fillStyle = '#64748b';
+          // Misi sudah selesai: Lampu taman dimatikan di bawah terang sinar matahari
+          ctx.fillStyle = isColored ? '#94a3b8' : '#64748b';
           ctx.fillRect(x + 14, y + 4, 4, 5);
+
+          // Pantulan kilau kaca lentera siang hari
+          ctx.fillStyle = isColored ? 'rgba(255, 255, 255, 0.6)' : 'rgba(255, 255, 255, 0.2)';
+          ctx.fillRect(x + 14, y + 4, 2, 2);
         }
         break;
       }
 
       case TILE.SIGNPOST: {
-        ctx.fillStyle = isColored ? '#94a3b8' : '#475569';
+        // Lush green grass patch beside the stone road
+        ctx.fillStyle = isColored ? '#4ade80' : '#475569';
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        if (isColored) {
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(x + 4, y + 26, 2, 2);
+          ctx.fillRect(x + 26, y + 24, 2, 2);
+          // Ground dirt mount around post
+          ctx.fillStyle = '#78350f';
+          ctx.fillRect(x + 12, y + 28, 8, 3);
+        }
 
         // Wooden post
         ctx.fillStyle = isColored ? '#78350f' : '#334155';
@@ -1277,8 +1330,7 @@ export class GameRenderer {
         break;
       }
 
-      case TILE.HOUSE_WALL:
-      case TILE.TOWER_WALL: {
+      case TILE.HOUSE_WALL: {
         // Timber-framed plaster cottage wall
         const plasterColor = isColored ? '#fef3c7' : '#334155';
         const timberColor = isColored ? '#78350f' : '#1e293b';
@@ -1298,6 +1350,550 @@ export class GameRenderer {
         break;
       }
 
+      case TILE.TOWER_WALL: {
+        // --- ANCIENT TOWER ASHLAR ANDESITE STONE MASONRY ---
+        const stoneBase = isColored ? '#64748b' : '#334155';
+        const stoneDark = isColored ? '#475569' : '#1e293b';
+        const stoneHighlight = isColored ? '#94a3b8' : '#475569';
+        const mortarLine = isColored ? '#334155' : '#0f172a';
+
+        // Base ashlar blocks
+        ctx.fillStyle = stoneBase;
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        // Horizontal mortar courses
+        ctx.fillStyle = mortarLine;
+        ctx.fillRect(x, y + 8, TILE_SIZE, 1.5);
+        ctx.fillRect(x, y + 16, TILE_SIZE, 1.5);
+        ctx.fillRect(x, y + 24, TILE_SIZE, 1.5);
+
+        // Vertical brick mortar joints (staggered pattern)
+        ctx.fillRect(x + 10, y, 1.5, 8);
+        ctx.fillRect(x + 22, y, 1.5, 8);
+        ctx.fillRect(x + 16, y + 8, 1.5, 8);
+        ctx.fillRect(x + 8, y + 16, 1.5, 8);
+        ctx.fillRect(x + 24, y + 16, 1.5, 8);
+        ctx.fillRect(x + 14, y + 24, 1.5, 8);
+
+        // Stone highlight bevels
+        ctx.fillStyle = stoneHighlight;
+        ctx.fillRect(x + 1, y + 1, 8, 1);
+        ctx.fillRect(x + 12, y + 1, 9, 1);
+        ctx.fillRect(x + 1, y + 9, 14, 1);
+        ctx.fillRect(x + 18, y + 9, 12, 1);
+
+        // Architectural details based on location
+        if (c === 28 || c === 32) {
+          // --- CORNER BUTTRESS / PILASTER & HERALDIC BANNER ---
+          const isLeft = c === 28;
+          ctx.fillStyle = stoneDark;
+          if (isLeft) {
+            ctx.fillRect(x, y, 6, TILE_SIZE);
+            ctx.fillStyle = stoneHighlight;
+            ctx.fillRect(x + 5, y, 1, TILE_SIZE);
+          } else {
+            ctx.fillRect(x + TILE_SIZE - 6, y, 6, TILE_SIZE);
+            ctx.fillStyle = stoneHighlight;
+            ctx.fillRect(x + TILE_SIZE - 6, y, 1, TILE_SIZE);
+          }
+
+          if (r === 4) {
+            // Ceremonial Heraldic Valley Banner
+            const bx = isLeft ? x + 8 : x + 12;
+            const bannerWave = Math.sin(this.tickCount * 0.08 + (isLeft ? 0 : 1.6)) * 1.5;
+
+            // Iron wall bracket
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(bx - 2, y + 4, 16, 2);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(bx - 3, y + 3, 2, 4);
+            ctx.fillRect(bx + 13, y + 3, 2, 4);
+
+            // Banner fabric
+            const bannerColor = isColored ? '#2563eb' : '#475569';
+            const bannerGold = isColored ? '#fbbf24' : '#64748b';
+            ctx.fillStyle = bannerColor;
+            ctx.beginPath();
+            ctx.moveTo(bx, y + 6);
+            ctx.lineTo(bx + 12, y + 6);
+            ctx.lineTo(bx + 12 + bannerWave, y + 26);
+            ctx.lineTo(bx + 6 + bannerWave * 0.5, y + 22);
+            ctx.lineTo(bx + bannerWave, y + 26);
+            ctx.closePath();
+            ctx.fill();
+
+            // Golden Sunburst crest on banner
+            ctx.fillStyle = bannerGold;
+            ctx.fillRect(bx + 4, y + 10, 4, 4);
+            ctx.fillStyle = isColored ? '#ffffff' : '#94a3b8';
+            ctx.fillRect(bx + 5, y + 11, 2, 2);
+          } else if (r === 5 || r === 6) {
+            // Mounted Wrought-Iron Torch Sconce on Corner Pier
+            const tx = isLeft ? x + 12 : x + 16;
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(tx, y + 14, 4, 4);
+            ctx.fillRect(tx + 1, y + 18, 2, 6);
+            ctx.fillStyle = isColored ? '#78350f' : '#334155';
+            ctx.fillRect(tx - 1, y + 10, 6, 4);
+
+            if (isColored) {
+              // Flickering Warm Ember Torch Flame
+              const flicker = Math.sin(this.tickCount * 0.25 + (isLeft ? 0 : 2.5)) * 1.5;
+              ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
+              ctx.beginPath();
+              ctx.arc(tx + 2, y + 7, 10, 0, Math.PI * 2);
+              ctx.fill();
+
+              ctx.fillStyle = '#ef4444';
+              ctx.fillRect(tx - 1 + flicker * 0.5, y + 4, 6, 6);
+              ctx.fillStyle = '#f59e0b';
+              ctx.fillRect(tx + flicker, y + 2, 4, 6);
+              ctx.fillStyle = '#fef08a';
+              ctx.fillRect(tx + 1 + flicker * 0.5, y + 4, 2, 3);
+            } else {
+              ctx.fillStyle = '#1e293b';
+              ctx.fillRect(tx, y + 8, 4, 3);
+            }
+          }
+        } else {
+          // --- INNER WALL: Creeping Green Ivy & Arrow Embrasure ---
+          if (r === 5) {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(x + 14, y + 8, 4, 14);
+            ctx.fillStyle = stoneDark;
+            ctx.fillRect(x + 12, y + 6, 8, 2);
+            ctx.fillRect(x + 12, y + 22, 8, 2);
+          }
+
+          if (isColored) {
+            ctx.fillStyle = '#15803d';
+            ctx.fillRect(x + 3, y + 20, 4, 5);
+            ctx.fillRect(x + 6, y + 16, 5, 6);
+            ctx.fillRect(x + 4, y + 10, 3, 5);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(x + 4, y + 21, 2, 2);
+            ctx.fillRect(x + 8, y + 17, 2, 2);
+            ctx.fillRect(x + 5, y + 11, 1, 2);
+          }
+        }
+        break;
+      }
+
+      case TILE.TOWER_ROOF: {
+        // Slate & copper roof spire structure of the Grand Clock Tower
+        const slateBase = isColored ? '#1e293b' : '#334155';
+        const slateDark = isColored ? '#0f172a' : '#1e293b';
+        const slateHighlight = isColored ? '#38bdf8' : '#64748b';
+        const copperTrim = isColored ? '#b45309' : '#475569';
+        const copperGold = isColored ? '#f59e0b' : '#64748b';
+        const goldHighlight = isColored ? '#fef08a' : '#94a3b8';
+
+        // Background behind roof
+        ctx.fillStyle = isColored ? '#15803d' : '#1e293b';
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        if (r === 2 && c === 30) {
+          // --- PINNACLE: Central High Gothic Spire with Golden Weathervane ---
+          ctx.fillStyle = slateBase;
+          ctx.beginPath();
+          ctx.moveTo(x + 16, y - 8);
+          ctx.lineTo(x + 30, y + 32);
+          ctx.lineTo(x + 2, y + 32);
+          ctx.closePath();
+          ctx.fill();
+
+          // Left facet shadow
+          ctx.fillStyle = slateDark;
+          ctx.beginPath();
+          ctx.moveTo(x + 16, y - 8);
+          ctx.lineTo(x + 16, y + 32);
+          ctx.lineTo(x + 2, y + 32);
+          ctx.closePath();
+          ctx.fill();
+
+          // Slate horizontal bands
+          ctx.fillStyle = copperTrim;
+          ctx.fillRect(x + 6, y + 26, 20, 2);
+          ctx.fillRect(x + 10, y + 16, 12, 2);
+          ctx.fillRect(x + 13, y + 6, 6, 2);
+
+          // Bronze mast
+          ctx.fillStyle = copperGold;
+          ctx.fillRect(x + 15, y - 16, 2, 12);
+
+          // Golden Celestial Weathervane
+          const vaneFlutter = Math.sin(this.tickCount * 0.08) * 1.5;
+          ctx.fillStyle = copperGold;
+          ctx.fillRect(x + 11, y - 12, 10, 1.5);
+          ctx.fillStyle = goldHighlight;
+          ctx.beginPath();
+          ctx.moveTo(x + 23 + vaneFlutter, y - 12);
+          ctx.lineTo(x + 19 + vaneFlutter, y - 15);
+          ctx.lineTo(x + 19 + vaneFlutter, y - 9);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillRect(x + 8 + vaneFlutter, y - 14, 2, 4);
+
+          // Golden Orb Apex
+          ctx.fillStyle = copperGold;
+          ctx.beginPath();
+          ctx.arc(x + 16, y - 16, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = goldHighlight;
+          ctx.beginPath();
+          ctx.arc(x + 15.5, y - 16.5, 1.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          if (isColored) {
+            const sparkleFrame = Math.floor(this.tickCount * 0.1) % 5;
+            if (sparkleFrame === 0) {
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(x + 15, y - 18, 2, 2);
+            }
+          }
+        } else if (r === 2 && (c === 29 || c === 31)) {
+          // --- SLOPING SPIRE ROOF (Flanks) ---
+          const isLeft = c === 29;
+          ctx.fillStyle = slateBase;
+          ctx.fillRect(x, y + 6, TILE_SIZE, TILE_SIZE - 6);
+
+          ctx.fillStyle = slateDark;
+          ctx.beginPath();
+          if (isLeft) {
+            ctx.moveTo(x, y + 20);
+            ctx.lineTo(x + TILE_SIZE, y + 6);
+            ctx.lineTo(x + TILE_SIZE, y + TILE_SIZE);
+            ctx.lineTo(x, y + TILE_SIZE);
+          } else {
+            ctx.moveTo(x, y + 6);
+            ctx.lineTo(x + TILE_SIZE, y + 20);
+            ctx.lineTo(x + TILE_SIZE, y + TILE_SIZE);
+            ctx.lineTo(x, y + TILE_SIZE);
+          }
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = copperGold;
+          ctx.fillRect(x, y + 28, TILE_SIZE, 3);
+          ctx.fillStyle = slateHighlight;
+          ctx.fillRect(x + 6, y + 22, 6, 1);
+          ctx.fillRect(x + 18, y + 22, 6, 1);
+        } else if (r === 2 && (c === 28 || c === 32)) {
+          // --- CORNER PINNACLE TURRET ---
+          ctx.fillStyle = isColored ? '#475569' : '#1e293b';
+          ctx.fillRect(x + 4, y + 20, 24, 12);
+          ctx.fillStyle = isColored ? '#64748b' : '#334155';
+          ctx.fillRect(x + 6, y + 18, 20, 4);
+
+          ctx.fillStyle = slateBase;
+          ctx.beginPath();
+          ctx.moveTo(x + 16, y + 2);
+          ctx.lineTo(x + 27, y + 18);
+          ctx.lineTo(x + 5, y + 18);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = copperGold;
+          ctx.fillRect(x + 15, y - 2, 2, 5);
+          ctx.beginPath();
+          ctx.arc(x + 16, y - 3, 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (r === 3 && c === 30) {
+          // --- STONE CLOCK PEDIMENT & GABLE ---
+          ctx.fillStyle = isColored ? '#64748b' : '#334155';
+          ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+          ctx.fillStyle = isColored ? '#94a3b8' : '#475569';
+          ctx.beginPath();
+          ctx.moveTo(x + 16, y + 2);
+          ctx.lineTo(x + 30, y + 22);
+          ctx.lineTo(x + 2, y + 22);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = isColored ? '#475569' : '#1e293b';
+          ctx.fillRect(x + 4, y + 22, 24, 4);
+
+          ctx.fillStyle = copperGold;
+          ctx.beginPath();
+          ctx.arc(x + 16, y + 14, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = isColored ? '#ffffff' : '#94a3b8';
+          ctx.fillRect(x + 15, y + 13, 2, 2);
+
+          ctx.fillStyle = isColored ? '#334155' : '#0f172a';
+          ctx.fillRect(x, y + 28, TILE_SIZE, 4);
+        } else {
+          ctx.fillStyle = slateBase;
+          ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+          ctx.fillStyle = copperTrim;
+          ctx.fillRect(x, y + 28, TILE_SIZE, 4);
+        }
+        break;
+      }
+
+      case TILE.TOWER_CLOCK: {
+        // --- THE GRAND ASTRONOMICAL CLOCK FACE OF HARMONY ---
+        ctx.fillStyle = isColored ? '#64748b' : '#334155';
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        ctx.fillStyle = isColored ? '#475569' : '#1e293b';
+        ctx.fillRect(x, y, TILE_SIZE, 2);
+        ctx.fillRect(x, y + TILE_SIZE - 2, TILE_SIZE, 2);
+        ctx.fillRect(x, y, 2, TILE_SIZE);
+        ctx.fillRect(x + TILE_SIZE - 2, y, 2, TILE_SIZE);
+
+        const cx = x + 16;
+        const cy = y + 16;
+
+        // Outer ornamental golden bronze dial bezel (28px diameter)
+        ctx.fillStyle = isColored ? '#d97706' : '#475569';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 14, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Embossed golden studs / gear teeth
+        ctx.fillStyle = isColored ? '#f59e0b' : '#64748b';
+        for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+          const gx = cx + Math.cos(a) * 13;
+          const gy = cy + Math.sin(a) * 13;
+          ctx.fillRect(gx - 1, gy - 1, 2, 2);
+        }
+
+        // Inner Clock Face Dial (22px diameter)
+        const dialFill = isColored ? '#fefce8' : '#0f172a';
+        ctx.fillStyle = dialFill;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Soft radial warm light aura when colored
+        if (isColored) {
+          const auraPulse = Math.sin(this.tickCount * 0.08) * 0.08;
+          ctx.fillStyle = `rgba(254, 240, 138, ${0.28 + auraPulse})`;
+          ctx.beginPath();
+          ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // 12 Roman / Diamond hour markers on dial
+        const markerColor = isColored ? '#78350f' : '#64748b';
+        ctx.fillStyle = markerColor;
+        ctx.fillRect(cx - 1, cy - 9, 2, 2); // XII
+        ctx.fillRect(cx + 7, cy - 1, 2, 2); // III
+        ctx.fillRect(cx - 1, cy + 7, 2, 2); // VI
+        ctx.fillRect(cx - 9, cy - 1, 2, 2); // IX
+
+        // Dynamic Moving Hands of Time & Harmony
+        const minuteAngle = isColored
+          ? ((this.tickCount * 0.02) % (Math.PI * 2)) - Math.PI / 2
+          : -Math.PI / 2;
+        const hourAngle = isColored ? 0.35 : -Math.PI / 2;
+
+        // Hour Hand
+        ctx.strokeStyle = isColored ? '#92400e' : '#475569';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(hourAngle) * 5.5, cy + Math.sin(hourAngle) * 5.5);
+        ctx.stroke();
+
+        // Minute Hand
+        ctx.strokeStyle = isColored ? '#1e293b' : '#334155';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(minuteAngle) * 7.5, cy + Math.sin(minuteAngle) * 7.5);
+        ctx.stroke();
+
+        // Central Golden Hub
+        ctx.fillStyle = isColored ? '#fbbf24' : '#64748b';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 0.5, cy - 0.5, 1, 1);
+        break;
+      }
+
+      case TILE.TOWER_WINDOW: {
+        // --- BELFRY BRONZE BELL (r=3) OR MID-TOWER STAINED GLASS LANCET (r=5) ---
+        ctx.fillStyle = isColored ? '#64748b' : '#334155';
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        if (r === 3) {
+          // --- BELFRY OPEN STONE ARCH & BRONZE BELL OF HARMONY ---
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.arc(x + 16, y + 14, 10, Math.PI, 0);
+          ctx.lineTo(x + 26, y + 28);
+          ctx.lineTo(x + 6, y + 28);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = isColored ? '#94a3b8' : '#475569';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(x + 16, y + 14, 10, Math.PI, 0);
+          ctx.stroke();
+
+          // Oak beam
+          ctx.fillStyle = isColored ? '#78350f' : '#1e293b';
+          ctx.fillRect(x + 8, y + 10, 16, 3);
+
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(x + 15, y + 13, 2, 2);
+
+          // Bronze Bell
+          const bellBronze = isColored ? '#b45309' : '#334155';
+          const bellGleam = isColored ? '#f59e0b' : '#64748b';
+          const bellLight = isColored ? '#fef08a' : '#94a3b8';
+
+          ctx.fillStyle = bellBronze;
+          ctx.beginPath();
+          ctx.moveTo(x + 13, y + 15);
+          ctx.lineTo(x + 19, y + 15);
+          ctx.lineTo(x + 22, y + 23);
+          ctx.lineTo(x + 10, y + 23);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = bellGleam;
+          ctx.fillRect(x + 14, y + 17, 4, 5);
+          ctx.fillStyle = bellLight;
+          ctx.fillRect(x + 15, y + 18, 1, 3);
+
+          ctx.fillStyle = isColored ? '#d97706' : '#475569';
+          ctx.fillRect(x + 9, y + 23, 14, 2);
+
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(x + 15, y + 25, 2, 2);
+
+          // Stone balustrade rail
+          ctx.fillStyle = isColored ? '#475569' : '#1e293b';
+          ctx.fillRect(x + 4, y + 27, 24, 5);
+          ctx.fillStyle = isColored ? '#94a3b8' : '#475569';
+          ctx.fillRect(x + 6, y + 27, 20, 2);
+        } else {
+          // --- GOTHIC STAINED GLASS LANCET WINDOW (r=5, c=30) ---
+          ctx.fillStyle = '#0f172a';
+          ctx.beginPath();
+          ctx.moveTo(x + 16, y + 3);
+          ctx.lineTo(x + 24, y + 12);
+          ctx.lineTo(x + 24, y + 26);
+          ctx.lineTo(x + 8, y + 26);
+          ctx.lineTo(x + 8, y + 12);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.strokeStyle = isColored ? '#94a3b8' : '#475569';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+
+          if (isColored) {
+            const glowPulse = Math.sin(this.tickCount * 0.07) * 0.05;
+            ctx.fillStyle = `rgba(254, 240, 138, ${0.2 + glowPulse})`;
+            ctx.fillRect(x + 7, y + 6, 18, 22);
+
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(x + 14, y + 7, 4, 4);
+
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(x + 10, y + 13, 5, 5);
+            ctx.fillRect(x + 17, y + 13, 5, 5);
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(x + 10, y + 19, 5, 5);
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(x + 17, y + 19, 5, 5);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fillRect(x + 11, y + 14, 2, 2);
+            ctx.fillRect(x + 18, y + 14, 2, 2);
+          } else {
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(x + 10, y + 12, 12, 12);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.fillRect(x + 12, y + 14, 2, 3);
+          }
+
+          ctx.fillStyle = isColored ? '#334155' : '#0f172a';
+          ctx.fillRect(x + 15, y + 11, 2, 14);
+          ctx.fillRect(x + 9, y + 17, 14, 1.5);
+
+          ctx.fillStyle = isColored ? '#475569' : '#1e293b';
+          ctx.fillRect(x + 6, y + 26, 20, 4);
+          ctx.fillStyle = isColored ? '#94a3b8' : '#475569';
+          ctx.fillRect(x + 7, y + 26, 18, 1.5);
+        }
+        break;
+      }
+
+      case TILE.TOWER_DOOR: {
+        // --- GRAND GOTHIC ARCHED OAK PORTAL & GATE OF HARMONY ---
+        ctx.fillStyle = isColored ? '#64748b' : '#334155';
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        ctx.fillStyle = isColored ? '#475569' : '#1e293b';
+        ctx.beginPath();
+        ctx.arc(x + 16, y + 13, 12, Math.PI, 0);
+        ctx.lineTo(x + 28, y + 30);
+        ctx.lineTo(x + 4, y + 30);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.strokeStyle = isColored ? '#94a3b8' : '#475569';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(x + 16, y + 13, 12, Math.PI, 0);
+        ctx.stroke();
+
+        ctx.fillStyle = isColored ? '#fbbf24' : '#64748b';
+        ctx.fillRect(x + 14, y, 4, 4);
+
+        const oakBase = isColored ? '#451a03' : '#1e293b';
+        const oakPlank = isColored ? '#78350f' : '#334155';
+        ctx.fillStyle = oakBase;
+        ctx.beginPath();
+        ctx.arc(x + 16, y + 14, 10, Math.PI, 0);
+        ctx.lineTo(x + 26, y + 29);
+        ctx.lineTo(x + 6, y + 29);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = oakPlank;
+        ctx.fillRect(x + 9, y + 14, 2, 15);
+        ctx.fillRect(x + 13, y + 10, 2, 19);
+        ctx.fillRect(x + 17, y + 10, 2, 19);
+        ctx.fillRect(x + 21, y + 14, 2, 15);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 15.5, y + 6, 1, 23);
+
+        ctx.fillStyle = isColored ? '#1e293b' : '#0f172a';
+        ctx.fillRect(x + 7, y + 14, 18, 2.5);
+        ctx.fillRect(x + 7, y + 24, 18, 2.5);
+
+        ctx.fillStyle = isColored ? '#475569' : '#334155';
+        ctx.fillRect(x + 8, y + 14, 1.5, 2.5);
+        ctx.fillRect(x + 22, y + 14, 1.5, 2.5);
+        ctx.fillRect(x + 8, y + 24, 1.5, 2.5);
+        ctx.fillRect(x + 22, y + 24, 1.5, 2.5);
+
+        ctx.fillStyle = isColored ? '#fbbf24' : '#64748b';
+        ctx.fillRect(x + 12, y + 18, 2, 3);
+        ctx.fillRect(x + 18, y + 18, 2, 3);
+        ctx.fillRect(x + 14.5, y + 21, 3, 3);
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 15.5, y + 22, 1, 1.5);
+
+        ctx.fillStyle = isColored ? '#334155' : '#0f172a';
+        ctx.fillRect(x + 2, y + 29, 28, 3);
+        ctx.fillStyle = isColored ? '#64748b' : '#475569';
+        ctx.fillRect(x + 4, y + 29, 24, 1);
+        break;
+      }
+
       case TILE.HOUSE_WINDOW: {
         // Cottage wall with warm glowing window and flower planter box
         const plasterColor = isColored ? '#fef3c7' : '#334155';
@@ -1314,13 +1910,43 @@ export class GameRenderer {
         ctx.fillStyle = '#451a03';
         ctx.fillRect(x + 7, y + 4, 18, 16);
 
-        // Glass panes glowing warm amber light
-        const glassGlow = isColored ? '#fef08a' : '#64748b';
-        ctx.fillStyle = glassGlow;
-        ctx.fillRect(x + 9, y + 6, 6, 5);
-        ctx.fillRect(x + 17, y + 6, 6, 5);
-        ctx.fillRect(x + 9, y + 13, 6, 5);
-        ctx.fillRect(x + 17, y + 13, 6, 5);
+        // Lampu rumah: Menyala saat sedang kabut, dimatikan ketika misi sudah selesai
+        const isLampLit = !this.isAllMissionsCompleted;
+
+        if (isLampLit) {
+          // Sedang kabut: Lampu dalam rumah menyala hangat menerangi jendela ke luar
+          const pulse = Math.sin(this.tickCount * 0.07 + x * 0.1) * 0.03;
+          ctx.fillStyle = `rgba(254, 240, 138, ${0.16 + pulse})`;
+          ctx.fillRect(x + 6, y + 3, 20, 18);
+
+          // Kaca jendela menyala dengan cahaya lampu kuning keemasan yang hangat
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(x + 9, y + 6, 6, 5);
+          ctx.fillRect(x + 17, y + 6, 6, 5);
+          ctx.fillRect(x + 9, y + 13, 6, 5);
+          ctx.fillRect(x + 17, y + 13, 6, 5);
+
+          // Pendaran kilau hangat di dalam ruangan
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x + 11, y + 7, 2, 2);
+          ctx.fillRect(x + 19, y + 7, 2, 2);
+        } else {
+          // Misi sudah selesai: Lampu rumah dimatikan, jendela memantulkan langit cerah
+          const glassTone = isColored ? '#38bdf8' : '#64748b';
+          const glassShade = isColored ? '#0284c7' : '#475569';
+          ctx.fillStyle = glassShade;
+          ctx.fillRect(x + 9, y + 6, 6, 5);
+          ctx.fillRect(x + 17, y + 6, 6, 5);
+          ctx.fillRect(x + 9, y + 13, 6, 5);
+          ctx.fillRect(x + 17, y + 13, 6, 5);
+
+          // Pantulan kilau langit siang hari pada kaca jendela yang mati lampunya
+          ctx.fillStyle = isColored ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 255, 255, 0.15)';
+          ctx.fillRect(x + 10, y + 7, 3, 2);
+          ctx.fillRect(x + 18, y + 7, 3, 2);
+          ctx.fillRect(x + 10, y + 14, 3, 2);
+          ctx.fillRect(x + 18, y + 14, 3, 2);
+        }
 
         // Window mullion cross
         ctx.fillStyle = '#78350f';
@@ -1375,6 +2001,24 @@ export class GameRenderer {
         // Gleaming brass doorknob
         ctx.fillStyle = isColored ? '#fbbf24' : '#94a3b8';
         ctx.fillRect(x + 20, y + 15, 2, 3);
+
+        // Lampu teras rumah di sebelah pintu
+        const isDoorLampLit = !this.isAllMissionsCompleted;
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 2, y + 7, 3, 2);
+        ctx.fillRect(x + 3, y + 5, 3, 5);
+
+        if (isDoorLampLit) {
+          // Sedang kabut: Lampu teras rumah menyala hangat
+          ctx.fillStyle = '#fef08a';
+          ctx.fillRect(x + 3, y + 6, 2, 3);
+          ctx.fillStyle = 'rgba(254, 240, 138, 0.22)';
+          ctx.fillRect(x + 1, y + 4, 7, 8);
+        } else {
+          // Misi sudah selesai: Lampu teras rumah dimatikan
+          ctx.fillStyle = isColored ? '#94a3b8' : '#64748b';
+          ctx.fillRect(x + 3, y + 6, 2, 3);
+        }
         break;
       }
 
@@ -2440,8 +3084,8 @@ export class GameRenderer {
     camY: number
   ) {
     const ctx = this.ctx;
-    if (status.plaza && status.bridge && status.forest && status.tower) {
-      // All zones restored: golden sunshine particles!
+    if (this.isAllMissionsCompleted || (status.plaza && status.bridge && status.forest && status.tower)) {
+      // All zones restored & missions completed: fog is completely gone!
       return;
     }
 
@@ -2617,10 +3261,11 @@ export class GameRenderer {
 
     // Badge styling based on type
     const isNPC = type === 'npc';
-    const borderColor = isNPC ? '#f59e0b' : '#10b981';
-    const textColor = isNPC ? '#fef08a' : '#a7f3d0';
-    const icon = isNPC ? '💬' : '🔍';
-    const actionLabel = isNPC ? 'Klik Bicara' : 'Klik Periksa';
+    const isTower = type === 'tower';
+    const borderColor = isTower ? '#f59e0b' : isNPC ? '#f59e0b' : '#10b981';
+    const textColor = isTower ? '#fef08a' : isNPC ? '#fef08a' : '#a7f3d0';
+    const icon = isTower ? '🕰️' : isNPC ? '💬' : '🔍';
+    const actionLabel = isTower ? 'Klik Periksa Menara' : isNPC ? 'Klik Bicara' : 'Klik Periksa';
 
     ctx.font = '7px "Press Start 2P", monospace';
     ctx.textAlign = 'center';

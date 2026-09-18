@@ -16,14 +16,10 @@ import {
   Heart,
   BookOpen,
   MapPin,
-  Download,
-  ShieldCheck,
-  Check,
 } from 'lucide-react';
 import { useAudioSettings } from '../utils/audio';
 import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
 import { PSE_ACHIEVEMENTS } from '../game/constants';
-import { downloadOfflineGameHtml } from '../utils/exportOfflineHtml';
 
 export type SettingsModalTab = 'quest' | 'achievements' | 'audio' | 'controls';
 
@@ -39,7 +35,6 @@ export interface SettingsModalProps {
   empathyScore?: number;
   isMuted?: boolean;
   onToggleMute?: () => void;
-  onExportOffline?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -52,11 +47,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   npcs = [],
   unlockedBadges,
   empathyScore,
-  onExportOffline,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
-  const [isExporting, setIsExporting] = useState<boolean>(false);
-  const [exportSuccess, setExportSuccess] = useState<boolean>(false);
 
   const {
     bgmVolume,
@@ -73,7 +65,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       setActiveTab(initialTab);
-      setExportSuccess(false);
     }
   }, [isOpen, initialTab]);
 
@@ -114,23 +105,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const unlockedCount = effectiveBadges.length;
   const totalBadges = PSE_ACHIEVEMENTS.length;
   const badgeProgressPercent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
-
-  const handleExport = () => {
-    setIsExporting(true);
-    try {
-      if (onExportOffline) {
-        onExportOffline();
-      } else {
-        downloadOfflineGameHtml();
-      }
-      setExportSuccess(true);
-      setTimeout(() => setExportSuccess(false), 4000);
-    } catch (err) {
-      console.error('Failed to export offline HTML:', err);
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-3">
@@ -205,10 +179,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           >
             <Volume2 className="w-4 h-4 shrink-0" />
             <span
-              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+              style={{
+                fontFamily: "'Pixelify Sans', sans-serif",
+                fontSize: '13px',
+                textAlign: 'center',
+                textDecorationLine: 'none',
+              }}
               className="truncate"
             >
-              Audio & Ekspor
+              Audio & Efek Suara
             </span>
           </button>
 
@@ -446,10 +425,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm text-slate-200">
+                    <h3
+                      style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+                      className="font-bold text-sm text-slate-200"
+                    >
                       Suara Game Keseluruhan
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p
+                      style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+                      className="text-xs text-slate-400 mt-0.5"
+                    >
                       {isMuted ? 'Game sedang dalam mode senyap (bisu)' : 'Audio aktif dan terdengar'}
                     </p>
                   </div>
@@ -458,10 +443,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <button
                   id="settings-toggle-mute-btn"
                   onClick={toggleMute}
+                  style={{ backgroundColor: '#ea093e' }}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
                     isMuted
-                      ? 'bg-rose-500 hover:bg-rose-400 text-slate-950'
-                      : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                      ? 'hover:opacity-90 text-slate-950'
+                      : 'hover:opacity-90 text-slate-950'
                   }`}
                 >
                   {isMuted ? 'Nyalakan Suara' : 'Bisu (Mute)'}
@@ -473,7 +459,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Music className="w-4 h-4 text-amber-400" />
-                    <span className="font-bold text-sm text-slate-200">
+                    <span
+                      style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+                      className="font-bold text-sm text-slate-200"
+                    >
                       Volume Musik Latar (BGM)
                     </span>
                   </div>
@@ -494,7 +483,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 />
 
                 <div className="flex justify-between items-center pt-1">
-                  <span className="text-[10px] text-slate-500 font-mono">0% (Senyap) - 100% (Maks)</span>
+                  <span
+                    style={{ fontSize: '13px' }}
+                    className="text-slate-500 font-mono"
+                  >
+                    0% (Senyap) - 100% (Maks)
+                  </span>
                   <button
                     id="settings-test-bgm-btn"
                     onClick={() => {
@@ -504,7 +498,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer"
                   >
                     <Play className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Uji Melodi BGM</span>
+                    <span style={{ fontFamily: 'Arial' }}>Uji Melodi BGM</span>
                   </button>
                 </div>
               </div>
@@ -514,7 +508,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Volume2 className="w-4 h-4 text-cyan-400" />
-                    <span className="font-bold text-sm text-slate-200">
+                    <span
+                      style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+                      className="font-bold text-sm text-slate-200"
+                    >
                       Volume Efek Suara (SFX)
                     </span>
                   </div>
@@ -628,44 +625,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <span className="text-[10px] text-slate-400">Audio Bisu (0%)</span>
                   </button>
                 </div>
-              </div>
-
-              {/* OFFLINE HTML EXPORT CARD */}
-              <div className="bg-emerald-950/40 border-2 border-emerald-500/50 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                    <h4 className="font-bold text-sm text-emerald-300">
-                      Mainkan Tanpa Kuota Internet (Versi Offline)
-                    </h4>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                    Unduh game ke dalam satu berkas <code>.html</code> mandiri. Dapat disimpan di flashdisk, dibuka di laptop sekolah, atau ponsel kapan saja tanpa perlu internet!
-                  </p>
-                </div>
-
-                <button
-                  id="settings-download-offline-btn"
-                  onClick={handleExport}
-                  disabled={isExporting}
-                  className={`px-4 py-2.5 rounded-xl font-bold text-xs shrink-0 flex items-center gap-2 shadow-lg transition cursor-pointer ${
-                    exportSuccess
-                      ? 'bg-emerald-400 text-slate-950 shadow-emerald-500/30'
-                      : 'bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950'
-                  }`}
-                >
-                  {exportSuccess ? (
-                    <>
-                      <Check className="w-4 h-4 text-slate-950" />
-                      <span>Berhasil Diunduh!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Download className="w-4 h-4 text-slate-950" />
-                      <span>{isExporting ? 'Menyiapkan...' : 'Unduh File HTML Game'}</span>
-                    </>
-                  )}
-                </button>
               </div>
             </div>
           )}

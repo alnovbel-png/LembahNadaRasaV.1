@@ -7,6 +7,7 @@ interface DialogueBoxProps {
   dialogue: DialogueNode;
   onChoiceSelect: (choice: ChoiceOption) => void;
   onNext: () => void;
+  onClose?: () => void;
   isCompassActive: boolean;
 }
 
@@ -14,6 +15,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   dialogue,
   onChoiceSelect,
   onNext,
+  onClose,
   isCompassActive,
 }) => {
   const [displayedText, setDisplayedText] = useState('');
@@ -42,14 +44,46 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     return () => clearInterval(interval);
   }, [dialogue]);
 
+  // Handle immediate text skip or exit
+  const handleExitOrSkip = () => {
+    if (isTyping) {
+      setDisplayedText(dialogue.text);
+      setIsTyping(false);
+    } else if (onClose) {
+      onClose();
+    } else {
+      onNext();
+    }
+  };
+
   // Keyboard navigation for dialogue
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape closes or exits dialogue immediately
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (onClose) {
+          onClose();
+        } else {
+          onNext();
+        }
+        return;
+      }
+
       if (dialogue.choices && dialogue.choices.length > 0) {
-        // Number keys 1, 2, 3
+        // Number keys 1, 2, 3, 4, 5
         const num = parseInt(e.key);
         if (num >= 1 && num <= dialogue.choices.length) {
           onChoiceSelect(dialogue.choices[num - 1]);
+          return;
+        }
+
+        if (e.code === 'Space' || e.key === 'Enter') {
+          if (isTyping) {
+            e.preventDefault();
+            setDisplayedText(dialogue.text);
+            setIsTyping(false);
+          }
         }
       } else {
         if (e.code === 'Space' || e.key === 'Enter') {
@@ -67,7 +101,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogue, isTyping, onChoiceSelect, onNext]);
+  }, [dialogue, isTyping, onChoiceSelect, onNext, onClose]);
 
   // Character portraits rendering
   const renderPortrait = (type: string) => {
@@ -163,6 +197,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             🎒
           </div>
         );
+      case 'clock_tower':
+      case 'tower':
+        return (
+          <div className="w-16 h-16 bg-amber-950/90 rounded-lg flex items-center justify-center text-3xl border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)] animate-pulse">
+            🕰️
+          </div>
+        );
       default:
         return (
           <div className="w-16 h-16 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border-2 border-slate-600 shadow-md">
@@ -186,12 +227,23 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             </span>
           </div>
 
-          {dialogue.emotionAura && (
-            <div className="flex items-center gap-1 text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-pixel">
-              <Sparkles className="w-3 h-3 text-amber-400" />
-              <span>AURA: {dialogue.emotionAura.toUpperCase()}</span>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            {dialogue.emotionAura && (
+              <div className="flex items-center gap-1 text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-pixel">
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span>AURA: {dialogue.emotionAura.toUpperCase()}</span>
+              </div>
+            )}
+            <button
+              id="dialogue-header-close-btn"
+              onClick={handleExitOrSkip}
+              className="px-2 py-0.5 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-500/50 text-[8px] sm:text-[9px] font-pixel transition flex items-center gap-1"
+              title="Tutup / Lewati Dialog (ESC)"
+            >
+              <span>{isTyping ? 'LEWATI' : 'TUTUP [ESC]'}</span>
+              <span className="font-bold">✕</span>
+            </button>
+          </div>
         </div>
 
         {/* Middle: Portrait + Dialogue text */}
@@ -219,6 +271,19 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               {displayedText}
               {isTyping && <span className="inline-block w-2 h-3 bg-amber-400 ml-1 animate-pulse" />}
             </p>
+
+            {isTyping && (
+              <button
+                id="dialogue-fast-forward-btn"
+                onClick={() => {
+                  setDisplayedText(dialogue.text);
+                  setIsTyping(false);
+                }}
+                className="self-end text-[8px] font-pixel text-amber-400 hover:text-amber-300 bg-slate-900/80 px-2 py-0.5 rounded border border-amber-500/30 transition flex items-center gap-1 cursor-pointer"
+              >
+                <span>⚡ Tampilkan Semua Teks [Spasi]</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -228,7 +293,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             <div className="flex flex-col gap-2">
               <span className="font-pixel text-[8px] sm:text-[9px] text-amber-400 font-semibold flex items-center gap-1.5">
                 <MessageCircle className="w-3 h-3 text-amber-400" />
-                Pilih Responmu (1-3 atau klik):
+                Pilih Responmu (1-{dialogue.choices.length} atau klik):
               </span>
               <div className="grid grid-cols-1 gap-1.5">
                 {dialogue.choices.map((choice, index) => (
@@ -236,7 +301,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     key={choice.id}
                     id={`choice-${choice.id}`}
                     onClick={() => onChoiceSelect(choice)}
-                    className="w-full text-left px-2.5 py-2 rounded-lg bg-slate-900/90 hover:bg-amber-950/60 hover:border-amber-400 border border-slate-700 font-pixel text-[9px] sm:text-[10px] transition flex items-start gap-2 text-slate-200 hover:text-amber-200"
+                    className="w-full text-left px-2.5 py-2 rounded-lg bg-slate-900/90 hover:bg-amber-950/60 hover:border-amber-400 border border-slate-700 font-pixel text-[9px] sm:text-[10px] transition flex items-start gap-2 text-slate-200 hover:text-amber-200 cursor-pointer"
                   >
                     <span className="bg-slate-800 text-amber-300 border border-slate-600 rounded px-1.5 py-0.5 text-[9px] font-pixel shrink-0">
                       {index + 1}
@@ -247,7 +312,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               </div>
             </div>
           ) : (
-            <div className="flex justify-end">
+            <div className="flex justify-end items-center">
               <button
                 id="dialogue-next-btn"
                 onClick={() => {
@@ -258,7 +323,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     onNext();
                   }
                 }}
-                className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-pixel font-bold text-[9px] sm:text-[10px] flex items-center gap-1.5 shadow transition"
+                className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-pixel font-bold text-[9px] sm:text-[10px] flex items-center gap-1.5 shadow transition cursor-pointer"
               >
                 <span>{isTyping ? 'LEWATI EFEK' : 'LANJUT [SPASI]'}</span>
                 <span className="text-xs">▶</span>
