@@ -112,6 +112,31 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             🐿️
           </div>
         );
+      case 'deer':
+        return (
+          <div className="w-16 h-16 bg-amber-950 rounded-lg flex items-center justify-center text-2xl border-2 border-amber-400 shadow-md">
+            🦌
+          </div>
+        );
+      case 'rabbit':
+        return (
+          <div className="w-16 h-16 bg-emerald-950 rounded-lg flex items-center justify-center text-2xl border-2 border-emerald-400 shadow-md">
+            🐇
+          </div>
+        );
+      case 'cow':
+        return (
+          <div className="w-16 h-16 bg-sky-950 rounded-lg flex items-center justify-center text-2xl border-2 border-sky-400 shadow-md">
+            🐄
+          </div>
+        );
+      case 'sheep':
+      case 'lamb':
+        return (
+          <div className="w-16 h-16 bg-slate-900 rounded-lg flex items-center justify-center text-2xl border-2 border-slate-300 shadow-md">
+            🐑
+          </div>
+        );
       case 'old_man':
         return (
           <div className="w-16 h-16 bg-blue-900 rounded-lg flex items-center justify-center text-2xl border-2 border-blue-400 shadow-md">

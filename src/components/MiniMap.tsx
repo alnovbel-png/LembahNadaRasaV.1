@@ -77,7 +77,27 @@ export const MiniMap: React.FC<MiniMapProps> = ({
           case TILE.HOUSE_ROOF:
           case TILE.HOUSE_DOOR:
           case TILE.HOUSE_WINDOW:
+            color = '#c2410c';
+            break;
+          case TILE.FOREST_CABIN_ROOF:
+          case TILE.FOREST_CABIN_WALL:
+          case TILE.FOREST_CABIN_DOOR:
+          case TILE.FOREST_CABIN_WINDOW:
+            color = '#78350f';
+            break;
+          case TILE.LOG_STACK:
+            color = '#d97706';
+            break;
+          case TILE.ZEN_ROOF:
+            color = '#0f766e';
+            break;
+          case TILE.ZEN_WALL:
+          case TILE.ZEN_DOOR:
+          case TILE.ZEN_WINDOW:
             color = '#b45309';
+            break;
+          case TILE.STONE_LANTERN:
+            color = '#94a3b8';
             break;
           case TILE.FARMLAND_SOIL:
             color = '#78350f';

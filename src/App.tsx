@@ -23,6 +23,7 @@ import {
   EmotionProfile,
 } from './types/game';
 import { sound } from './utils/audio';
+import { freeRoamWorld } from './game/freeRoamWorld';
 import { DialogueBox } from './components/DialogueBox';
 import { EmotionRegulationModal, RegulationMode } from './components/EmotionRegulationModal';
 import { CompassJournalModal } from './components/CompassJournalModal';
@@ -83,6 +84,8 @@ export default function App() {
     y: number;
     targetNPC?: NPC | null;
     targetType?: string;
+    minDistSoFar?: number;
+    stuckFrames?: number;
   } | null>(null);
 
   // Step counter for footstep audio pacing and left/right cadence
@@ -215,17 +218,59 @@ export default function App() {
     []
   );
 
+  // Auto-resolve prof_kotek if player already received item_egg_badge previously but badge/resolution was pending
+  useEffect(() => {
+    const hasEggBadge = inventory.some((item) => item.id === 'item_egg_badge');
+    if (hasEggBadge) {
+      const kotekNPC = npcs.find((n) => n.id === 'prof_kotek');
+      if (kotekNPC && !kotekNPC.isResolved) {
+        resolveNPC(
+          'prof_kotek',
+          {
+            surfaceEmotion: 'gembira',
+            deepEmotion: 'gembira',
+            reason: 'Tawa ceria dan endorfin positif menyebar ke seluruh penjuru desa.',
+          },
+          'kotek_resolved'
+        );
+      }
+      if (!stats.unlockedBadges.includes('badge_laughter_medicine')) {
+        setStats((prev) => ({
+          ...prev,
+          unlockedBadges: [...(prev.unlockedBadges || []), 'badge_laughter_medicine'],
+          empathyScore: prev.empathyScore + 20,
+        }));
+      }
+    }
+  }, [inventory, npcs, stats.unlockedBadges, resolveNPC]);
+
   // Click on mini-map to auto-navigate
   const handleMiniMapNavigate = useCallback(
     (tileX: number, tileY: number) => {
       if (currentDialogue) return;
+      const isOutOfBounds = tileY < 0 || tileY >= MAP_ROWS || tileX < 0 || tileX >= MAP_COLS;
+      const clickedTile = isOutOfBounds ? TILE.CLIFF : mapLayout[tileY]?.[tileX] ?? TILE.CLIFF;
+      if (isOutOfBounds || isTileSolid(clickedTile)) {
+        targetPosRef.current = null;
+        rendererRef.current?.clearDestination();
+        playerRef.current.isMoving = false;
+        sound.playBlocked();
+        return;
+      }
       const targetWorldX = tileX * TILE_SIZE + 16;
       const targetWorldY = tileY * TILE_SIZE + 16;
-      targetPosRef.current = { x: targetWorldX, y: targetWorldY };
-      rendererRef.current?.setDestination(targetWorldX, targetWorldY);
+      const px = playerRef.current.x + 16;
+      const py = playerRef.current.y + 16;
+      targetPosRef.current = {
+        x: targetWorldX,
+        y: targetWorldY,
+        minDistSoFar: Math.hypot(targetWorldX - px, targetWorldY - py),
+        stuckFrames: 0,
+      };
+      rendererRef.current?.setDestination(targetWorldX, targetWorldY, 'walk');
       sound.playMenuSelect();
     },
-    [currentDialogue]
+    [currentDialogue, mapLayout]
   );
 
   // Camera viewport
@@ -355,10 +400,17 @@ export default function App() {
         if (!zoneStatus.bridge && c >= 21 && c <= 24 && r >= 14 && r <= 16) {
           return true;
         }
+
+        // Windmill solid footprint in Free Roam / Restored world (c: 15..16, r: 24..25)
+        if (isFreeRoamActive || (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)) {
+          if ((c === 15 || c === 16) && (r === 24 || r === 25)) {
+            return true;
+          }
+        }
       }
       return false;
     },
-    [mapLayout, zoneStatus.bridge]
+    [mapLayout, zoneStatus, isFreeRoamActive]
   );
 
   // Calculate safe, walkable talk position near an NPC without colliding with any obstacles/assets
@@ -454,6 +506,16 @@ export default function App() {
       return;
     }
 
+    // Check Forest Cabin Door (Pondok Hutan Pak Teguh: c=11, r=4)
+    const cabinDoorX = 11 * TILE_SIZE + 16;
+    const cabinDoorY = 4 * TILE_SIZE + 16;
+    if (Math.hypot(cabinDoorX - px, cabinDoorY - py) < 60) {
+      sound.playSecretFound();
+      rendererRef.current?.addSparkle(cabinDoorX, cabinDoorY, '#f59e0b', 8);
+      setCurrentDialogue(GAME_DIALOGUES.forest_cabin_examine);
+      return;
+    }
+
     // Check Central Fountain (c=11, r=14)
     const fountainX = 11 * TILE_SIZE + 16;
     const fountainY = 14 * TILE_SIZE + 16;
@@ -476,6 +538,90 @@ export default function App() {
           : GAME_DIALOGUES.tower_examine
       );
       return;
+    }
+
+    // Free Roam Interactive Living Objects (Windmill, Pasture Livestock, River)
+    if (isFreeRoamActive || (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)) {
+      // Windmill (c=15..16, r=24..25)
+      const wmX = 16 * TILE_SIZE;
+      const wmY = 25 * TILE_SIZE;
+      if (Math.hypot(wmX - px, wmY - py) < 70) {
+        sound.playSecretFound();
+        rendererRef.current?.triggerScreenShake(3, 10);
+        rendererRef.current?.addSparkle(wmX, wmY - 16, '#fbbf24', 8);
+        setCurrentDialogue(GAME_DIALOGUES.free_roam_windmill);
+        return;
+      }
+
+      // Pasture Cow (c=16.5, r=2.8)
+      const cowX = 16.5 * TILE_SIZE + 16;
+      const cowY = 2.8 * TILE_SIZE + 16;
+      if (Math.hypot(cowX - px, cowY - py) < 65) {
+        sound.playSecretFound();
+        rendererRef.current?.addSparkle(cowX, cowY - 14, '#38bdf8', 8);
+        setCurrentDialogue(GAME_DIALOGUES.free_roam_cow);
+        return;
+      }
+
+      // Pasture Sheep (c=18.5, r=4.8)
+      const sheepX = 18.5 * TILE_SIZE + 8;
+      const sheepY = 4.8 * TILE_SIZE + 12;
+      if (Math.hypot(sheepX - px, sheepY - py) < 60) {
+        sound.playSecretFound();
+        rendererRef.current?.addSparkle(sheepX, sheepY - 12, '#f8fafc', 8);
+        setCurrentDialogue(GAME_DIALOGUES.free_roam_sheep);
+        return;
+      }
+
+      // Woodland Spotted Deer (c=14.6, r=3.4)
+      const deerX = 14.6 * TILE_SIZE + 12;
+      const deerY = 3.4 * TILE_SIZE + 14;
+      if (Math.hypot(deerX - px, deerY - py) < 60) {
+        sound.playSecretFound();
+        rendererRef.current?.addSparkle(deerX, deerY - 12, '#fbbf24', 8);
+        setCurrentDialogue(GAME_DIALOGUES.free_roam_deer);
+        return;
+      }
+
+      // Meadow Bunnies (c=16.3, r=4.5)
+      const rabbitX = 16.3 * TILE_SIZE + 8;
+      const rabbitY = 4.5 * TILE_SIZE + 6;
+      if (Math.hypot(rabbitX - px, rabbitY - py) < 55) {
+        sound.playSecretFound();
+        rendererRef.current?.addSparkle(rabbitX, rabbitY - 8, '#fbcfe8', 8);
+        setCurrentDialogue(GAME_DIALOGUES.free_roam_rabbit);
+        return;
+      }
+
+      // Baby Lamb (c=19.4, r=5.1)
+      const lambX = 19.4 * TILE_SIZE + 6;
+      const lambY = 5.1 * TILE_SIZE + 6;
+      if (Math.hypot(lambX - px, lambY - py) < 55) {
+        sound.playSecretFound();
+        rendererRef.current?.addSparkle(lambX, lambY - 8, '#ffffff', 8);
+        setCurrentDialogue(GAME_DIALOGUES.free_roam_lamb);
+        return;
+      }
+
+      // Woodland Squirrel (c=14.8, r=1.8)
+      const sqX = 14.8 * TILE_SIZE + 6;
+      const sqY = 1.8 * TILE_SIZE + 6;
+      if (Math.hypot(sqX - px, sqY - py) < 55) {
+        sound.playSecretFound();
+        rendererRef.current?.addSparkle(sqX, sqY - 8, '#ea580c', 8);
+        setCurrentDialogue(GAME_DIALOGUES.free_roam_squirrel);
+        return;
+      }
+
+      // River Fish (c=23, r=20)
+      const fishX = 23 * TILE_SIZE;
+      const fishY = 20 * TILE_SIZE;
+      if (Math.hypot(fishX - px, fishY - py) < 70) {
+        sound.playSecretFound();
+        rendererRef.current?.addSparkle(fishX, fishY, '#38bdf8', 8);
+        setCurrentDialogue(GAME_DIALOGUES.free_roam_river);
+        return;
+      }
     }
 
     // Check nearest NPC
@@ -548,7 +694,13 @@ export default function App() {
           rendererRef.current?.clearDestination();
         } else {
           // Walk to tree with 'examine' marker
-          targetPosRef.current = { x: treeX, y: treeY + 28, targetType: 'tree' };
+          targetPosRef.current = {
+            x: treeX,
+            y: treeY + 28,
+            targetType: 'tree',
+            minDistSoFar: Math.hypot(treeX - px, treeY + 28 - py),
+            stuckFrames: 0,
+          };
           rendererRef.current?.setDestination(treeX, treeY + 28, 'examine');
           rendererRef.current?.addSparkle(treeX, treeY + 28, '#fef08a', 6);
         }
@@ -565,7 +717,13 @@ export default function App() {
           targetPosRef.current = null;
           rendererRef.current?.clearDestination();
         } else {
-          targetPosRef.current = { x: fountainX, y: fountainY + 36, targetType: 'fountain' };
+          targetPosRef.current = {
+            x: fountainX,
+            y: fountainY + 36,
+            targetType: 'fountain',
+            minDistSoFar: Math.hypot(fountainX - px, fountainY + 36 - py),
+            stuckFrames: 0,
+          };
           rendererRef.current?.setDestination(fountainX, fountainY + 36, 'examine');
           rendererRef.current?.addSparkle(fountainX, fountainY + 36, '#67e8f9', 6);
         }
@@ -583,8 +741,16 @@ export default function App() {
           rendererRef.current?.clearDestination();
         } else {
           // Karakter berjalan mendekati plang di pinggir jalan c=11, r=9
-          targetPosRef.current = { x: 11 * TILE_SIZE + 16, y: 9 * TILE_SIZE + 16, targetType: 'signpost' };
-          rendererRef.current?.setDestination(11 * TILE_SIZE + 16, 9 * TILE_SIZE + 16, 'examine');
+          const destX = 11 * TILE_SIZE + 16;
+          const destY = 9 * TILE_SIZE + 16;
+          targetPosRef.current = {
+            x: destX,
+            y: destY,
+            targetType: 'signpost',
+            minDistSoFar: Math.hypot(destX - px, destY - py),
+            stuckFrames: 0,
+          };
+          rendererRef.current?.setDestination(destX, destY, 'examine');
           rendererRef.current?.addSparkle(signX, signY, '#a7f3d0', 6);
         }
         return;
@@ -601,8 +767,16 @@ export default function App() {
           rendererRef.current?.clearDestination();
         } else {
           // Karakter berjalan mendekati plang di pinggir jalan c=7, r=17
-          targetPosRef.current = { x: 7 * TILE_SIZE + 16, y: 17 * TILE_SIZE + 16, targetType: 'farm_signpost' };
-          rendererRef.current?.setDestination(7 * TILE_SIZE + 16, 17 * TILE_SIZE + 16, 'examine');
+          const destX = 7 * TILE_SIZE + 16;
+          const destY = 17 * TILE_SIZE + 16;
+          targetPosRef.current = {
+            x: destX,
+            y: destY,
+            targetType: 'farm_signpost',
+            minDistSoFar: Math.hypot(destX - px, destY - py),
+            stuckFrames: 0,
+          };
+          rendererRef.current?.setDestination(destX, destY, 'examine');
           rendererRef.current?.addSparkle(farmSignX, farmSignY, '#f59e0b', 6);
         }
         return;
@@ -635,11 +809,248 @@ export default function App() {
           // Walk up to the main portal entrance of the clock tower (c=30, r=7)
           const walkX = 30 * TILE_SIZE + 16;
           const walkY = 7 * TILE_SIZE + 16;
-          targetPosRef.current = { x: walkX, y: walkY, targetType: 'tower' };
+          targetPosRef.current = {
+            x: walkX,
+            y: walkY,
+            targetType: 'tower',
+            minDistSoFar: Math.hypot(walkX - px, walkY - py),
+            stuckFrames: 0,
+          };
           rendererRef.current?.setDestination(walkX, walkY, 'examine');
           rendererRef.current?.addSparkle(towerDoorX, towerDoorY, '#f59e0b', 8);
         }
         return;
+      }
+
+      // 3d. Check if clicking on the Forest Cabin (c: 9..13, r: 2..4)
+      const cabinDoorX = 11 * TILE_SIZE + 16;
+      const cabinDoorY = 4 * TILE_SIZE + 16;
+      if (Math.hypot(cabinDoorX - worldX, cabinDoorY - worldY) < 36) {
+        if (Math.hypot(cabinDoorX - px, cabinDoorY - py) < 65) {
+          sound.playSecretFound();
+          rendererRef.current?.addSparkle(cabinDoorX, cabinDoorY, '#f59e0b', 8);
+          setCurrentDialogue(GAME_DIALOGUES.forest_cabin_examine);
+          targetPosRef.current = null;
+          rendererRef.current?.clearDestination();
+        } else {
+          // Walk up to porch in front of the door (c=11, r=5)
+          const walkX = 11 * TILE_SIZE + 16;
+          const walkY = 5 * TILE_SIZE + 16;
+          targetPosRef.current = {
+            x: walkX,
+            y: walkY,
+            targetType: 'cabin',
+            minDistSoFar: Math.hypot(walkX - px, walkY - py),
+            stuckFrames: 0,
+          };
+          rendererRef.current?.setDestination(walkX, walkY, 'examine');
+          rendererRef.current?.addSparkle(cabinDoorX, cabinDoorY, '#f59e0b', 8);
+        }
+        return;
+      }
+
+      // 3e. Check if clicking on Free Roam objects (Windmill, Cow, Sheep, River Fish)
+      if (isFreeRoamActive || (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)) {
+        // Windmill (c: 15..16, r: 23..25)
+        const wmX = 16 * TILE_SIZE;
+        const wmY = 24 * TILE_SIZE + 16;
+        if (Math.hypot(wmX - worldX, wmY - worldY) < 45) {
+          if (Math.hypot(wmX - px, wmY - py) < 70) {
+            sound.playSecretFound();
+            rendererRef.current?.triggerScreenShake(3, 10);
+            setCurrentDialogue(GAME_DIALOGUES.free_roam_windmill);
+            targetPosRef.current = null;
+            rendererRef.current?.clearDestination();
+          } else {
+            const walkX = 16 * TILE_SIZE;
+            const walkY = 26 * TILE_SIZE + 16;
+            targetPosRef.current = {
+              x: walkX,
+              y: walkY,
+              targetType: 'windmill',
+              minDistSoFar: Math.hypot(walkX - px, walkY - py),
+              stuckFrames: 0,
+            };
+            rendererRef.current?.setDestination(walkX, walkY, 'examine');
+            rendererRef.current?.addSparkle(wmX, wmY, '#fbbf24', 8);
+          }
+          return;
+        }
+
+        // Holstein Cow (c=16.5, r=2.8)
+        const cowX = 16.5 * TILE_SIZE + 16;
+        const cowY = 2.8 * TILE_SIZE + 16;
+        if (Math.hypot(cowX - worldX, cowY - worldY) < 32) {
+          if (Math.hypot(cowX - px, cowY - py) < 65) {
+            sound.playSecretFound();
+            setCurrentDialogue(GAME_DIALOGUES.free_roam_cow);
+            targetPosRef.current = null;
+            rendererRef.current?.clearDestination();
+          } else {
+            const walkX = cowX - 24;
+            const walkY = cowY;
+            targetPosRef.current = {
+              x: walkX,
+              y: walkY,
+              targetType: 'cow',
+              minDistSoFar: Math.hypot(walkX - px, walkY - py),
+              stuckFrames: 0,
+            };
+            rendererRef.current?.setDestination(walkX, walkY, 'examine');
+            rendererRef.current?.addSparkle(cowX, cowY, '#38bdf8', 6);
+          }
+          return;
+        }
+
+        // Fluffy Sheep (c=18.5, r=4.8)
+        const sheepX = 18.5 * TILE_SIZE + 8;
+        const sheepY = 4.8 * TILE_SIZE + 12;
+        if (Math.hypot(sheepX - worldX, sheepY - worldY) < 28) {
+          if (Math.hypot(sheepX - px, sheepY - py) < 60) {
+            sound.playSecretFound();
+            setCurrentDialogue(GAME_DIALOGUES.free_roam_sheep);
+            targetPosRef.current = null;
+            rendererRef.current?.clearDestination();
+          } else {
+            const walkX = sheepX - 20;
+            const walkY = sheepY;
+            targetPosRef.current = {
+              x: walkX,
+              y: walkY,
+              targetType: 'sheep',
+              minDistSoFar: Math.hypot(walkX - px, walkY - py),
+              stuckFrames: 0,
+            };
+            rendererRef.current?.setDestination(walkX, walkY, 'examine');
+            rendererRef.current?.addSparkle(sheepX, sheepY, '#f8fafc', 6);
+          }
+          return;
+        }
+
+        // Woodland Spotted Deer (c=14.6, r=3.4)
+        const deerX = 14.6 * TILE_SIZE + 12;
+        const deerY = 3.4 * TILE_SIZE + 14;
+        if (Math.hypot(deerX - worldX, deerY - worldY) < 28) {
+          if (Math.hypot(deerX - px, deerY - py) < 60) {
+            sound.playSecretFound();
+            setCurrentDialogue(GAME_DIALOGUES.free_roam_deer);
+            targetPosRef.current = null;
+            rendererRef.current?.clearDestination();
+          } else {
+            const walkX = deerX + 22;
+            const walkY = deerY;
+            targetPosRef.current = {
+              x: walkX,
+              y: walkY,
+              targetType: 'deer',
+              minDistSoFar: Math.hypot(walkX - px, walkY - py),
+              stuckFrames: 0,
+            };
+            rendererRef.current?.setDestination(walkX, walkY, 'examine');
+            rendererRef.current?.addSparkle(deerX, deerY, '#fbbf24', 6);
+          }
+          return;
+        }
+
+        // Meadow Bunnies (c=16.3, r=4.5)
+        const rabbitX = 16.3 * TILE_SIZE + 8;
+        const rabbitY = 4.5 * TILE_SIZE + 6;
+        if (Math.hypot(rabbitX - worldX, rabbitY - worldY) < 26) {
+          if (Math.hypot(rabbitX - px, rabbitY - py) < 55) {
+            sound.playSecretFound();
+            setCurrentDialogue(GAME_DIALOGUES.free_roam_rabbit);
+            targetPosRef.current = null;
+            rendererRef.current?.clearDestination();
+          } else {
+            const walkX = rabbitX - 18;
+            const walkY = rabbitY;
+            targetPosRef.current = {
+              x: walkX,
+              y: walkY,
+              targetType: 'rabbit',
+              minDistSoFar: Math.hypot(walkX - px, walkY - py),
+              stuckFrames: 0,
+            };
+            rendererRef.current?.setDestination(walkX, walkY, 'examine');
+            rendererRef.current?.addSparkle(rabbitX, rabbitY, '#fbcfe8', 6);
+          }
+          return;
+        }
+
+        // Baby Lamb (c=19.4, r=5.1)
+        const lambX = 19.4 * TILE_SIZE + 6;
+        const lambY = 5.1 * TILE_SIZE + 6;
+        if (Math.hypot(lambX - worldX, lambY - worldY) < 24) {
+          if (Math.hypot(lambX - px, lambY - py) < 55) {
+            sound.playSecretFound();
+            setCurrentDialogue(GAME_DIALOGUES.free_roam_lamb);
+            targetPosRef.current = null;
+            rendererRef.current?.clearDestination();
+          } else {
+            const walkX = lambX - 18;
+            const walkY = lambY;
+            targetPosRef.current = {
+              x: walkX,
+              y: walkY,
+              targetType: 'lamb',
+              minDistSoFar: Math.hypot(walkX - px, walkY - py),
+              stuckFrames: 0,
+            };
+            rendererRef.current?.setDestination(walkX, walkY, 'examine');
+            rendererRef.current?.addSparkle(lambX, lambY, '#ffffff', 6);
+          }
+          return;
+        }
+
+        // Woodland Squirrel (c=14.8, r=1.8)
+        const sqX = 14.8 * TILE_SIZE + 6;
+        const sqY = 1.8 * TILE_SIZE + 6;
+        if (Math.hypot(sqX - worldX, sqY - worldY) < 24) {
+          if (Math.hypot(sqX - px, sqY - py) < 55) {
+            sound.playSecretFound();
+            setCurrentDialogue(GAME_DIALOGUES.free_roam_squirrel);
+            targetPosRef.current = null;
+            rendererRef.current?.clearDestination();
+          } else {
+            const walkX = sqX + 18;
+            const walkY = sqY + 12;
+            targetPosRef.current = {
+              x: walkX,
+              y: walkY,
+              targetType: 'squirrel',
+              minDistSoFar: Math.hypot(walkX - px, walkY - py),
+              stuckFrames: 0,
+            };
+            rendererRef.current?.setDestination(walkX, walkY, 'examine');
+            rendererRef.current?.addSparkle(sqX, sqY, '#ea580c', 6);
+          }
+          return;
+        }
+
+        // River Fish (c=23, r=20)
+        const fishX = 23 * TILE_SIZE;
+        const fishY = 20 * TILE_SIZE;
+        if (Math.hypot(fishX - worldX, fishY - worldY) < 36) {
+          const dockX = 22 * TILE_SIZE + 16;
+          const dockY = 20 * TILE_SIZE + 16;
+          if (Math.hypot(dockX - px, dockY - py) < 70) {
+            sound.playSecretFound();
+            setCurrentDialogue(GAME_DIALOGUES.free_roam_river);
+            targetPosRef.current = null;
+            rendererRef.current?.clearDestination();
+          } else {
+            targetPosRef.current = {
+              x: dockX,
+              y: dockY,
+              targetType: 'river',
+              minDistSoFar: Math.hypot(dockX - px, dockY - py),
+              stuckFrames: 0,
+            };
+            rendererRef.current?.setDestination(dockX, dockY, 'examine');
+            rendererRef.current?.addSparkle(fishX, fishY, '#38bdf8', 6);
+          }
+          return;
+        }
       }
 
       // 4. Check if clicking on or near an NPC
@@ -678,22 +1089,56 @@ export default function App() {
           // Walk towards NPC using safe non-colliding coordinates
           const safeSpot = getSafeNPCTalkPosition(clickedNPC, px, py);
 
-          targetPosRef.current = { x: safeSpot.x, y: safeSpot.y, targetNPC: clickedNPC };
+          targetPosRef.current = {
+            x: safeSpot.x,
+            y: safeSpot.y,
+            targetNPC: clickedNPC,
+            minDistSoFar: Math.hypot(safeSpot.x - px, safeSpot.y - py),
+            stuckFrames: 0,
+          };
           rendererRef.current?.setDestination(safeSpot.x, safeSpot.y, 'interact');
           rendererRef.current?.addSparkle(safeSpot.x, safeSpot.y, '#f59e0b', 6);
         }
         return;
       }
 
-      // 5. Floor Click -> Walk directly to clicked tile coordinates with cyan 'walk' beacon
+      // 5. Floor Click -> Check if the clicked destination is accessible
+      const targetCol = Math.floor(worldX / TILE_SIZE);
+      const targetRow = Math.floor(worldY / TILE_SIZE);
+      const isOutOfBounds = targetRow < 0 || targetRow >= MAP_ROWS || targetCol < 0 || targetCol >= MAP_COLS;
+      const clickedTile = isOutOfBounds ? TILE.CLIFF : mapLayout[targetRow]?.[targetCol] ?? TILE.CLIFF;
+      const isSolid = isTileSolid(clickedTile);
+
       const clampedX = Math.max(16, Math.min(MAP_COLS * TILE_SIZE - 16, worldX));
       const clampedY = Math.max(16, Math.min(MAP_ROWS * TILE_SIZE - 16, worldY));
+      const isFootCollision = checkCollision(clampedX - 16, clampedY - 16);
 
-      targetPosRef.current = { x: clampedX, y: clampedY };
+      if (isOutOfBounds || isSolid || isFootCollision) {
+        // Inaccessible / blocked area clicked!
+        // Immediately stop character movement, clear destination arrow, and cancel pathing
+        targetPosRef.current = null;
+        rendererRef.current?.clearDestination();
+        p.isMoving = false;
+        keysPressed.current = {};
+        if (joystickVectorRef.current) joystickVectorRef.current = null;
+
+        // Gentle red sparkle ripple indicating blocked destination
+        rendererRef.current?.addSparkle(clampedX, clampedY, '#f87171', 6);
+        sound.playBlocked();
+        return;
+      }
+
+      // Valid walkable destination: initiate smooth walking with cyan navigation arrow
+      targetPosRef.current = {
+        x: clampedX,
+        y: clampedY,
+        minDistSoFar: Math.hypot(clampedX - px, clampedY - py),
+        stuckFrames: 0,
+      };
       rendererRef.current?.setDestination(clampedX, clampedY, 'walk');
       rendererRef.current?.addSparkle(clampedX, clampedY, '#38bdf8', 5);
     },
-    [currentDialogue, npcs, zoneStatus, getSafeNPCTalkPosition]
+    [currentDialogue, npcs, zoneStatus, getSafeNPCTalkPosition, mapLayout, checkCollision, sound]
   );
 
   // Mouse move handler for interactive object hover hints and cursor styling
@@ -813,11 +1258,26 @@ export default function App() {
         return;
       }
 
+      // 4c. Check hover on Free Roam objects (Windmill, Cows, Sheep, River Fish)
+      if (isFreeRoamActive || (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)) {
+        const freeRoamHover = freeRoamWorld.getInteractiveHover(worldX, worldY);
+        if (freeRoamHover) {
+          rendererRef.current?.setHover({
+            type: freeRoamHover.type as any,
+            name: freeRoamHover.name,
+            x: freeRoamHover.x,
+            y: freeRoamHover.y,
+          });
+          canvas.style.cursor = 'pointer';
+          return;
+        }
+      }
+
       // Default terrain: clear hover badge, set walking cursor
       rendererRef.current?.setHover(null);
       canvas.style.cursor = 'crosshair';
     },
-    [currentDialogue, npcs]
+    [currentDialogue, npcs, isFreeRoamActive, zoneStatus]
   );
 
   const handleCanvasMouseLeave = useCallback(() => {
@@ -1018,7 +1478,7 @@ export default function App() {
         resolveNPC('kakek_damai', { surfaceEmotion: 'tenang', deepEmotion: 'tenang', reason: 'Melihat anak-anak berlatih fokus pada lingkaran kendali diri.' }, 'damai_resolved');
       } else if (badgeId === 'badge_active_listening' || node.id === 'moka_reward') {
         resolveNPC('moka_cat', { surfaceEmotion: 'tenang', deepEmotion: 'gembira', reason: 'Gembira anak-anak mendengarkan dengan telinga dan mata hati.' }, 'moka_resolved');
-      } else if (badgeId === 'badge_laughter_medicine' || node.id === 'kotek_reward') {
+      } else if (badgeId === 'badge_laughter_medicine' || node.id === 'kotek_reward' || node.id === 'kotek_fact' || node.id === 'kotek_resolved') {
         resolveNPC('prof_kotek', { surfaceEmotion: 'gembira', deepEmotion: 'gembira', reason: 'Tawa ceria dan endorfin positif menyebar ke seluruh penjuru desa.' }, 'kotek_resolved');
       } else if (badgeId === 'badge_friendly_greeter' || node.id === 'didi_reward' || node.id === 'didi_resolved') {
         resolveNPC('didi_scout', { surfaceEmotion: 'gembira', deepEmotion: 'tenang', reason: 'Senang menyapa setiap pengelana dengan senyuman tulus.' }, 'didi_resolved');
@@ -1172,11 +1632,21 @@ export default function App() {
       keysPressed.current[e.code] = false;
     };
 
+    const handleWindowBlur = () => {
+      keysPressed.current = {};
+      if (joystickVectorRef.current) {
+        joystickVectorRef.current = null;
+      }
+      playerRef.current.isMoving = false;
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('blur', handleWindowBlur);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', handleWindowBlur);
     };
   }, [currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation]);
 
@@ -1296,6 +1766,14 @@ export default function App() {
         const distY = target.y - pCenterY;
         const dist = Math.hypot(distX, distY);
 
+        // Progress watchdog: track whether player is making forward progress towards destination
+        if (target.minDistSoFar === undefined || dist < target.minDistSoFar - 1.0) {
+          target.minDistSoFar = dist;
+          target.stuckFrames = 0;
+        } else {
+          target.stuckFrames = (target.stuckFrames ?? 0) + 1;
+        }
+
         const reachedTarget = target;
         const reachedNPC = reachedTarget.targetNPC;
         let npcDist = Infinity;
@@ -1306,55 +1784,97 @@ export default function App() {
         }
 
         // Destination reached:
-        // 1. Reached close to target (dist <= 5)
+        // 1. Reached close to target (dist <= 6)
         // 2. OR when approaching an NPC and already in speaking distance (npcDist <= 46px)
-        // This stops the player comfortably in front of the NPC and prevents walking into any asset/obstacle!
-        if (dist <= 5 || (reachedNPC && npcDist <= 46)) {
+        const isCloseEnough = dist <= 6 || (reachedNPC && npcDist <= 46);
+        // If blocked by obstacle/inaccessible terrain for > 18 frames without moving closer, cancel and stop!
+        const isStuck = (target.stuckFrames ?? 0) > 18;
+
+        if (isCloseEnough || isStuck) {
           targetPosRef.current = null;
           rendererRef.current?.clearDestination();
           p.isMoving = false;
 
           // If walking towards an NPC or secret, initiate interaction
-          if (reachedNPC) {
-            const nx = reachedNPC.x * TILE_SIZE + 16;
-            const ny = reachedNPC.y * TILE_SIZE + 16;
-            if (Math.abs(nx - pCenterX) > Math.abs(ny - pCenterY)) {
-              p.facing = nx > pCenterX ? 'right' : 'left';
-            } else {
-              p.facing = ny > pCenterY ? 'down' : 'up';
-            }
-            reachedNPC.facing = pCenterX > nx ? 'right' : 'left';
+          if (isCloseEnough) {
+            if (reachedNPC) {
+              const nx = reachedNPC.x * TILE_SIZE + 16;
+              const ny = reachedNPC.y * TILE_SIZE + 16;
+              if (Math.abs(nx - pCenterX) > Math.abs(ny - pCenterY)) {
+                p.facing = nx > pCenterX ? 'right' : 'left';
+              } else {
+                p.facing = ny > pCenterY ? 'down' : 'up';
+              }
+              reachedNPC.facing = pCenterX > nx ? 'right' : 'left';
 
-            sound.playVoiceBlip();
-            const dialogueKey =
-              reachedNPC.currentDialogueId ||
-              `${reachedNPC.id}_intro`;
-            const node =
-              GAME_DIALOGUES[dialogueKey] ||
-              GAME_DIALOGUES[`${reachedNPC.id}_intro`];
-            if (node) setCurrentDialogue(node);
-          } else if (reachedTarget.targetType === 'tree') {
-            sound.playSecretFound();
-            rendererRef.current?.triggerScreenShake(5, 14);
-            setCurrentDialogue(GAME_DIALOGUES.secret_tree);
-          } else if (reachedTarget.targetType === 'fountain') {
-            sound.playSecretFound();
-            setCurrentDialogue(GAME_DIALOGUES.fountain_examine);
-          } else if (reachedTarget.targetType === 'signpost') {
-            sound.playSecretFound();
-            setCurrentDialogue(GAME_DIALOGUES.signpost_forest);
-          } else if (reachedTarget.targetType === 'farm_signpost') {
-            sound.playSecretFound();
-            setCurrentDialogue(GAME_DIALOGUES.signpost_farm);
-          } else if (reachedTarget.targetType === 'tower') {
-            sound.playTowerBell();
-            rendererRef.current?.triggerScreenShake(4, 12);
-            rendererRef.current?.addSparkle(30 * TILE_SIZE + 16, 6 * TILE_SIZE + 16, '#fbbf24', 12);
-            setCurrentDialogue(
-              zoneStatus.tower
-                ? GAME_DIALOGUES.tower_examine_restored
-                : GAME_DIALOGUES.tower_examine
-            );
+              sound.playVoiceBlip();
+              const dialogueKey =
+                reachedNPC.currentDialogueId ||
+                `${reachedNPC.id}_intro`;
+              const node =
+                GAME_DIALOGUES[dialogueKey] ||
+                GAME_DIALOGUES[`${reachedNPC.id}_intro`];
+              if (node) setCurrentDialogue(node);
+            } else if (reachedTarget.targetType === 'cabin') {
+              sound.playSecretFound();
+              rendererRef.current?.addSparkle(11 * TILE_SIZE + 16, 4 * TILE_SIZE + 16, '#f59e0b', 8);
+              setCurrentDialogue(GAME_DIALOGUES.forest_cabin_examine);
+            } else if (reachedTarget.targetType === 'tree') {
+              sound.playSecretFound();
+              rendererRef.current?.triggerScreenShake(5, 14);
+              setCurrentDialogue(GAME_DIALOGUES.secret_tree);
+            } else if (reachedTarget.targetType === 'fountain') {
+              sound.playSecretFound();
+              setCurrentDialogue(GAME_DIALOGUES.fountain_examine);
+            } else if (reachedTarget.targetType === 'signpost') {
+              sound.playSecretFound();
+              setCurrentDialogue(GAME_DIALOGUES.signpost_forest);
+            } else if (reachedTarget.targetType === 'farm_signpost') {
+              sound.playSecretFound();
+              setCurrentDialogue(GAME_DIALOGUES.signpost_farm);
+            } else if (reachedTarget.targetType === 'tower') {
+              sound.playTowerBell();
+              rendererRef.current?.triggerScreenShake(4, 12);
+              rendererRef.current?.addSparkle(30 * TILE_SIZE + 16, 6 * TILE_SIZE + 16, '#fbbf24', 12);
+              setCurrentDialogue(
+                zoneStatus.tower
+                  ? GAME_DIALOGUES.tower_examine_restored
+                  : GAME_DIALOGUES.tower_examine
+              );
+            } else if (reachedTarget.targetType === 'windmill') {
+              sound.playSecretFound();
+              rendererRef.current?.triggerScreenShake(3, 10);
+              rendererRef.current?.addSparkle(16 * TILE_SIZE, 24 * TILE_SIZE, '#fbbf24', 8);
+              setCurrentDialogue(GAME_DIALOGUES.free_roam_windmill);
+            } else if (reachedTarget.targetType === 'cow') {
+              sound.playSecretFound();
+              rendererRef.current?.addSparkle(16.5 * TILE_SIZE + 16, 2.8 * TILE_SIZE + 16, '#38bdf8', 8);
+              setCurrentDialogue(GAME_DIALOGUES.free_roam_cow);
+            } else if (reachedTarget.targetType === 'sheep') {
+              sound.playSecretFound();
+              rendererRef.current?.addSparkle(18.5 * TILE_SIZE + 8, 4.8 * TILE_SIZE + 12, '#f8fafc', 8);
+              setCurrentDialogue(GAME_DIALOGUES.free_roam_sheep);
+            } else if (reachedTarget.targetType === 'deer') {
+              sound.playSecretFound();
+              rendererRef.current?.addSparkle(14.6 * TILE_SIZE + 12, 3.4 * TILE_SIZE + 14, '#fbbf24', 8);
+              setCurrentDialogue(GAME_DIALOGUES.free_roam_deer);
+            } else if (reachedTarget.targetType === 'rabbit') {
+              sound.playSecretFound();
+              rendererRef.current?.addSparkle(16.3 * TILE_SIZE + 8, 4.5 * TILE_SIZE + 6, '#fbcfe8', 8);
+              setCurrentDialogue(GAME_DIALOGUES.free_roam_rabbit);
+            } else if (reachedTarget.targetType === 'lamb') {
+              sound.playSecretFound();
+              rendererRef.current?.addSparkle(19.4 * TILE_SIZE + 6, 5.1 * TILE_SIZE + 6, '#ffffff', 8);
+              setCurrentDialogue(GAME_DIALOGUES.free_roam_lamb);
+            } else if (reachedTarget.targetType === 'squirrel') {
+              sound.playSecretFound();
+              rendererRef.current?.addSparkle(14.8 * TILE_SIZE + 6, 1.8 * TILE_SIZE + 6, '#ea580c', 8);
+              setCurrentDialogue(GAME_DIALOGUES.free_roam_squirrel);
+            } else if (reachedTarget.targetType === 'river') {
+              sound.playSecretFound();
+              rendererRef.current?.addSparkle(23 * TILE_SIZE, 20 * TILE_SIZE, '#38bdf8', 8);
+              setCurrentDialogue(GAME_DIALOGUES.free_roam_river);
+            }
           }
         } else {
           const moveStep = Math.min(speed, dist);
@@ -1384,18 +1904,22 @@ export default function App() {
             p.y += stepY;
             moved = true;
           } else {
-            // 4. Try corner sliding along alternative axis to navigate around asset corners
+            // 4. Try corner sliding along alternative axis ONLY if actually reducing dist in that direction
             if (Math.abs(distX) >= Math.abs(distY)) {
-              const altY = (distY !== 0 ? Math.sign(distY) : 1) * moveStep;
-              if (!checkCollision(p.x, p.y + altY)) {
-                p.y += altY;
-                moved = true;
+              if (Math.abs(distY) > 1.5) {
+                const altY = Math.sign(distY) * moveStep;
+                if (!checkCollision(p.x, p.y + altY)) {
+                  p.y += altY;
+                  moved = true;
+                }
               }
             } else {
-              const altX = (distX !== 0 ? Math.sign(distX) : 1) * moveStep;
-              if (!checkCollision(p.x + altX, p.y)) {
-                p.x += altX;
-                moved = true;
+              if (Math.abs(distX) > 1.5) {
+                const altX = Math.sign(distX) * moveStep;
+                if (!checkCollision(p.x + altX, p.y)) {
+                  p.x += altX;
+                  moved = true;
+                }
               }
             }
           }

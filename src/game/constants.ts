@@ -46,6 +46,18 @@ export const TILE = {
   TOWER_CLOCK: 36,
   TOWER_DOOR: 37,
   TOWER_WINDOW: 38,
+  // Forest Cabin (Pondok Hutan Pak Teguh) tiles
+  FOREST_CABIN_ROOF: 39,
+  FOREST_CABIN_WALL: 40,
+  FOREST_CABIN_DOOR: 41,
+  FOREST_CABIN_WINDOW: 42,
+  LOG_STACK: 43,
+  // Zen Mindful Tea House (Pondok Kakek Damai) tiles
+  ZEN_ROOF: 44,
+  ZEN_WALL: 45,
+  ZEN_DOOR: 46,
+  ZEN_WINDOW: 47,
+  STONE_LANTERN: 48,
 };
 
 // Map layout definition (28 rows x 36 cols)
@@ -107,6 +119,33 @@ export function generateMapLayout(): number[][] {
         continue;
       }
 
+      // --- PONDOK HUTAN PINUS PAK TEGUH (Forest Cabin & Woodcutter's Lodge: r: 2..4, c: 9..13) ---
+      // Pondok kayu cedar asri dengan arsitektur kabin log alpine, cerobong batu & tumpukan kayu bakar
+      if (r >= 2 && r <= 4 && c >= 9 && c <= 13) {
+        if (r === 2) {
+          row.push(TILE.FOREST_CABIN_ROOF);
+        } else if (r === 3) {
+          if (c === 10 || c === 12) row.push(TILE.FOREST_CABIN_WINDOW);
+          else row.push(TILE.FOREST_CABIN_WALL);
+        } else if (r === 4) {
+          if (c === 11) row.push(TILE.FOREST_CABIN_DOOR);
+          else row.push(TILE.FOREST_CABIN_WALL);
+        }
+        continue;
+      }
+
+      // Tumpukan kayu bakar Pak Teguh (Log Stack) di samping pondok hutan
+      if (r === 4 && c === 8) {
+        row.push(TILE.LOG_STACK);
+        continue;
+      }
+
+      // Jalan setapak batu penghubung pintu Pondok Hutan ke jalan utama hutan (c=11, r: 5..7)
+      if (c === 11 && r >= 5 && r <= 7) {
+        row.push(TILE.PATH_STONE);
+        continue;
+      }
+
       // Forest zone (north-west: dense trees & pines)
       if (r < 9 && c < 15 && !(r === 4 && c === 4) && !(r === 7 && c === 8)) {
         if ((r === 1 && c === 4) || (r === 2 && c === 12) || (r === 6 && c === 2) || (r === 8 && c === 6)) {
@@ -124,7 +163,8 @@ export function generateMapLayout(): number[][] {
       }
 
       // --- RUMAH WARGA 1: RUMAH PAK JOKO (PONDOK JERAMI & KEBUN) (South-West: r: 18..20, c: 2..6) ---
-      // Dipindahkan 1 kotak ke kiri agar kolom 7 (jalan setapak plaza & desa) bebas hambatan
+      // Redesain arsitektur farmhouse pedesaan bergaya Mediterania/Cotswold dengan atap terakota,
+      // cerobong bata merah, gantungan jagung emas, pintu lumbung Belanda & tong penampung air
       if (r >= 18 && r <= 20 && c >= 2 && c <= 6) {
         if (r === 18) {
           row.push(TILE.HOUSE_ROOF);
@@ -138,19 +178,25 @@ export function generateMapLayout(): number[][] {
         continue;
       }
 
-      // --- RUMAH WARGA 2: PONDOK KAKEK DAMAI (TEH & MINDFUL) (South-East: r: 19..21, c: 28..32) ---
-      // Dipindahkan dan diselaraskan persis dengan koordinat horizontal Menara Jam (c: 28..32)
-      // agar jalan utama dari Menara Jam lurus sempurna ke depan pintu pondok
+      // --- RUMAH WARGA 2: PONDOK KAKEK DAMAI (ZEN MINDFUL TEA HOUSE) (South-East: r: 19..21, c: 28..32) ---
+      // Arsitektur paviliun teh Zen bernuansa ketenangan batin, atap pagoda giok melengkung,
+      // jendela kisi shoji kumiko, pintu geser kayu aras & lentera batu taman Kasuga
       if (r >= 19 && r <= 21 && c >= 28 && c <= 32) {
         if (r === 19) {
-          row.push(TILE.HOUSE_ROOF);
+          row.push(TILE.ZEN_ROOF);
         } else if (r === 20) {
-          if (c === 29 || c === 31) row.push(TILE.HOUSE_WINDOW);
-          else row.push(TILE.HOUSE_WALL);
+          if (c === 29 || c === 31) row.push(TILE.ZEN_WINDOW);
+          else row.push(TILE.ZEN_WALL);
         } else if (r === 21) {
-          if (c === 30) row.push(TILE.HOUSE_DOOR);
-          else row.push(TILE.HOUSE_WALL);
+          if (c === 30) row.push(TILE.ZEN_DOOR);
+          else row.push(TILE.ZEN_WALL);
         }
+        continue;
+      }
+
+      // Lentera batu taman Zen (Kasuga Stone Lantern) di pelataran pondok Kakek Damai
+      if (r === 21 && c === 27) {
+        row.push(TILE.STONE_LANTERN);
         continue;
       }
 
@@ -398,7 +444,18 @@ export function isTileSolid(tile: number): boolean {
     tile === TILE.SCARECROW ||
     tile === TILE.HAY_BALE ||
     tile === TILE.ORCHARD_APPLE ||
-    tile === TILE.ORCHARD_ORANGE
+    tile === TILE.ORCHARD_ORANGE ||
+    // Solid building obstacles (Pondok Hutan & Pondok Zen)
+    tile === TILE.FOREST_CABIN_ROOF ||
+    tile === TILE.FOREST_CABIN_WALL ||
+    tile === TILE.FOREST_CABIN_WINDOW ||
+    tile === TILE.FOREST_CABIN_DOOR ||
+    tile === TILE.LOG_STACK ||
+    tile === TILE.ZEN_ROOF ||
+    tile === TILE.ZEN_WALL ||
+    tile === TILE.ZEN_WINDOW ||
+    tile === TILE.ZEN_DOOR ||
+    tile === TILE.STONE_LANTERN
   );
 }
 
@@ -595,8 +652,8 @@ export const INITIAL_NPCS: NPC[] = [
     id: 'teguh_woodcutter',
     name: 'Pak Teguh',
     role: 'Penebang Pohon Hutan Bijak',
-    x: 6,
-    y: 8,
+    x: 10,
+    y: 5,
     sprite: 'woodcutter',
     facing: 'down',
     emotionProfile: {

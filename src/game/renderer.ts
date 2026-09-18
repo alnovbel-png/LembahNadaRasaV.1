@@ -1,5 +1,6 @@
 import { TILE, TILE_SIZE, MAP_COLS, MAP_ROWS } from './constants';
 import { NPC, ZoneColorStatus, EmotionType } from '../types/game';
+import { freeRoamWorld } from './freeRoamWorld';
 
 export interface Player {
   x: number;
@@ -28,7 +29,7 @@ export interface Particle {
 export type DestinationType = 'walk' | 'interact' | 'examine';
 
 export interface HoverTarget {
-  type: 'npc' | 'fountain' | 'signpost' | 'tree' | 'tower';
+  type: 'npc' | 'fountain' | 'signpost' | 'tree' | 'tower' | 'windmill' | 'animal' | 'river';
   name: string;
   x: number;
   y: number;
@@ -408,8 +409,27 @@ export class GameRenderer {
       this.drawTile(s.tile, s.x, s.y, s.isColored, s.r, s.c);
     }
 
+    // 1c. Free Roam / Post-completion Pastoral & Agricultural Life
+    if (this.isAllMissionsCompleted) {
+      // Soft environmental ground shadows for depth
+      freeRoamWorld.renderSoftEnvironmentalShadows(ctx);
+      // Agricultural gardening tools leaning on fences
+      freeRoamWorld.renderGardeningTools(ctx);
+      // Pasture livestock: Holstein cow, brown calf, and fluffy grazing sheep in north meadow
+      freeRoamWorld.renderPastureLivestock(ctx, this.tickCount);
+      // Farm sparrows foraging and perching in crops & fences
+      freeRoamWorld.renderFarmBirds(ctx, this.tickCount);
+      // Rotating Windmill with wooden lattice sail blades near wheat farm & riverbank
+      freeRoamWorld.renderWindmill(ctx, this.tickCount, true);
+    }
+
     // 2. Draw Decorative Bridge Details & Water Ripple
     this.drawWaterCurrents(cameraX, cameraY, viewportW, viewportH, zoneColorStatus.bridge);
+
+    // 2b. River Life: Active swimming fish school and surface ripples
+    if (this.isAllMissionsCompleted || zoneColorStatus.bridge) {
+      freeRoamWorld.renderRiverLife(ctx, this.tickCount);
+    }
 
     // 3. Draw NPCs
     npcs.forEach((npc) => {
@@ -424,6 +444,14 @@ export class GameRenderer {
 
     // 4. Draw Player
     this.drawPlayer(player);
+
+    // 4b. Overhead dynamic life: Butterflies & Farmhouse Chimney Smoke
+    if (this.isAllMissionsCompleted) {
+      // Butterflies fluttering near fruit trees
+      freeRoamWorld.renderButterflies(ctx, this.tickCount);
+      // Puffy smoke clouds billowing from farmhouse chimney
+      freeRoamWorld.renderChimneySmoke(ctx, this.tickCount);
+    }
 
     // Trigger footstep particle bursts when player walks over specific tile types (dust puffs, leaves, sawdust, splashes)
     if (player.isMoving) {
@@ -456,6 +484,11 @@ export class GameRenderer {
     // 8. Draw Fog of gray mist over uncolored zones
     this.drawAtmosphericMist(zoneColorStatus, viewportW, viewportH, cameraX, cameraY);
 
+    // 9. If all missions completed / in Free Roam: Rich Afternoon Golden Sunlight & God Rays (Anchored to world map, not following player)
+    if (this.isAllMissionsCompleted) {
+      freeRoamWorld.renderGoldenAfternoonSunlight(ctx, this.tickCount);
+    }
+
     ctx.restore();
   }
 
@@ -473,24 +506,38 @@ export class GameRenderer {
 
     // If not colored, shift to grayscale/cool muted tones
     switch (tile) {
-      case TILE.GRASS:
+      case TILE.GRASS: {
         ctx.fillStyle = isColored ? '#386641' : '#334155';
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        // Grass blade detail
+        // Grass blade detail with subtle wind swaying
+        const sway = isColored ? Math.floor(Math.sin(this.tickCount * 0.05 + c * 0.4 + r * 0.3) * 1.5) : 0;
         ctx.fillStyle = isColored ? '#6a994e' : '#475569';
-        ctx.fillRect(x + 4, y + 6, 2, 4);
-        ctx.fillRect(x + 20, y + 18, 2, 4);
+        ctx.fillRect(x + 4 + sway, y + 6, 2, 4);
+        ctx.fillRect(x + 20 + sway, y + 18, 2, 4);
+        // Additional subtle grass blade variation
+        if ((r + c) % 3 === 0 && isColored) {
+          ctx.fillStyle = '#4f772d';
+          ctx.fillRect(x + 12 - sway, y + 12, 2, 3);
+        }
         break;
+      }
 
-      case TILE.GRASS_FLOWERS:
+      case TILE.GRASS_FLOWERS: {
         ctx.fillStyle = isColored ? '#386641' : '#334155';
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-        // Small flowers
+        const sway = isColored ? Math.floor(Math.sin(this.tickCount * 0.05 + c * 0.4 + r * 0.3) * 1.5) : 0;
+        // Small flowers with animated petal sway
         ctx.fillStyle = isColored ? '#f43f5e' : '#64748b';
-        ctx.fillRect(x + 8, y + 8, 3, 3);
+        ctx.fillRect(x + 8 + sway, y + 8, 3, 3);
         ctx.fillStyle = isColored ? '#eab308' : '#94a3b8';
-        ctx.fillRect(x + 22, y + 16, 3, 3);
+        ctx.fillRect(x + 22 + sway, y + 16, 3, 3);
+        if (isColored) {
+          ctx.fillStyle = '#6a994e';
+          ctx.fillRect(x + 9, y + 11, 1, 2);
+          ctx.fillRect(x + 23, y + 19, 1, 2);
+        }
         break;
+      }
 
       case TILE.PATH_STONE:
         ctx.fillStyle = isColored ? '#94a3b8' : '#475569';
@@ -1331,22 +1378,182 @@ export class GameRenderer {
       }
 
       case TILE.HOUSE_WALL: {
-        // Timber-framed plaster cottage wall
+        // --- RUMAH PAK JOKO: HALF-TIMBERED AGRARIAN FARMHOUSE WALL ---
         const plasterColor = isColored ? '#fef3c7' : '#334155';
         const timberColor = isColored ? '#78350f' : '#1e293b';
+        const timberHighlight = isColored ? '#92400e' : '#273549';
+        const stoneColor = isColored ? '#64748b' : '#334155';
+        const stoneHighlight = isColored ? '#94a3b8' : '#475569';
+
+        // 1. Plaster background
         ctx.fillStyle = plasterColor;
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-        // Wooden corner studs & beam framing
+        // 2. Fieldstone foundation along bottom 6px
+        ctx.fillStyle = stoneColor;
+        ctx.fillRect(x, y + TILE_SIZE - 6, TILE_SIZE, 6);
+        ctx.fillStyle = stoneHighlight;
+        ctx.fillRect(x + 2, y + TILE_SIZE - 5, 6, 4);
+        ctx.fillRect(x + 10, y + TILE_SIZE - 6, 7, 4);
+        ctx.fillRect(x + 19, y + TILE_SIZE - 5, 5, 4);
+        ctx.fillRect(x + 26, y + TILE_SIZE - 6, 5, 4);
+        ctx.fillStyle = isColored ? '#334155' : '#0f172a';
+        ctx.fillRect(x, y + TILE_SIZE - 1, TILE_SIZE, 1);
+
+        // 3. Heavy timber studs & frame
         ctx.fillStyle = timberColor;
+        ctx.fillRect(x, y, 4, TILE_SIZE - 6);
+        ctx.fillRect(x + TILE_SIZE - 4, y, 4, TILE_SIZE - 6);
+        ctx.fillRect(x, y, TILE_SIZE, 3);
+        ctx.fillRect(x, y + TILE_SIZE - 7, TILE_SIZE, 2);
+
+        // 4. Half-timber diagonal braces
+        ctx.fillStyle = timberHighlight;
+        if (c % 2 === 0) {
+          ctx.beginPath();
+          ctx.moveTo(x + 4, y + 3);
+          ctx.lineTo(x + 7, y + 3);
+          ctx.lineTo(x + TILE_SIZE - 4, y + TILE_SIZE - 7);
+          ctx.lineTo(x + TILE_SIZE - 7, y + TILE_SIZE - 7);
+          ctx.fill();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(x + TILE_SIZE - 4, y + 3);
+          ctx.lineTo(x + TILE_SIZE - 7, y + 3);
+          ctx.lineTo(x + 4, y + TILE_SIZE - 7);
+          ctx.lineTo(x + 7, y + TILE_SIZE - 7);
+          ctx.fill();
+        }
+
+        // 5. Farmhouse decorative accents
+        if (isColored) {
+          if (c === 4 && r === 19) {
+            // Lucky iron horseshoe above door
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(x + 16, y + 11, 4, Math.PI * 0.7, Math.PI * 2.3);
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(x + 15, y + 10, 2, 2);
+          } else if (c === 2) {
+            // Hanging dried herbs on corner beam
+            ctx.fillStyle = '#15803d';
+            ctx.fillRect(x + 5, y + 9, 4, 8);
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(x + 6, y + 7, 2, 3);
+          }
+        }
+        break;
+      }
+
+      case TILE.FOREST_CABIN_WALL: {
+        // --- PONDOK HUTAN PAK TEGUH: RUSTIC LOG CABIN WALL ---
+        const logDark = isColored ? '#451a03' : '#0f172a';
+        const logBase = isColored ? '#78350f' : '#1e293b';
+        const logMid = isColored ? '#92400e' : '#334155';
+        const logLight = isColored ? '#b45309' : '#475569';
+        const logCore = isColored ? '#fde047' : '#64748b';
+        const chinking = isColored ? '#d6d3d1' : '#334155';
+
+        // 1. Stacked horizontal peeled spruce logs (4 logs, 8px high each)
+        for (let i = 0; i < 4; i++) {
+          const ly = y + i * 8;
+          ctx.fillStyle = logDark;
+          ctx.fillRect(x, ly + 6, TILE_SIZE, 2);
+          ctx.fillStyle = chinking;
+          ctx.fillRect(x, ly + 7, TILE_SIZE, 1);
+          ctx.fillStyle = logBase;
+          ctx.fillRect(x, ly + 1, TILE_SIZE, 5);
+          ctx.fillStyle = logMid;
+          ctx.fillRect(x, ly + 1, TILE_SIZE, 3);
+          ctx.fillStyle = logLight;
+          ctx.fillRect(x, ly + 1, TILE_SIZE, 1);
+        }
+
+        // 2. Interlocking corner log ends on edge tiles
+        if (c === 9) {
+          for (let i = 0; i < 4; i++) {
+            const ly = y + i * 8;
+            ctx.fillStyle = logDark;
+            ctx.fillRect(x, ly, 5, 8);
+            ctx.fillStyle = logBase;
+            ctx.fillRect(x + 1, ly + 1, 3, 6);
+            ctx.fillStyle = logCore;
+            ctx.fillRect(x + 2, ly + 3, 2, 2);
+          }
+        } else if (c === 13) {
+          for (let i = 0; i < 4; i++) {
+            const ly = y + i * 8;
+            ctx.fillStyle = logDark;
+            ctx.fillRect(x + TILE_SIZE - 5, ly, 5, 8);
+            ctx.fillStyle = logBase;
+            ctx.fillRect(x + TILE_SIZE - 4, ly + 1, 3, 6);
+            ctx.fillStyle = logCore;
+            ctx.fillRect(x + TILE_SIZE - 3, ly + 3, 2, 2);
+          }
+        }
+
+        // 3. Climbing forest moss and hanging dried herbs
+        if (isColored) {
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(x + (c === 9 ? 4 : c === 13 ? 24 : 14), y + 16, 3, 10);
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(x + (c === 9 ? 5 : c === 13 ? 23 : 15), y + 19, 2, 5);
+
+          if (c === 10 && r === 4) {
+            ctx.fillStyle = '#451a03';
+            ctx.fillRect(x + 14, y + 4, 4, 3);
+            ctx.fillStyle = '#a855f7';
+            ctx.fillRect(x + 13, y + 7, 6, 9);
+            ctx.fillStyle = '#c084fc';
+            ctx.fillRect(x + 14, y + 9, 4, 5);
+          }
+        }
+        break;
+      }
+
+      case TILE.ZEN_WALL: {
+        // --- PONDOK KAKEK DAMAI: MINDFUL ZEN TEAHOUSE WALL ---
+        const woodPost = isColored ? '#78350f' : '#1e293b';
+        const woodHighlight = isColored ? '#92400e' : '#334155';
+        const plasterTone = isColored ? '#fef3c7' : '#334155';
+        const bambooTone = isColored ? '#b45309' : '#1e293b';
+
+        // 1. Natural warm earthen plaster
+        ctx.fillStyle = plasterTone;
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        // 2. Bamboo wainscoting along bottom 8px
+        ctx.fillStyle = bambooTone;
+        ctx.fillRect(x, y + TILE_SIZE - 8, TILE_SIZE, 8);
+        ctx.fillStyle = isColored ? '#d97706' : '#334155';
+        for (let b = 2; b < TILE_SIZE; b += 4) {
+          ctx.fillRect(x + b, y + TILE_SIZE - 8, 2, 8);
+        }
+
+        // 3. Cypress (Hinoki) vertical posts and top rail
+        ctx.fillStyle = woodPost;
         ctx.fillRect(x, y, 3, TILE_SIZE);
         ctx.fillRect(x + TILE_SIZE - 3, y, 3, TILE_SIZE);
-        ctx.fillRect(x, y + TILE_SIZE - 3, TILE_SIZE, 3);
         ctx.fillRect(x, y, TILE_SIZE, 3);
+        ctx.fillRect(x, y + TILE_SIZE - 9, TILE_SIZE, 2);
 
-        // Diagonal timber brace
-        ctx.fillStyle = isColored ? '#92400e' : '#273549';
-        ctx.fillRect(x + 8, y + 14, 16, 3);
+        ctx.fillStyle = woodHighlight;
+        ctx.fillRect(x + 1, y + 1, 1, TILE_SIZE - 2);
+
+        // 4. Carved Ensō Zen Circle of Mindfulness on center wall tile
+        if (c === 30 && r === 20) {
+          ctx.strokeStyle = isColored ? '#78350f' : '#475569';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(x + 16, y + 12, 7, 0.2, Math.PI * 1.85);
+          ctx.stroke();
+          if (isColored) {
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(x + 21, y + 15, 3, 3);
+          }
+        }
         break;
       }
 
@@ -1895,166 +2102,276 @@ export class GameRenderer {
       }
 
       case TILE.HOUSE_WINDOW: {
-        // Cottage wall with warm glowing window and flower planter box
+        // --- RUMAH PAK JOKO: FARMHOUSE WINDOW WITH SHUTTERS & FLOWER BOX ---
         const plasterColor = isColored ? '#fef3c7' : '#334155';
         const timberColor = isColored ? '#78350f' : '#1e293b';
+        const stoneColor = isColored ? '#64748b' : '#334155';
+
+        // 1. Plaster wall & stone foundation
         ctx.fillStyle = plasterColor;
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
-
-        // Timber border
+        ctx.fillStyle = stoneColor;
+        ctx.fillRect(x, y + TILE_SIZE - 6, TILE_SIZE, 6);
         ctx.fillStyle = timberColor;
-        ctx.fillRect(x, y, 3, TILE_SIZE);
-        ctx.fillRect(x + TILE_SIZE - 3, y, 3, TILE_SIZE);
+        ctx.fillRect(x, y, 3, TILE_SIZE - 6);
+        ctx.fillRect(x + TILE_SIZE - 3, y, 3, TILE_SIZE - 6);
 
-        // Window frame
-        ctx.fillStyle = '#451a03';
-        ctx.fillRect(x + 7, y + 4, 18, 16);
+        // 2. Open wooden shutters (Forest sage green) on both sides of window
+        const shutterColor = isColored ? '#15803d' : '#334155';
+        const shutterDark = isColored ? '#14532d' : '#1e293b';
+        // Left shutter
+        ctx.fillStyle = shutterColor;
+        ctx.fillRect(x + 4, y + 5, 5, 14);
+        ctx.fillStyle = shutterDark;
+        ctx.fillRect(x + 4, y + 8, 5, 1);
+        ctx.fillRect(x + 4, y + 12, 5, 1);
+        ctx.fillRect(x + 4, y + 16, 5, 1);
+        // Left shutter black iron strap hinge
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 8, y + 6, 2, 2);
+        ctx.fillRect(x + 8, y + 16, 2, 2);
 
-        // Lampu rumah: Menyala saat sedang kabut, dimatikan ketika misi sudah selesai
+        // Right shutter
+        ctx.fillStyle = shutterColor;
+        ctx.fillRect(x + 23, y + 5, 5, 14);
+        ctx.fillStyle = shutterDark;
+        ctx.fillRect(x + 23, y + 8, 5, 1);
+        ctx.fillRect(x + 23, y + 12, 5, 1);
+        ctx.fillRect(x + 23, y + 16, 5, 1);
+        // Right shutter black iron strap hinge
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 22, y + 6, 2, 2);
+        ctx.fillRect(x + 22, y + 16, 2, 2);
+
+        // 3. Window frame (Dark oak)
+        ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
+        ctx.fillRect(x + 9, y + 4, 14, 16);
+
+        // 4. Window glass panes (4-pane window)
         const isLampLit = !this.isAllMissionsCompleted;
-
         if (isLampLit) {
-          // Sedang kabut: Lampu dalam rumah menyala hangat menerangi jendela ke luar
-          const pulse = Math.sin(this.tickCount * 0.07 + x * 0.1) * 0.03;
-          ctx.fillStyle = `rgba(254, 240, 138, ${0.16 + pulse})`;
-          ctx.fillRect(x + 6, y + 3, 20, 18);
+          // Warm glowing golden lantern light
+          const pulse = Math.sin(this.tickCount * 0.08 + x * 0.1) * 0.04;
+          ctx.fillStyle = `rgba(254, 240, 138, ${0.22 + pulse})`;
+          ctx.fillRect(x + 8, y + 3, 16, 18);
 
-          // Kaca jendela menyala dengan cahaya lampu kuning keemasan yang hangat
           ctx.fillStyle = '#fef08a';
-          ctx.fillRect(x + 9, y + 6, 6, 5);
-          ctx.fillRect(x + 17, y + 6, 6, 5);
-          ctx.fillRect(x + 9, y + 13, 6, 5);
-          ctx.fillRect(x + 17, y + 13, 6, 5);
+          ctx.fillRect(x + 10, y + 5, 5, 6);
+          ctx.fillRect(x + 17, y + 5, 5, 6);
+          ctx.fillRect(x + 10, y + 13, 5, 6);
+          ctx.fillRect(x + 17, y + 13, 5, 6);
 
-          // Pendaran kilau hangat di dalam ruangan
+          // Warm white flame core
           ctx.fillStyle = '#ffffff';
-          ctx.fillRect(x + 11, y + 7, 2, 2);
+          ctx.fillRect(x + 12, y + 7, 2, 2);
           ctx.fillRect(x + 19, y + 7, 2, 2);
         } else {
-          // Misi sudah selesai: Lampu rumah dimatikan, jendela memantulkan langit cerah
-          const glassTone = isColored ? '#38bdf8' : '#64748b';
+          // Daylight blue sky reflection with bright sun glint
           const glassShade = isColored ? '#0284c7' : '#475569';
           ctx.fillStyle = glassShade;
-          ctx.fillRect(x + 9, y + 6, 6, 5);
-          ctx.fillRect(x + 17, y + 6, 6, 5);
-          ctx.fillRect(x + 9, y + 13, 6, 5);
-          ctx.fillRect(x + 17, y + 13, 6, 5);
+          ctx.fillRect(x + 10, y + 5, 5, 6);
+          ctx.fillRect(x + 17, y + 5, 5, 6);
+          ctx.fillRect(x + 10, y + 13, 5, 6);
+          ctx.fillRect(x + 17, y + 13, 5, 6);
 
-          // Pantulan kilau langit siang hari pada kaca jendela yang mati lampunya
-          ctx.fillStyle = isColored ? 'rgba(255, 255, 255, 0.45)' : 'rgba(255, 255, 255, 0.15)';
-          ctx.fillRect(x + 10, y + 7, 3, 2);
-          ctx.fillRect(x + 18, y + 7, 3, 2);
-          ctx.fillRect(x + 10, y + 14, 3, 2);
+          // Sky reflection glints
+          ctx.fillStyle = isColored ? 'rgba(255, 255, 255, 0.55)' : 'rgba(255, 255, 255, 0.2)';
+          ctx.fillRect(x + 11, y + 6, 3, 2);
+          ctx.fillRect(x + 18, y + 6, 3, 2);
+          ctx.fillRect(x + 11, y + 14, 3, 2);
           ctx.fillRect(x + 18, y + 14, 3, 2);
         }
 
         // Window mullion cross
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(x + 15, y + 6, 2, 12);
-        ctx.fillRect(x + 9, y + 11, 14, 2);
+        ctx.fillStyle = isColored ? '#78350f' : '#1e293b';
+        ctx.fillRect(x + 15, y + 5, 2, 14);
+        ctx.fillRect(x + 10, y + 11, 12, 2);
 
-        // Wooden planter flower box beneath window
-        ctx.fillStyle = isColored ? '#a16207' : '#475569';
-        ctx.fillRect(x + 5, y + 21, 22, 6);
+        // 5. Terracotta flower planter box beneath window
+        ctx.fillStyle = isColored ? '#c2410c' : '#475569';
+        ctx.fillRect(x + 7, y + 20, 18, 6);
+        ctx.fillStyle = isColored ? '#ea580c' : '#64748b';
+        ctx.fillRect(x + 7, y + 20, 18, 2);
 
         if (isColored) {
-          // Blooming mini petunias in planter
-          ctx.fillStyle = '#ef4444';
-          ctx.fillRect(x + 7, y + 19, 3, 3);
-          ctx.fillStyle = '#fbbf24';
-          ctx.fillRect(x + 13, y + 19, 3, 3);
-          ctx.fillStyle = '#ec4899';
-          ctx.fillRect(x + 19, y + 19, 3, 3);
+          // Blooming mini petunias & marigolds in planter
+          ctx.fillStyle = '#ef4444'; // Red
+          ctx.fillRect(x + 9, y + 18, 3, 3);
+          ctx.fillStyle = '#fbbf24'; // Yellow
+          ctx.fillRect(x + 14, y + 18, 3, 3);
+          ctx.fillStyle = '#ec4899'; // Pink
+          ctx.fillRect(x + 19, y + 18, 3, 3);
+          // Trailing green leaves
           ctx.fillStyle = '#22c55e';
-          ctx.fillRect(x + 6, y + 20, 2, 2);
-          ctx.fillRect(x + 17, y + 20, 2, 2);
+          ctx.fillRect(x + 8, y + 19, 2, 2);
+          ctx.fillRect(x + 13, y + 19, 2, 2);
+          ctx.fillRect(x + 18, y + 19, 2, 2);
+          ctx.fillRect(x + 10, y + 23, 2, 3);
+          ctx.fillRect(x + 17, y + 23, 2, 3);
         }
         break;
       }
 
       case TILE.HOUSE_DOOR: {
-        // Cottage wall base
+        // --- RUMAH PAK JOKO: DUTCH SPLIT BARN DOOR WITH RAIN BARREL & CARRIAGE LAMP ---
         const plasterColor = isColored ? '#fef3c7' : '#334155';
+        const stoneColor = isColored ? '#64748b' : '#334155';
         ctx.fillStyle = plasterColor;
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-        // Stone welcome step
+        // Fieldstone foundation
+        ctx.fillStyle = stoneColor;
+        ctx.fillRect(x, y + TILE_SIZE - 6, TILE_SIZE, 6);
+
+        // 1. Natural stone welcome step with woven coir welcome mat
         ctx.fillStyle = isColored ? '#94a3b8' : '#475569';
-        ctx.fillRect(x + 4, y + 27, 24, 5);
+        ctx.fillRect(x + 6, y + 27, 20, 5);
+        ctx.fillStyle = isColored ? '#d97706' : '#334155';
+        ctx.fillRect(x + 9, y + 28, 14, 3);
 
-        // Dark arched wooden door frame
+        // 2. Heavy dark oak door frame
         ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
-        ctx.fillRect(x + 6, y + 2, 20, 26);
+        ctx.fillRect(x + 8, y + 2, 16, 26);
 
-        // Wooden planks
+        // 3. Dutch split door planks
         ctx.fillStyle = isColored ? '#92400e' : '#334155';
-        ctx.fillRect(x + 8, y + 4, 16, 23);
+        ctx.fillRect(x + 10, y + 4, 12, 23);
         ctx.fillStyle = isColored ? '#78350f' : '#1e293b';
-        ctx.fillRect(x + 13, y + 4, 1, 23);
-        ctx.fillRect(x + 18, y + 4, 1, 23);
-
-        // Black iron door hinges
+        ctx.fillRect(x + 15, y + 4, 2, 23);
+        // Horizontal split seam for Dutch barn door
         ctx.fillStyle = '#0f172a';
-        ctx.fillRect(x + 8, y + 8, 4, 2);
-        ctx.fillRect(x + 8, y + 20, 4, 2);
+        ctx.fillRect(x + 10, y + 15, 12, 2);
 
-        // Gleaming brass doorknob
+        // Diagonal wooden cross-brace on lower half
+        ctx.fillStyle = isColored ? '#b45309' : '#475569';
+        ctx.beginPath();
+        ctx.moveTo(x + 10, y + 17);
+        ctx.lineTo(x + 13, y + 17);
+        ctx.lineTo(x + 22, y + 26);
+        ctx.lineTo(x + 19, y + 26);
+        ctx.fill();
+
+        // 4. Wrought iron strap hinges & golden brass latch
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 10, y + 7, 4, 2);
+        ctx.fillRect(x + 10, y + 19, 4, 2);
         ctx.fillStyle = isColored ? '#fbbf24' : '#94a3b8';
-        ctx.fillRect(x + 20, y + 15, 2, 3);
+        ctx.fillRect(x + 19, y + 13, 2, 3);
 
-        // Lampu teras rumah di sebelah pintu
+        // 5. Rustic wooden rain barrel on left side with brass tap + watering can
+        ctx.fillStyle = isColored ? '#78350f' : '#1e293b';
+        ctx.fillRect(x + 1, y + 17, 6, 12);
+        // Barrel iron hoops
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 1, y + 19, 6, 1);
+        ctx.fillRect(x + 1, y + 26, 6, 1);
+        // Brass tap
+        ctx.fillStyle = isColored ? '#f59e0b' : '#64748b';
+        ctx.fillRect(x + 6, y + 23, 2, 2);
+        // Cute sky-blue watering can sitting beside barrel
+        if (isColored) {
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(x + 2, y + 13, 4, 4);
+          ctx.fillRect(x + 5, y + 12, 2, 2); // Spout
+        }
+
+        // 6. Warm brass carriage lamp on right side
         const isDoorLampLit = !this.isAllMissionsCompleted;
         ctx.fillStyle = '#0f172a';
-        ctx.fillRect(x + 2, y + 7, 3, 2);
-        ctx.fillRect(x + 3, y + 5, 3, 5);
+        ctx.fillRect(x + 26, y + 7, 3, 2); // Bracket
+        ctx.fillRect(x + 25, y + 5, 5, 6); // Lamp body
 
         if (isDoorLampLit) {
-          // Sedang kabut: Lampu teras rumah menyala hangat
           ctx.fillStyle = '#fef08a';
-          ctx.fillRect(x + 3, y + 6, 2, 3);
-          ctx.fillStyle = 'rgba(254, 240, 138, 0.22)';
-          ctx.fillRect(x + 1, y + 4, 7, 8);
+          ctx.fillRect(x + 26, y + 6, 3, 4);
+          ctx.fillStyle = 'rgba(254, 240, 138, 0.28)';
+          ctx.fillRect(x + 23, y + 3, 9, 10);
         } else {
-          // Misi sudah selesai: Lampu teras rumah dimatikan
           ctx.fillStyle = isColored ? '#94a3b8' : '#64748b';
-          ctx.fillRect(x + 3, y + 6, 2, 3);
+          ctx.fillRect(x + 26, y + 6, 3, 4);
         }
         break;
       }
 
       case TILE.HOUSE_ROOF: {
+        // --- RUMAH PAK JOKO: CURVED MEDITERRANEAN TERRACOTTA ROOF WITH GARLANDS & CHIMNEY ---
         ctx.fillStyle = isColored ? '#991b1b' : '#1e293b';
         ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
 
-        // Terracotta / Cedar wood shingle rows
-        const shingleColor = isColored ? '#b91c1c' : '#334155';
-        const shingleHighlight = isColored ? '#ef4444' : '#475569';
+        // 1. Terracotta clay scalloped barrel tile rows
+        const tileBase = isColored ? '#c2410c' : '#334155';
+        const tileLight = isColored ? '#ea580c' : '#475569';
+        const tileHighlight = isColored ? '#f97316' : '#64748b';
+        const tileShadow = isColored ? '#7c2d12' : '#1e293b';
 
-        ctx.fillStyle = shingleColor;
-        ctx.fillRect(x, y + 4, TILE_SIZE, 6);
-        ctx.fillRect(x, y + 14, TILE_SIZE, 6);
-        ctx.fillRect(x, y + 24, TILE_SIZE, 6);
+        // Three horizontal curved tile tiers
+        for (let tier = 0; tier < 3; tier++) {
+          const ty = y + 2 + tier * 9;
+          // Tile row base
+          ctx.fillStyle = tileBase;
+          ctx.fillRect(x, ty, TILE_SIZE, 8);
+          // Dark overlap shadow at bottom of tier
+          ctx.fillStyle = tileShadow;
+          ctx.fillRect(x, ty + 7, TILE_SIZE, 2);
 
-        ctx.fillStyle = shingleHighlight;
-        ctx.fillRect(x + 2, y + 5, 8, 2);
-        ctx.fillRect(x + 14, y + 5, 8, 2);
-        ctx.fillRect(x + 6, y + 15, 8, 2);
-        ctx.fillRect(x + 20, y + 15, 8, 2);
+          // Vertical barrel curvature ridges every 6 pixels
+          for (let tx = 1; tx < TILE_SIZE - 2; tx += 6) {
+            ctx.fillStyle = tileShadow;
+            ctx.fillRect(x + tx, ty, 1, 7);
+            ctx.fillStyle = tileHighlight;
+            ctx.fillRect(x + tx + 1, ty + 1, 2, 5);
+            ctx.fillStyle = tileLight;
+            ctx.fillRect(x + tx + 3, ty + 1, 2, 5);
+          }
+        }
 
-        // Chimney with animated rising smoke on specific roof tiles
-        if ((x / TILE_SIZE === 4 && y / TILE_SIZE === 18) || (x / TILE_SIZE === 30 && y / TILE_SIZE === 19)) {
-          // Brick chimney
-          ctx.fillStyle = isColored ? '#7f1d1d' : '#334155';
-          ctx.fillRect(x + 20, y - 6, 8, 12);
-          ctx.fillStyle = isColored ? '#451a03' : '#1e293b';
-          ctx.fillRect(x + 19, y - 8, 10, 3);
+        // Timber fascia under the bottom eave
+        ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
+        ctx.fillRect(x, y + TILE_SIZE - 2, TILE_SIZE, 2);
+
+        // 2. Hanging dried crops under the eaves
+        if (isColored) {
+          if (c === 2 || c === 6) {
+            // Braided golden corn cobs hanging under eaves
+            ctx.fillStyle = '#16a34a'; // Corn husk
+            ctx.fillRect(x + 10, y + 26, 3, 2);
+            ctx.fillStyle = '#facc15'; // Golden corn
+            ctx.fillRect(x + 10, y + 28, 3, 5);
+            ctx.fillRect(x + 18, y + 26, 3, 2);
+            ctx.fillStyle = '#eab308';
+            ctx.fillRect(x + 18, y + 28, 3, 5);
+          } else if (c === 5) {
+            // Braided red chili garland
+            ctx.fillStyle = '#dc2626';
+            ctx.fillRect(x + 8, y + 27, 2, 3);
+            ctx.fillRect(x + 12, y + 28, 2, 3);
+            ctx.fillRect(x + 16, y + 27, 2, 3);
+            ctx.fillStyle = '#16a34a';
+            ctx.fillRect(x + 8, y + 26, 10, 1);
+          }
+        }
+
+        // 3. Red brick chimney on column 3
+        if (c === 3 && r === 18) {
+          // Brick chimney body
+          ctx.fillStyle = isColored ? '#b91c1c' : '#334155';
+          ctx.fillRect(x + 18, y - 8, 10, 14);
+          // Mortar joints
+          ctx.fillStyle = isColored ? '#fef3c7' : '#475569';
+          ctx.fillRect(x + 18, y - 4, 10, 1);
+          ctx.fillRect(x + 18, y + 1, 10, 1);
+          ctx.fillRect(x + 23, y - 8, 1, 4);
+          ctx.fillRect(x + 21, y - 3, 1, 4);
+          // Stone chimney capping
+          ctx.fillStyle = isColored ? '#64748b' : '#1e293b';
+          ctx.fillRect(x + 17, y - 10, 12, 3);
 
           // Animated rising pixel smoke puffs
           const smokeTime = this.tickCount * 0.08;
           for (let s = 0; s < 3; s++) {
             const smokeProgress = ((smokeTime + s * 1.2) % 3.6) / 3.6;
-            const smokeY = y - 8 - smokeProgress * 22;
-            const smokeX = x + 23 + Math.sin(smokeProgress * Math.PI * 2) * 4;
+            const smokeY = y - 10 - smokeProgress * 22;
+            const smokeX = x + 22 + Math.sin(smokeProgress * Math.PI * 2) * 4;
             const smokeSize = 3 + Math.floor(smokeProgress * 4);
             const smokeAlpha = (1 - smokeProgress) * 0.7;
 
@@ -2062,6 +2379,539 @@ export class GameRenderer {
             ctx.fillRect(Math.floor(smokeX), Math.floor(smokeY), smokeSize, smokeSize);
           }
         }
+
+        // 4. Golden rooster weather vane on column 4
+        if (c === 4 && r === 18 && isColored) {
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(x + 15, y - 8, 2, 10); // Spire
+          ctx.fillRect(x + 12, y - 5, 8, 1); // Crossbar
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillRect(x + 14, y - 11, 4, 3); // Rooster
+          ctx.fillStyle = '#dc2626';
+          ctx.fillRect(x + 16, y - 12, 2, 2); // Comb
+        }
+        break;
+      }
+
+      case TILE.FOREST_CABIN_WINDOW: {
+        // --- PONDOK HUTAN PAK TEGUH: TIMBER CABIN WINDOW WITH HEARTH GLOW ---
+        // 1. Peeled log wall background
+        const logDark = isColored ? '#451a03' : '#0f172a';
+        const logBase = isColored ? '#78350f' : '#1e293b';
+        const logMid = isColored ? '#92400e' : '#334155';
+        for (let i = 0; i < 4; i++) {
+          const ly = y + i * 8;
+          ctx.fillStyle = logDark;
+          ctx.fillRect(x, ly + 6, TILE_SIZE, 2);
+          ctx.fillStyle = logBase;
+          ctx.fillRect(x, ly + 1, TILE_SIZE, 5);
+          ctx.fillStyle = logMid;
+          ctx.fillRect(x, ly + 1, TILE_SIZE, 2);
+        }
+
+        // 2. Heavy rough-hewn timber window frame
+        ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
+        ctx.fillRect(x + 7, y + 4, 18, 16);
+
+        // 3. Cabin interior hearth glow
+        const pulse = Math.sin(this.tickCount * 0.09 + x * 0.2) * 0.05;
+        ctx.fillStyle = `rgba(251, 191, 36, ${0.25 + pulse})`;
+        ctx.fillRect(x + 5, y + 2, 22, 20);
+
+        // Cozy amber window panes with diamond-lattice
+        ctx.fillStyle = isColored ? '#f59e0b' : '#64748b';
+        ctx.fillRect(x + 9, y + 6, 6, 5);
+        ctx.fillRect(x + 17, y + 6, 6, 5);
+        ctx.fillRect(x + 9, y + 13, 6, 5);
+        ctx.fillRect(x + 17, y + 13, 6, 5);
+
+        // Hearth fire flicker cores
+        ctx.fillStyle = isColored ? '#fef08a' : '#94a3b8';
+        ctx.fillRect(x + 11, y + 7, 3, 3);
+        ctx.fillRect(x + 18, y + 8, 3, 3);
+
+        // Heavy dark mullion cross
+        ctx.fillStyle = isColored ? '#292524' : '#0f172a';
+        ctx.fillRect(x + 15, y + 6, 2, 12);
+        ctx.fillRect(x + 9, y + 11, 14, 2);
+
+        // 4. Hollowed-log window planter box with mountain wildflowers
+        ctx.fillStyle = isColored ? '#78350f' : '#334155';
+        ctx.fillRect(x + 5, y + 20, 22, 6);
+        ctx.fillStyle = isColored ? '#451a03' : '#1e293b';
+        ctx.fillRect(x + 5, y + 25, 22, 1);
+
+        if (isColored) {
+          // Alpine bluebells, mountain arnica & ferns
+          ctx.fillStyle = '#38bdf8'; // Bluebells
+          ctx.fillRect(x + 7, y + 18, 3, 3);
+          ctx.fillStyle = '#facc15'; // Arnica
+          ctx.fillRect(x + 14, y + 18, 3, 3);
+          ctx.fillStyle = '#c084fc'; // Purple lupine
+          ctx.fillRect(x + 20, y + 18, 3, 3);
+          // Forest fern fronds
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(x + 6, y + 19, 2, 2);
+          ctx.fillRect(x + 12, y + 19, 2, 2);
+          ctx.fillRect(x + 18, y + 19, 2, 2);
+          ctx.fillRect(x + 10, y + 22, 2, 3);
+        }
+
+        // 5. Forged iron lantern bracket
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 2, y + 7, 3, 2);
+        ctx.fillRect(x + 3, y + 5, 2, 6);
+        ctx.fillStyle = isColored ? '#fef08a' : '#64748b';
+        ctx.fillRect(x + 3, y + 6, 2, 3);
+        break;
+      }
+
+      case TILE.FOREST_CABIN_DOOR: {
+        // --- PONDOK HUTAN PAK TEGUH: ARCHED OAK LOG DOOR WITH AXE CREST ---
+        // 1. Peeled log wall background
+        const logDark = isColored ? '#451a03' : '#0f172a';
+        const logBase = isColored ? '#78350f' : '#1e293b';
+        const logMid = isColored ? '#92400e' : '#334155';
+        for (let i = 0; i < 4; i++) {
+          const ly = y + i * 8;
+          ctx.fillStyle = logDark;
+          ctx.fillRect(x, ly + 6, TILE_SIZE, 2);
+          ctx.fillStyle = logBase;
+          ctx.fillRect(x, ly + 1, TILE_SIZE, 5);
+          ctx.fillStyle = logMid;
+          ctx.fillRect(x, ly + 1, TILE_SIZE, 2);
+        }
+
+        // 2. Thick split-log threshold step
+        ctx.fillStyle = isColored ? '#78350f' : '#334155';
+        ctx.fillRect(x + 5, y + 27, 22, 5);
+        ctx.fillStyle = isColored ? '#b45309' : '#475569';
+        ctx.fillRect(x + 7, y + 28, 18, 3);
+
+        // 3. Arched oak timber door frame
+        ctx.fillStyle = isColored ? '#292524' : '#0f172a';
+        ctx.fillRect(x + 7, y + 2, 18, 26);
+
+        // 4. Solid oak log planks
+        ctx.fillStyle = isColored ? '#78350f' : '#1e293b';
+        ctx.fillRect(x + 9, y + 4, 14, 23);
+        ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
+        ctx.fillRect(x + 13, y + 4, 1, 23);
+        ctx.fillRect(x + 18, y + 4, 1, 23);
+
+        // 5. Woodcutter's crossed axes crest carved on door
+        if (isColored) {
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillRect(x + 14, y + 8, 4, 4);
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillRect(x + 13, y + 7, 2, 2);
+          ctx.fillRect(x + 17, y + 7, 2, 2);
+        }
+
+        // 6. Black forged iron studs & strap hinges
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 9, y + 7, 4, 2);
+        ctx.fillRect(x + 9, y + 19, 4, 2);
+        ctx.fillRect(x + 10, y + 13, 2, 2); // Stud
+        ctx.fillRect(x + 20, y + 13, 2, 2); // Stud
+        // Heavy brass handle ring
+        ctx.fillStyle = isColored ? '#f59e0b' : '#94a3b8';
+        ctx.fillRect(x + 19, y + 15, 2, 4);
+
+        // 7. Porch awning with hanging forest amber lantern
+        ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
+        ctx.fillRect(x + 4, y, 24, 3); // Awning beam
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 15, y + 2, 2, 3); // Chain
+        ctx.fillStyle = isColored ? '#fef08a' : '#94a3b8';
+        ctx.fillRect(x + 14, y + 4, 4, 4); // Lantern
+        ctx.fillStyle = 'rgba(254, 240, 138, 0.3)';
+        ctx.fillRect(x + 11, y + 2, 10, 8);
+        break;
+      }
+
+      case TILE.FOREST_CABIN_ROOF: {
+        // --- PONDOK HUTAN PAK TEGUH: MOSSY CEDAR SHAKE ROOF WITH RIVER STONE CHIMNEY ---
+        ctx.fillStyle = isColored ? '#292524' : '#1e293b';
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        // 1. Deep timber cedar split-shake shingles
+        const shakeBase = isColored ? '#44403c' : '#334155';
+        const shakeLight = isColored ? '#57534e' : '#475569';
+        const shakeDark = isColored ? '#1c1917' : '#0f172a';
+
+        // Staggered wooden shake tiers
+        for (let tier = 0; tier < 3; tier++) {
+          const ty = y + 2 + tier * 9;
+          ctx.fillStyle = shakeBase;
+          ctx.fillRect(x, ty, TILE_SIZE, 8);
+          ctx.fillStyle = shakeDark;
+          ctx.fillRect(x, ty + 7, TILE_SIZE, 2);
+
+          // Staggered vertical shingle gaps
+          const offset = tier % 2 === 0 ? 0 : 4;
+          for (let sx = offset; sx < TILE_SIZE; sx += 7) {
+            ctx.fillStyle = shakeDark;
+            ctx.fillRect(x + sx, ty, 1, 7);
+            ctx.fillStyle = shakeLight;
+            ctx.fillRect(x + sx + 1, ty + 1, 4, 2);
+          }
+        }
+
+        // 2. Overgrown patches of lush emerald forest moss
+        if (isColored) {
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(x + 3, y + 5, 8, 4);
+          ctx.fillRect(x + 18, y + 14, 10, 5);
+          ctx.fillRect(x + 8, y + 23, 12, 4);
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(x + 4, y + 6, 6, 2);
+          ctx.fillRect(x + 20, y + 15, 6, 2);
+          ctx.fillRect(x + 10, y + 24, 8, 2);
+        }
+
+        // Heavy cedar eave log at bottom
+        ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
+        ctx.fillRect(x, y + TILE_SIZE - 3, TILE_SIZE, 3);
+
+        // 3. River stone cobblestone chimney on column 12
+        if (c === 12 && r === 2) {
+          ctx.fillStyle = isColored ? '#475569' : '#1e293b';
+          ctx.fillRect(x + 16, y - 10, 12, 16);
+          // Cobblestone textures
+          ctx.fillStyle = isColored ? '#64748b' : '#334155';
+          ctx.fillRect(x + 17, y - 9, 4, 3);
+          ctx.fillRect(x + 23, y - 9, 4, 3);
+          ctx.fillRect(x + 18, y - 5, 5, 3);
+          ctx.fillRect(x + 23, y - 4, 4, 4);
+          ctx.fillRect(x + 17, y - 1, 4, 3);
+          // Flat stone chimney cap
+          ctx.fillStyle = isColored ? '#334155' : '#0f172a';
+          ctx.fillRect(x + 15, y - 12, 14, 3);
+
+          // Animated forest woodsmoke curls
+          const smokeTime = this.tickCount * 0.07;
+          for (let s = 0; s < 3; s++) {
+            const smokeProgress = ((smokeTime + s * 1.2) % 3.6) / 3.6;
+            const smokeY = y - 12 - smokeProgress * 24;
+            const smokeX = x + 21 + Math.sin(smokeProgress * Math.PI * 2) * 5;
+            const smokeSize = 3 + Math.floor(smokeProgress * 5);
+            const smokeAlpha = (1 - smokeProgress) * 0.65;
+
+            ctx.fillStyle = `rgba(241, 245, 249, ${smokeAlpha})`;
+            ctx.fillRect(Math.floor(smokeX), Math.floor(smokeY), smokeSize, smokeSize);
+          }
+        }
+
+        // 4. Carved pine finial ridge ornament on column 11
+        if (c === 11 && r === 2 && isColored) {
+          ctx.fillStyle = '#451a03';
+          ctx.fillRect(x + 14, y - 6, 4, 8);
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(x + 13, y - 9, 6, 4);
+          ctx.fillRect(x + 14, y - 12, 4, 4);
+        }
+        break;
+      }
+
+      case TILE.LOG_STACK: {
+        // --- TUMPUKAN KAYU BAKAR PAK TEGUH & CHOPPING STUMP ---
+        // Grass background
+        ctx.fillStyle = isColored ? '#386641' : '#334155';
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        // 1. Stack of split firewood logs
+        const barkColor = isColored ? '#451a03' : '#1e293b';
+        const woodGrain = isColored ? '#b45309' : '#334155';
+        const woodCore = isColored ? '#fde047' : '#64748b';
+
+        // Base row of logs (3 logs)
+        for (let l = 0; l < 3; l++) {
+          const lx = x + 2 + l * 7;
+          const ly = y + 14;
+          ctx.fillStyle = barkColor;
+          ctx.beginPath();
+          ctx.arc(lx + 4, ly + 4, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = woodGrain;
+          ctx.beginPath();
+          ctx.arc(lx + 4, ly + 4, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = woodCore;
+          ctx.fillRect(lx + 3, ly + 3, 2, 2);
+        }
+
+        // Top row of logs (2 logs stacked above)
+        for (let l = 0; l < 2; l++) {
+          const lx = x + 5 + l * 7;
+          const ly = y + 8;
+          ctx.fillStyle = barkColor;
+          ctx.beginPath();
+          ctx.arc(lx + 4, ly + 4, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = woodGrain;
+          ctx.beginPath();
+          ctx.arc(lx + 4, ly + 4, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = woodCore;
+          ctx.fillRect(lx + 3, ly + 3, 2, 2);
+        }
+
+        // 2. Tree stump chopping block with embedded woodsman's axe
+        ctx.fillStyle = isColored ? '#78350f' : '#1e293b';
+        ctx.fillRect(x + 22, y + 12, 8, 12);
+        ctx.fillStyle = isColored ? '#b45309' : '#334155';
+        ctx.fillRect(x + 23, y + 13, 6, 2);
+
+        if (isColored) {
+          // Steel axe head embedded in stump
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillRect(x + 24, y + 8, 5, 4);
+          ctx.fillStyle = '#e2e8f0';
+          ctx.fillRect(x + 27, y + 8, 2, 4);
+          // Wooden axe handle sticking out
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(x + 22, y + 3, 3, 7);
+
+          // Scattered wood chips on grass
+          ctx.fillStyle = '#fde047';
+          ctx.fillRect(x + 18, y + 25, 2, 2);
+          ctx.fillRect(x + 25, y + 26, 3, 2);
+          ctx.fillRect(x + 29, y + 24, 2, 2);
+        }
+        break;
+      }
+
+      case TILE.ZEN_WINDOW: {
+        // --- PONDOK KAKEK DAMAI: KUMIKO SHOJI TRANSLUCENT SCREEN WINDOW ---
+        const woodFrame = isColored ? '#78350f' : '#1e293b';
+        const woodHighlight = isColored ? '#92400e' : '#334155';
+        const plasterTone = isColored ? '#fef3c7' : '#334155';
+        const bambooTone = isColored ? '#b45309' : '#1e293b';
+
+        // 1. Plaster wall & bamboo wainscoting
+        ctx.fillStyle = plasterTone;
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+        ctx.fillStyle = bambooTone;
+        ctx.fillRect(x, y + TILE_SIZE - 8, TILE_SIZE, 8);
+        ctx.fillStyle = woodFrame;
+        ctx.fillRect(x, y, 3, TILE_SIZE);
+        ctx.fillRect(x + TILE_SIZE - 3, y, 3, TILE_SIZE);
+
+        // 2. Shoji window outer cedar frame
+        ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
+        ctx.fillRect(x + 6, y + 3, 20, 18);
+
+        // 3. Translucent washi rice paper glowing softly
+        ctx.fillStyle = isColored ? '#fef3c7' : '#64748b';
+        ctx.fillRect(x + 7, y + 4, 18, 16);
+        // Calming peach-amber inner serenity glow
+        const zenPulse = Math.sin(this.tickCount * 0.05 + x * 0.1) * 0.04;
+        ctx.fillStyle = `rgba(253, 230, 138, ${0.35 + zenPulse})`;
+        ctx.fillRect(x + 7, y + 4, 18, 16);
+
+        // 4. Intricate Kumiko geometric lattice grid
+        ctx.fillStyle = isColored ? '#92400e' : '#334155';
+        // Vertical lattice ribs
+        ctx.fillRect(x + 11, y + 4, 1, 16);
+        ctx.fillRect(x + 15, y + 4, 2, 16); // Center sliding frame
+        ctx.fillRect(x + 20, y + 4, 1, 16);
+        // Horizontal lattice ribs
+        ctx.fillRect(x + 7, y + 8, 18, 1);
+        ctx.fillRect(x + 7, y + 12, 18, 1);
+        ctx.fillRect(x + 7, y + 16, 18, 1);
+
+        // 5. Delicate bamboo roll-up screen (Sudare) along top
+        ctx.fillStyle = isColored ? '#d97706' : '#475569';
+        ctx.fillRect(x + 5, y + 2, 22, 3);
+        break;
+      }
+
+      case TILE.ZEN_DOOR: {
+        // --- PONDOK KAKEK DAMAI: SLIDING CEDAR SCREEN WITH RIVER STONE & GETA ---
+        const plasterTone = isColored ? '#fef3c7' : '#334155';
+        const woodFrame = isColored ? '#78350f' : '#1e293b';
+        const bambooTone = isColored ? '#b45309' : '#1e293b';
+
+        ctx.fillStyle = plasterTone;
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+        ctx.fillStyle = bambooTone;
+        ctx.fillRect(x, y + TILE_SIZE - 8, TILE_SIZE, 8);
+
+        // 1. Natural dark river stone entrance step (Kutsunugi-ishi)
+        ctx.fillStyle = isColored ? '#475569' : '#1e293b';
+        ctx.fillRect(x + 5, y + 27, 22, 5);
+        ctx.fillStyle = isColored ? '#64748b' : '#334155';
+        ctx.fillRect(x + 7, y + 27, 18, 2);
+
+        // Neat pair of traditional wooden sandals (Geta) on the stone step
+        if (isColored) {
+          ctx.fillStyle = '#d97706'; // Wooden base
+          ctx.fillRect(x + 11, y + 28, 3, 4);
+          ctx.fillRect(x + 17, y + 28, 3, 4);
+          ctx.fillStyle = '#dc2626'; // Red fabric thong (Hanao)
+          ctx.fillRect(x + 12, y + 29, 1, 1);
+          ctx.fillRect(x + 18, y + 29, 1, 1);
+        }
+
+        // 2. Sliding cedar door frame
+        ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
+        ctx.fillRect(x + 7, y + 2, 18, 26);
+
+        // 3. Fine horizontal cedar slats
+        ctx.fillStyle = isColored ? '#92400e' : '#334155';
+        ctx.fillRect(x + 9, y + 4, 14, 23);
+        ctx.fillStyle = isColored ? '#78350f' : '#1e293b';
+        for (let s = 6; s < 26; s += 3) {
+          ctx.fillRect(x + 9, y + s, 14, 1);
+        }
+
+        // Center sliding joint & circular brass pull ring
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 15, y + 4, 2, 23);
+        ctx.fillStyle = isColored ? '#fbbf24' : '#94a3b8';
+        ctx.beginPath();
+        ctx.arc(x + 18, y + 15, 2, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // 4. Hanging paper lantern (Chochin) beside entrance
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 2, y + 7, 3, 1); // Rod
+        ctx.fillStyle = isColored ? '#fef08a' : '#64748b';
+        ctx.fillRect(x + 1, y + 8, 5, 8); // Paper body
+        ctx.fillStyle = isColored ? '#dc2626' : '#334155';
+        ctx.fillRect(x + 2, y + 10, 3, 4); // Red crest
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(x + 1, y + 8, 5, 1);
+        ctx.fillRect(x + 1, y + 15, 5, 1);
+        break;
+      }
+
+      case TILE.ZEN_ROOF: {
+        // --- PONDOK KAKEK DAMAI: CURVED JADE/TEAL PAGODA ROOF WITH TEMPLE WIND BELLS ---
+        ctx.fillStyle = isColored ? '#042f2e' : '#0f172a';
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        // 1. Jade / Teal ceramic roof tiles (Kawara)
+        const jadeBase = isColored ? '#0f766e' : '#1e293b';
+        const jadeLight = isColored ? '#14b8a6' : '#334155';
+        const jadeHighlight = isColored ? '#2dd4bf' : '#475569';
+        const jadeDark = isColored ? '#115e59' : '#0f172a';
+
+        // Three cascading curved tiers
+        for (let tier = 0; tier < 3; tier++) {
+          const ty = y + 2 + tier * 9;
+          ctx.fillStyle = jadeBase;
+          ctx.fillRect(x, ty, TILE_SIZE, 8);
+          ctx.fillStyle = jadeDark;
+          ctx.fillRect(x, ty + 7, TILE_SIZE, 2);
+
+          // Curved ceramic tile ribs
+          for (let tx = 2; tx < TILE_SIZE - 2; tx += 6) {
+            ctx.fillStyle = jadeDark;
+            ctx.fillRect(x + tx, ty, 1, 7);
+            ctx.fillStyle = jadeHighlight;
+            ctx.fillRect(x + tx + 1, ty + 1, 2, 5);
+            ctx.fillStyle = jadeLight;
+            ctx.fillRect(x + tx + 3, ty + 1, 2, 5);
+          }
+        }
+
+        // 2. Sweeping upturned eaves (Sori) on left & right corners
+        if (c === 28) {
+          // Left corner upward flare
+          ctx.fillStyle = jadeLight;
+          ctx.fillRect(x, y + 22, 6, 6);
+          ctx.fillRect(x, y + 18, 3, 5);
+          // Copper wind bell (Furin) swaying under eave
+          if (isColored) {
+            const sway = Math.sin(this.tickCount * 0.06) * 1.5;
+            ctx.fillStyle = '#d97706';
+            ctx.fillRect(x + 2 + sway, y + 28, 2, 3);
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(x + 2 + sway, y + 31, 2, 4); // Paper wind strip
+          }
+        } else if (c === 32) {
+          // Right corner upward flare
+          ctx.fillStyle = jadeLight;
+          ctx.fillRect(x + TILE_SIZE - 6, y + 22, 6, 6);
+          ctx.fillRect(x + TILE_SIZE - 3, y + 18, 3, 5);
+          // Copper wind bell (Furin)
+          if (isColored) {
+            const sway = Math.sin(this.tickCount * 0.06 + 1) * 1.5;
+            ctx.fillStyle = '#d97706';
+            ctx.fillRect(x + TILE_SIZE - 4 + sway, y + 28, 2, 3);
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(x + TILE_SIZE - 4 + sway, y + 31, 2, 4);
+          }
+        }
+
+        // 3. Golden apex jewel finial (Hōju) on central ridge (c === 30)
+        if (c === 30 && r === 19 && isColored) {
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(x + 14, y - 4, 4, 6);
+          ctx.fillStyle = '#fbbf24';
+          ctx.beginPath();
+          ctx.arc(x + 16, y - 6, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x + 15, y - 8, 2, 2);
+        }
+        break;
+      }
+
+      case TILE.STONE_LANTERN: {
+        // --- LENTERA BATU TAMAN ZEN (KASUGA-TORO) ---
+        // Manicured moss & raked white gravel base
+        ctx.fillStyle = isColored ? '#386641' : '#334155';
+        ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+        if (isColored) {
+          // Circular patch of fine garden sand/gravel
+          ctx.fillStyle = '#e2e8f0';
+          ctx.beginPath();
+          ctx.arc(x + 16, y + 20, 12, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#cbd5e1';
+          ctx.beginPath();
+          ctx.arc(x + 16, y + 20, 10, 0, Math.PI * 2);
+          ctx.stroke();
+          // Velvet garden moss rim
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(x + 6, y + 16, 4, 3);
+          ctx.fillRect(x + 22, y + 18, 4, 3);
+        }
+
+        // 1. Granite stepped pedestal base (Kiso)
+        ctx.fillStyle = isColored ? '#64748b' : '#334155';
+        ctx.fillRect(x + 10, y + 26, 12, 4);
+        ctx.fillStyle = isColored ? '#94a3b8' : '#475569';
+        ctx.fillRect(x + 12, y + 23, 8, 3);
+
+        // 2. Carved stone pillar (Sao)
+        ctx.fillStyle = isColored ? '#64748b' : '#334155';
+        ctx.fillRect(x + 14, y + 15, 4, 8);
+
+        // 3. Middle platform (Chūdai)
+        ctx.fillStyle = isColored ? '#94a3b8' : '#475569';
+        ctx.fillRect(x + 11, y + 13, 10, 2);
+
+        // 4. Fire chamber (Hibukuro) with candle flame
+        ctx.fillStyle = isColored ? '#334155' : '#0f172a';
+        ctx.fillRect(x + 12, y + 8, 8, 5);
+        // Warm flame glow inside stone chamber
+        ctx.fillStyle = isColored ? '#fef08a' : '#94a3b8';
+        ctx.fillRect(x + 14, y + 9, 4, 3);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x + 15, y + 10, 2, 2);
+
+        // 5. Flared stone umbrella roof (Kasa) & lotus jewel finial (Hōju)
+        ctx.fillStyle = isColored ? '#64748b' : '#334155';
+        ctx.fillRect(x + 9, y + 6, 14, 2);
+        ctx.fillStyle = isColored ? '#94a3b8' : '#475569';
+        ctx.fillRect(x + 12, y + 4, 8, 2);
+        ctx.fillStyle = isColored ? '#cbd5e1' : '#64748b';
+        ctx.fillRect(x + 15, y + 2, 2, 2);
         break;
       }
 
@@ -3262,10 +4112,14 @@ export class GameRenderer {
     // Badge styling based on type
     const isNPC = type === 'npc';
     const isTower = type === 'tower';
-    const borderColor = isTower ? '#f59e0b' : isNPC ? '#f59e0b' : '#10b981';
-    const textColor = isTower ? '#fef08a' : isNPC ? '#fef08a' : '#a7f3d0';
-    const icon = isTower ? '🕰️' : isNPC ? '💬' : '🔍';
-    const actionLabel = isTower ? 'Klik Periksa Menara' : isNPC ? 'Klik Bicara' : 'Klik Periksa';
+    const isWindmill = type === 'windmill';
+    const isAnimal = type === 'animal';
+    const isRiver = type === 'river';
+
+    const borderColor = isTower || isWindmill ? '#f59e0b' : isAnimal || isRiver ? '#38bdf8' : isNPC ? '#f59e0b' : '#10b981';
+    const textColor = isTower || isWindmill ? '#fef08a' : isAnimal || isRiver ? '#e0f2fe' : isNPC ? '#fef08a' : '#a7f3d0';
+    const icon = isTower ? '🕰️' : isWindmill ? '🌾' : isAnimal ? '🐮' : isRiver ? '🐟' : isNPC ? '💬' : '🔍';
+    const actionLabel = isTower ? 'Klik Periksa Menara' : isWindmill ? 'Klik Periksa Kincir' : isAnimal ? 'Klik Dekati' : isRiver ? 'Klik Amati' : isNPC ? 'Klik Bicara' : 'Klik Periksa';
 
     ctx.font = '7px "Press Start 2P", monospace';
     ctx.textAlign = 'center';

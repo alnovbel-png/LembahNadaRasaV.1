@@ -373,6 +373,13 @@ class SoundSystem {
     }, 150);
   }
 
+  // Soft audio cue when clicking on an inaccessible obstacle or solid wall
+  public playBlocked() {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    this.playTone(180, 'sine', 0.1, 0.035, 0, false);
+  }
+
   // Audio test triggers for settings sliders
   public playTestSfx() {
     this.initCtx();

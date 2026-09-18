@@ -304,7 +304,21 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Ayam Saintis Emosi',
     portrait: 'chicken_glasses',
     text: 'Fakta Sains PSE: Saat manusia merasa marah atau panik, Otak Amigdala menyala seperti alarm kebakaran. Satu pelukan atau tawa ramah bisa mematikan alarm itu seketika! Ambil "Lencana Telur Ceria" ini!',
+    thoughtBubble: 'Tawa dan humor sehat adalah pertahanan terbaik melawan hormon stres kortisol!',
+    emotionAura: 'gembira',
     givesItem: 'item_egg_badge',
+    unlocksBadge: 'badge_laughter_medicine',
+    nextId: 'kotek_reward',
+  },
+  kotek_reward: {
+    id: 'kotek_reward',
+    speaker: 'Profesor Kotek',
+    speakerRole: 'Ayam Saintis Emosi',
+    portrait: 'chicken_glasses',
+    text: 'KUKU-RUYUK! Selamat! Kamu berhasil memahami rahasia sains emosi dan resmi dianugerahi lencana kehormatan "Doktor Humor & Endorfin"! Ingat, senyuman tulus adalah obat penenang amigdala terbaik!',
+    thoughtBubble: 'Sensor keceriaanku mendeteksi lonjakan hormon kebahagiaan 100% di seluruh desa!',
+    emotionAura: 'gembira',
+    unlocksBadge: 'badge_laughter_medicine',
   },
 
   // --- POHON RAHASIA (SECRET TREE) ---
@@ -686,9 +700,49 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
   signpost_forest: {
     id: 'signpost_forest',
     speaker: 'Plang Petunjuk Arah Hutan',
-    speakerRole: 'Batas Hutan Sunyi',
+    speakerRole: 'Batas Hutan Pinus Asri',
     portrait: 'signpost',
-    text: '📍 Plang Hutan Sunyi: "Pohon Keramat Sahabat berada di sudut barat laut terdalam. Berjalanlah dengan hati yang tenang dan jangan takut mendengarkan kesunyian."',
+    text: '📍 Plang Hutan Pinus Asri: [⬆️ Utara: Pondok Hutan Kayu Pak Teguh & Jalur Pinus] [↖️ Barat Laut: Pohon Keramat Rahasia] [⬇️ Selatan: Alun-Alun Lembah & Air Mancur Harmoni].',
+  },
+  forest_cabin_examine: {
+    id: 'forest_cabin_examine',
+    speaker: 'Pondok Hutan Pak Teguh',
+    speakerRole: 'Kabin Kayu Cedar & Tempat Istirahat Penjaga Hutan',
+    portrait: 'woodcutter',
+    emotionAura: 'tenang',
+    thoughtBubble: 'Hutan yang sehat bukan hutan yang tak pernah disentuh, melainkan hutan yang dirawat dengan cinta, kebijaksanaan, dan kesadaran.',
+    text: '🌲 Pondok kabin log kayu cedar yang kokoh dan hangat. Di bawah naungan atap berselimut lumut hijau segar, cerobong batu kali mengepulkan aroma sedap pembakaran kayu pinus kering. Di serambi depan, lentera tembaga menyinari ukiran kapak bersilang lambang harmoni manusia dan rimba.',
+    choices: [
+      {
+        id: 'c_cabin_philosophy',
+        text: '🪵 Pelajari Filosofi Pemangkasan Ranting & Regulasi Diri',
+        impactScore: 5,
+        resultDialogueId: 'forest_cabin_philosophy',
+      },
+      {
+        id: 'c_cabin_leave',
+        text: '👋 Ucapkan terima kasih dan lanjutkan penjelajahan',
+        impactScore: 2,
+        resultDialogueId: 'forest_cabin_farewell',
+      },
+    ],
+  },
+  forest_cabin_farewell: {
+    id: 'forest_cabin_farewell',
+    speaker: 'Pondok Hutan Pak Teguh',
+    speakerRole: 'Kabin Kayu Cedar & Tempat Istirahat Penjaga Hutan',
+    portrait: 'woodcutter',
+    emotionAura: 'tenang',
+    text: '🌲 Udara segar semerbak pinus menyegarkan dadamu. Langkah kakimu terasa semakin ringan, siap melanjutkan petualangan memulihkan warna harmoni lembah.',
+  },
+  forest_cabin_philosophy: {
+    id: 'forest_cabin_philosophy',
+    speaker: 'Pak Teguh',
+    speakerRole: 'Penebang Pohon Hutan Bijak',
+    portrait: 'woodcutter',
+    emotionAura: 'tenang',
+    thoughtBubble: 'Memotong ranting lapuk memberi ruang bagi tunas baru bertumbuh mekar ke arah cahaya matahari.',
+    text: '🌲 Pak Teguh tersenyum ramah: "Setiap batang kayu di tumpukan samping pondok ini berasal dari dahan kering yang sudah waktunya dipangkas. Sama seperti emosi kita—jika amarah atau dendam dibiarkan menumpuk, ia akan membebani jiwa. Belajarlah memotong siklus amarah dengan jeda napas, agar hati kita kembali lapang dan bercahaya!"',
   },
   signpost_farm: {
     id: 'signpost_farm',
@@ -1411,5 +1465,86 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     text: 'KUKU-RUYUK! Sensor endorfinku mendeteksi kadar kebahagiaan 100% di seluruh desa! Teruslah tersenyum dan sebarkan tawa ceria!',
     thoughtBubble: 'Kokok ceriaku hari ini dijamin menurunkan hormon stres siapa pun yang mendengarnya!',
     emotionAura: 'gembira',
+  },
+
+  // --- FREE ROAM LIVING WORLD OBJECTS ---
+  free_roam_windmill: {
+    id: 'free_roam_windmill',
+    speaker: 'Kincir Angin Harmoni',
+    speakerRole: 'Ikon Dinamisme Pedesaan',
+    portrait: 'clock',
+    text: 'Kincir angin pedesaan berputar anggun tertiup semilir angin sore. Bilah-bilah kayunya berderit tenang, menggiling gandum emas Pak Joko menjadi tepung harum untuk hidangan seluruh warga.',
+    thoughtBubble: 'Angin sepoi-sepoi membawa kesegaran dan harmoni ke seluruh penjuru lembah.',
+    emotionAura: 'tenang',
+  },
+
+  free_roam_cow: {
+    id: 'free_roam_cow',
+    speaker: 'Sapi Padang Rumput',
+    speakerRole: 'Penghuni Padang Hijau',
+    portrait: 'cow',
+    text: 'Moo-ooh! Sapi perah bertubuh sehat ini mengunyah rumput segar dengan santai, ekornya mengibas ramah mengusir lalat. Kehadirannya menghadirkan ketenangan pedesaan yang alami.',
+    thoughtBubble: 'Rumput hari ini terasa manis dan renyah... Hidup di lembah damai sungguh menyenangkan.',
+    emotionAura: 'tenang',
+  },
+
+  free_roam_sheep: {
+    id: 'free_roam_sheep',
+    speaker: 'Domba Wol Putih',
+    speakerRole: 'Penghuni Padang Hijau',
+    portrait: 'sheep',
+    text: 'Mbeee~ Domba berbulu lebat dan seputih awan ini menatapmu dengan mata bulat yang bersahabat. Membelai bulunya yang lembut memberikan rasa tenang dan relaksasi.',
+    thoughtBubble: 'Padang rumput lembah kini begitu hangat dan hijau tanpa kabut kelabu.',
+    emotionAura: 'gembira',
+  },
+
+  free_roam_deer: {
+    id: 'free_roam_deer',
+    speaker: 'Rusa Tutul Hutan',
+    speakerRole: 'Sahabat Rimba Tenang',
+    portrait: 'deer',
+    text: 'Rusa tutul yang anggun ini melangkah tenang dari tepian hutan pinus menuju padang rumput. Telinganya bergerak waspada namun matanya memancarkan rasa damai dan percaya.',
+    thoughtBubble: 'Hutan kini terasa begitu sejuk dan aman. Tak ada lagi kabut kelabu yang membuat cemas.',
+    emotionAura: 'tenang',
+  },
+
+  free_roam_rabbit: {
+    id: 'free_roam_rabbit',
+    speaker: 'Kelinci Padang Rumput',
+    speakerRole: 'Penjelajah Semanggi',
+    portrait: 'rabbit',
+    text: 'Hidung merah muda kelinci mungil ini kembang kempis cepat saat mengendus daun semanggi segar. Ia melompat riang di dekat kawanan domba, menikmati kebebasan di alam terbuka.',
+    thoughtBubble: 'Semanggi di sini paling manis! Lompat ke sana, lompat ke sini... senangnya!',
+    emotionAura: 'gembira',
+  },
+
+  free_roam_lamb: {
+    id: 'free_roam_lamb',
+    speaker: 'Anak Domba Gemas',
+    speakerRole: 'Penghuni Baru Padang Hijau',
+    portrait: 'lamb',
+    text: 'Mbee-ee! Anak domba kecil berbulu seputih kapas ini melonjak-lonjak lincah di samping induknya, ekor kecilnya bergoyang ceria penuh kegembiraan.',
+    thoughtBubble: 'Ibu domba ada di dekatku, rumputnya empuk, dan harinya cerah!',
+    emotionAura: 'gembira',
+  },
+
+  free_roam_squirrel: {
+    id: 'free_roam_squirrel',
+    speaker: 'Tupai Hutan',
+    speakerRole: 'Pengumpul Biji Pinus',
+    portrait: 'squirrel',
+    text: 'Tupai lincah berbuntut lebat ini duduk di atas batas hutan sambil menggenggam buah pohon ek dengan kedua cakar kecilnya. Pipinya menggembung menggemaskan.',
+    thoughtBubble: 'Kacang ek ini simpanan musim semi! Lembah yang pulih menyediakan makanan berlimpah.',
+    emotionAura: 'gembira',
+  },
+
+  free_roam_river: {
+    id: 'free_roam_river',
+    speaker: 'Aliran Sungai Jernih',
+    speakerRole: 'Kehidupan Air Lembah',
+    portrait: 'fountain',
+    text: 'Air sungai mengalir jernih berkilauan. Sekumpulan ikan kecil berenang lincah melawan arus lembut, menciptakan riak-riak air melingkar di dekat dermaga Bung Jala.',
+    thoughtBubble: 'Gemercik air yang hidup membangkitkan kesegaran indra dan ketenangan batin.',
+    emotionAura: 'tenang',
   },
 };
