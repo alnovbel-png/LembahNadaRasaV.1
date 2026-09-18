@@ -7,6 +7,7 @@ interface DialogueBoxProps {
   dialogue: DialogueNode;
   onChoiceSelect: (choice: ChoiceOption) => void;
   onNext: () => void;
+  onSkipRegulation?: () => void;
   onClose?: () => void;
   isCompassActive: boolean;
 }
@@ -15,6 +16,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   dialogue,
   onChoiceSelect,
   onNext,
+  onSkipRegulation,
   onClose,
   isCompassActive,
 }) => {
@@ -222,6 +224,12 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             🎒
           </div>
         );
+      case 'celebration':
+        return (
+          <div className="w-16 h-16 bg-amber-950/90 rounded-lg flex items-center justify-center text-3xl border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]">
+            🏆
+          </div>
+        );
       case 'clock_tower':
       case 'tower':
         return (
@@ -237,6 +245,14 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         );
     }
   };
+
+  const isEndingDialogue =
+    dialogue.id === 'ending_summary_perfect' ||
+    dialogue.id === 'ending_summary_resilient';
+
+  const isRegulationTrigger = Boolean(
+    dialogue.triggerRegulationMode || dialogue.triggerBreathing
+  );
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-3 pointer-events-none">
@@ -337,7 +353,17 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               </div>
             </div>
           ) : (
-            <div className="flex justify-end items-center">
+            <div className="flex justify-end items-center gap-2">
+              {isRegulationTrigger && !isTyping && onSkipRegulation && (
+                <button
+                  id="dialogue-skip-regulation-btn"
+                  onClick={onSkipRegulation}
+                  className="px-2.5 py-1.5 rounded-lg font-pixel text-[8px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-850 transition border border-slate-700 cursor-pointer"
+                  title="Lewati latihan dan langsung lanjut ke percakapan berikutnya"
+                >
+                  Lewati Latihan ▶
+                </button>
+              )}
               <button
                 id="dialogue-next-btn"
                 onClick={() => {
@@ -348,10 +374,26 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     onNext();
                   }
                 }}
-                className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-pixel font-bold text-[9px] sm:text-[10px] flex items-center gap-1.5 shadow transition cursor-pointer"
+                className={`px-3.5 py-1.5 rounded-lg font-pixel font-bold text-[9px] sm:text-[10px] flex items-center gap-1.5 shadow transition cursor-pointer ${
+                  isEndingDialogue && !isTyping
+                    ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-200 shadow-[0_0_15px_rgba(245,158,11,0.45)]'
+                    : isRegulationTrigger && !isTyping
+                    ? 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 border border-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.45)]'
+                    : 'bg-amber-400 hover:bg-amber-300 text-slate-950'
+                }`}
               >
-                <span>{isTyping ? 'LEWATI EFEK' : 'LANJUT [SPASI]'}</span>
-                <span className="text-xs">▶</span>
+                <span>
+                  {isTyping
+                    ? 'LEWATI EFEK'
+                    : isEndingDialogue
+                    ? 'SELESAIKAN & LIHAT SERTIFIKAT [SPASI]'
+                    : isRegulationTrigger
+                    ? 'MULAI LATIHAN BERSAMA KIKI [SPASI]'
+                    : 'LANJUT [SPASI]'}
+                </span>
+                <span className="text-xs">
+                  {isEndingDialogue && !isTyping ? '🏆' : isRegulationTrigger && !isTyping ? '🧘' : '▶'}
+                </span>
               </button>
             </div>
           )}

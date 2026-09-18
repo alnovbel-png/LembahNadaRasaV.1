@@ -416,7 +416,7 @@ export class GameRenderer {
       // Agricultural gardening tools leaning on fences
       freeRoamWorld.renderGardeningTools(ctx);
       // Pasture livestock: Holstein cow, brown calf, and fluffy grazing sheep in north meadow
-      freeRoamWorld.renderPastureLivestock(ctx, this.tickCount);
+      freeRoamWorld.renderPastureLivestock(ctx, this.tickCount, player.x, player.y);
       // Farm sparrows foraging and perching in crops & fences
       freeRoamWorld.renderFarmBirds(ctx, this.tickCount);
       // Rotating Windmill with wooden lattice sail blades near wheat farm & riverbank

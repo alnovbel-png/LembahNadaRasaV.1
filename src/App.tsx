@@ -1407,6 +1407,7 @@ export default function App() {
       setZoneStatus((zs) => {
         if (zs[zoneKey]) return zs;
         sound.playColorRestore();
+        sound.triggerColorRestorationTransition();
         // Screen shake haptic feedback when restoring a whole zone to color
         rendererRef.current?.triggerScreenShake(7, 20);
         rendererRef.current?.addSparkle(
@@ -1431,7 +1432,14 @@ export default function App() {
     }
 
     // Specific dialogue resolutions
-    if (node.id === 'kiki_after_breathe' || node.id === 'kiki_reward') {
+    if (
+      node.id === 'kiki_after_breathe' ||
+      node.id === 'kiki_after_breathing' ||
+      node.id === 'kiki_after_grounding' ||
+      node.id === 'kiki_after_stop' ||
+      node.id === 'kiki_after_shakeout' ||
+      node.id === 'kiki_reward'
+    ) {
       resolveNPC('kiki', { surfaceEmotion: 'gembira', deepEmotion: 'tenang', reason: 'Napasnya teratur, surat-surat aman, dan plaza kembali cerah.' }, 'kiki_resolved');
     } else if (node.id === 'ranu_path_empathy_2' || node.id === 'ranu_path_logic_2') {
       resolveNPC('kakek_ranu', { surfaceEmotion: 'tenang', deepEmotion: 'haru', reason: 'Merasa dihargai dan tidak lagi kesepian di tepi jembatan.' }, 'ranu_resolved');
@@ -1439,11 +1447,14 @@ export default function App() {
       resolveNPC('bimo', { surfaceEmotion: 'gembira', deepEmotion: 'tenang', reason: 'Memaafkan diri sendiri dan bangga memperbaiki jam desa.' }, 'bimo_resolved');
     }
 
-    // 2. Breathing / Emotional Regulation mini-game
-    if (node.triggerBreathing) {
-      setBreathingTarget(node.speaker);
-      setRegulationInitialMode('breathing');
-      setShowBreathingMiniGame(true);
+    // 2. Breathing / Emotional Regulation mini-game target & initial mode preparation
+    if (node.triggerBreathing || node.triggerRegulationMode) {
+      const target = node.speaker === 'Ezzel' ? 'Kiki' : node.speaker;
+      setBreathingTarget(target);
+      setRegulationInitialMode(node.triggerRegulationMode || 'breathing');
+      if (node.speaker !== 'Ezzel') {
+        setShowBreathingMiniGame(true);
+      }
     }
 
     // 3. Quest completion
@@ -1504,14 +1515,16 @@ export default function App() {
       });
     }
 
-    // 4. Climax ending trigger
-    if (node.id === 'ending_summary_perfect' || node.id === 'ending_summary_resilient') {
-      setEndingType(node.id === 'ending_summary_perfect' ? 'perfect' : 'resilient');
-      rendererRef.current?.triggerScreenShake(8, 24);
-      setTimeout(() => {
-        setShowEnding(true);
-        sound.playSuccessFanfare();
-      }, 2500);
+    // 4. Climax ending trigger - initialize ending state without cutting off dialogue
+    if (
+      node.id === 'ending_summary_perfect' ||
+      node.id === 'ending_summary_resilient' ||
+      node.id === 'nenek_wilis_closing_perfect' ||
+      node.id === 'nenek_wilis_closing_resilient'
+    ) {
+      setEndingType(node.id.includes('perfect') ? 'perfect' : 'resilient');
+      rendererRef.current?.triggerScreenShake(4, 12);
+      sound.playSecretFound();
     }
   }, [resolveNPC]);
 
@@ -1519,14 +1532,78 @@ export default function App() {
   const handleDialogueNext = useCallback(() => {
     if (!currentDialogue) return;
 
+    // If current dialogue has an emotional regulation trigger, launch the interactive studio!
+    if (currentDialogue.triggerRegulationMode || currentDialogue.triggerBreathing) {
+      const target = currentDialogue.speaker === 'Ezzel' ? 'Kiki' : currentDialogue.speaker;
+      setBreathingTarget(target);
+      setRegulationInitialMode(currentDialogue.triggerRegulationMode || 'breathing');
+      sound.playMenuSelect();
+      setShowBreathingMiniGame(true);
+      return;
+    }
+
     if (currentDialogue.nextId && GAME_DIALOGUES[currentDialogue.nextId]) {
       const nextNode = GAME_DIALOGUES[currentDialogue.nextId];
       processDialogueTriggers(nextNode);
       setCurrentDialogue(nextNode);
     } else {
+      const finishedId = currentDialogue.id;
       setCurrentDialogue(null);
+
+      // Trigger Climax Ending Modal ONLY AFTER the player finishes reading the final dialogue!
+      if (
+        finishedId === 'ending_summary_perfect' ||
+        finishedId === 'ending_summary_resilient'
+      ) {
+        sound.playSuccessFanfare();
+        rendererRef.current?.triggerScreenShake(8, 24);
+        rendererRef.current?.addSparkle(
+          playerRef.current.x + 16,
+          playerRef.current.y + 16,
+          '#f59e0b',
+          30
+        );
+        setTimeout(() => {
+          setShowEnding(true);
+        }, 400);
+      }
     }
   }, [currentDialogue, processDialogueTriggers]);
+
+  // Skip regulation directly to dialogue after-regulation node
+  const handleSkipRegulation = useCallback(() => {
+    if (!currentDialogue) return;
+    if (currentDialogue.nextId && GAME_DIALOGUES[currentDialogue.nextId]) {
+      const nextNode = GAME_DIALOGUES[currentDialogue.nextId];
+      processDialogueTriggers(nextNode);
+      setCurrentDialogue(nextNode);
+    }
+  }, [currentDialogue, processDialogueTriggers]);
+
+  // Close dialogue handler (Esc or X button)
+  const handleDialogueClose = useCallback(() => {
+    if (!currentDialogue) return;
+    const closedId = currentDialogue.id;
+    setCurrentDialogue(null);
+
+    // If closed during climax ending, trigger celebration modal smoothly
+    if (
+      closedId === 'ending_summary_perfect' ||
+      closedId === 'ending_summary_resilient'
+    ) {
+      sound.playSuccessFanfare();
+      rendererRef.current?.triggerScreenShake(8, 24);
+      rendererRef.current?.addSparkle(
+        playerRef.current.x + 16,
+        playerRef.current.y + 16,
+        '#f59e0b',
+        30
+      );
+      setTimeout(() => {
+        setShowEnding(true);
+      }, 400);
+    }
+  }, [currentDialogue]);
 
   // Analog virtual joystick vector for smooth mobile & touch movement
   const joystickVectorRef = useRef<{ x: number; y: number } | null>(null);
@@ -1749,6 +1826,18 @@ export default function App() {
           sound.playFootstep(isLeft, surface);
         }
 
+        // Adaptive BGM check as player walks across zones
+        if (stepCounterRef.current % 28 === 0 && !sound.isRestoringTransition) {
+          const col = Math.floor((p.x + 16) / TILE_SIZE);
+          const row = Math.floor((p.y + 16) / TILE_SIZE);
+          let isRestored = false;
+          if (col >= 25 && row <= 12) isRestored = zoneStatus.tower;
+          else if (col >= 20 && row >= 12 && row <= 20) isRestored = zoneStatus.bridge;
+          else if (col <= 16 && row <= 10) isRestored = zoneStatus.forest;
+          else isRestored = zoneStatus.plaza;
+          sound.setBgmPhase(isRestored ? 'restored' : 'fog');
+        }
+
         // Horizontal movement
         if (dx !== 0 && !checkCollision(p.x + dx, p.y)) {
           p.x += dx;
@@ -1942,6 +2031,18 @@ export default function App() {
                   ? 'stone'
                   : 'grass';
               sound.playFootstep(isLeft, surface);
+            }
+
+            // Adaptive BGM check as player walks across zones
+            if (stepCounterRef.current % 28 === 0 && !sound.isRestoringTransition) {
+              const col = Math.floor((p.x + 16) / TILE_SIZE);
+              const row = Math.floor((p.y + 16) / TILE_SIZE);
+              let isRestored = false;
+              if (col >= 25 && row <= 12) isRestored = zoneStatus.tower;
+              else if (col >= 20 && row >= 12 && row <= 20) isRestored = zoneStatus.bridge;
+              else if (col <= 16 && row <= 10) isRestored = zoneStatus.forest;
+              else isRestored = zoneStatus.plaza;
+              sound.setBgmPhase(isRestored ? 'restored' : 'fog');
             }
           } else {
             // Blocked by obstacle (e.g. wall/unopened bridge), check if already in speaking range of NPC
@@ -2187,6 +2288,33 @@ export default function App() {
     }
   }, [zoneStatus, isFreeRoamActive, isCompassActive]);
 
+  // Adaptive BGM Synchronization:
+  // Phase 1: 'fog' - Saat Masa Kabut Kelabu (hampa, misterius, sepi, piano lambat teredam & desiran angin)
+  // Phase 2: 'restoring' - Momen Warna Kembali (jembatan emosional, tempo naik bertahap, petikan gitar tunggal & dentingan lonceng)
+  // Phase 3: 'restored' - Setelah Lingkungan Pulih (mekar penuh kehangatan, harapan, petikan gitar akustik ringan & tiupan seruling gembira)
+  useEffect(() => {
+    if (sound.isRestoringTransition) return;
+
+    const allRestored =
+      isFreeRoamActive ||
+      (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower);
+
+    if (allRestored) {
+      sound.setBgmPhase('restored');
+      return;
+    }
+
+    const col = Math.floor((playerRef.current.x + 16) / TILE_SIZE);
+    const row = Math.floor((playerRef.current.y + 16) / TILE_SIZE);
+    let isZoneRestored = false;
+    if (col >= 25 && row <= 12) isZoneRestored = zoneStatus.tower;
+    else if (col >= 20 && row >= 12 && row <= 20) isZoneRestored = zoneStatus.bridge;
+    else if (col <= 16 && row <= 10) isZoneRestored = zoneStatus.forest;
+    else isZoneRestored = zoneStatus.plaza;
+
+    sound.setBgmPhase(isZoneRestored ? 'restored' : 'fog');
+  }, [zoneStatus, isFreeRoamActive]);
+
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans flex items-center justify-center">
       {/* 2D Pixel Canvas Viewport Container - Centered on Desktop with Arcade/Handheld Frame */}
@@ -2276,7 +2404,8 @@ export default function App() {
           dialogue={currentDialogue}
           onChoiceSelect={handleChoiceSelect}
           onNext={handleDialogueNext}
-          onClose={() => setCurrentDialogue(null)}
+          onSkipRegulation={handleSkipRegulation}
+          onClose={handleDialogueClose}
           isCompassActive={isCompassActive}
         />
       )}
@@ -2304,11 +2433,20 @@ export default function App() {
               35
             );
 
-            if (breathingTarget === 'Kiki') {
-              const afterBreathe = GAME_DIALOGUES.kiki_after_breathe;
-              if (afterBreathe) {
-                processDialogueTriggers(afterBreathe);
-                setCurrentDialogue(afterBreathe);
+            if (breathingTarget === 'Kiki' || breathingTarget === 'kiki') {
+              let afterNode = GAME_DIALOGUES.kiki_after_breathing;
+              if (_mode === 'grounding') {
+                afterNode = GAME_DIALOGUES.kiki_after_grounding || afterNode;
+              } else if (_mode === 'stop') {
+                afterNode = GAME_DIALOGUES.kiki_after_stop || afterNode;
+              } else if (_mode === 'shakeout') {
+                afterNode = GAME_DIALOGUES.kiki_after_shakeout || afterNode;
+              } else if (_mode === 'breathing') {
+                afterNode = GAME_DIALOGUES.kiki_after_breathing || afterNode;
+              }
+              if (afterNode) {
+                processDialogueTriggers(afterNode);
+                setCurrentDialogue(afterNode);
               }
             } else {
               setQuestHint('🌟 Latihan Regulasi Selesai! Pikiranmu jernih, tenang, dan siap berpetualang.');

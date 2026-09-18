@@ -1,18 +1,40 @@
 import { useState, useEffect, useCallback } from 'react';
 
-// Synthesized Web Audio API sound effects & retro BGM
+// Synthesized Web Audio API sound effects & dynamic 3-phase BGM
 // Runs 100% offline without external audio files!
+// Phase 1 ('fog'): Masa Kabut Kelabu - Muffled slow piano, gentle ambient wind, distant mysterious pings, no percussion.
+// Phase 2 ('restoring'): Momen Warna Kembali - Emotional accelerando bridge, single guitar plucks, glistening wind chimes.
+// Phase 3 ('restored'): Setelah Lingkungan Pulih - Fully blooming cheerful & warm, light acoustic guitar, singing seruling melody.
+
+export type BgmPhase = 'fog' | 'restoring' | 'restored';
 
 class SoundSystem {
   private ctx: AudioContext | null = null;
   public isMuted: boolean = false;
   public bgmVolume: number = 0.65; // 0.0 to 1.0 (ambient music)
   public sfxVolume: number = 0.8;  // 0.0 to 1.0 (sound effects)
-  private bgmInterval: number | null = null;
-  private bgmStep: number = 0;
+
+  // BGM Engine Nodes & State
+  public bgmPhase: BgmPhase = 'fog';
   public isBgmPlaying: boolean = false;
+  public isRestoringTransition: boolean = false;
   private hasInteracted: boolean = false;
   private listeners: Set<() => void> = new Set();
+
+  private masterBgmGain: GainNode | null = null;
+  private masterSfxGain: GainNode | null = null;
+  private bgmFilterNode: BiquadFilterNode | null = null;
+
+  // Ambient Wind Synth (for Masa Kabut Kelabu)
+  private windGainNode: GainNode | null = null;
+  private windFilterNode: BiquadFilterNode | null = null;
+  private windSourceNode: AudioBufferSourceNode | null = null;
+
+  // Step scheduling
+  private bgmTimeoutId: number | null = null;
+  private restoringTimeoutId: number | null = null;
+  private currentStep: number = 0;
+  private restoringStep: number = 0;
 
   constructor() {
     // Restore saved audio settings from localStorage
@@ -40,7 +62,7 @@ class SoundSystem {
     }
   }
 
-  // Subscribe to volume & mute changes
+  // Subscribe to audio state & phase changes
   public subscribe(fn: () => void): () => void {
     this.listeners.add(fn);
     return () => {
@@ -65,6 +87,7 @@ class SoundSystem {
         this.ctx
           .resume()
           .then(() => {
+            this.updateNodeGains();
             if (!this.isMuted && !this.isBgmPlaying && this.bgmVolume > 0.01) {
               this.startBGM();
             }
@@ -72,6 +95,7 @@ class SoundSystem {
           })
           .catch(() => {});
       } else if (this.ctx.state === 'running') {
+        this.updateNodeGains();
         if (!this.isMuted && !this.isBgmPlaying && this.bgmVolume > 0.01) {
           this.startBGM();
         }
@@ -92,8 +116,105 @@ class SoundSystem {
         this.ctx = new AudioCtx();
       }
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => {});
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+
+      // Initialize Master SFX Gain
+      if (!this.masterSfxGain) {
+        this.masterSfxGain = this.ctx.createGain();
+        this.masterSfxGain.gain.setValueAtTime(this.isMuted ? 0 : this.sfxVolume, this.ctx.currentTime);
+        this.masterSfxGain.connect(this.ctx.destination);
+      }
+
+      // Initialize Master BGM Gain & Dynamic Atmosphere Filter
+      if (!this.masterBgmGain) {
+        this.masterBgmGain = this.ctx.createGain();
+        this.masterBgmGain.gain.setValueAtTime(this.isMuted ? 0 : this.bgmVolume, this.ctx.currentTime);
+        this.masterBgmGain.connect(this.ctx.destination);
+      }
+
+      if (!this.bgmFilterNode) {
+        this.bgmFilterNode = this.ctx.createBiquadFilter();
+        this.bgmFilterNode.type = 'lowpass';
+        const initialCutoff =
+          this.bgmPhase === 'fog' ? 680 : this.bgmPhase === 'restoring' ? 2400 : 14000;
+        this.bgmFilterNode.frequency.setValueAtTime(initialCutoff, this.ctx.currentTime);
+        this.bgmFilterNode.Q.setValueAtTime(1.1, this.ctx.currentTime);
+        this.bgmFilterNode.connect(this.masterBgmGain);
+      }
+
+      // Initialize Gentle Whispering Wind Synthesizer
+      this.initWindNoise();
+    }
+  }
+
+  // Create smooth procedural mountain breeze noise loop for Grey Fog phase
+  private initWindNoise() {
+    if (!this.ctx || !this.masterBgmGain || this.windSourceNode) return;
+    try {
+      const sampleRate = this.ctx.sampleRate;
+      const bufferSize = sampleRate * 4; // 4 second loop
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, sampleRate);
+      const data = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        // Warm brown-pink noise filter
+        b0 = 0.99 * b0 + white * 0.05;
+        b1 = 0.96 * b1 + white * 0.11;
+        b2 = 0.86 * b2 + white * 0.25;
+        data[i] = (b0 + b1 + b2) * 0.14;
+      }
+
+      this.windSourceNode = this.ctx.createBufferSource();
+      this.windSourceNode.buffer = noiseBuffer;
+      this.windSourceNode.loop = true;
+
+      this.windFilterNode = this.ctx.createBiquadFilter();
+      this.windFilterNode.type = 'bandpass';
+      this.windFilterNode.frequency.setValueAtTime(320, this.ctx.currentTime);
+      this.windFilterNode.Q.setValueAtTime(2.4, this.ctx.currentTime);
+
+      this.windGainNode = this.ctx.createGain();
+      const initialGain =
+        !this.isMuted && this.bgmPhase === 'fog' && this.isBgmPlaying ? 0.016 : 0.00001;
+      this.windGainNode.gain.setValueAtTime(initialGain, this.ctx.currentTime);
+
+      // Slow organic swell LFO
+      const lfo = this.ctx.createOscillator();
+      const lfoGain = this.ctx.createGain();
+      lfo.type = 'sine';
+      lfo.frequency.setValueAtTime(0.075, this.ctx.currentTime); // ~13s breathing period
+      lfoGain.gain.setValueAtTime(140, this.ctx.currentTime);
+      lfo.connect(lfoGain);
+      lfoGain.connect(this.windFilterNode.frequency);
+      lfo.start();
+
+      this.windSourceNode.connect(this.windFilterNode);
+      this.windFilterNode.connect(this.windGainNode);
+      this.windGainNode.connect(this.masterBgmGain);
+
+      this.windSourceNode.start();
+    } catch {
+      // Audio context might still be suspended before user interaction
+    }
+  }
+
+  private updateNodeGains() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    if (this.masterBgmGain) {
+      this.masterBgmGain.gain.setTargetAtTime(this.isMuted ? 0 : this.bgmVolume, t, 0.05);
+    }
+    if (this.masterSfxGain) {
+      this.masterSfxGain.gain.setTargetAtTime(this.isMuted ? 0 : this.sfxVolume, t, 0.05);
+    }
+    if (this.windGainNode) {
+      const windTarget =
+        !this.isMuted && this.bgmPhase === 'fog' && this.isBgmPlaying ? 0.016 : 0.00001;
+      this.windGainNode.gain.setTargetAtTime(windTarget, t, 0.6);
     }
   }
 
@@ -105,6 +226,7 @@ class SoundSystem {
       localStorage.setItem('sosem_bgm_vol', clamped.toFixed(2));
     } catch {}
 
+    this.updateNodeGains();
     if (clamped > 0.01 && !this.isBgmPlaying && !this.isMuted && this.hasInteracted) {
       this.startBGM();
     }
@@ -118,6 +240,8 @@ class SoundSystem {
     try {
       localStorage.setItem('sosem_sfx_vol', clamped.toFixed(2));
     } catch {}
+
+    this.updateNodeGains();
     this.notify();
   }
 
@@ -127,6 +251,7 @@ class SoundSystem {
       localStorage.setItem('sosem_muted', String(muted));
     } catch {}
 
+    this.updateNodeGains();
     if (this.isMuted) {
       this.stopBGM();
     } else {
@@ -137,6 +262,521 @@ class SoundSystem {
     this.notify();
     return this.isMuted;
   }
+
+  public toggleMute() {
+    return this.setMuted(!this.isMuted);
+  }
+
+  // Set the active musical phase smoothly
+  public setBgmPhase(phase: BgmPhase, force: boolean = false) {
+    if (this.bgmPhase === phase && !force) return;
+    if (this.isRestoringTransition && phase !== 'restored' && !force) {
+      // Allow the emotional restoration transition bridge to complete naturally
+      return;
+    }
+
+    this.bgmPhase = phase;
+    this.currentStep = 0;
+    this.restoringStep = 0;
+
+    if (this.ctx && this.bgmFilterNode) {
+      const t = this.ctx.currentTime;
+      if (phase === 'fog') {
+        // Muffled, distant lowpass filter
+        this.bgmFilterNode.frequency.setTargetAtTime(680, t, 0.7);
+        if (this.windGainNode) {
+          this.windGainNode.gain.setTargetAtTime(this.isMuted ? 0 : 0.016, t, 1.2);
+        }
+      } else if (phase === 'restoring') {
+        // Accelerando bridge: filter sweeps open gradually
+        this.bgmFilterNode.frequency.setValueAtTime(800, t);
+        this.bgmFilterNode.frequency.exponentialRampToValueAtTime(3600, t + 10.5);
+        if (this.windGainNode) {
+          this.windGainNode.gain.setTargetAtTime(0.00001, t, 1.2);
+        }
+      } else {
+        // Restored: fully bright, wide open, joyful
+        this.bgmFilterNode.frequency.setTargetAtTime(14000, t, 0.6);
+        if (this.windGainNode) {
+          this.windGainNode.gain.setTargetAtTime(0.00001, t, 0.8);
+        }
+      }
+    }
+
+    this.notify();
+  }
+
+  // Triggered when a village zone is restored (emotional bridge)
+  public triggerColorRestorationTransition() {
+    if (this.isMuted) return;
+    this.isRestoringTransition = true;
+    this.setBgmPhase('restoring', true);
+
+    if (this.restoringTimeoutId) {
+      window.clearTimeout(this.restoringTimeoutId);
+    }
+
+    // 12-second accelerando crescendo bridge, then blooming into warm restored village theme
+    this.restoringTimeoutId = window.setTimeout(() => {
+      this.isRestoringTransition = false;
+      this.setBgmPhase('restored', true);
+    }, 11800);
+  }
+
+  // ----------------------------------------------------
+  // INSTRUMENT SYNTHESIZERS (FOG / RESTORING / RESTORED)
+  // ----------------------------------------------------
+
+  // 1. Piano: Felt hammer, muffled, slow decay, warm stereo-chorus
+  private playPianoNote(freq: number, duration: number, velocity: number = 0.038) {
+    if (this.isMuted || this.bgmVolume <= 0.001 || !this.ctx || !this.bgmFilterNode) return;
+    try {
+      const t = this.ctx.currentTime;
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(freq, t);
+
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(freq, t);
+      osc2.detune.setValueAtTime(2.2, t);
+
+      gain.gain.setValueAtTime(0.00001, t);
+      gain.gain.linearRampToValueAtTime(velocity, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.00001, t + duration);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(this.bgmFilterNode);
+
+      osc1.start(t);
+      osc2.start(t);
+      osc1.stop(t + duration);
+      osc2.stop(t + duration);
+    } catch {}
+  }
+
+  // 2. Solitary Glass/Dew Chime (Denting pelan bergema)
+  private playMistyChime(freq: number, velocity: number = 0.02) {
+    if (this.isMuted || this.bgmVolume <= 0.001 || !this.ctx || !this.bgmFilterNode) return;
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const oscHarm = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+
+      oscHarm.type = 'sine';
+      oscHarm.frequency.setValueAtTime(freq * 2.756, t); // inharmonic crystal chime
+
+      gain.gain.setValueAtTime(0.00001, t);
+      gain.gain.linearRampToValueAtTime(velocity, t + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.00001, t + 3.8);
+
+      osc.connect(gain);
+      oscHarm.connect(gain);
+      gain.connect(this.bgmFilterNode);
+
+      osc.start(t);
+      oscHarm.start(t);
+      osc.stop(t + 3.8);
+      oscHarm.stop(t + 3.8);
+    } catch {}
+  }
+
+  // 3. Plucked Acoustic Guitar (Petikan gitar tunggal / petikan gitar ringan)
+  private playGuitarPluck(freq: number, duration: number, velocity: number = 0.042) {
+    if (this.isMuted || this.bgmVolume <= 0.001 || !this.ctx || !this.bgmFilterNode) return;
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const pluckFilter = this.ctx.createBiquadFilter();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, t);
+
+      pluckFilter.type = 'lowpass';
+      pluckFilter.frequency.setValueAtTime(2600, t);
+      pluckFilter.frequency.exponentialRampToValueAtTime(650, t + Math.min(duration, 0.35));
+
+      gain.gain.setValueAtTime(0.00001, t);
+      gain.gain.linearRampToValueAtTime(velocity, t + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.00001, t + duration);
+
+      osc.connect(pluckFilter);
+      pluckFilter.connect(gain);
+      gain.connect(this.bgmFilterNode);
+
+      osc.start(t);
+      osc.stop(t + duration);
+    } catch {}
+  }
+
+  // 4. Sparkling Wind Chimes (Dentingan lonceng angin berkilau)
+  private playWindChime(freq: number, delayMs: number = 0) {
+    if (this.isMuted || this.bgmVolume <= 0.001 || !this.ctx) return;
+    setTimeout(() => {
+      if (!this.ctx || !this.bgmFilterNode) return;
+      try {
+        const t = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+
+        gain.gain.setValueAtTime(0.00001, t);
+        gain.gain.linearRampToValueAtTime(0.024, t + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.00001, t + 1.8);
+
+        osc.connect(gain);
+        gain.connect(this.bgmFilterNode);
+
+        osc.start(t);
+        osc.stop(t + 1.8);
+      } catch {}
+    }, delayMs);
+  }
+
+  // 5. Joyful Pastoral Flute / Seruling with Singing Vibrato
+  private playFluteNote(freq: number, duration: number, velocity: number = 0.038) {
+    if (this.isMuted || this.bgmVolume <= 0.001 || !this.ctx || !this.bgmFilterNode) return;
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+
+      // Singing woodwind vibrato kicks in smoothly after 0.12s
+      if (duration > 0.28) {
+        const vibrato = this.ctx.createOscillator();
+        const vibGain = this.ctx.createGain();
+        vibrato.frequency.setValueAtTime(5.4, t);
+        vibGain.gain.setValueAtTime(0, t);
+        vibGain.gain.setValueAtTime(0, t + 0.12);
+        vibGain.gain.linearRampToValueAtTime(12, t + 0.35); // 12 cents vibrato depth
+
+        vibrato.connect(vibGain);
+        vibGain.connect(osc.detune);
+        vibrato.start(t);
+        vibrato.stop(t + duration);
+      }
+
+      gain.gain.setValueAtTime(0.00001, t);
+      gain.gain.linearRampToValueAtTime(velocity, t + 0.035);
+      gain.gain.setValueAtTime(velocity * 0.85, t + duration * 0.7);
+      gain.gain.exponentialRampToValueAtTime(0.00001, t + duration);
+
+      osc.connect(gain);
+      gain.connect(this.bgmFilterNode);
+
+      osc.start(t);
+      osc.stop(t + duration);
+    } catch {}
+  }
+
+  // 6. Warm Acoustic Bass
+  private playAcousticBass(freq: number, duration: number, velocity: number = 0.032) {
+    if (this.isMuted || this.bgmVolume <= 0.001 || !this.ctx || !this.bgmFilterNode) return;
+    try {
+      const t = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, t);
+
+      gain.gain.setValueAtTime(0.00001, t);
+      gain.gain.linearRampToValueAtTime(velocity, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.00001, t + duration);
+
+      osc.connect(gain);
+      gain.connect(this.bgmFilterNode);
+
+      osc.start(t);
+      osc.stop(t + duration);
+    } catch {}
+  }
+
+  // ----------------------------------------------------
+  // MAIN BGM PROCEDURAL SEQUENCING ENGINE
+  // ----------------------------------------------------
+
+  public startBGM() {
+    if (this.isBgmPlaying || this.isMuted) return;
+    this.initCtx();
+    this.isBgmPlaying = true;
+    this.currentStep = 0;
+    this.restoringStep = 0;
+    this.updateNodeGains();
+    this.scheduleNextStep();
+  }
+
+  public stopBGM() {
+    if (this.bgmTimeoutId) {
+      window.clearTimeout(this.bgmTimeoutId);
+      this.bgmTimeoutId = null;
+    }
+    if (this.restoringTimeoutId) {
+      window.clearTimeout(this.restoringTimeoutId);
+      this.restoringTimeoutId = null;
+    }
+    this.isBgmPlaying = false;
+    this.isRestoringTransition = false;
+    this.updateNodeGains();
+  }
+
+  private scheduleNextStep() {
+    if (!this.isBgmPlaying || this.isMuted) return;
+
+    let stepDelay = 820; // Default slow fog pacing
+
+    if (this.bgmPhase === 'fog') {
+      stepDelay = 820; // Slow, contemplative pulse
+      this.playFogStep(this.currentStep);
+      this.currentStep = (this.currentStep + 1) % 32;
+    } else if (this.bgmPhase === 'restoring') {
+      // Emotional accelerando bridge: 480ms -> 240ms
+      stepDelay = Math.max(240, 480 - this.restoringStep * 11);
+      this.playRestoringStep(this.restoringStep);
+      this.restoringStep++;
+      if (this.restoringStep >= 24) {
+        // Transition finished, advance to restored
+        this.isRestoringTransition = false;
+        this.setBgmPhase('restored', true);
+      }
+    } else {
+      // Restored: Cheerful, upbeat 4/4 folk tempo (~109 BPM 8th-notes)
+      stepDelay = 275;
+      this.playRestoredStep(this.currentStep);
+      this.currentStep = (this.currentStep + 1) % 32;
+    }
+
+    this.bgmTimeoutId = window.setTimeout(() => {
+      this.scheduleNextStep();
+    }, stepDelay);
+  }
+
+  // PHASE 1: MASA KABUT KELABU
+  // Hampa, misterius, sepi, nada piano sangat lambat bergema teredam, tanpa perkusi, desiran angin lembut
+  private playFogStep(step: number) {
+    // 32-step cycle (~26.2 seconds)
+    // Spaced contemplative chord arpeggios every 4 steps (~3.3s each)
+    switch (step) {
+      case 0:
+        // Chord 1: A minor (hampa, melankolis)
+        this.playPianoNote(110.0, 3.8, 0.038); // A2
+        this.playPianoNote(164.81, 3.6, 0.034); // E3
+        this.playPianoNote(261.63, 3.4, 0.032); // C4
+        break;
+      case 4:
+        // Chord 2: F major (lembut, sunyi)
+        this.playPianoNote(87.31, 3.8, 0.038); // F2
+        this.playPianoNote(130.81, 3.6, 0.034); // C3
+        this.playPianoNote(220.0, 3.4, 0.032); // A3
+        break;
+      case 6:
+        // Dentingan pelan bergema tinggi keheningan
+        this.playMistyChime(659.25, 0.02); // E5
+        break;
+      case 8:
+        // Chord 3: D minor (misterius)
+        this.playPianoNote(146.83, 3.8, 0.038); // D3
+        this.playPianoNote(220.0, 3.6, 0.034); // A3
+        this.playPianoNote(349.23, 3.4, 0.032); // F4
+        break;
+      case 12:
+        // Chord 4: E minor (tenang, dingin)
+        this.playPianoNote(82.41, 3.8, 0.038); // E2
+        this.playPianoNote(123.47, 3.6, 0.034); // B2
+        this.playPianoNote(196.0, 3.4, 0.032); // G3
+        this.playPianoNote(329.63, 3.2, 0.028); // E4
+        break;
+      case 16:
+        // Chord 5: Dm/F
+        this.playPianoNote(87.31, 3.8, 0.038); // F2
+        this.playPianoNote(146.83, 3.6, 0.034); // D3
+        this.playPianoNote(220.0, 3.4, 0.032); // A3
+        break;
+      case 20:
+        // Chord 6: G major
+        this.playPianoNote(98.0, 3.8, 0.038); // G2
+        this.playPianoNote(146.83, 3.6, 0.034); // D3
+        this.playPianoNote(246.94, 3.4, 0.032); // B3
+        break;
+      case 22:
+        // Dentingan kristal bergema kedua
+        this.playMistyChime(987.77, 0.022); // B5
+        break;
+      case 24:
+        // Chord 7: C major
+        this.playPianoNote(130.81, 3.8, 0.038); // C3
+        this.playPianoNote(196.0, 3.6, 0.034); // G3
+        this.playPianoNote(329.63, 3.4, 0.032); // E4
+        break;
+      case 28:
+        // Chord 8: Asus2 (nada menggantung sebelum berulang kembali)
+        this.playPianoNote(110.0, 4.2, 0.038); // A2
+        this.playPianoNote(164.81, 4.0, 0.034); // E3
+        this.playPianoNote(246.94, 3.8, 0.032); // B3
+        break;
+      default:
+        break;
+    }
+  }
+
+  // PHASE 2: MOMEN WARNA KEMBALI
+  // Jembatan emosional, tempo menaik, petikan gitar tunggal, dentingan lonceng angin bersemi
+  private playRestoringStep(step: number) {
+    // Ascending arpeggio progressions of emerging life
+    const guitarNotes: { [k: number]: number } = {
+      0: 130.81, // C3
+      1: 196.0,  // G3
+      2: 261.63, // C4
+      3: 329.63, // E4
+      4: 392.0,  // G4
+      5: 523.25, // C5
+      6: 146.83, // D3
+      7: 220.0,  // A3
+      8: 293.66, // D4
+      9: 369.99, // F#4
+      10: 440.0, // A4
+      11: 587.33,// D5
+      12: 164.81,// E3
+      13: 246.94,// B3
+      14: 329.63,// E4
+      15: 392.0, // G4
+      16: 493.88,// B4
+      17: 659.25,// E5
+      18: 196.0, // G3
+      19: 293.66,// D4
+      20: 392.0, // G4
+      21: 493.88,// B4
+      22: 587.33,// D5
+      23: 783.99 // G5 (Crescendo apex!)
+    };
+
+    if (guitarNotes[step]) {
+      this.playGuitarPluck(guitarNotes[step], 0.65, 0.045);
+    }
+
+    // Glistening wind chimes entering like beams of golden sunlight
+    if (step === 4) {
+      this.playWindChime(783.99, 0);
+      this.playWindChime(1046.5, 60);
+    } else if (step === 10) {
+      this.playWindChime(880.0, 0);
+      this.playWindChime(1174.66, 50);
+      this.playWindChime(1318.51, 100);
+    } else if (step === 16) {
+      this.playWindChime(987.77, 0);
+      this.playWindChime(1318.51, 50);
+      this.playWindChime(1567.98, 100);
+    } else if (step === 22) {
+      // Grand shimmering cascade
+      this.playWindChime(1046.5, 0);
+      this.playWindChime(1318.51, 40);
+      this.playWindChime(1567.98, 80);
+      this.playWindChime(2093.0, 120);
+    }
+  }
+
+  // PHASE 3: SETELAH LINGKUNGAN PULIH
+  // Mekar sepenuhnya, hangat, ceria, petikan gitar akustik ringan, tiupan seruling gembira penuh rasa syukur
+  private playRestoredStep(step: number) {
+    // 32-step cycle (4 bars in 4/4)
+
+    // 1. Acoustic Upright Bass on downbeats
+    const bassMap: { [k: number]: number } = {
+      0: 98.0,   // G2 (Bar 1)
+      4: 146.83, // D3
+      8: 130.81, // C3 (Bar 2)
+      12: 196.0, // G3
+      16: 146.83,// D3 (Bar 3)
+      20: 164.81,// E3
+      24: 130.81,// C3 (Bar 4)
+      28: 98.0,  // G2
+    };
+    if (bassMap[step]) {
+      this.playAcousticBass(bassMap[step], 0.35, 0.034);
+    }
+
+    // 2. Light Acoustic Guitar Fingerpicking
+    const guitarArp: { [k: number]: number } = {
+      1: 246.94, // B3
+      2: 293.66, // D4
+      3: 392.0,  // G4
+      5: 246.94, // B3
+      6: 293.66, // D4
+      7: 392.0,  // G4
+      9: 329.63, // E4
+      10: 392.0, // G4
+      11: 523.25,// C5
+      13: 329.63,// E4
+      14: 392.0, // G4
+      15: 523.25,// C5
+      17: 369.99,// F#4
+      18: 440.0, // A4
+      19: 587.33,// D5
+      21: 392.0, // G4
+      22: 493.88,// B4
+      23: 659.25,// E5
+      25: 392.0, // G4
+      26: 440.0, // A4
+      27: 587.33,// D5
+      29: 246.94,// B3
+      30: 293.66,// D4
+      31: 392.0, // G4
+    };
+    if (guitarArp[step]) {
+      this.playGuitarPluck(guitarArp[step], 0.32, 0.038);
+    }
+
+    // 3. Tiupan Seruling yang Gembira (Expressive Folk Woodwind Melody)
+    // Membawa suasana optimis, hangat, dan penuh rasa syukur
+    const fluteMelody: { [k: number]: { f: number; d: number } } = {
+      0: { f: 392.0, d: 0.52 },   // G4
+      2: { f: 493.88, d: 0.52 },  // B4
+      4: { f: 587.33, d: 0.52 },  // D5
+      6: { f: 659.25, d: 0.26 },  // E5
+      7: { f: 587.33, d: 0.26 },  // D5
+      8: { f: 493.88, d: 0.52 },  // B4
+      10: { f: 440.0, d: 0.26 },  // A4
+      11: { f: 392.0, d: 0.26 },  // G4
+      12: { f: 440.0, d: 0.52 },  // A4
+      14: { f: 493.88, d: 0.52 }, // B4
+      16: { f: 587.33, d: 0.52 }, // D5
+      18: { f: 659.25, d: 0.52 }, // E5
+      20: { f: 783.99, d: 0.95 }, // G5 (Puncak melodi sukacita!)
+      24: { f: 659.25, d: 0.26 }, // E5
+      25: { f: 587.33, d: 0.26 }, // D5
+      26: { f: 493.88, d: 0.52 }, // B4
+      28: { f: 392.0, d: 1.05 },  // G4 (Resolusi hangat dan bersyukur)
+    };
+
+    if (fluteMelody[step]) {
+      const note = fluteMelody[step];
+      this.playFluteNote(note.f, note.d, 0.042);
+    }
+
+    // 4. Sparkling wind chime cadence flourish
+    if (step === 30) {
+      this.playWindChime(987.77, 0);
+      this.playWindChime(1174.66, 50);
+      this.playWindChime(1567.98, 100);
+    }
+  }
+
+  // ----------------------------------------------------
+  // GENERAL SOUND EFFECTS (SFX)
+  // ----------------------------------------------------
 
   // Play a simple tone with envelope
   private playTone(
@@ -167,7 +807,13 @@ class SoundSystem {
       gain.gain.exponentialRampToValueAtTime(0.00001, this.ctx.currentTime + duration);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      if (isBgm && this.bgmFilterNode) {
+        gain.connect(this.bgmFilterNode);
+      } else if (this.masterSfxGain) {
+        gain.connect(this.masterSfxGain);
+      } else {
+        gain.connect(this.ctx.destination);
+      }
 
       osc.start();
       osc.stop(this.ctx.currentTime + duration);
@@ -217,7 +863,6 @@ class SoundSystem {
         peakGain = 0.11 * vol;
         oscType = 'triangle';
       } else {
-        // grass / earth
         startFreq = isLeftFoot ? 230 : 255;
         endFreq = 95;
         duration = 0.05;
@@ -225,7 +870,6 @@ class SoundSystem {
         oscType = 'triangle';
       }
 
-      // 1. Primary body oscillator with snappy pitch drop (thud/patter)
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
@@ -237,12 +881,15 @@ class SoundSystem {
       gain.gain.exponentialRampToValueAtTime(0.0001, t + duration);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      if (this.masterSfxGain) {
+        gain.connect(this.masterSfxGain);
+      } else {
+        gain.connect(this.ctx.destination);
+      }
 
       osc.start(t);
       osc.stop(t + duration);
 
-      // 2. High-frequency tactile transient tap for stone pavers & wood bridge
       if (surface === 'stone' || surface === 'wood') {
         const clickOsc = this.ctx.createOscillator();
         const clickGain = this.ctx.createGain();
@@ -251,13 +898,15 @@ class SoundSystem {
         clickGain.gain.setValueAtTime(0.04 * vol, t);
         clickGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.018);
         clickOsc.connect(clickGain);
-        clickGain.connect(this.ctx.destination);
+        if (this.masterSfxGain) {
+          clickGain.connect(this.masterSfxGain);
+        } else {
+          clickGain.connect(this.ctx.destination);
+        }
         clickOsc.start(t);
         clickOsc.stop(t + 0.018);
       }
-    } catch {
-      // Audio context might be restricted before user gesture
-    }
+    } catch {}
   }
 
   // Alias for backward compatibility
@@ -282,10 +931,10 @@ class SoundSystem {
     if (this.isMuted || this.sfxVolume <= 0.001) return;
     this.initCtx();
     const melody = [
-      { f: 440, d: 0.12 }, // A4
-      { f: 554.37, d: 0.12 }, // C#5
-      { f: 659.25, d: 0.15 }, // E5
-      { f: 880, d: 0.4 }, // A5
+      { f: 440, d: 0.12 },   // A4
+      { f: 554.37, d: 0.12 },// C#5
+      { f: 659.25, d: 0.15 },// E5
+      { f: 880, d: 0.4 },    // A5
     ];
     let time = 0;
     melody.forEach((m) => {
@@ -296,7 +945,7 @@ class SoundSystem {
     });
   }
 
-  // Color restored: majestic warm swell
+  // Color restored: majestic warm swell & fanfare chime
   public playColorRestore() {
     if (this.isMuted || this.sfxVolume <= 0.001) return;
     this.initCtx();
@@ -320,7 +969,7 @@ class SoundSystem {
     });
   }
 
-  // Ancient Tower Bell & Clock Chime: Resonant soothing cathedral chime
+  // Ancient Tower Bell & Clock Chime
   public playTowerBell() {
     if (this.isMuted || this.sfxVolume <= 0.001) return;
     this.initCtx();
@@ -334,7 +983,7 @@ class SoundSystem {
     }, 120);
   }
 
-  // Breathing cue: inhale ascending gentle wave, exhale descending
+  // Breathing cues
   public playBreatheIn() {
     if (this.isMuted) return;
     this.playTone(330, 'sine', 1.8, 0.05, 0, false);
@@ -355,7 +1004,7 @@ class SoundSystem {
     }, 80);
   }
 
-  // Tension release pop / shake-out tap
+  // Tension release pop
   public playTensionPop() {
     if (this.isMuted || this.sfxVolume <= 0.001) return;
     this.initCtx();
@@ -373,14 +1022,14 @@ class SoundSystem {
     }, 150);
   }
 
-  // Soft audio cue when clicking on an inaccessible obstacle or solid wall
+  // Soft audio cue when clicking on an inaccessible obstacle
   public playBlocked() {
     if (this.isMuted || this.sfxVolume <= 0.001) return;
     this.initCtx();
     this.playTone(180, 'sine', 0.1, 0.035, 0, false);
   }
 
-  // Audio test triggers for settings sliders
+  // Test triggers for settings sliders & testing specific phases
   public playTestSfx() {
     this.initCtx();
     this.playTone(659.25, 'sine', 0.18, 0.08, 0, false);
@@ -391,50 +1040,23 @@ class SoundSystem {
 
   public playTestBgmNote() {
     this.initCtx();
-    this.playTone(523.25, 'triangle', 0.35, 0.04, 0, true);
-  }
-
-  // Background procedural retro ambient melody
-  public startBGM() {
-    if (this.bgmInterval || this.isMuted) return;
-    this.initCtx();
-    this.isBgmPlaying = true;
-
-    // Peaceful 8-bar soothing pentatonic sequence
-    const melodyNotes = [
-      329.63, 392.0, 440.0, 523.25, 659.25, 523.25, 440.0, 392.0,
-      349.23, 440.0, 523.25, 587.33, 659.25, 587.33, 523.25, 440.0,
-    ];
-
-    const bassNotes = [164.81, 174.61, 196.0, 220.0];
-
-    this.bgmInterval = window.setInterval(() => {
-      if (this.isMuted || this.bgmVolume <= 0.001) return;
-      const f = melodyNotes[this.bgmStep % melodyNotes.length];
-
-      // Ambient melody tone
-      this.playTone(f, 'sine', 0.35, 0.035, 0, true);
-
-      // Warm bass accompaniment every 4 beats
-      if (this.bgmStep % 4 === 0) {
-        const bass = bassNotes[Math.floor(this.bgmStep / 4) % bassNotes.length];
-        this.playTone(bass, 'triangle', 0.7, 0.025, 0, true);
-      }
-
-      this.bgmStep++;
-    }, 450);
-  }
-
-  public stopBGM() {
-    if (this.bgmInterval) {
-      clearInterval(this.bgmInterval);
-      this.bgmInterval = null;
+    if (this.bgmPhase === 'fog') {
+      this.playPianoNote(261.63, 1.8, 0.045);
+      setTimeout(() => this.playMistyChime(659.25, 0.025), 180);
+    } else if (this.bgmPhase === 'restoring') {
+      this.playGuitarPluck(392.0, 0.6, 0.05);
+      setTimeout(() => this.playWindChime(1046.5, 0), 100);
+    } else {
+      this.playFluteNote(587.33, 0.6, 0.05);
+      setTimeout(() => this.playGuitarPluck(392.0, 0.4, 0.04), 120);
     }
-    this.isBgmPlaying = false;
   }
 
-  public toggleMute() {
-    return this.setMuted(!this.isMuted);
+  public playTestBgmPhase(phase: BgmPhase) {
+    this.setBgmPhase(phase, true);
+    if (!this.isBgmPlaying && !this.isMuted) {
+      this.startBGM();
+    }
   }
 }
 
@@ -457,17 +1079,19 @@ if (typeof window !== 'undefined') {
   window.addEventListener('click', unlockOnFirstGesture, { passive: true });
 }
 
-// Reactive hook for components to read and update volume settings in real-time
+// Reactive hook for components to read and update volume & BGM phase in real-time
 export function useAudioSettings() {
   const [bgmVolume, setBgm] = useState(() => sound.bgmVolume);
   const [sfxVolume, setSfx] = useState(() => sound.sfxVolume);
   const [isMuted, setIsMuted] = useState(() => sound.isMuted);
+  const [bgmPhase, setPhase] = useState<BgmPhase>(() => sound.bgmPhase);
 
   useEffect(() => {
     const unsub = sound.subscribe(() => {
       setBgm(sound.bgmVolume);
       setSfx(sound.sfxVolume);
       setIsMuted(sound.isMuted);
+      setPhase(sound.bgmPhase);
     });
     return unsub;
   }, []);
@@ -476,17 +1100,22 @@ export function useAudioSettings() {
   const updateSfx = useCallback((v: number) => sound.setSfxVolume(v), []);
   const toggleMute = useCallback(() => sound.toggleMute(), []);
   const setMuted = useCallback((m: boolean) => sound.setMuted(m), []);
+  const setBgmPhase = useCallback((p: BgmPhase) => sound.setBgmPhase(p, true), []);
+  const triggerRestoring = useCallback(() => sound.triggerColorRestorationTransition(), []);
 
   return {
     bgmVolume,
     sfxVolume,
     isMuted,
+    bgmPhase,
     setBgmVolume: updateBgm,
     setSfxVolume: updateSfx,
     toggleMute,
     setMuted,
+    setBgmPhase,
+    triggerRestoring,
     playTestSfx: () => sound.playTestSfx(),
     playTestBgm: () => sound.playTestBgmNote(),
+    playTestBgmPhase: (p: BgmPhase) => sound.playTestBgmPhase(p),
   };
 }
-

@@ -391,19 +391,54 @@ export class FreeRoamWorld {
 
   // 4. Render Pasture Livestock: Holstein Cow, Brown Calf, and Fluffy Sheep
   // Location: North pasture meadow (cols 15..18, rows 2..5)
-  public renderPastureLivestock(ctx: CanvasRenderingContext2D, tickCount: number) {
+  public renderPastureLivestock(
+    ctx: CanvasRenderingContext2D,
+    tickCount: number,
+    playerX?: number,
+    playerY?: number
+  ) {
     ctx.save();
 
     // --- A. Holstein Cow (Sapi Perah Putih-Hitam) ---
     // Location: col 16.5, row 2.5 (X: 528, Y: 80)
     const cowX = 16.5 * TILE_SIZE;
     const cowY = 2.5 * TILE_SIZE;
+    const cowCenterX = cowX + 19;
 
-    // Head chew & bob animation
-    const chewCycle = (tickCount * 0.06) % 10;
-    const isChewing = chewCycle < 6;
-    const headBobY = isChewing ? Math.sin(tickCount * 0.25) * 1.5 : 0;
-    const tailSwish = Math.sin(tickCount * 0.08) * 3.5;
+    // Check if player is near cow
+    const isPlayerNearCow =
+      playerX !== undefined &&
+      playerY !== undefined &&
+      Math.hypot(cowCenterX - playerX, cowY + 16 - playerY) < 135;
+
+    // Idle facing direction loop: changes direction every ~320 ticks, or turns toward/grazes when player is nearby
+    const cowCycle = Math.floor(tickCount / 320);
+    let cowFacingLeft = cowCycle % 2 === 1;
+    if (isPlayerNearCow && playerX !== undefined) {
+      // Occasionally turn to graze pasture grass, otherwise turn towards player
+      const cowGlance = Math.floor(tickCount / 140) % 3 === 0;
+      cowFacingLeft = cowGlance ? !cowFacingLeft : playerX < cowCenterX;
+    }
+
+    // Grazing & chewing animation
+    const isIdleChew = (tickCount * 0.05) % 10 < 6;
+    const isCowGrazing = isPlayerNearCow || isIdleChew;
+    const cowHeadDrop = isPlayerNearCow ? 8 : isIdleChew ? 3 : 0;
+    const cowChewSpeed = isPlayerNearCow ? 0.35 : 0.22;
+    const headBobY = isCowGrazing
+      ? Math.sin(tickCount * cowChewSpeed) * 1.5 + cowHeadDrop
+      : 0;
+    const tailSpeed = isPlayerNearCow ? 0.16 : 0.08;
+    const tailSwish =
+      Math.sin(tickCount * tailSpeed) * (isPlayerNearCow ? 4.5 : 3.5);
+
+    // Render Cow with horizontal flip transform
+    ctx.save();
+    if (cowFacingLeft) {
+      ctx.translate(cowCenterX, 0);
+      ctx.scale(-1, 1);
+      ctx.translate(-cowCenterX, 0);
+    }
 
     // Tail
     ctx.fillStyle = '#f8fafc';
@@ -443,9 +478,16 @@ export class FreeRoamWorld {
     ctx.fillStyle = '#fbcfe8';
     ctx.fillRect(cowX + 9, cowY + 18, 6, 3);
 
-    // Cow head & neck (facing right towards pasture)
+    // Cow head & neck (facing right towards pasture by default)
     const headX = cowX + 26;
     const headY = cowY + 5 + Math.floor(headBobY);
+
+    // Angled neck connection when head drops down to graze
+    if (cowHeadDrop > 0) {
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(headX - 3, cowY + 8, 7, Math.max(2, headY - (cowY + 5)));
+    }
+
     ctx.fillStyle = '#f8fafc';
     ctx.fillRect(headX, headY + 2, 9, 8);
     ctx.fillStyle = '#0f172a'; // Black patch on head
@@ -472,17 +514,71 @@ export class FreeRoamWorld {
     ctx.fillStyle = '#fbcfe8';
     ctx.fillRect(headX - 1, headY + 2, 2, 4);
 
-    // Grass blade in mouth when chewing
-    if (isChewing) {
+    // Grazing grass blades in mouth
+    if (isCowGrazing) {
+      const grassSway = Math.sin(tickCount * cowChewSpeed) * 1.5;
       ctx.fillStyle = '#4ade80';
-      ctx.fillRect(headX + 10, headY + 7, 3, 1);
-      ctx.fillRect(headX + 12, headY + 8, 2, 1);
+      ctx.fillRect(headX + 10, headY + 7, 4 + grassSway, 1.5);
+      ctx.fillRect(headX + 12, headY + 8, 3, 1.5);
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(headX + 9, headY + 9, 2, 2);
+
+      // Nibble crumbs when player is near
+      if (isPlayerNearCow && tickCount % 24 < 12) {
+        ctx.fillStyle = '#86efac';
+        ctx.fillRect(headX + 11 + (tickCount % 4), headY + 11, 1.5, 1.5);
+      }
+    }
+
+    ctx.restore(); // End cow transform
+
+    // Contentment indicator above cow when player is very close
+    if (
+      isPlayerNearCow &&
+      playerX !== undefined &&
+      playerY !== undefined &&
+      Math.hypot(cowCenterX - playerX, cowY + 16 - playerY) < 70
+    ) {
+      if (tickCount % 160 < 40) {
+        const heartY = cowY - 4 - (tickCount % 40) * 0.2;
+        ctx.fillStyle = '#f43f5e';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText('♥', cowCenterX - 3, heartY);
+      }
     }
 
     // --- B. Brown Jersey Cow / Calf (Sapi Cokelat) ---
     // Location: col 18.2, row 2.2 (X: 582, Y: 70)
     const calfX = 18.2 * TILE_SIZE;
     const calfY = 2.2 * TILE_SIZE;
+    const calfCenterX = calfX + 12;
+
+    const isPlayerNearCalf =
+      playerX !== undefined &&
+      playerY !== undefined &&
+      Math.hypot(calfCenterX - playerX, calfY + 14 - playerY) < 120;
+
+    const calfCycle = Math.floor(tickCount / 280);
+    let calfFacingLeft = calfCycle % 2 === 1;
+    if (isPlayerNearCalf && playerX !== undefined) {
+      const calfGlance = Math.floor(tickCount / 130) % 3 === 0;
+      calfFacingLeft = calfGlance ? !calfFacingLeft : playerX < calfCenterX;
+    }
+
+    const isCalfGrazing = isPlayerNearCalf || tickCount % 180 < 90;
+    const calfHeadDrop = isCalfGrazing ? (isPlayerNearCalf ? 5 : 3) : 0;
+    const calfHeadY =
+      calfY +
+      4 +
+      calfHeadDrop +
+      (isCalfGrazing ? Math.sin(tickCount * 0.3) * 1.2 : 0);
+
+    ctx.save();
+    if (calfFacingLeft) {
+      ctx.translate(calfCenterX, 0);
+      ctx.scale(-1, 1);
+      ctx.translate(-calfCenterX, 0);
+    }
 
     // Legs
     ctx.fillStyle = '#78350f';
@@ -505,13 +601,14 @@ export class FreeRoamWorld {
     ctx.fillStyle = '#fef3c7';
     ctx.fillRect(calfX + 5, calfY + 15, 12, 3);
 
-    // Little tail
+    // Little tail with swish
+    const calfTailWag =
+      Math.sin(tickCount * (isPlayerNearCalf ? 0.2 : 0.1)) * 2;
     ctx.fillStyle = '#78350f';
-    ctx.fillRect(calfX + 1, calfY + 9, 2, 6);
+    ctx.fillRect(calfX + 1, calfY + 9 + calfTailWag, 2, 6);
 
     // Head
     const calfHeadX = calfX + 18;
-    const calfHeadY = calfY + 4;
     ctx.fillStyle = '#b45309';
     ctx.fillRect(calfHeadX, calfHeadY + 2, 7, 7);
     // Cream snout
@@ -526,13 +623,49 @@ export class FreeRoamWorld {
     ctx.fillStyle = '#92400e';
     ctx.fillRect(calfHeadX - 1, calfHeadY + 1, 2, 3);
 
+    // Calf grazing grass
+    if (isCalfGrazing) {
+      ctx.fillStyle = '#4ade80';
+      ctx.fillRect(calfHeadX + 7, calfHeadY + 6, 3, 1.5);
+    }
+
+    ctx.restore(); // End calf transform
+
     // --- C. Fluffy White Grazing Sheep (Domba Berbulu Putih) ---
     // Location: col 18.5, row 4.8 (X: 592, Y: 154)
     const sheepX = 18.5 * TILE_SIZE + 4;
     const sheepY = 4.8 * TILE_SIZE + 4;
+    const sheepCenterX = sheepX + 9.5;
 
-    const sheepGrazing = Math.sin(tickCount * 0.1) > 0.3;
-    const sheepHeadY = sheepGrazing ? sheepY + 8 : sheepY + 4;
+    const isPlayerNearSheep =
+      playerX !== undefined &&
+      playerY !== undefined &&
+      Math.hypot(sheepCenterX - playerX, sheepY + 10 - playerY) < 125;
+
+    // Idle facing direction loop: changes direction every ~250 ticks, or turns toward/grazes when player is nearby
+    const sheepCycle = Math.floor(tickCount / 250);
+    let sheepFacingRight = sheepCycle % 2 === 1;
+    if (isPlayerNearSheep && playerX !== undefined) {
+      const sheepGlance = Math.floor(tickCount / 140) % 3 === 0;
+      sheepFacingRight = sheepGlance ? !sheepFacingRight : playerX > sheepCenterX;
+    }
+
+    // Grazing animation
+    const sheepMunch = Math.sin(
+      tickCount * (isPlayerNearSheep ? 0.38 : 0.22)
+    );
+    const sheepGrazing = isPlayerNearSheep || Math.sin(tickCount * 0.08) > 0.0;
+    const sheepHeadDrop = isPlayerNearSheep ? 9 : 6;
+    const sheepHeadY = sheepGrazing
+      ? sheepY + sheepHeadDrop + Math.floor(sheepMunch * 1.5)
+      : sheepY + 4;
+
+    ctx.save();
+    if (sheepFacingRight) {
+      ctx.translate(sheepCenterX, 0);
+      ctx.scale(-1, 1);
+      ctx.translate(-sheepCenterX, 0);
+    }
 
     // Four little dark legs
     ctx.fillStyle = '#1e293b';
@@ -554,6 +687,12 @@ export class FreeRoamWorld {
     ctx.fillRect(sheepX + 9, sheepY + 8, 2, 2);
     ctx.fillRect(sheepX + 16, sheepY + 7, 2, 2);
 
+    // Fluffy wool tail puff on rear wagging contentedly
+    const sheepTailWag =
+      Math.sin(tickCount * (isPlayerNearSheep ? 0.28 : 0.12)) * 2;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(sheepX + 20, sheepY + 5 + sheepTailWag, 2.5, 3);
+
     // Dark sheep face & ears (facing left towards the grass)
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(sheepX - 3, sheepHeadY, 6, 6);
@@ -564,10 +703,35 @@ export class FreeRoamWorld {
     ctx.fillStyle = '#0f172a';
     ctx.fillRect(sheepX + 1, sheepHeadY + 1, 2, 3);
 
-    // Nibbling grass animation
+    // Nibbling grass & clover animation
     if (sheepGrazing) {
+      const grassSway = Math.sin(tickCount * 0.35) * 1.5;
       ctx.fillStyle = '#4ade80';
-      ctx.fillRect(sheepX - 5, sheepHeadY + 4, 3, 1);
+      ctx.fillRect(sheepX - 6 + grassSway, sheepHeadY + 4, 4, 1.5);
+      ctx.fillStyle = '#22c55e';
+      ctx.fillRect(sheepX - 4, sheepHeadY + 5, 2, 1.5);
+      // Yellow buttercup petal in mouth when actively grazing
+      if (isPlayerNearSheep) {
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(sheepX - 5, sheepHeadY + 3, 1.5, 1.5);
+      }
+    }
+
+    ctx.restore(); // End sheep transform
+
+    // Contentment heart above sheep when player is close
+    if (
+      isPlayerNearSheep &&
+      playerX !== undefined &&
+      playerY !== undefined &&
+      Math.hypot(sheepCenterX - playerX, sheepY + 10 - playerY) < 65
+    ) {
+      if (tickCount % 150 < 40) {
+        const heartY = sheepY - 5 - (tickCount % 40) * 0.2;
+        ctx.fillStyle = '#f43f5e';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText('♥', sheepCenterX - 3, heartY);
+      }
     }
 
     // --- D. Woodland Spotted Fawn / Deer (Rusa Tutul Hutan) ---
@@ -731,13 +895,53 @@ export class FreeRoamWorld {
     // Location: col 19.4, row 5.1 (X: 620, Y: 163) - next to mother sheep
     const lambX = 19.4 * TILE_SIZE;
     const lambY = 5.1 * TILE_SIZE;
-    const lambBounce = Math.abs(Math.sin(tickCount * 0.14)) * 2;
-    const lambTailWag = Math.sin(tickCount * 0.22) * 2;
+    const lambCenterX = lambX + 6;
 
-    // Lamb shadow
+    const isPlayerNearLamb =
+      playerX !== undefined &&
+      playerY !== undefined &&
+      Math.hypot(lambCenterX - playerX, lambY + 6 - playerY) < 115;
+
+    // Idle facing direction loop: changes direction every ~210 ticks, or turns toward/grazes when player is nearby
+    const lambCycle = Math.floor(tickCount / 210);
+    let lambFacingRight = lambCycle % 2 === 1;
+    if (isPlayerNearLamb && playerX !== undefined) {
+      const lambGlance = Math.floor(tickCount / 120) % 3 === 0;
+      lambFacingRight = lambGlance ? !lambFacingRight : playerX > lambCenterX;
+    }
+
+    // When player is nearby, alternate between cute grazing and playful happy hops!
+    const lambPhase = tickCount % 140;
+    const isLambGrazing = isPlayerNearLamb ? lambPhase < 95 : false;
+    const isLambHopping = isPlayerNearLamb ? lambPhase >= 95 : false;
+
+    let lambBounce = 0;
+    if (isLambHopping) {
+      const hopProgress = (lambPhase - 95) / 45;
+      lambBounce = Math.sin(hopProgress * Math.PI) * 6;
+    } else if (!isPlayerNearLamb) {
+      lambBounce = Math.abs(Math.sin(tickCount * 0.14)) * 2;
+    }
+
+    const lambHeadYOffset = isLambGrazing
+      ? 5 + Math.sin(tickCount * 0.4) * 1.2
+      : 0;
+    const lambTailWag =
+      Math.sin(tickCount * (isPlayerNearLamb ? 0.35 : 0.22)) *
+      (isPlayerNearLamb ? 3 : 2);
+
+    ctx.save();
+    if (lambFacingRight) {
+      ctx.translate(lambCenterX, 0);
+      ctx.scale(-1, 1);
+      ctx.translate(-lambCenterX, 0);
+    }
+
+    // Lamb shadow (shrinks slightly on high hop)
     ctx.fillStyle = 'rgba(15, 23, 42, 0.2)';
     ctx.beginPath();
-    ctx.ellipse(lambX + 6, lambY + 11, 7, 2, 0, 0, Math.PI * 2);
+    const shadowR = Math.max(3, 7 - (lambBounce > 2 ? 1.5 : 0));
+    ctx.ellipse(lambX + 6, lambY + 11, shadowR, 2, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Four tiny charcoal legs
@@ -760,13 +964,31 @@ export class FreeRoamWorld {
     ctx.fillRect(lambX + 12, lambCurY + 2 + lambTailWag, 2, 2);
 
     // Charcoal lamb face facing left
+    const lambHeadY = lambCurY + 1 + Math.floor(lambHeadYOffset);
     ctx.fillStyle = '#1e293b';
-    ctx.fillRect(lambX - 2, lambCurY + 1, 4, 4);
+    ctx.fillRect(lambX - 2, lambHeadY, 4, 4);
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(lambX - 1, lambCurY + 2, 1, 1); // Eye
+    ctx.fillRect(lambX - 1, lambHeadY + 1, 1, 1); // Eye
     // Drooping cute wool ear
     ctx.fillStyle = '#334155';
-    ctx.fillRect(lambX + 1, lambCurY + 1, 1.5, 2.5);
+    ctx.fillRect(lambX + 1, lambHeadY, 1.5, 2.5);
+
+    // Grazing clover blade in mouth
+    if (isLambGrazing) {
+      const chewSway = Math.sin(tickCount * 0.4) * 1.2;
+      ctx.fillStyle = '#4ade80';
+      ctx.fillRect(lambX - 4 + chewSway, lambHeadY + 3, 3, 1.5);
+      ctx.fillRect(lambX - 5, lambHeadY + 2, 2, 2);
+    }
+
+    // Happy sparkle at hop apex
+    if (isLambHopping && lambBounce > 4) {
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(lambX + 5, lambCurY - 4, 2, 2);
+      ctx.fillRect(lambX + 4, lambCurY - 3, 4, 1);
+    }
+
+    ctx.restore(); // End lamb transform
 
     // --- G. Woodland Bushy-Tailed Squirrel (Tupai Hutan) ---
     // Location: col 14.8, row 1.8 (X: 474, Y: 58) - Perched on fence border near pine woods

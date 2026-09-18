@@ -17,7 +17,7 @@ import {
   BookOpen,
   MapPin,
 } from 'lucide-react';
-import { useAudioSettings } from '../utils/audio';
+import { useAudioSettings, BgmPhase } from '../utils/audio';
 import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
 import { PSE_ACHIEVEMENTS } from '../game/constants';
 
@@ -54,12 +54,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     bgmVolume,
     sfxVolume,
     isMuted,
+    bgmPhase,
     setBgmVolume,
     setSfxVolume,
     toggleMute,
     setMuted,
+    setBgmPhase,
     playTestSfx,
     playTestBgm,
+    playTestBgmPhase,
   } = useAudioSettings();
 
   useEffect(() => {
@@ -549,6 +552,148 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <Play className="w-3.5 h-3.5 text-cyan-400" />
                     <span>Uji Denting SFX</span>
                   </button>
+                </div>
+              </div>
+
+              {/* 3 Fase Musik Latar Adaptif (Background Music) */}
+              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Music className="w-4 h-4 text-amber-400" />
+                    <span
+                      style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+                      className="font-bold text-sm text-slate-200"
+                    >
+                      3 Fase Musik Latar Adaptif (BGM)
+                    </span>
+                  </div>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full font-bold bg-amber-950/80 text-amber-300 border border-amber-800/80">
+                    {bgmPhase === 'fog'
+                      ? '🌫️ Fase 1: Kabut Kelabu'
+                      : bgmPhase === 'restoring'
+                      ? '✨ Fase 2: Warna Kembali'
+                      : '🌸 Fase 3: Lingkungan Pulih'}
+                  </span>
+                </div>
+
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Musik latar berubah secara dinamis dan prosedural mengikuti kondisi emosi dan pemulihan warna di Lembah Nada Rasa:
+                </p>
+
+                <div className="grid grid-cols-1 gap-2.5 pt-1">
+                  {/* Phase 1: Saat Masa Kabut Kelabu */}
+                  <div
+                    className={`p-3 rounded-xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                      bgmPhase === 'fog'
+                        ? 'bg-slate-900/90 border-cyan-500/50 shadow-sm shadow-cyan-500/10'
+                        : 'bg-slate-950/40 border-slate-800/80'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">🌫️</span>
+                        <h4 className="text-xs font-bold text-slate-200">
+                          Saat Masa Kabut Kelabu
+                        </h4>
+                        {bgmPhase === 'fog' && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-semibold">
+                            Sedang Berjalan
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-normal">
+                        Terasa hampa, misterius, dan sepi. Nada piano lambat yang bergema dan diredam lembut, hembusan angin pelan, dan dentingan pelan keheningan tanpa perkusi.
+                      </p>
+                    </div>
+
+                    <button
+                      id="test-bgm-phase-fog-btn"
+                      onClick={() => {
+                        if (isMuted) setMuted(false);
+                        playTestBgmPhase('fog');
+                      }}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 hover:text-cyan-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+                    >
+                      <Play className="w-3 h-3 text-cyan-400" />
+                      <span>Uji Fase Kabut</span>
+                    </button>
+                  </div>
+
+                  {/* Phase 2: Momen Warna Kembali */}
+                  <div
+                    className={`p-3 rounded-xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                      bgmPhase === 'restoring'
+                        ? 'bg-slate-900/90 border-amber-500/50 shadow-sm shadow-amber-500/10'
+                        : 'bg-slate-950/40 border-slate-800/80'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">✨</span>
+                        <h4 className="text-xs font-bold text-slate-200">
+                          Momen Warna Kembali
+                        </h4>
+                        {bgmPhase === 'restoring' && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-400 border border-amber-800 font-semibold animate-pulse">
+                            Transisi Bersemi
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-normal">
+                        Jembatan emosional saat misi selesai. Tempo naik bertahap, petikan gitar tunggal dan dentingan lonceng angin bersemi memulihkan desa.
+                      </p>
+                    </div>
+
+                    <button
+                      id="test-bgm-phase-restoring-btn"
+                      onClick={() => {
+                        if (isMuted) setMuted(false);
+                        playTestBgmPhase('restoring');
+                      }}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+                    >
+                      <Play className="w-3 h-3 text-amber-400" />
+                      <span>Uji Transisi Warna</span>
+                    </button>
+                  </div>
+
+                  {/* Phase 3: Setelah Lingkungan Pulih */}
+                  <div
+                    className={`p-3 rounded-xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                      bgmPhase === 'restored'
+                        ? 'bg-slate-900/90 border-emerald-500/50 shadow-sm shadow-emerald-500/10'
+                        : 'bg-slate-950/40 border-slate-800/80'
+                    }`}
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">🌸</span>
+                        <h4 className="text-xs font-bold text-slate-200">
+                          Setelah Lingkungan Pulih
+                        </h4>
+                        {bgmPhase === 'restored' && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold">
+                            Mekar Harmonis
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-400 leading-normal">
+                        Mekar penuh kehangatan, harapan, dan rasa syukur. Petikan gitar akustik yang ringan, tiupan seruling merdu gembira, dan melodi yang membangkitkan semangat.
+                      </p>
+                    </div>
+
+                    <button
+                      id="test-bgm-phase-restored-btn"
+                      onClick={() => {
+                        if (isMuted) setMuted(false);
+                        playTestBgmPhase('restored');
+                      }}
+                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 hover:text-emerald-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+                    >
+                      <Play className="w-3 h-3 text-emerald-400" />
+                      <span>Uji Melodi Pulih</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 

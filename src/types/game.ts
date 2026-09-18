@@ -16,6 +16,7 @@ export interface ChoiceOption {
   branchTag?: string;
   givesItem?: string;
   unlocksBadge?: string;
+  triggerRegulationMode?: 'breathing' | 'grounding' | 'stop' | 'shakeout';
 }
 
 export interface DialogueNode {
@@ -29,6 +30,7 @@ export interface DialogueNode {
   choices?: ChoiceOption[];
   nextId?: string;
   triggerBreathing?: boolean;
+  triggerRegulationMode?: 'breathing' | 'grounding' | 'stop' | 'shakeout';
   triggerColorRestoreZone?: string;
   triggerQuestProgress?: string;
   soundEffect?: string;
