@@ -1686,4 +1686,14 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     thoughtBubble: 'Gemercik air yang hidup membangkitkan kesegaran indra dan ketenangan batin.',
     emotionAura: 'tenang',
   },
+
+  free_roam_waterfall: {
+    id: 'free_roam_waterfall',
+    speaker: 'Air Terjun Sungai Harmoni',
+    speakerRole: 'Kesejukan Air Lembah',
+    portrait: 'fountain',
+    text: 'Gemuruh air terjun bertingkat berpadu indah dengan gemercik busa putih yang membentur batuan cadas sungai di dekat jembatan. Uap air segar dan percikan embun melayang lembut di udara, membawa rasa damai dan kesegaran batin.',
+    thoughtBubble: 'Arus emosi mengalir deras layaknya air terjun; kita tidak perlu menahannya, cukup sadari dan biarkan ia mengalir dengan tenang.',
+    emotionAura: 'tenang',
+  },
 };

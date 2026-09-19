@@ -14,14 +14,20 @@ import {
   Clock,
   Sparkles,
   Heart,
-  BookOpen,
   MapPin,
   Trophy,
   Camera,
+  BookOpen,
+  Users,
+  ArrowRight,
+  Terminal,
+  KeyRound,
+  ShieldCheck,
 } from 'lucide-react';
-import { useAudioSettings, BgmPhase } from '../utils/audio';
+import { useAudioSettings, BgmPhase, sound } from '../utils/audio';
 import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
 import { PSE_ACHIEVEMENTS } from '../game/constants';
+import { PeopleGuideModal } from './PeopleGuideModal';
 
 export type SettingsModalTab = 'quest' | 'achievements' | 'audio' | 'controls';
 
@@ -36,10 +42,13 @@ export interface SettingsModalProps {
   unlockedBadges?: string[];
   empathyScore?: number;
   isMuted?: boolean;
+  isFreeRoamActive?: boolean;
   onToggleMute?: () => void;
   onOpenAllBadgesCelebration?: () => void;
   onUnlockAllBadges?: () => void;
   onCaptureMoment?: () => void;
+  onNavigateToTile?: (tileX: number, tileY: number) => void;
+  onActivateDeveloperMode?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -52,11 +61,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   npcs = [],
   unlockedBadges,
   empathyScore,
+  isFreeRoamActive = false,
   onOpenAllBadgesCelebration,
   onUnlockAllBadges,
   onCaptureMoment,
+  onNavigateToTile,
+  onActivateDeveloperMode,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
+  const [showPeopleGuide, setShowPeopleGuide] = useState(false);
+  const [selectedVillagerForGuide, setSelectedVillagerForGuide] = useState<string | null>(null);
+  const [devPin, setDevPin] = useState('');
+  const [devPinError, setDevPinError] = useState<string | null>(null);
 
   const {
     bgmVolume,
@@ -90,6 +106,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  const handleDevPinSubmit = () => {
+    if (devPin.trim() === '12345') {
+      setDevPinError(null);
+      sound.playSecretFound();
+      onActivateDeveloperMode?.();
+      onClose();
+    } else {
+      setDevPinError('Kode PIN salah! Masukkan kode PIN yang sesuai (12345).');
+      sound.playMenuSelect();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -226,10 +254,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           >
             <Gamepad2 className="w-4 h-4 shrink-0" />
             <span
-              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+              style={{
+                fontFamily: "'Pixelify Sans', sans-serif",
+                fontSize: '13px',
+              }}
               className="truncate"
             >
-              Panduan & Sains
+              Kontrol Permainan
             </span>
           </button>
         </div>
@@ -344,43 +375,91 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
               {/* Misi Eksplorasi Warga & Hutan */}
               {effectiveNpcs.length > 0 && (
-                <div>
-                  <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-3 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
-                    Eksplorasi Warga Desa, Hutan, & Sungai
-                  </h3>
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-400" />
+                      Eksplorasi Warga Desa, Hutan, & Sungai
+                    </h3>
+                    <button
+                      id="btn-open-people-guide-from-quest"
+                      onClick={() => {
+                        sound.playMenuSelect();
+                        setSelectedVillagerForGuide(null);
+                        setShowPeopleGuide(true);
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto border border-amber-300/60 active:scale-95"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>Buka Panduan Warga (People Guide)</span>
+                    </button>
+                  </div>
+
+                  {/* Banner Info People Guide */}
+                  <div className="p-3 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border border-amber-500/30 rounded-xl flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-slate-200">
+                          Buku Panduan Karakter & Kompas Emosi Warga
+                        </div>
+                        <div className="text-[11px] text-slate-400">
+                          Klik warga mana pun di bawah untuk membuka pop-up dialog profil, dinamika emosi, wawasan PSE, dan tips berdialog.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                     {effectiveNpcs.map((npc) => (
-                      <div
+                      <button
                         key={npc.id}
-                        className={`p-3 rounded-xl border flex items-center justify-between gap-2 ${
+                        id={`btn-open-villager-profile-${npc.id}`}
+                        onClick={() => {
+                          sound.playMenuSelect();
+                          setSelectedVillagerForGuide(npc.id);
+                          setShowPeopleGuide(true);
+                        }}
+                        className={`p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer flex items-center justify-between gap-2.5 group select-none hover:shadow-md ${
                           npc.isResolved
-                            ? 'bg-emerald-950/20 border-emerald-500/40'
-                            : 'bg-slate-950/50 border-slate-800'
+                            ? 'bg-emerald-950/20 border-emerald-500/40 hover:border-emerald-400 hover:bg-emerald-950/40'
+                            : 'bg-slate-950/50 border-slate-800 hover:border-amber-400/80 hover:bg-slate-900'
                         }`}
+                        title={`Klik untuk membuka pop-up dialog profil ${npc.name}`}
                       >
-                        <div>
-                          <div className="font-bold text-slate-200 flex items-center gap-1.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-bold text-slate-200 flex items-center gap-1.5 group-hover:text-amber-300 transition">
                             <span>{npc.isResolved ? '✨' : '💬'}</span>
-                            <span>{npc.name}</span>
-                            <span className="text-[10px] text-slate-400 font-normal">({npc.role})</span>
+                            <span className="truncate">{npc.name}</span>
+                            <span className="text-[10px] text-slate-400 font-normal shrink-0">({npc.role})</span>
                           </div>
-                          <div className="text-[11px] text-slate-400 mt-0.5">
-                            {npc.isResolved
-                              ? '✅ Hati terbuka & harmonis'
-                              : `Belum selesai: Emosi "${npc.emotionProfile?.surfaceEmotion || 'resah'}"`}
+                          <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                            {npc.isResolved ? (
+                              <span className="text-emerald-400">✅ Hati terbuka & harmonis</span>
+                            ) : (
+                              <span className="text-amber-300/90 truncate">
+                                Perlu didengar: Emosi "{npc.emotionProfile?.surfaceEmotion || 'resah'}"
+                              </span>
+                            )}
                           </div>
                         </div>
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
-                            npc.isResolved
-                              ? 'bg-emerald-900/60 text-emerald-300'
-                              : 'bg-slate-800 text-slate-400'
-                          }`}
-                        >
-                          {npc.isResolved ? 'Selesai' : 'Belum'}
-                        </span>
-                      </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span
+                            className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                              npc.isResolved
+                                ? 'bg-emerald-900/60 text-emerald-300'
+                                : 'bg-slate-800 text-slate-400'
+                            }`}
+                          >
+                            {npc.isResolved ? 'Selesai' : 'Profil'}
+                          </span>
+                          <span className="text-slate-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition">
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </span>
+                        </div>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -962,42 +1041,154 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              {/* Fakta Sains PSE */}
-              <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
-                <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-amber-400" />
-                  Kamus Singkat Pembelajaran Sosial Emosional (PSE)
-                </h3>
-
-                <div className="space-y-2.5 text-xs">
-                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                    <span className="font-bold text-amber-300">1. Gunung Es Emosi (Iceberg of Emotion):</span>
-                    <p className="text-slate-400 mt-1 leading-relaxed">
-                      Emosi luar (seperti marah atau teriak) sering kali hanya puncak gunung es. Di bawah permukaan air tersimpan rasa takut, cemas, atau kesepian yang butuh didengarkan.
-                    </p>
-                  </div>
-
-                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                    <span className="font-bold text-emerald-300">2. Meredakan Alarm Amigdala:</span>
-                    <p className="text-slate-400 mt-1 leading-relaxed">
-                      Saat panik atau marah, otak bagian amigdala membunyikan alarm bahaya. Latihan napas dalam (Napas Balon 4-4) mengirimkan sinyal oksigen agar otak berpikir jernih kembali.
-                    </p>
-                  </div>
-
-                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                    <span className="font-bold text-cyan-300">3. Lingkaran Kendali (Circle of Control):</span>
-                    <p className="text-slate-400 mt-1 leading-relaxed">
-                      Fokuskan energi pada apa yang bisa kamu kendalikan: kata-katamu, usahamu, dan responmu. Jangan habiskan energimu meratapi hal di luar kendalimu.
-                    </p>
-                  </div>
-
-                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                    <span className="font-bold text-purple-300">4. Mendengarkan Aktif (Active Listening):</span>
-                    <p className="text-slate-400 mt-1 leading-relaxed">
-                      Mendengarkan bukan sekadar menunggu giliran bicara, tetapi memahami isi hati lawan bicara dengan kontak mata, empati, dan tidak memotong pembicaraan.
-                    </p>
-                  </div>
+              {/* Mode Developer (PIN Terproteksi: 12345) */}
+              <div
+                id="developer-mode-section"
+                className="bg-gradient-to-br from-slate-950/95 via-slate-900/90 to-amber-950/40 p-4 rounded-xl border-2 border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.12)]"
+              >
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                    <Terminal className="w-4 h-4 text-amber-400" />
+                    <span>Mode Developer (Akses Khusus)</span>
+                  </h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 flex items-center gap-1">
+                    <KeyRound className="w-3 h-3 text-amber-400" />
+                    PIN PROTECTED
+                  </span>
                 </div>
+
+                <p className="text-xs text-slate-300 mb-3 leading-relaxed">
+                  Fitur pintasan pengembang & guru: langsung membuka{' '}
+                  <strong className="text-amber-300">Mode Jelajah Bebas (Free Roam)</strong> dengan{' '}
+                  <strong className="text-emerald-300">Pencapaian 100%</strong> (seluruh 10 Lencana PSE) serta{' '}
+                  <strong className="text-emerald-300">Misi Utama 100%</strong> (seluruh 4 wilayah desa pulih).
+                </p>
+
+                {isFreeRoamActive ? (
+                  <div className="p-3 bg-emerald-950/40 border border-emerald-500/50 rounded-lg space-y-2.5">
+                    <div className="flex items-center gap-2 text-emerald-300 font-bold text-xs">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <span>Mode Developer & Jelajah Bebas 100% Sedang Aktif!</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-300">
+                      <div className="p-1.5 rounded bg-slate-900/70 border border-emerald-900/50 flex items-center justify-between">
+                        <span>Misi Utama:</span>
+                        <span className="font-bold text-emerald-300">100% Selesai (4/4)</span>
+                      </div>
+                      <div className="p-1.5 rounded bg-slate-900/70 border border-emerald-900/50 flex items-center justify-between">
+                        <span>Pencapaian PSE:</span>
+                        <span className="font-bold text-emerald-300">100% (10 Lencana)</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <button
+                        id="dev-mode-enter-world-btn"
+                        onClick={onClose}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>Masuk Langsung ke Jelajah Bebas</span>
+                      </button>
+                      <button
+                        id="dev-mode-reapply-btn"
+                        onClick={() => {
+                          onActivateDeveloperMode?.();
+                          onClose();
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Sinkronkan Ulang 100%</span>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                      <div className="relative">
+                        <input
+                          id="dev-mode-pin-input"
+                          type="password"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          maxLength={5}
+                          value={devPin}
+                          onChange={(e) => {
+                            setDevPin(e.target.value.replace(/\D/g, '').slice(0, 5));
+                            setDevPinError(null);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleDevPinSubmit();
+                          }}
+                          placeholder="•••••"
+                          className="w-36 sm:w-44 text-center font-mono text-xl tracking-[0.35em] font-bold bg-slate-900 border-2 border-amber-500/60 rounded-lg px-3 py-2 text-amber-300 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 shadow-inner"
+                        />
+                      </div>
+
+                      <button
+                        id="dev-mode-unlock-btn"
+                        onClick={handleDevPinSubmit}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.35)] active:scale-[0.98]"
+                      >
+                        <KeyRound className="w-4 h-4 text-slate-950" />
+                        <span>Buka Mode Developer</span>
+                      </button>
+                    </div>
+
+                    {/* Virtual Numpad for Touchscreen / Mobile ease */}
+                    <div className="pt-1">
+                      <div className="text-[11px] text-slate-400 mb-1.5 flex items-center justify-between">
+                        <span>Papan Tombol Angka:</span>
+                      </div>
+                      <div className="grid grid-cols-6 sm:grid-cols-12 gap-1 max-w-md">
+                        {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((digit) => (
+                          <button
+                            key={digit}
+                            type="button"
+                            onClick={() => {
+                              if (devPin.length < 5) {
+                                setDevPin((prev) => (prev + digit).slice(0, 5));
+                                setDevPinError(null);
+                              }
+                            }}
+                            className="p-1.5 text-center font-mono font-bold text-xs bg-slate-900 hover:bg-slate-800 active:bg-amber-500/30 text-amber-200 border border-slate-700 rounded transition cursor-pointer"
+                          >
+                            {digit}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDevPin((prev) => prev.slice(0, -1));
+                            setDevPinError(null);
+                          }}
+                          title="Hapus satu angka"
+                          className="p-1.5 text-center font-mono text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded transition cursor-pointer"
+                        >
+                          ⌫
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDevPin('');
+                            setDevPinError(null);
+                          }}
+                          title="Kosongkan PIN"
+                          className="p-1.5 text-center font-mono text-[10px] font-bold bg-slate-900 hover:bg-slate-800 text-rose-300 border border-slate-700 rounded transition cursor-pointer"
+                        >
+                          C
+                        </button>
+                      </div>
+                    </div>
+
+                    {devPinError && (
+                      <div className="text-rose-400 text-xs flex items-center gap-1.5 bg-rose-950/50 border border-rose-800/60 p-2 rounded-lg">
+                        <span>⚠️</span>
+                        <span>{devPinError}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -1018,6 +1209,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* People Guide Modal (Panduan Warga Desa & Pop-Up Dialog Profil Warga) */}
+      <PeopleGuideModal
+        isOpen={showPeopleGuide}
+        onClose={() => {
+          setShowPeopleGuide(false);
+          setSelectedVillagerForGuide(null);
+        }}
+        npcs={effectiveNpcs}
+        initialSelectedNpcId={selectedVillagerForGuide}
+        onNavigateToTile={(tileX, tileY) => {
+          setShowPeopleGuide(false);
+          setSelectedVillagerForGuide(null);
+          onClose();
+          onNavigateToTile?.(tileX, tileY);
+        }}
+      />
     </div>
   );
 };

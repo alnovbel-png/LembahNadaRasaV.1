@@ -58,6 +58,10 @@ export const TILE = {
   ZEN_DOOR: 46,
   ZEN_WINDOW: 47,
   STONE_LANTERN: 48,
+  // Plaza & Environmental Enhancements
+  GRAND_OAK: 49,
+  PLAZA_PLANTER: 50,
+  FLOWERING_BUSH: 51,
 };
 
 // Map layout definition (28 rows x 36 cols)
@@ -213,12 +217,21 @@ export function generateMapLayout(): number[][] {
         continue;
       }
 
-      // Farm protective perimeter fences (Pintu masuk perkebunan terbuka luas untuk navigasi)
+      // --- PERIMETER PAGAR KAYU PERTANIAN & PEDESAAN BAGIAN BAWAH (Detailed & Expanded Wooden Fences) ---
+      // Pagar kayu rustic membatasi area perkebunan sayur, padang rumput, dan kebun buah dengan pintu gerbang leluasa
       if (
+        // Pagar batas atas kebun sayur & kandang (jalur jalan c=7 tetap terbuka lebar)
+        (r === 20 && (c >= 2 && c <= 6)) ||
         (r === 21 && (c >= 10 && c <= 14)) ||
-        (r === 26 && c >= 2 && c <= 14) ||
-        (c === 2 && r >= 23 && r <= 25) ||
-        (c === 14 && r >= 22 && r <= 25)
+        // Pagar batas bawah desa & perkebunan (row 26)
+        (r === 26 && ((c >= 2 && c <= 14) || (c >= 24 && c <= 34))) ||
+        // Pagar sayap barat lahan pertanian
+        (c === 2 && r >= 21 && r <= 25) ||
+        // Pagar pembatas antara perkebunan sayur dan area tengah
+        (c === 14 && r >= 21 && r <= 25) ||
+        // Pagar kebun buah tenggara (jalur c=30 ke Pondok Kakek Damai tetap plong)
+        (r === 22 && (c >= 24 && c <= 28)) ||
+        (c === 34 && r >= 22 && r <= 25)
       ) {
         row.push(TILE.FENCE);
         continue;
@@ -290,18 +303,41 @@ export function generateMapLayout(): number[][] {
         continue;
       }
 
+      // Semak Berbunga (Flowering Bushes) di taman lingkar & batas vegetasi sekitar plaza
+      if (
+        (r === 11 && c === 8) ||
+        (r === 12 && c === 7) ||
+        (r === 13 && c === 7) ||
+        (r === 16 && c === 7) ||
+        (r === 12 && c === 15) ||
+        (r === 13 && c === 15) ||
+        (r === 17 && (c === 12 || c === 13))
+      ) {
+        row.push(TILE.FLOWERING_BUSH);
+        continue;
+      }
+
       // Alun-Alun Plaza features & perimeter
       if (r >= 12 && r <= 16 && c >= 8 && c <= 14) {
+        // Pohon Ek Besar Megah di sudut barat laut plaza (r=12, c=8)
+        if (r === 12 && c === 8) {
+          row.push(TILE.GRAND_OAK);
+          continue;
+        }
+
         // Plaza corner street lamps (lampu di sudut plaza)
-        if ((r === 12 && c === 8) || (r === 12 && c === 14) || (r === 16 && c === 8) || (r === 16 && c === 14)) {
+        if ((r === 12 && c === 14) || (r === 16 && c === 8) || (r === 16 && c === 14)) {
           row.push(TILE.LAMP_POST);
           continue;
         }
-        // Bangku taman diletakkan di sisi sayap plaza agar jalur utama keluar-masuk (c=10..12) plong dan mudah dilewati
-        if ((r === 13 && c === 9) || (r === 13 && c === 13)) {
+
+        // Bangku taman diletakkan di batas tepi utara plaza (r=12, c=9 di bawah naungan pohon ek & r=12, c=13 di samping lampu)
+        // Menjaga seluruh koridor r=13, r=14, r=15, dan r=16 plong dan bebas hambatan bagi langkah karakter
+        if ((r === 12 && c === 9) || (r === 12 && c === 13)) {
           row.push(TILE.BENCH);
           continue;
         }
+
         // Gerobak bunga pasar di sudut tenggara dekat lampu, tidak menghalangi jalur jalan
         if (r === 16 && c === 13) {
           row.push(TILE.FLOWER_CART);
@@ -455,7 +491,9 @@ export function isTileSolid(tile: number): boolean {
     tile === TILE.ZEN_WALL ||
     tile === TILE.ZEN_WINDOW ||
     tile === TILE.ZEN_DOOR ||
-    tile === TILE.STONE_LANTERN
+    tile === TILE.STONE_LANTERN ||
+    tile === TILE.GRAND_OAK ||
+    tile === TILE.FLOWERING_BUSH
   );
 }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { DialogueNode, ChoiceOption } from '../types/game';
 import { sound } from '../utils/audio';
 import { Eye, MessageCircle, Sparkles } from 'lucide-react';
+import { CharacterPortrait } from './CharacterPortrait';
 
 interface DialogueBoxProps {
   dialogue: DialogueNode;
@@ -108,122 +109,6 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   // Character portraits rendering
   const renderPortrait = (type: string) => {
     switch (type) {
-      case 'squirrel':
-        return (
-          <div className="w-16 h-16 bg-amber-800 rounded-lg flex items-center justify-center text-2xl border-2 border-amber-500 shadow-md">
-            🐿️
-          </div>
-        );
-      case 'deer':
-        return (
-          <div className="w-16 h-16 bg-amber-950 rounded-lg flex items-center justify-center text-2xl border-2 border-amber-400 shadow-md">
-            🦌
-          </div>
-        );
-      case 'rabbit':
-        return (
-          <div className="w-16 h-16 bg-emerald-950 rounded-lg flex items-center justify-center text-2xl border-2 border-emerald-400 shadow-md">
-            🐇
-          </div>
-        );
-      case 'cow':
-        return (
-          <div className="w-16 h-16 bg-sky-950 rounded-lg flex items-center justify-center text-2xl border-2 border-sky-400 shadow-md">
-            🐄
-          </div>
-        );
-      case 'sheep':
-      case 'lamb':
-        return (
-          <div className="w-16 h-16 bg-slate-900 rounded-lg flex items-center justify-center text-2xl border-2 border-slate-300 shadow-md">
-            🐑
-          </div>
-        );
-      case 'old_man':
-        return (
-          <div className="w-16 h-16 bg-blue-900 rounded-lg flex items-center justify-center text-2xl border-2 border-blue-400 shadow-md">
-            👴🏻
-          </div>
-        );
-      case 'boy_glasses':
-        return (
-          <div className="w-16 h-16 bg-yellow-900 rounded-lg flex items-center justify-center text-2xl border-2 border-yellow-400 shadow-md">
-            👦🏻
-          </div>
-        );
-      case 'chicken_glasses':
-        return (
-          <div className="w-16 h-16 bg-rose-900 rounded-lg flex items-center justify-center text-2xl border-2 border-rose-400 shadow-md">
-            🐔
-          </div>
-        );
-      case 'grandmother':
-      case 'spirit_elder':
-        return (
-          <div className="w-16 h-16 bg-purple-900 rounded-lg flex items-center justify-center text-2xl border-2 border-purple-400 shadow-md">
-            👵🏼
-          </div>
-        );
-      case 'compass_item':
-        return (
-          <div className="w-16 h-16 bg-amber-950 rounded-lg flex items-center justify-center text-2xl border-2 border-amber-300 shadow-md animate-pulse">
-            🧭
-          </div>
-        );
-      case 'girl_counselor':
-        return (
-          <div className="w-16 h-16 bg-teal-900 rounded-lg flex items-center justify-center text-2xl border-2 border-teal-400 shadow-md">
-            👩🏻‍🏫
-          </div>
-        );
-      case 'zen_master':
-        return (
-          <div className="w-16 h-16 bg-emerald-950 rounded-lg flex items-center justify-center text-2xl border-2 border-emerald-400 shadow-md">
-            🧘🏻‍♂️
-          </div>
-        );
-      case 'cat_librarian':
-        return (
-          <div className="w-16 h-16 bg-orange-950 rounded-lg flex items-center justify-center text-2xl border-2 border-orange-400 shadow-md">
-            🐱
-          </div>
-        );
-      case 'farmer':
-        return (
-          <div className="w-16 h-16 bg-amber-950 rounded-lg flex items-center justify-center text-2xl border-2 border-amber-400 shadow-md">
-            👨‍🌾
-          </div>
-        );
-      case 'wandering_scout':
-        return (
-          <div className="w-16 h-16 bg-emerald-950 rounded-lg flex items-center justify-center text-2xl border-2 border-emerald-400 shadow-md">
-            🏕️
-          </div>
-        );
-      case 'woodcutter':
-        return (
-          <div className="w-16 h-16 bg-red-950 rounded-lg flex items-center justify-center text-2xl border-2 border-red-500 shadow-md">
-            🪓
-          </div>
-        );
-      case 'fruit_farmer':
-        return (
-          <div className="w-16 h-16 bg-lime-950 rounded-lg flex items-center justify-center text-2xl border-2 border-lime-400 shadow-md">
-            🍎
-          </div>
-        );
-      case 'fisherman':
-        return (
-          <div className="w-16 h-16 bg-sky-950 rounded-lg flex items-center justify-center text-2xl border-2 border-sky-400 shadow-md">
-            🎣
-          </div>
-        );
-      case 'player':
-        return (
-          <div className="w-16 h-16 bg-emerald-900 rounded-lg flex items-center justify-center text-2xl border-2 border-emerald-400 shadow-md">
-            🎒
-          </div>
-        );
       case 'celebration':
         return (
           <div className="w-16 h-16 bg-amber-950/90 rounded-lg flex items-center justify-center text-3xl border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]">
@@ -237,11 +122,61 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             🕰️
           </div>
         );
+      case 'signpost':
+        return (
+          <div className="w-16 h-16 bg-[#18231c] rounded-lg flex items-center justify-center border-2 border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.35)] overflow-hidden relative">
+            <svg
+              viewBox="0 0 32 32"
+              className="w-14 h-14"
+              style={{ imageRendering: 'pixelated', shapeRendering: 'crispEdges' }}
+            >
+              {/* Ground shadow & stone ring */}
+              <ellipse cx="16" cy="28" rx="9" ry="3" fill="rgba(0,0,0,0.5)" />
+              <rect x="12" y="26" width="8" height="3" fill="#475569" />
+              <rect x="14" y="25" width="4" height="2" fill="#64748b" />
+
+              {/* Wooden post */}
+              <rect x="14" y="7" width="4" height="20" fill="#78350f" />
+              <rect x="14" y="7" width="1" height="20" fill="#451a03" />
+              <rect x="17" y="7" width="1" height="20" fill="#b45309" />
+              {/* Post top pyramid cap & iron pin */}
+              <polygon points="13,7 19,7 16,4" fill="#92400e" />
+              <rect x="15" y="3" width="2" height="2" fill="#0f172a" />
+
+              {/* Upper wooden arrow sign (pointing left) */}
+              <polygon points="5,10 9,7 21,7 21,13 9,13" fill="#d97706" />
+              <polygon points="5,10 9,7 21,7 21,8 9,8" fill="#fde047" />
+              <polygon points="5,10 9,12 21,12 21,13 9,13" fill="#78350f" />
+              {/* Iron bolts & carved symbol */}
+              <rect x="14" y="9" width="4" height="2" fill="#0f172a" />
+              <rect x="8" y="9" width="3" height="2" fill="#15803d" />
+
+              {/* Lower wooden arrow sign (pointing right) */}
+              <polygon points="11,15 23,15 27,18 23,21 11,21" fill="#b45309" />
+              <polygon points="11,15 23,15 27,18 23,16 11,16" fill="#f59e0b" />
+              <polygon points="11,20 23,20 27,18 23,21 11,21" fill="#451a03" />
+              {/* Iron bolts & carved symbol */}
+              <rect x="14" y="17" width="4" height="2" fill="#0f172a" />
+              <rect x="20" y="17" width="3" height="2" fill="#eab308" />
+
+              {/* Hanging mini lantern on scroll bracket */}
+              <path d="M 18,6 L 24,6 L 24,9" stroke="#0f172a" strokeWidth="1" fill="none" />
+              <rect x="23" y="9" width="3" height="4" fill="#fef08a" />
+              <rect x="22" y="8" width="5" height="1" fill="#78350f" />
+              <rect x="22" y="13" width="5" height="1" fill="#78350f" />
+            </svg>
+          </div>
+        );
       default:
         return (
-          <div className="w-16 h-16 bg-slate-800 rounded-lg flex items-center justify-center text-2xl border-2 border-slate-600 shadow-md">
-            📜
-          </div>
+          <CharacterPortrait
+            sprite={type}
+            size="dialogue"
+            isResolved={
+              dialogue.id?.includes('resolved') ||
+              Boolean(dialogue.speakerRole?.includes('Telah Pulih'))
+            }
+          />
         );
     }
   };

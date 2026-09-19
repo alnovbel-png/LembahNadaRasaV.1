@@ -71,7 +71,15 @@ class SoundSystem {
   }
 
   private notify() {
-    this.listeners.forEach((fn) => fn());
+    if (typeof queueMicrotask === 'function') {
+      queueMicrotask(() => {
+        this.listeners.forEach((fn) => fn());
+      });
+    } else {
+      setTimeout(() => {
+        this.listeners.forEach((fn) => fn());
+      }, 0);
+    }
   }
 
   public isContextRunning(): boolean {
@@ -1103,6 +1111,54 @@ class SoundSystem {
     if (this.isMuted || this.sfxVolume <= 0.001) return;
     this.initCtx();
     this.playTone(180, 'sine', 0.1, 0.035, 0, false);
+  }
+
+  // Soothing waterfall rush & splash sound effect
+  public playWaterfallSplash() {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    if (!this.ctx) return;
+    try {
+      const t = this.ctx.currentTime;
+      // White noise buffer for rushing whitewater cascade
+      const bufferSize = Math.floor(this.ctx.sampleRate * 0.45);
+      const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+      const whiteNoise = this.ctx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+
+      // Bandpass resonant filter to simulate rushing mountain water cascade
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(800, t);
+      filter.frequency.exponentialRampToValueAtTime(450, t + 0.45);
+      filter.Q.setValueAtTime(1.8, t);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(0.06 * this.sfxVolume, t + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.45);
+
+      whiteNoise.connect(filter);
+      filter.connect(gain);
+      if (this.masterSfxGain) {
+        gain.connect(this.masterSfxGain);
+      } else {
+        gain.connect(this.ctx.destination);
+      }
+      whiteNoise.start(t);
+      whiteNoise.stop(t + 0.46);
+
+      // Delicate melodic droplet splash tones
+      [587.33, 880, 1174.66].forEach((freq, idx) => {
+        setTimeout(() => {
+          this.playTone(freq, 'sine', 0.22, 0.035, 0, false);
+        }, idx * 75 + 40);
+      });
+    } catch {}
   }
 
   // Test triggers for settings sliders & testing specific phases

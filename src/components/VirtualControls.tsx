@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X, Home } from 'lucide-react';
+import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X, Home, Sparkles } from 'lucide-react';
 import { useIsMobileOrTablet } from '../utils/device';
 
 interface VirtualControlsProps {
@@ -203,21 +203,31 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           </span>
         </div>
 
-        {/* Center: Compass Toggle Button */}
+        {/* Center: Compass Toggle Button with Sparkle Feedback */}
         <div className="pointer-events-auto">
           <button
             id="toggle-resonance-btn"
             onClick={onCompassToggle}
             title="Aktifkan Kompas Resonansi Hati [C]"
-            className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
+            className={`relative px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
               isCompassActive
-                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.6)] font-bold'
+                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.7)] font-bold ring-2 ring-amber-300/60'
                 : 'bg-slate-950/90 text-amber-300 border-amber-500/40 hover:bg-slate-900'
             }`}
           >
-            <Compass className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isCompassActive ? 'animate-spin' : ''}`} />
+            {isCompassActive && (
+              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 pointer-events-none">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400" />
+              </span>
+            )}
+            {isCompassActive ? (
+              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950 animate-pulse" />
+            ) : (
+              <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            )}
             <span className="font-pixel text-[8px] sm:text-[9px] whitespace-nowrap">
-              {isCompassActive ? 'KOMPAS AKTIF' : 'KOMPAS HATI'}
+              {isCompassActive ? 'RESONANSI AKTIF' : 'KOMPAS HATI'}
             </span>
             <span className="hidden xl:inline text-[10px] text-slate-400 font-mono">
               [C]
@@ -580,19 +590,31 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
       {/* On-Screen Action Buttons: Hati & Aksi (Mobile and Tablet mode only) */}
       {!isDialogueOpen && isMobileOrTablet && (
         <div className="fixed bottom-3 sm:bottom-5 right-3 sm:right-5 z-30 flex items-center gap-2.5 sm:gap-3 pointer-events-auto select-none touch-none">
-          {/* Button B: Resonance Compass */}
+          {/* Button B: Resonance Compass with Sparkle indicator */}
           <button
             id="btn-compass-mobile"
             onClick={onCompassToggle}
             aria-label="Kompas Hati"
-            className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full border-2 flex flex-col items-center justify-center text-xs font-bold shadow-lg transition active:scale-95 cursor-pointer ${
+            className={`relative w-12 h-12 sm:w-13 sm:h-13 rounded-full border-2 flex flex-col items-center justify-center text-xs font-bold shadow-lg transition active:scale-95 cursor-pointer ${
               isCompassActive
-                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.6)]'
+                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.75)] ring-2 ring-amber-300/70'
                 : 'bg-slate-950/90 text-amber-300 border-amber-400/70 hover:bg-slate-900'
             }`}
           >
-            <Compass className={`w-4.5 h-4.5 sm:w-5 sm:h-5 ${isCompassActive ? 'animate-spin' : ''}`} />
-            <span className="text-[7.5px] font-pixel tracking-tighter">HATI</span>
+            {isCompassActive && (
+              <span className="absolute -top-1 -right-1 flex h-3 w-3 pointer-events-none">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-400" />
+              </span>
+            )}
+            {isCompassActive ? (
+              <Sparkles className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-slate-950 animate-pulse" />
+            ) : (
+              <Compass className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
+            )}
+            <span className="text-[7.5px] font-pixel tracking-tighter">
+              {isCompassActive ? 'AKTIF' : 'HATI'}
+            </span>
           </button>
 
           {/* Button A: Interact / Speak */}

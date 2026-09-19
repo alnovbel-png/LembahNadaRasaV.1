@@ -1,20 +1,32 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import {
   Map as MapIcon,
   X,
-  MapPin,
-  Sparkles,
   Navigation,
   Compass,
-  Target,
   ArrowRight,
+  Sparkles,
+  ZoomIn,
+  ZoomOut,
+  LocateFixed,
+  RotateCcw,
+  Maximize2,
+  Minimize2,
   Eye,
-  AlertCircle,
-  CheckCircle2,
+  EyeOff,
+  HelpCircle,
 } from 'lucide-react';
 import { NPC, ZoneColorStatus, GameQuest } from '../types/game';
 import { Player } from '../game/renderer';
 import { MAP_COLS, MAP_ROWS, TILE } from '../game/constants';
+import {
+  MINI_TILE_PX,
+  MINI_MAP_W,
+  MINI_MAP_H,
+  renderTexturedTile,
+  drawPixelTextWithShadow,
+} from '../game/miniMapTextures';
+import { sound } from '../utils/audio';
 import { useIsMobileOrTablet, useIsPortrait } from '../utils/device';
 
 interface MiniMapProps {
@@ -28,10 +40,6 @@ interface MiniMapProps {
   onNavigateToTile?: (tileX: number, tileY: number) => void;
   isCompassActive?: boolean;
 }
-
-const TILE_PX = 5; // 5px per tile -> 36 cols * 5 = 180px width, 28 rows * 5 = 140px height
-const MAP_W = MAP_COLS * TILE_PX;
-const MAP_H = MAP_ROWS * TILE_PX;
 
 interface HoveredTargetInfo {
   name: string;
@@ -59,6 +67,131 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   const [currentZoneName, setCurrentZoneName] = useState<string>('Alun-Alun Nada');
   const [hoveredInfo, setHoveredInfo] = useState<HoveredTargetInfo | null>(null);
 
+  // Zoom & Pan System:
+  // 1.0x (full map overview) up to 3.0x (detailed close-up)
+  const [zoom, setZoom] = useState<number>(1.0);
+  const [isFollowingPlayer, setIsFollowingPlayer] = useState<boolean>(true);
+  const [isDraggingMap, setIsDraggingMap] = useState<boolean>(false);
+
+  const zoomRef = useRef<number>(1.0);
+  const panRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const followPlayerRef = useRef<boolean>(true);
+
+  const isPointerDownRef = useRef<boolean>(false);
+  const dragStartRef = useRef<{
+    clientX: number;
+    clientY: number;
+    panX: number;
+    panY: number;
+    hasMoved: boolean;
+  }>({ clientX: 0, clientY: 0, panX: 0, panY: 0, hasMoved: false });
+  const pinchDistRef = useRef<number | null>(null);
+
+  // Synchronize ref values with component state
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useEffect(() => {
+    followPlayerRef.current = isFollowingPlayer;
+  }, [isFollowingPlayer]);
+
+  // Zoom control helpers
+  const handleZoomIn = useCallback(() => {
+    sound.playMenuSelect();
+    setZoom((prev) => Math.min(3.0, Math.round((prev + 0.5) * 10) / 10));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    sound.playMenuSelect();
+    setZoom((prev) => {
+      const next = Math.max(1.0, Math.round((prev - 0.5) * 10) / 10);
+      if (next <= 1.0) {
+        setIsFollowingPlayer(true);
+        panRef.current = { x: 0, y: 0 };
+      }
+      return next;
+    });
+  }, []);
+
+  const handleResetZoom = useCallback(() => {
+    sound.playMenuSelect();
+    setZoom(1.0);
+    setIsFollowingPlayer(true);
+    panRef.current = { x: 0, y: 0 };
+  }, []);
+
+  const handleCenterOnPlayer = useCallback(() => {
+    sound.playMenuSelect();
+    setIsFollowingPlayer(true);
+    if (zoomRef.current <= 1.0) {
+      setZoom(1.5);
+    }
+  }, []);
+
+  const handleCycleZoom = useCallback(() => {
+    sound.playMenuSelect();
+    setZoom((prev) => {
+      if (prev >= 3.0) {
+        setIsFollowingPlayer(true);
+        panRef.current = { x: 0, y: 0 };
+        return 1.0;
+      }
+      return Math.min(3.0, Math.round((prev + 0.5) * 10) / 10);
+    });
+  }, []);
+
+  // Keyboard shortcut support (+, -, 0, C) when map is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const targetTag = (e.target as HTMLElement)?.tagName;
+      if (targetTag === 'INPUT' || targetTag === 'TEXTAREA') return;
+
+      if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        handleZoomIn();
+      } else if (e.key === '-' || e.key === '_') {
+        e.preventDefault();
+        handleZoomOut();
+      } else if (e.key === '0') {
+        e.preventDefault();
+        handleResetZoom();
+      } else if (e.key.toLowerCase() === 'c') {
+        e.preventDefault();
+        handleCenterOnPlayer();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleZoomIn, handleZoomOut, handleResetZoom, handleCenterOnPlayer]);
+
+  // Non-passive mouse wheel zooming on map canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !isOpen) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.deltaY < 0) {
+        setZoom((prev) => Math.min(3.0, Math.round((prev + 0.25) * 100) / 100));
+      } else if (e.deltaY > 0) {
+        setZoom((prev) => {
+          const next = Math.max(1.0, Math.round((prev - 0.25) * 100) / 100);
+          if (next <= 1.0) {
+            setIsFollowingPlayer(true);
+            panRef.current = { x: 0, y: 0 };
+          }
+          return next;
+        });
+      }
+    };
+
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', handleWheel);
+  }, [isOpen]);
+
   // Active quest and current target NPC
   const activeQuest = useMemo(() => quests?.find((q) => !q.isCompleted), [quests]);
   const activeTargetNpc = useMemo(() => {
@@ -71,142 +204,46 @@ export const MiniMap: React.FC<MiniMapProps> = ({
     if (!activeQuest) return null;
     const target = activeQuest.targetNPC;
     if (target === 'kiki' || activeQuest.id === 'quest_start') {
-      return { id: 'plaza', name: 'Alun-Alun', isRestored: zoneStatus.plaza };
+      return { id: 'plaza', name: 'Alun-Alun Nada', isRestored: zoneStatus.plaza };
     }
     if (target === 'kakek_ranu' || activeQuest.id === 'quest_bridge') {
-      return { id: 'bridge', name: 'Jembatan Kayu', isRestored: zoneStatus.bridge };
+      return { id: 'bridge', name: 'Jembatan Kayu Ranu', isRestored: zoneStatus.bridge };
     }
     if (target === 'bimo' || activeQuest.id === 'quest_bimo') {
-      return { id: 'forest', name: 'Hutan Sunyi', isRestored: zoneStatus.forest };
+      return { id: 'forest', name: 'Hutan Sunyi Refleksi', isRestored: zoneStatus.forest };
     }
     if (target === 'penjaga_kabut' || target === 'tetua_wilis' || activeQuest.id === 'quest_tower') {
-      return { id: 'tower', name: 'Menara Jam', isRestored: zoneStatus.tower };
+      return { id: 'tower', name: 'Menara Jam Harmoni', isRestored: zoneStatus.tower };
     }
     return null;
   }, [activeQuest, zoneStatus]);
 
-  // Pre-render static terrain to an offscreen canvas for optimal performance
+  // Pre-render static textured terrain to an offscreen canvas for optimal 60 FPS performance
   useEffect(() => {
     const offCanvas = document.createElement('canvas');
-    offCanvas.width = MAP_W;
-    offCanvas.height = MAP_H;
+    offCanvas.width = MINI_MAP_W;
+    offCanvas.height = MINI_MAP_H;
     const ctx = offCanvas.getContext('2d');
     if (!ctx) return;
 
-    // Crisp pixel rendering
+    // Crisp pixel rendering without interpolation
     ctx.imageSmoothingEnabled = false;
 
-    // Base background
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, MAP_W, MAP_H);
+    // Deep slate background
+    ctx.fillStyle = '#090d16';
+    ctx.fillRect(0, 0, MINI_MAP_W, MINI_MAP_H);
 
     for (let r = 0; r < MAP_ROWS; r++) {
       for (let c = 0; c < MAP_COLS; c++) {
         const tile = mapLayout[r]?.[c] ?? TILE.GRASS;
-        let color = '#15803d'; // Default grass
-
-        switch (tile) {
-          case TILE.CLIFF:
-          case TILE.FENCE:
-            color = '#334155';
-            break;
-          case TILE.WATER:
-          case TILE.WATER_DEEP:
-            color = '#2563eb';
-            break;
-          case TILE.WOOD_BRIDGE:
-            color = zoneStatus.bridge ? '#f59e0b' : '#78350f';
-            break;
-          case TILE.PATH_STONE:
-            color = '#64748b';
-            break;
-          case TILE.TREE_TRUNK:
-          case TILE.TREE_TOP:
-            color = '#064e3b';
-            break;
-          case TILE.HOUSE_WALL:
-          case TILE.HOUSE_ROOF:
-          case TILE.HOUSE_DOOR:
-          case TILE.HOUSE_WINDOW:
-            color = '#c2410c';
-            break;
-          case TILE.FOREST_CABIN_ROOF:
-          case TILE.FOREST_CABIN_WALL:
-          case TILE.FOREST_CABIN_DOOR:
-          case TILE.FOREST_CABIN_WINDOW:
-            color = '#78350f';
-            break;
-          case TILE.LOG_STACK:
-            color = '#d97706';
-            break;
-          case TILE.ZEN_ROOF:
-            color = '#0f766e';
-            break;
-          case TILE.ZEN_WALL:
-          case TILE.ZEN_DOOR:
-          case TILE.ZEN_WINDOW:
-            color = '#b45309';
-            break;
-          case TILE.STONE_LANTERN:
-            color = '#94a3b8';
-            break;
-          case TILE.FARMLAND_SOIL:
-            color = '#78350f';
-            break;
-          case TILE.CROP_CARROT:
-            color = '#ea580c';
-            break;
-          case TILE.CROP_CABBAGE:
-            color = '#22c55e';
-            break;
-          case TILE.CROP_WHEAT:
-            color = '#eab308';
-            break;
-          case TILE.WATER_WELL:
-            color = '#0284c7';
-            break;
-          case TILE.SCARECROW:
-          case TILE.HAY_BALE:
-            color = '#d97706';
-            break;
-          case TILE.ORCHARD_APPLE:
-            color = '#dc2626';
-            break;
-          case TILE.ORCHARD_ORANGE:
-            color = '#f97316';
-            break;
-          case TILE.FOUNTAIN:
-            color = '#06b6d4';
-            break;
-          case TILE.FLOWER_BED:
-            color = '#ec4899';
-            break;
-          case TILE.TOWER_WALL:
-          case TILE.TOWER_ROOF:
-          case TILE.TOWER_CLOCK:
-          case TILE.TOWER_DOOR:
-          case TILE.TOWER_WINDOW:
-            color = zoneStatus.tower ? '#fbbf24' : '#6b21a8';
-            break;
-          case TILE.SECRET_TREE:
-            color = '#10b981';
-            break;
-          case TILE.GRASS_FLOWERS:
-            color = '#16a34a';
-            break;
-          default:
-            color = '#15803d';
-        }
-
-        ctx.fillStyle = color;
-        ctx.fillRect(c * TILE_PX, r * TILE_PX, TILE_PX, TILE_PX);
+        renderTexturedTile(ctx, tile, c, r, zoneStatus.bridge, zoneStatus.tower);
       }
     }
 
     staticMapCanvasRef.current = offCanvas;
   }, [mapLayout, zoneStatus.bridge, zoneStatus.tower]);
 
-  // Mini-map dynamic rendering loop (60 FPS player position, real-time NPC movements, active quest beacon)
+  // Mini-map dynamic rendering loop (Real-time player position, NPC facing, active quest beacons)
   useEffect(() => {
     if (!isOpen) return;
 
@@ -224,156 +261,210 @@ export const MiniMap: React.FC<MiniMapProps> = ({
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // 1. Draw pre-rendered static terrain
+      const p = playerRef.current;
+      const tileCol = p.x / 32;
+      const tileRow = p.y / 32;
+      const px = tileCol * MINI_TILE_PX + MINI_TILE_PX / 2;
+      const py = tileRow * MINI_TILE_PX + MINI_TILE_PX / 2;
+
+      const curZoom = zoomRef.current;
+      const viewW = MINI_MAP_W / curZoom;
+      const viewH = MINI_MAP_H / curZoom;
+      const maxPanX = Math.max(0, MINI_MAP_W - viewW);
+      const maxPanY = Math.max(0, MINI_MAP_H - viewH);
+
+      if (curZoom <= 1.0) {
+        panRef.current = { x: 0, y: 0 };
+      } else if (followPlayerRef.current) {
+        const targetPanX = Math.max(0, Math.min(maxPanX, px - viewW / 2));
+        const targetPanY = Math.max(0, Math.min(maxPanY, py - viewH / 2));
+        panRef.current.x += (targetPanX - panRef.current.x) * 0.22;
+        panRef.current.y += (targetPanY - panRef.current.y) * 0.22;
+      } else {
+        panRef.current.x = Math.max(0, Math.min(maxPanX, panRef.current.x));
+        panRef.current.y = Math.max(0, Math.min(maxPanY, panRef.current.y));
+      }
+
+      const curPanX = panRef.current.x;
+      const curPanY = panRef.current.y;
+
+      // Clear the canvas
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(0, 0, MINI_MAP_W, MINI_MAP_H);
+
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+
+      // Apply zoom & pan transformation
+      ctx.scale(curZoom, curZoom);
+      ctx.translate(-curPanX, -curPanY);
+
+      // 1. Draw pre-rendered textured terrain
       if (staticMapCanvasRef.current) {
         ctx.drawImage(staticMapCanvasRef.current, 0, 0);
       } else {
         ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, MAP_W, MAP_H);
+        ctx.fillRect(0, 0, MINI_MAP_W, MINI_MAP_H);
       }
 
-      // 2. Zone Restoration & Unrecovered Areas Visualization
+      // 2. Zone Restoration & Fog of Isolation Overlays
       const ZONES_CONFIG = [
         {
           id: 'plaza',
-          name: 'ALUN²',
-          x: 4 * TILE_PX,
-          y: 10 * TILE_PX,
-          w: 15 * TILE_PX,
-          h: 11 * TILE_PX,
+          name: 'ALUN-ALUN',
+          x: 4 * MINI_TILE_PX,
+          y: 10 * MINI_TILE_PX,
+          w: 15 * MINI_TILE_PX,
+          h: 11 * MINI_TILE_PX,
           isRestored: zoneStatus.plaza,
           isQuestZone: activeQuest?.targetNPC === 'kiki',
-          restoredColor: 'rgba(245, 158, 11, 0.2)',
-          labelX: 11 * TILE_PX,
-          labelY: 13 * TILE_PX,
+          restoredColor: 'rgba(245, 158, 11, 0.18)',
+          labelX: 11.5 * MINI_TILE_PX,
+          labelY: 14 * MINI_TILE_PX,
         },
         {
           id: 'forest',
-          name: 'HUTAN',
-          x: 1 * TILE_PX,
-          y: 1 * TILE_PX,
-          w: 14 * TILE_PX,
-          h: 8 * TILE_PX,
+          name: 'HUTAN SUNYI',
+          x: 1 * MINI_TILE_PX,
+          y: 1 * MINI_TILE_PX,
+          w: 14 * MINI_TILE_PX,
+          h: 8 * MINI_TILE_PX,
           isRestored: zoneStatus.forest,
           isQuestZone: activeQuest?.targetNPC === 'bimo',
-          restoredColor: 'rgba(16, 185, 129, 0.22)',
-          labelX: 7 * TILE_PX,
-          labelY: 4 * TILE_PX,
+          restoredColor: 'rgba(16, 185, 129, 0.20)',
+          labelX: 8 * MINI_TILE_PX,
+          labelY: 4.5 * MINI_TILE_PX,
         },
         {
           id: 'bridge',
-          name: 'JEMBATAN',
-          x: 20 * TILE_PX,
-          y: 13 * TILE_PX,
-          w: 5 * TILE_PX,
-          h: 4 * TILE_PX,
+          name: 'JEMBATAN KAYU',
+          x: 20 * MINI_TILE_PX,
+          y: 13 * MINI_TILE_PX,
+          w: 5 * MINI_TILE_PX,
+          h: 4 * MINI_TILE_PX,
           isRestored: zoneStatus.bridge,
           isQuestZone: activeQuest?.targetNPC === 'kakek_ranu',
-          restoredColor: 'rgba(245, 158, 11, 0.25)',
-          labelX: 22 * TILE_PX,
-          labelY: 15 * TILE_PX,
+          restoredColor: 'rgba(249, 115, 22, 0.22)',
+          labelX: 22.5 * MINI_TILE_PX,
+          labelY: 15 * MINI_TILE_PX,
         },
         {
           id: 'tower',
-          name: 'MENARA',
-          x: 26 * TILE_PX,
-          y: 2 * TILE_PX,
-          w: 8 * TILE_PX,
-          h: 7 * TILE_PX,
+          name: 'MENARA JAM',
+          x: 26 * MINI_TILE_PX,
+          y: 2 * MINI_TILE_PX,
+          w: 8 * MINI_TILE_PX,
+          h: 7 * MINI_TILE_PX,
           isRestored: zoneStatus.tower,
           isQuestZone:
             activeQuest?.targetNPC === 'penjaga_kabut' ||
             activeQuest?.targetNPC === 'tetua_wilis',
-          restoredColor: 'rgba(234, 179, 8, 0.25)',
-          labelX: 30 * TILE_PX,
-          labelY: 4 * TILE_PX,
+          restoredColor: 'rgba(234, 179, 8, 0.22)',
+          labelX: 30 * MINI_TILE_PX,
+          labelY: 4.5 * MINI_TILE_PX,
         },
       ];
 
       for (const zone of ZONES_CONFIG) {
         if (zone.isRestored) {
-          // Restored zone: warm radiant golden/emerald tint
+          // Restored zone: radiant emerald/amber tint with crisp border
           ctx.fillStyle = zone.restoredColor;
           ctx.fillRect(zone.x, zone.y, zone.w, zone.h);
 
-          // Subtle restored border
-          ctx.strokeStyle = 'rgba(52, 211, 153, 0.35)';
+          ctx.strokeStyle = 'rgba(52, 211, 153, 0.45)';
           ctx.lineWidth = 1;
           ctx.strokeRect(zone.x, zone.y, zone.w, zone.h);
         } else {
-          // Unrecovered area: desaturated cold slate fog overlay
-          ctx.fillStyle = 'rgba(51, 65, 85, 0.42)';
+          // Unrecovered area: desaturated cold isolation fog overlay
+          ctx.fillStyle = 'rgba(30, 41, 59, 0.48)';
           ctx.fillRect(zone.x, zone.y, zone.w, zone.h);
 
-          // Drifting subtle mist streaks
-          const mistShift = (tick * 0.3) % (zone.w + 12);
-          ctx.fillStyle = 'rgba(148, 163, 184, 0.12)';
-          ctx.fillRect(zone.x + mistShift - 8, zone.y, 6, zone.h);
+          // Subtle drifting pixel fog particles
+          const fogShift = (tick * 0.25) % (zone.w + 16);
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.15)';
+          ctx.fillRect(zone.x + fogShift - 10, zone.y + 2, 8, zone.h - 4);
 
           if (zone.isQuestZone) {
-            // High-priority destination zone for active quest: animated pulsing golden/amber border
+            // Animated pulsing golden quest zone border
             ctx.save();
-            ctx.setLineDash([3, 3]);
-            ctx.lineDashOffset = -tick * 0.4;
+            ctx.setLineDash([4, 3]);
+            ctx.lineDashOffset = -tick * 0.5;
             ctx.strokeStyle = '#f59e0b';
-            ctx.lineWidth = 1.6;
+            ctx.lineWidth = 1.8;
             ctx.strokeRect(zone.x, zone.y, zone.w, zone.h);
             ctx.restore();
           } else {
-            // Other unrestored zone: subdued dashed grey border
+            // Subdued dashed outline
             ctx.save();
-            ctx.setLineDash([2, 2]);
+            ctx.setLineDash([2, 3]);
             ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
-            ctx.lineWidth = 0.8;
+            ctx.lineWidth = 1;
             ctx.strokeRect(zone.x, zone.y, zone.w, zone.h);
             ctx.restore();
           }
         }
       }
 
-      // 3. Draw Landmark Labels
-      ctx.font = '6px "Press Start 2P", monospace';
-      ctx.textAlign = 'center';
-
+      // 3. Crisp Typography: Landmark Labels with 1px Shadow / Outline
       for (const zone of ZONES_CONFIG) {
-        if (zone.isRestored) {
-          ctx.fillStyle = 'rgba(254, 240, 138, 0.9)';
-          ctx.fillText(zone.name, zone.labelX, zone.labelY);
-          ctx.font = '5px "Press Start 2P", monospace';
-          ctx.fillStyle = '#34d399';
-          ctx.fillText('PULIH', zone.labelX, zone.labelY + 6);
-          ctx.font = '6px "Press Start 2P", monospace';
-        } else if (zone.isQuestZone) {
-          ctx.fillStyle = '#fbbf24';
-          ctx.fillText(zone.name, zone.labelX, zone.labelY);
-          ctx.font = '5px "Press Start 2P", monospace';
-          ctx.fillStyle = '#f87171';
-          ctx.fillText('BELUM', zone.labelX, zone.labelY + 6);
-          ctx.font = '6px "Press Start 2P", monospace';
-        } else {
-          ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
-          ctx.fillText(zone.name, zone.labelX, zone.labelY);
-        }
+        const titleColor = zone.isRestored
+          ? '#fef08a'
+          : zone.isQuestZone
+          ? '#fbbf24'
+          : '#e2e8f0';
+
+        drawPixelTextWithShadow(
+          ctx,
+          zone.name,
+          zone.labelX,
+          zone.labelY,
+          titleColor,
+          '#000000',
+          'bold 9px "Pixelify Sans", sans-serif'
+        );
+
+        // Status pill text below title
+        const statusText = zone.isRestored ? 'PULIH ✨' : 'BELUM PULIH';
+        const statusColor = zone.isRestored ? '#34d399' : '#f87171';
+
+        drawPixelTextWithShadow(
+          ctx,
+          statusText,
+          zone.labelX,
+          zone.labelY + 8,
+          statusColor,
+          '#000000',
+          'bold 7.5px "Pixelify Sans", sans-serif'
+        );
       }
 
-      ctx.fillStyle = 'rgba(254, 240, 138, 0.7)';
-      ctx.fillText('KEBUN', 8 * TILE_PX, 22 * TILE_PX);
-      ctx.fillText('BUAH', 26 * TILE_PX, 23 * TILE_PX);
+      // Secondary Agricultural Labels
+      drawPixelTextWithShadow(
+        ctx,
+        'KEBUN',
+        8 * MINI_TILE_PX,
+        22 * MINI_TILE_PX,
+        'rgba(254, 240, 138, 0.85)',
+        '#000000',
+        'bold 8px "Pixelify Sans", sans-serif'
+      );
+      drawPixelTextWithShadow(
+        ctx,
+        'BUAH',
+        26 * MINI_TILE_PX,
+        23 * MINI_TILE_PX,
+        'rgba(254, 240, 138, 0.85)',
+        '#000000',
+        'bold 8px "Pixelify Sans", sans-serif'
+      );
 
-      // 4. Calculate player coordinate on mini-map
-      const p = playerRef.current;
-      const tileCol = p.x / 32;
-      const tileRow = p.y / 32;
-      const px = tileCol * TILE_PX + TILE_PX / 2;
-      const py = tileRow * TILE_PX + TILE_PX / 2;
-
-      // 5. Draw NPCs with Real-Time Direction of Movement & Active Quest Marker
+      // 4. Draw NPCs with Real-Time Direction & Iconic Quest Badges
       for (const npc of npcs) {
-        const nx = npc.x * TILE_PX + TILE_PX / 2;
-        const ny = npc.y * TILE_PX + TILE_PX / 2;
+        const nx = npc.x * MINI_TILE_PX + MINI_TILE_PX / 2;
+        const ny = npc.y * MINI_TILE_PX + MINI_TILE_PX / 2;
         const isQuestTarget = Boolean(activeQuest && npc.id === activeQuest.targetNPC);
 
-        // Direction vector & angle according to npc.facing
+        // Facing direction vector
         let dx = 0;
         let dy = 1;
         let angle = Math.PI / 2;
@@ -395,24 +486,24 @@ export const MiniMap: React.FC<MiniMapProps> = ({
           angle = 0;
         }
 
-        // A. Real-time forward vision / movement field
+        // A. Forward field of movement
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(nx, ny);
-        ctx.arc(nx, ny, isQuestTarget ? 8.5 : 6, angle - 0.42, angle + 0.42);
+        ctx.arc(nx, ny, isQuestTarget ? 9 : 6.5, angle - 0.45, angle + 0.45);
         ctx.closePath();
         ctx.fillStyle = isQuestTarget
           ? 'rgba(245, 158, 11, 0.35)'
           : npc.isResolved
-          ? 'rgba(52, 211, 153, 0.22)'
-          : 'rgba(251, 191, 36, 0.22)';
+          ? 'rgba(52, 211, 153, 0.25)'
+          : 'rgba(251, 191, 36, 0.25)';
         ctx.fill();
         ctx.restore();
 
-        // B. Real-time Directional Arrow Pointer (Points where NPC moves / faces)
-        const tipDist = isQuestTarget ? 7.5 : 5.8;
-        const baseDist = isQuestTarget ? 4.2 : 3.2;
-        const halfW = isQuestTarget ? 3.2 : 2.4;
+        // B. Directional Pointer Arrow
+        const tipDist = isQuestTarget ? 8 : 6.5;
+        const baseDist = isQuestTarget ? 4.5 : 3.5;
+        const halfW = isQuestTarget ? 3.5 : 2.5;
 
         const tipX = nx + dx * tipDist;
         const tipY = ny + dy * tipDist;
@@ -432,83 +523,90 @@ export const MiniMap: React.FC<MiniMapProps> = ({
           ? '#10b981'
           : '#fbbf24';
         ctx.fill();
-        ctx.lineWidth = 0.8;
-        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = '#090d16';
         ctx.stroke();
 
-        // C. Center NPC bead
-        const radius = isQuestTarget ? 4 : 3;
+        // C. Center Villager Marker with Pixel Character Silhouette
+        const markerRadius = isQuestTarget ? 4.5 : 3.5;
         ctx.beginPath();
-        ctx.arc(nx, ny, radius, 0, Math.PI * 2);
+        ctx.arc(nx, ny, markerRadius, 0, Math.PI * 2);
         ctx.fillStyle = isQuestTarget
           ? '#f59e0b'
           : npc.isResolved
           ? '#34d399'
           : '#fbbf24';
         ctx.fill();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = '#090d16';
         ctx.stroke();
 
         // D. Pulsing rings for unresolved NPCs
-        if (!npc.isResolved) {
-          const pulse = (Math.sin(tick * 0.1) + 1) * 1.3;
+        if (!npc.isResolved && !isQuestTarget) {
+          const pulse = (Math.sin(tick * 0.1) + 1) * 1.5;
           ctx.beginPath();
-          ctx.arc(nx, ny, radius + pulse, 0, Math.PI * 2);
-          ctx.strokeStyle = isQuestTarget
-            ? 'rgba(245, 158, 11, 0.7)'
-            : 'rgba(251, 191, 36, 0.4)';
+          ctx.arc(nx, ny, markerRadius + pulse, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(251, 191, 36, 0.45)';
           ctx.lineWidth = 1;
           ctx.stroke();
         }
 
-        // E. Dedicated Special Active Quest Marker & Beacon
+        // E. Dedicated High-Impact Active Quest Marker & Beacon
         if (isQuestTarget) {
-          // Multi-stage radar pulse
-          const radarWave = (tick % 45) / 45;
+          // Multi-wave radar pulses
+          const radarWave = (tick % 40) / 40;
           ctx.beginPath();
-          ctx.arc(nx, ny, 4 + radarWave * 11, 0, Math.PI * 2);
+          ctx.arc(nx, ny, 5 + radarWave * 12, 0, Math.PI * 2);
           ctx.strokeStyle = `rgba(245, 158, 11, ${1 - radarWave})`;
-          ctx.lineWidth = 1.6;
+          ctx.lineWidth = 1.8;
           ctx.stroke();
 
-          // Bobbing floating Quest Diamond with Exclamation Mark '!'
-          const bob = Math.sin(tick * 0.14) * 1.8;
-          const iconY = ny - 10 + bob;
+          // Floating bobbing Quest Badge with Exclamation Mark '!'
+          const bob = Math.sin(tick * 0.15) * 2;
+          const badgeY = ny - 12 + bob;
 
           ctx.save();
-          // Golden diamond badge
+          // Outer circular badge
           ctx.beginPath();
-          ctx.moveTo(nx, iconY - 5);
-          ctx.lineTo(nx + 4.5, iconY);
-          ctx.lineTo(nx, iconY + 5);
-          ctx.lineTo(nx - 4.5, iconY);
-          ctx.closePath();
+          ctx.arc(nx, badgeY, 6, 0, Math.PI * 2);
           ctx.fillStyle = '#f59e0b';
           ctx.fill();
-          ctx.strokeStyle = '#0f172a';
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = '#090d16';
+          ctx.stroke();
+
+          // Inner gold ring
+          ctx.beginPath();
+          ctx.arc(nx, badgeY, 4.5, 0, Math.PI * 2);
+          ctx.strokeStyle = '#fef08a';
           ctx.lineWidth = 1;
           ctx.stroke();
 
-          // Exclamation '!' symbol
-          ctx.font = 'bold 7px sans-serif';
+          // Bold Exclamation Mark '!'
+          ctx.font = 'bold 8px sans-serif';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#0f172a';
-          ctx.fillText('!', nx, iconY + 0.5);
+          ctx.fillStyle = '#090d16';
+          ctx.fillText('!', nx, badgeY + 0.5);
 
           // Top label
-          ctx.font = '5px "Press Start 2P", monospace';
-          ctx.fillStyle = '#fef08a';
-          ctx.fillText('QUEST', nx, iconY - 6.5);
+          drawPixelTextWithShadow(
+            ctx,
+            'TARGET',
+            nx,
+            badgeY - 8,
+            '#fef08a',
+            '#000000',
+            'bold 7.5px "Pixelify Sans", sans-serif'
+          );
           ctx.restore();
 
-          // Animated golden dash guide line from player to active quest target!
+          // Animated golden dash guide line from player to active quest target
           ctx.save();
-          ctx.setLineDash([2, 3]);
-          ctx.lineDashOffset = -tick * 0.4;
-          ctx.strokeStyle = 'rgba(245, 158, 11, 0.55)';
-          ctx.lineWidth = 1.2;
+          ctx.setLineDash([3, 3]);
+          ctx.lineDashOffset = -tick * 0.5;
+          ctx.strokeStyle = 'rgba(245, 158, 11, 0.65)';
+          ctx.lineWidth = 1.4;
           ctx.beginPath();
           ctx.moveTo(px, py);
           ctx.lineTo(nx, ny);
@@ -517,7 +615,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
         }
       }
 
-      // 6. Draw Player as high-contrast beacon with real-time facing direction
+      // 6. Draw Player ("Kamu") Character Sprite with High-Contrast Directional Indicator
       let pdx = 0;
       let pdy = 1;
       if (p.facing === 'up') {
@@ -535,9 +633,9 @@ export const MiniMap: React.FC<MiniMapProps> = ({
       }
 
       // Player forward facing arrow
-      const pTipDist = 6.2;
-      const pBaseDist = 3.4;
-      const pHalfW = 2.4;
+      const pTipDist = 7.5;
+      const pBaseDist = 4;
+      const pHalfW = 3;
       const pTipX = px + pdx * pTipDist;
       const pTipY = py + pdy * pTipDist;
       const pLeftX = px + pdx * pBaseDist - pdy * pHalfW;
@@ -552,32 +650,103 @@ export const MiniMap: React.FC<MiniMapProps> = ({
       ctx.closePath();
       ctx.fillStyle = '#34d399';
       ctx.fill();
-      ctx.lineWidth = 0.8;
+      ctx.lineWidth = 1;
       ctx.strokeStyle = '#022c22';
       ctx.stroke();
 
-      // Radar ping animation
-      const radarPhase = (tick % 40) / 40;
-      const radarRadius = 3 + radarPhase * 9;
+      // Sonar pulse wave beneath player feet
+      const radarPhase = (tick % 36) / 36;
+      const radarRadius = 3.5 + radarPhase * 10;
       const radarAlpha = 1 - radarPhase;
       ctx.beginPath();
       ctx.arc(px, py, radarRadius, 0, Math.PI * 2);
       ctx.strokeStyle = `rgba(52, 211, 153, ${radarAlpha})`;
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.6;
       ctx.stroke();
 
-      // Core player dot
-      ctx.beginPath();
-      ctx.arc(px, py, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#10b981';
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(px, py, 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = '#022c22';
-      ctx.stroke();
+      // Authentic Mini Pixel Character Sprite for Player:
+      // Red cap, hair, skin face with eyes, and blue adventurer tunic
+      ctx.save();
+      const sx = Math.round(px);
+      const sy = Math.round(py);
+
+      // Outer drop shadow
+      ctx.fillStyle = 'rgba(0,0,0,0.5)';
+      ctx.fillRect(sx - 3, sy + 3, 6, 2);
+
+      // Red adventurer cap
+      ctx.fillStyle = '#ef4444';
+      ctx.fillRect(sx - 3, sy - 5, 6, 2);
+      ctx.fillStyle = '#dc2626';
+      ctx.fillRect(sx - 2, sy - 6, 4, 1);
+
+      // Hair
+      ctx.fillStyle = '#78350f';
+      ctx.fillRect(sx - 3, sy - 3, 6, 1);
+
+      // Skin face
+      ctx.fillStyle = '#fed7aa';
+      ctx.fillRect(sx - 2, sy - 2, 4, 2);
+
+      // Eyes
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(sx - 1, sy - 2, 1, 1);
+      ctx.fillRect(sx + 1, sy - 2, 1, 1);
+
+      // Blue tunic
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(sx - 2, sy, 4, 3);
+
+      // Belt
+      ctx.fillStyle = '#facc15';
+      ctx.fillRect(sx - 1, sy + 1, 2, 1);
+
+      // Sturdy outline
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 0.8;
+      ctx.strokeRect(sx - 3.5, sy - 6.5, 7, 10);
+      ctx.restore();
+
+      // Restore zoom & pan canvas transformation
+      ctx.restore();
+
+      // Picture-in-Picture (PiP) Radar Thumbnail when zoomed in
+      if (curZoom > 1.05 && staticMapCanvasRef.current) {
+        const pipW = 46;
+        const pipH = Math.round(pipW * (MINI_MAP_H / MINI_MAP_W)); // ~36px
+        const pipX = MINI_MAP_W - pipW - 4;
+        const pipY = MINI_MAP_H - pipH - 4;
+
+        ctx.save();
+        // Semi-transparent dark background
+        ctx.fillStyle = 'rgba(9, 13, 22, 0.92)';
+        ctx.fillRect(pipX - 1.5, pipY - 1.5, pipW + 3, pipH + 3);
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(pipX - 1.5, pipY - 1.5, pipW + 3, pipH + 3);
+
+        // Pre-rendered map terrain thumbnail
+        ctx.drawImage(staticMapCanvasRef.current, pipX, pipY, pipW, pipH);
+
+        // Viewport highlight
+        const vpX = pipX + (curPanX / MINI_MAP_W) * pipW;
+        const vpY = pipY + (curPanY / MINI_MAP_H) * pipH;
+        const vpW = (viewW / MINI_MAP_W) * pipW;
+        const vpH = (viewH / MINI_MAP_H) * pipH;
+
+        ctx.fillStyle = 'rgba(245, 158, 11, 0.2)';
+        ctx.fillRect(vpX, vpY, vpW, vpH);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(vpX, vpY, vpW, vpH);
+
+        // Player marker on PiP radar
+        const miniPlayerX = pipX + (px / MINI_MAP_W) * pipW;
+        const miniPlayerY = pipY + (py / MINI_MAP_H) * pipH;
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(miniPlayerX - 1, miniPlayerY - 1, 2, 2);
+        ctx.restore();
+      }
 
       // Calculate current zone name dynamically for player
       if (tileCol >= 26 && tileRow <= 10) {
@@ -605,59 +774,98 @@ export const MiniMap: React.FC<MiniMapProps> = ({
     return () => cancelAnimationFrame(animId);
   }, [isOpen, npcs, playerRef, zoneStatus, activeQuest]);
 
-  // Click on mini-map to auto-navigate
-  const handleMapClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!onNavigateToTile || !canvasRef.current) return;
+  // Coordinate conversion helper taking zoom and pan offset into account
+  const getMapWorldCoords = (clientX: number, clientY: number) => {
+    if (!canvasRef.current) return null;
     const rect = canvasRef.current.getBoundingClientRect();
-    const scaleX = MAP_W / rect.width;
-    const scaleY = MAP_H / rect.height;
+    const scaleX = MINI_MAP_W / rect.width;
+    const scaleY = MINI_MAP_H / rect.height;
 
-    const clickX = (e.clientX - rect.left) * scaleX;
-    const clickY = (e.clientY - rect.top) * scaleY;
+    const rawCanvasX = (clientX - rect.left) * scaleX;
+    const rawCanvasY = (clientY - rect.top) * scaleY;
 
-    const tileX = Math.floor(clickX / TILE_PX);
-    const tileY = Math.floor(clickY / TILE_PX);
+    const curZoom = zoomRef.current;
+    const curPanX = panRef.current.x;
+    const curPanY = panRef.current.y;
+
+    const worldX = rawCanvasX / curZoom + curPanX;
+    const worldY = rawCanvasY / curZoom + curPanY;
+
+    return { worldX, worldY, rect, scaleX, scaleY };
+  };
+
+  // Trigger tile auto-walk navigation
+  const triggerNavigateAtClientCoord = (clientX: number, clientY: number) => {
+    if (!onNavigateToTile) return;
+    const coords = getMapWorldCoords(clientX, clientY);
+    if (!coords) return;
+
+    const tileX = Math.floor(coords.worldX / MINI_TILE_PX);
+    const tileY = Math.floor(coords.worldY / MINI_TILE_PX);
 
     if (tileX >= 0 && tileX < MAP_COLS && tileY >= 0 && tileY < MAP_ROWS) {
       onNavigateToTile(tileX, tileY);
     }
   };
 
-  // Touch on mini-map for mobile / tablet auto-navigation
-  const handleTouchMap = (e: React.TouchEvent<HTMLCanvasElement>) => {
-    if (!onNavigateToTile || !canvasRef.current) return;
-    const touch = e.touches[0] || e.changedTouches[0];
-    if (!touch) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const scaleX = MAP_W / rect.width;
-    const scaleY = MAP_H / rect.height;
-
-    const clickX = (touch.clientX - rect.left) * scaleX;
-    const clickY = (touch.clientY - rect.top) * scaleY;
-
-    const tileX = Math.floor(clickX / TILE_PX);
-    const tileY = Math.floor(clickY / TILE_PX);
-
-    if (tileX >= 0 && tileX < MAP_COLS && tileY >= 0 && tileY < MAP_ROWS) {
-      onNavigateToTile(tileX, tileY);
-    }
+  // Mouse drag & pan handlers
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (e.button !== 0) return;
+    isPointerDownRef.current = true;
+    dragStartRef.current = {
+      clientX: e.clientX,
+      clientY: e.clientY,
+      panX: panRef.current.x,
+      panY: panRef.current.y,
+      hasMoved: false,
+    };
   };
 
-  // Mouse hover tracking for real-time target inspector
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isPointerDownRef.current && !dragStartRef.current.hasMoved) {
+      triggerNavigateAtClientCoord(e.clientX, e.clientY);
+    }
+    isPointerDownRef.current = false;
+    setIsDraggingMap(false);
+  };
+
+  // Mouse move handler: handles both drag panning and hover inspection
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const scaleX = MAP_W / rect.width;
-    const scaleY = MAP_H / rect.height;
-    const canvasX = (e.clientX - rect.left) * scaleX;
-    const canvasY = (e.clientY - rect.top) * scaleY;
+    if (isPointerDownRef.current) {
+      const dx = e.clientX - dragStartRef.current.clientX;
+      const dy = e.clientY - dragStartRef.current.clientY;
+      if (Math.hypot(dx, dy) > 4) {
+        dragStartRef.current.hasMoved = true;
+        setIsDraggingMap(true);
+        if (zoomRef.current > 1.0) {
+          followPlayerRef.current = false;
+          setIsFollowingPlayer(false);
+          const rect = canvasRef.current?.getBoundingClientRect();
+          if (rect) {
+            const factorX = (MINI_MAP_W / rect.width) / zoomRef.current;
+            const factorY = (MINI_MAP_H / rect.height) / zoomRef.current;
+            const viewW = MINI_MAP_W / zoomRef.current;
+            const viewH = MINI_MAP_H / zoomRef.current;
+            const maxPanX = Math.max(0, MINI_MAP_W - viewW);
+            const maxPanY = Math.max(0, MINI_MAP_H - viewH);
+            panRef.current.x = Math.max(0, Math.min(maxPanX, dragStartRef.current.panX - dx * factorX));
+            panRef.current.y = Math.max(0, Math.min(maxPanY, dragStartRef.current.panY - dy * factorY));
+          }
+        }
+      }
+    }
+
+    // Real-time hover inspection converted via zoom and pan
+    const coords = getMapWorldCoords(e.clientX, e.clientY);
+    if (!coords) return;
+    const { worldX, worldY } = coords;
 
     // Check if hovering near an NPC
     for (const npc of npcs) {
-      const nx = npc.x * TILE_PX + TILE_PX / 2;
-      const ny = npc.y * TILE_PX + TILE_PX / 2;
-      const dist = Math.hypot(canvasX - nx, canvasY - ny);
-      if (dist <= 8) {
+      const nx = npc.x * MINI_TILE_PX + MINI_TILE_PX / 2;
+      const ny = npc.y * MINI_TILE_PX + MINI_TILE_PX / 2;
+      const dist = Math.hypot(worldX - nx, worldY - ny);
+      if (dist <= 9) {
         const isQuestTarget = Boolean(activeQuest && npc.id === activeQuest.targetNPC);
         const facingText =
           npc.facing === 'up'
@@ -672,10 +880,10 @@ export const MiniMap: React.FC<MiniMapProps> = ({
           role: npc.role,
           facing: facingText,
           status: isQuestTarget
-            ? 'Target Quest Aktif!'
+            ? 'Target Misi Aktif!'
             : npc.isResolved
-            ? 'Harmoni Pulih'
-            : 'Belum Selesai',
+            ? 'Harmoni Pulih ✨'
+            : 'Belum Selesai 🌫️',
           isQuestTarget,
         });
         return;
@@ -683,8 +891,8 @@ export const MiniMap: React.FC<MiniMapProps> = ({
     }
 
     // Check if hovering over key zones
-    const tileCol = canvasX / TILE_PX;
-    const tileRow = canvasY / TILE_PX;
+    const tileCol = worldX / MINI_TILE_PX;
+    const tileRow = worldY / MINI_TILE_PX;
     if (tileCol >= 4 && tileCol <= 19 && tileRow >= 10 && tileRow <= 21) {
       setHoveredInfo({
         name: 'Alun-Alun Nada Rasa',
@@ -726,7 +934,85 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   };
 
   const handleMouseLeave = () => {
+    isPointerDownRef.current = false;
+    setIsDraggingMap(false);
     setHoveredInfo(null);
+  };
+
+  // Touch event handlers for mobile / tablet (single-finger pan, tap, two-finger pinch)
+  const handleTouchStart = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 2) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      pinchDistRef.current = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      isPointerDownRef.current = false;
+    } else if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      isPointerDownRef.current = true;
+      dragStartRef.current = {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        panX: panRef.current.x,
+        panY: panRef.current.y,
+        hasMoved: false,
+      };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (e.touches.length === 2 && pinchDistRef.current !== null) {
+      const t1 = e.touches[0];
+      const t2 = e.touches[1];
+      const newDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+      const ratio = newDist / pinchDistRef.current;
+      if (Math.abs(ratio - 1) > 0.05) {
+        setZoom((prev) => {
+          const next = Math.min(3.0, Math.max(1.0, prev * (ratio > 1 ? 1.08 : 0.92)));
+          return Math.round(next * 10) / 10;
+        });
+        pinchDistRef.current = newDist;
+      }
+      return;
+    }
+
+    if (e.touches.length === 1 && isPointerDownRef.current) {
+      const touch = e.touches[0];
+      const dx = touch.clientX - dragStartRef.current.clientX;
+      const dy = touch.clientY - dragStartRef.current.clientY;
+      if (Math.hypot(dx, dy) > 6) {
+        dragStartRef.current.hasMoved = true;
+        setIsDraggingMap(true);
+        if (zoomRef.current > 1.0) {
+          followPlayerRef.current = false;
+          setIsFollowingPlayer(false);
+          const rect = canvasRef.current?.getBoundingClientRect();
+          if (rect) {
+            const factorX = (MINI_MAP_W / rect.width) / zoomRef.current;
+            const factorY = (MINI_MAP_H / rect.height) / zoomRef.current;
+            const viewW = MINI_MAP_W / zoomRef.current;
+            const viewH = MINI_MAP_H / zoomRef.current;
+            const maxPanX = Math.max(0, MINI_MAP_W - viewW);
+            const maxPanY = Math.max(0, MINI_MAP_H - viewH);
+            panRef.current.x = Math.max(0, Math.min(maxPanX, dragStartRef.current.panX - dx * factorX));
+            panRef.current.y = Math.max(0, Math.min(maxPanY, dragStartRef.current.panY - dy * factorY));
+          }
+        }
+      }
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLCanvasElement>) => {
+    if (pinchDistRef.current !== null && e.touches.length < 2) {
+      pinchDistRef.current = null;
+    }
+    if (isPointerDownRef.current && !dragStartRef.current.hasMoved) {
+      const touch = e.changedTouches[0];
+      if (touch) {
+        triggerNavigateAtClientCoord(touch.clientX, touch.clientY);
+      }
+    }
+    isPointerDownRef.current = false;
+    setIsDraggingMap(false);
   };
 
   // Restored zones count
@@ -741,11 +1027,50 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   const isMobileOrTablet = useIsMobileOrTablet();
   const isPortrait = useIsPortrait();
 
+  // Mobile optimization states:
+  // - Default to compact mode on mobile & tablet to keep gameplay unblocked
+  const [isCompact, setIsCompact] = useState<boolean>(() => isMobileOrTablet);
+  const [isTranslucent, setIsTranslucent] = useState<boolean>(false);
+  const [showMobileLegend, setShowMobileLegend] = useState<boolean>(false);
+
+  // Sync default mode when device changes
+  useEffect(() => {
+    if (isMobileOrTablet) {
+      setIsCompact(true);
+    }
+  }, [isMobileOrTablet, isPortrait]);
+
+  const isEffectiveCompact = isCompact || (isMobileOrTablet && isCompact !== false);
+
+  // Responsive position calculation:
+  // - Mobile Portrait: docked neatly bottom-right above action buttons, leaving the entire left & center free
+  // - Mobile Landscape: docked top-right below top-bar, leaving the action buttons and joystick 100% free
+  // - Desktop: standard bottom-right
   const containerPosition = isMobileOrTablet
     ? isPortrait
-      ? 'bottom-[76px] sm:bottom-[84px] right-3 sm:right-5'
-      : 'bottom-[72px] sm:bottom-[78px] right-3 sm:right-5'
+      ? 'bottom-[68px] sm:bottom-[76px] right-2 sm:right-4'
+      : 'top-11 right-2 sm:right-3'
     : 'bottom-4 right-4';
+
+  const containerWidthClass = isMobileOrTablet
+    ? isEffectiveCompact
+      ? isPortrait
+        ? 'w-[170px]'
+        : 'w-[158px]'
+      : 'w-[228px] max-h-[82vh] sm:max-h-[88vh] overflow-y-auto'
+    : 'w-[240px] sm:w-[252px]';
+
+  const canvasDisplayClass = isMobileOrTablet
+    ? isEffectiveCompact
+      ? isPortrait
+        ? 'w-[154px] h-[120px]'
+        : 'w-[144px] h-[112px]'
+      : 'w-[208px] h-[162px]'
+    : 'w-[220px] sm:w-[230px] h-[171px] sm:h-[179px]';
+
+  const backdropClass = isTranslucent
+    ? 'bg-slate-950/75 border-amber-500/70 shadow-[0_0_20px_rgba(0,0,0,0.7)] backdrop-blur-xs'
+    : 'bg-slate-950/95 border-amber-500/80 shadow-[0_0_35px_rgba(0,0,0,0.9)] backdrop-blur-md';
 
   return (
     <>
@@ -753,14 +1078,17 @@ export const MiniMap: React.FC<MiniMapProps> = ({
       {!isOpen ? (
         <button
           id="btn-open-minimap"
-          onClick={onToggle}
+          onClick={() => {
+            sound.playMenuSelect();
+            onToggle();
+          }}
           title="Buka Peta Mini [M]"
-          className={`fixed ${containerPosition} z-30 pointer-events-auto bg-slate-950/95 border border-amber-500/60 hover:bg-slate-900 active:bg-amber-500/20 text-amber-300 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-xl backdrop-blur-md flex items-center gap-1.5 transition active:scale-95 group`}
+          className={`fixed ${containerPosition} z-30 pointer-events-auto bg-slate-950/95 border-2 border-amber-500/70 hover:bg-slate-900 active:bg-amber-500/20 text-amber-300 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-2xl backdrop-blur-md flex items-center gap-1.5 sm:gap-2 transition active:scale-95 group`}
         >
           <MapIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-          <span className="font-pixel text-[8px] sm:text-[9px] font-bold">PETA</span>
+          <span className="font-pixel text-[8.5px] sm:text-[9px] font-bold">PETA</span>
           {activeQuest && (
-            <span className="flex items-center justify-center w-3 h-3 rounded-full bg-amber-400 text-slate-950 text-[7px] font-bold animate-pulse">
+            <span className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-amber-400 text-slate-950 text-[7.5px] sm:text-[8px] font-bold animate-pulse">
               !
             </span>
           )}
@@ -768,215 +1096,616 @@ export const MiniMap: React.FC<MiniMapProps> = ({
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
         </button>
       ) : (
-        /* Expanded Mini-Map HUD Card */
+        /* Pixel-Art Mini-Map HUD Card (Optimized for Mobile Portrait, Landscape & Desktop) */
         <div
           id="minimap-overlay-container"
-          className={`fixed ${containerPosition} z-30 pointer-events-auto select-none bg-slate-950/95 border-2 border-amber-500/70 rounded-2xl p-2 sm:p-2.5 shadow-[0_0_30px_rgba(0,0,0,0.85)] backdrop-blur-md w-[212px] sm:w-[220px] flex flex-col gap-1.5 animate-in fade-in zoom-in-95 duration-150`}
+          className={`fixed ${containerPosition} z-30 pointer-events-auto select-none ${backdropClass} border-2 rounded-2xl ${
+            isEffectiveCompact ? 'p-2 gap-1.5' : 'p-2.5 sm:p-3 gap-2'
+          } ${containerWidthClass} flex flex-col animate-in fade-in zoom-in-95 duration-150`}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
-            <div className="flex items-center gap-1.5">
-              <Compass
-                className={`w-3.5 h-3.5 ${
-                  isCompassActive
-                    ? 'text-amber-300 animate-spin-slow drop-shadow-[0_0_6px_rgba(251,191,36,0.8)]'
-                    : 'text-amber-400'
-                }`}
-              />
-              <span className="font-pixel text-[8px] text-amber-300 font-bold tracking-tight">
-                PETA & RADAR
-              </span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span
-                className={`font-pixel text-[7px] px-1.5 py-0.5 rounded border ${
-                  restoredCount === 4
-                    ? 'text-emerald-300 bg-emerald-950/80 border-emerald-500/80'
-                    : 'text-amber-300 bg-amber-950/70 border-amber-800/80'
-                }`}
-                title={`${restoredCount}/4 Harmoni Zona Pulih`}
-              >
-                {restoredCount}/4 {restoredCount === 4 ? '✨' : 'PULIH'}
-              </span>
-              <button
-                id="btn-close-minimap"
-                onClick={onToggle}
-                title="Tutup Peta [M]"
-                className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition"
-              >
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-          </div>
+          {/* Header with Visual Energy Gauge, Opacity Toggle, Size Toggle & Close Button */}
+          {isEffectiveCompact ? (
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-1">
+              <div className="flex items-center gap-1 min-w-0">
+                <Compass
+                  className={`w-3.5 h-3.5 shrink-0 ${
+                    isCompassActive
+                      ? 'text-amber-300 animate-spin-slow drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]'
+                      : 'text-amber-400'
+                  }`}
+                />
+                <span className="font-pixel text-[8px] text-amber-300 font-bold tracking-tight">
+                  PETA
+                </span>
 
-          {/* Interactive Mini-Map Canvas with Compass Dial & Direction Guides */}
-          <div className="relative rounded-lg overflow-hidden border border-slate-800 bg-slate-900 shadow-inner group">
-            {/* Cardinal Direction Indicators */}
+                {/* 4 Micro Harmonic Energy Vials */}
+                <div
+                  className="flex items-center gap-0.5 bg-slate-900/90 border border-slate-700/80 rounded px-1 py-0.5 ml-1"
+                  title={`Zona Pulih: ${restoredCount}/4 (A: Alun-Alun, J: Jembatan, H: Hutan, M: Menara)`}
+                >
+                  <span
+                    className={`w-1.5 h-2 rounded-xs transition-colors ${
+                      zoneStatus.plaza ? 'bg-amber-400 shadow-[0_0_4px_rgba(245,158,11,0.8)]' : 'bg-slate-700'
+                    }`}
+                  />
+                  <span
+                    className={`w-1.5 h-2 rounded-xs transition-colors ${
+                      zoneStatus.bridge ? 'bg-orange-400 shadow-[0_0_4px_rgba(249,115,22,0.8)]' : 'bg-slate-700'
+                    }`}
+                  />
+                  <span
+                    className={`w-1.5 h-2 rounded-xs transition-colors ${
+                      zoneStatus.forest ? 'bg-emerald-400 shadow-[0_0_4px_rgba(16,185,129,0.8)]' : 'bg-slate-700'
+                    }`}
+                  />
+                  <span
+                    className={`w-1.5 h-2 rounded-xs transition-colors ${
+                      zoneStatus.tower ? 'bg-yellow-400 shadow-[0_0_4px_rgba(234,179,8,0.8)]' : 'bg-slate-700'
+                    }`}
+                  />
+                  <span className="font-pixel text-[6.5px] ml-0.5 text-amber-300 font-bold">
+                    {restoredCount}/4
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-0.5">
+                {/* Opacity toggle */}
+                <button
+                  onClick={() => {
+                    sound.playMenuSelect();
+                    setIsTranslucent((prev) => !prev);
+                  }}
+                  title={isTranslucent ? 'Tampilan Padat' : 'Tampilan Transparan'}
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
+                >
+                  {isTranslucent ? <Eye className="w-3 h-3 text-amber-400" /> : <EyeOff className="w-3 h-3" />}
+                </button>
+
+                {/* Expand to Full View */}
+                <button
+                  onClick={() => {
+                    sound.playMenuSelect();
+                    setIsCompact(false);
+                  }}
+                  title="Perbesar Peta (Tampilan Lengkap)"
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
+                >
+                  <Maximize2 className="w-3 h-3 text-amber-400" />
+                </button>
+
+                {/* Close button */}
+                <button
+                  id="btn-close-minimap"
+                  onClick={() => {
+                    sound.playMenuSelect();
+                    onToggle();
+                  }}
+                  title="Tutup Peta [M]"
+                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+              <div className="flex items-center gap-1.5">
+                <Compass
+                  className={`w-4 h-4 ${
+                    isCompassActive
+                      ? 'text-amber-300 animate-spin-slow drop-shadow-[0_0_8px_rgba(251,191,36,0.9)]'
+                      : 'text-amber-400'
+                  }`}
+                />
+                <span className="font-pixel text-[8.5px] text-amber-300 font-bold tracking-tight">
+                  PETA DUNIA
+                </span>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                {/* 4-Vial Harmonic Energy Reservoir (Visual Progress Indicator) */}
+                <div
+                  className="flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-lg px-1.5 py-0.5 shadow-inner"
+                  title={`Progres Harmoni Zona: ${restoredCount}/4 Pulih (A: Alun-Alun, J: Jembatan, H: Hutan, M: Menara)`}
+                >
+                  {/* Plaza Vial (Amber) */}
+                  <div
+                    className="flex flex-col items-center"
+                    title={`Alun-Alun: ${zoneStatus.plaza ? 'Harmoni Pulih ✨' : 'Belum Pulih 🌫️'}`}
+                  >
+                    <div
+                      className={`w-2.5 h-3.5 rounded-xs border flex items-end p-0.5 transition-all ${
+                        zoneStatus.plaza
+                          ? 'border-amber-400 bg-amber-950/80 shadow-[0_0_5px_rgba(245,158,11,0.7)]'
+                          : 'border-slate-700 bg-slate-950/80 opacity-50'
+                      }`}
+                    >
+                      <div
+                        className={`w-full rounded-xs transition-all ${
+                          zoneStatus.plaza ? 'h-full bg-amber-400 animate-pulse' : 'h-0.5 bg-slate-700'
+                        }`}
+                      />
+                    </div>
+                    <span
+                      className={`text-[5.5px] font-pixel font-bold mt-0.5 ${
+                        zoneStatus.plaza ? 'text-amber-300' : 'text-slate-500'
+                      }`}
+                    >
+                      A
+                    </span>
+                  </div>
+
+                  {/* Bridge Vial (Orange) */}
+                  <div
+                    className="flex flex-col items-center"
+                    title={`Jembatan: ${zoneStatus.bridge ? 'Harmoni Pulih ✨' : 'Belum Pulih 🌫️'}`}
+                  >
+                    <div
+                      className={`w-2.5 h-3.5 rounded-xs border flex items-end p-0.5 transition-all ${
+                        zoneStatus.bridge
+                          ? 'border-orange-400 bg-orange-950/80 shadow-[0_0_5px_rgba(249,115,22,0.7)]'
+                          : 'border-slate-700 bg-slate-950/80 opacity-50'
+                      }`}
+                    >
+                      <div
+                        className={`w-full rounded-xs transition-all ${
+                          zoneStatus.bridge ? 'h-full bg-orange-400 animate-pulse' : 'h-0.5 bg-slate-700'
+                        }`}
+                      />
+                    </div>
+                    <span
+                      className={`text-[5.5px] font-pixel font-bold mt-0.5 ${
+                        zoneStatus.bridge ? 'text-orange-300' : 'text-slate-500'
+                      }`}
+                    >
+                      J
+                    </span>
+                  </div>
+
+                  {/* Forest Vial (Emerald) */}
+                  <div
+                    className="flex flex-col items-center"
+                    title={`Hutan Sunyi: ${zoneStatus.forest ? 'Harmoni Pulih ✨' : 'Belum Pulih 🌫️'}`}
+                  >
+                    <div
+                      className={`w-2.5 h-3.5 rounded-xs border flex items-end p-0.5 transition-all ${
+                        zoneStatus.forest
+                          ? 'border-emerald-400 bg-emerald-950/80 shadow-[0_0_5px_rgba(16,185,129,0.7)]'
+                          : 'border-slate-700 bg-slate-950/80 opacity-50'
+                      }`}
+                    >
+                      <div
+                        className={`w-full rounded-xs transition-all ${
+                          zoneStatus.forest ? 'h-full bg-emerald-400 animate-pulse' : 'h-0.5 bg-slate-700'
+                        }`}
+                      />
+                    </div>
+                    <span
+                      className={`text-[5.5px] font-pixel font-bold mt-0.5 ${
+                        zoneStatus.forest ? 'text-emerald-300' : 'text-slate-500'
+                      }`}
+                    >
+                      H
+                    </span>
+                  </div>
+
+                  {/* Tower Vial (Yellow) */}
+                  <div
+                    className="flex flex-col items-center"
+                    title={`Menara Jam: ${zoneStatus.tower ? 'Harmoni Pulih ✨' : 'Belum Pulih 🌫️'}`}
+                  >
+                    <div
+                      className={`w-2.5 h-3.5 rounded-xs border flex items-end p-0.5 transition-all ${
+                        zoneStatus.tower
+                          ? 'border-yellow-400 bg-yellow-950/80 shadow-[0_0_5px_rgba(234,179,8,0.7)]'
+                          : 'border-slate-700 bg-slate-950/80 opacity-50'
+                      }`}
+                    >
+                      <div
+                        className={`w-full rounded-xs transition-all ${
+                          zoneStatus.tower ? 'h-full bg-yellow-400 animate-pulse' : 'h-0.5 bg-slate-700'
+                        }`}
+                      />
+                    </div>
+                    <span
+                      className={`text-[5.5px] font-pixel font-bold mt-0.5 ${
+                        zoneStatus.tower ? 'text-yellow-300' : 'text-slate-500'
+                      }`}
+                    >
+                      M
+                    </span>
+                  </div>
+
+                  {/* Counter Tag */}
+                  <span
+                    className={`font-pixel text-[7px] ml-1 px-1 py-0.5 rounded border font-bold ${
+                      restoredCount === 4
+                        ? 'text-emerald-300 bg-emerald-950/80 border-emerald-500/80 shadow-[0_0_6px_rgba(52,211,153,0.4)]'
+                        : 'text-amber-300 bg-amber-950/70 border-amber-800/80'
+                    }`}
+                  >
+                    {restoredCount}/4
+                  </span>
+                </div>
+
+                {/* Opacity toggle */}
+                <button
+                  onClick={() => {
+                    sound.playMenuSelect();
+                    setIsTranslucent((prev) => !prev);
+                  }}
+                  title={isTranslucent ? 'Tampilan Padat' : 'Tampilan Transparan'}
+                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
+                >
+                  {isTranslucent ? <Eye className="w-3.5 h-3.5 text-amber-400" /> : <EyeOff className="w-3.5 h-3.5" />}
+                </button>
+
+                {/* Minimize to compact */}
+                <button
+                  onClick={() => {
+                    sound.playMenuSelect();
+                    setIsCompact(true);
+                  }}
+                  title="Mode Ringkas (Hemat Layar)"
+                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
+                >
+                  <Minimize2 className="w-3.5 h-3.5 text-amber-400" />
+                </button>
+
+                <button
+                  id="btn-close-minimap"
+                  onClick={() => {
+                    sound.playMenuSelect();
+                    onToggle();
+                  }}
+                  title="Tutup Peta [M]"
+                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Interactive Mini-Map Canvas Frame with Cardinal Navigation Border */}
+          <div className="relative rounded-xl overflow-hidden border-2 border-slate-700/80 bg-slate-900 shadow-inner group select-none">
+            {/* Cardinal Direction Indicators on Bezel Margins */}
             <div className="absolute top-0 inset-x-0 flex justify-center pointer-events-none z-10">
-              <span className="font-pixel text-[6px] font-bold px-1 bg-slate-950/75 text-rose-400 rounded-b border-x border-b border-slate-800">
-                U (Utara)
+              <span className={`font-pixel ${isEffectiveCompact ? 'text-[5.5px] px-1 py-0' : 'text-[6.5px] px-1.5 py-0.5'} font-bold bg-slate-950/90 text-rose-400 rounded-b border-x border-b border-rose-900/60 shadow-md`}>
+                U
               </span>
             </div>
             <div className="absolute bottom-0 inset-x-0 flex justify-center pointer-events-none z-10">
-              <span className="font-pixel text-[6px] font-bold px-1 bg-slate-950/75 text-slate-400 rounded-t border-x border-t border-slate-800">
-                S (Selatan)
+              <span className={`font-pixel ${isEffectiveCompact ? 'text-[5.5px] px-1 py-0' : 'text-[6.5px] px-1.5 py-0.5'} font-bold bg-slate-950/90 text-slate-300 rounded-t border-x border-t border-slate-700/60 shadow-md`}>
+                S
               </span>
             </div>
             <div className="absolute left-0 inset-y-0 flex items-center pointer-events-none z-10">
-              <span className="font-pixel text-[6px] font-bold py-0.5 px-0.5 bg-slate-950/75 text-slate-400 rounded-r border-y border-r border-slate-800">
+              <span className={`font-pixel ${isEffectiveCompact ? 'text-[5.5px] px-0.5 py-0.5' : 'text-[6.5px] px-1 py-0.5'} font-bold bg-slate-950/90 text-slate-300 rounded-r border-y border-r border-slate-700/60 shadow-md`}>
                 B
               </span>
             </div>
             <div className="absolute right-0 inset-y-0 flex items-center pointer-events-none z-10">
-              <span className="font-pixel text-[6px] font-bold py-0.5 px-0.5 bg-slate-950/75 text-amber-300 rounded-l border-y border-l border-slate-800">
+              <span className={`font-pixel ${isEffectiveCompact ? 'text-[5.5px] px-0.5 py-0.5' : 'text-[6.5px] px-1 py-0.5'} font-bold bg-slate-950/90 text-amber-300 rounded-l border-y border-l border-amber-700/60 shadow-md`}>
                 T
               </span>
             </div>
 
-            {/* Visual Compass Rose Dial Overlay */}
+            {/* Retro Pixel Zoom & Navigation Controls in Top-Left Corner */}
+            <div className={`absolute top-1.5 left-1.5 z-20 flex items-center bg-slate-950/95 border border-slate-700/90 rounded-lg ${isEffectiveCompact ? 'p-0.5 gap-0.5' : 'p-0.5 gap-0.5'} shadow-xl backdrop-blur-xs`}>
+              {/* Zoom In Button */}
+              <button
+                id="btn-minimap-zoom-in"
+                onClick={handleZoomIn}
+                disabled={zoom >= 3.0}
+                title="Perbesar Peta [+] / Scroll Atas"
+                className={`${isEffectiveCompact ? 'p-0.5' : 'p-1'} rounded hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent text-amber-300 hover:text-amber-100 transition active:scale-95 cursor-pointer`}
+              >
+                <ZoomIn className={isEffectiveCompact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
+              </button>
+
+              {/* Zoom Level Indicator Pill (clickable to cycle) */}
+              <button
+                id="btn-minimap-zoom-level"
+                onClick={handleCycleZoom}
+                title="Klik untuk ubah zoom (1.0x - 3.0x)"
+                className={`${isEffectiveCompact ? 'px-1 py-0.2 text-[6.5px] min-w-[24px]' : 'px-1 py-0.5 text-[7.5px] min-w-[30px]'} font-pixel font-bold text-amber-300 hover:text-amber-200 bg-amber-950/70 rounded border border-amber-800/70 cursor-pointer text-center`}
+              >
+                {zoom.toFixed(1)}x
+              </button>
+
+              {/* Zoom Out Button */}
+              <button
+                id="btn-minimap-zoom-out"
+                onClick={handleZoomOut}
+                disabled={zoom <= 1.0}
+                title="Perkecil Peta [-] / Scroll Bawah"
+                className={`${isEffectiveCompact ? 'p-0.5' : 'p-1'} rounded hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent text-amber-300 hover:text-amber-100 transition active:scale-95 cursor-pointer`}
+              >
+                <ZoomOut className={isEffectiveCompact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
+              </button>
+
+              {/* Center / Follow Player Toggle Button */}
+              {zoom > 1.0 && (
+                <button
+                  id="btn-minimap-center-player"
+                  onClick={handleCenterOnPlayer}
+                  title={isFollowingPlayer ? "Sedang Mengikuti Pemain [C]" : "Pusatkan ke Posisi Pemain [C]"}
+                  className={`${isEffectiveCompact ? 'p-0.5' : 'p-1'} rounded transition active:scale-95 flex items-center gap-0.5 cursor-pointer border ${
+                    isFollowingPlayer
+                      ? 'bg-emerald-950/90 border-emerald-500/80 text-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.3)]'
+                      : 'bg-slate-800/90 hover:bg-slate-700 text-amber-300 border-slate-600'
+                  }`}
+                >
+                  <LocateFixed className={`${isEffectiveCompact ? 'w-2.5 h-2.5' : 'w-3 h-3'} ${isFollowingPlayer ? 'animate-pulse text-emerald-400' : ''}`} />
+                  {!isEffectiveCompact && (
+                    <span className="text-[6.5px] font-pixel font-bold hidden sm:inline">
+                      {isFollowingPlayer ? 'IKUTI' : 'PUSAT'}
+                    </span>
+                  )}
+                </button>
+              )}
+            </div>
+
+            {/* Pixelated Compass Rose Dial Widget in Top-Right Corner */}
             <div
-              className={`absolute top-2 right-2 z-20 w-7 h-7 rounded-full bg-slate-950/90 border ${
+              className={`absolute top-1.5 right-1.5 z-20 ${
+                isEffectiveCompact ? 'w-5.5 h-5.5' : 'w-8 h-8'
+              } rounded-full bg-slate-950/95 border-2 ${
                 isCompassActive
-                  ? 'border-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.7)] ring-1 ring-amber-300/60'
-                  : 'border-slate-700/80 shadow-md'
+                  ? 'border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.8)] ring-2 ring-amber-300/60'
+                  : 'border-slate-700 shadow-md'
               } backdrop-blur-xs flex items-center justify-center pointer-events-none transition-all`}
-              title="Kompas Navigasi: U = Utara, S = Selatan, T = Timur, B = Barat"
+              title="Kompas Orientasi Peta: U = Utara, S = Selatan, T = Timur, B = Barat"
             >
-              <span className="absolute top-0.5 text-[5.5px] font-black text-rose-400 leading-none">U</span>
-              <span className="absolute bottom-0.5 text-[5px] font-bold text-slate-400 leading-none">S</span>
-              <span className="absolute right-0.5 text-[5px] font-bold text-amber-300 leading-none">T</span>
-              <span className="absolute left-0.5 text-[5px] font-bold text-slate-400 leading-none">B</span>
+              <span className={`absolute top-0 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-rose-400 leading-none`}>U</span>
+              <span className={`absolute bottom-0 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-slate-400 leading-none`}>S</span>
+              <span className={`absolute right-0.5 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-amber-300 leading-none`}>T</span>
+              <span className={`absolute left-0.5 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-slate-400 leading-none`}>B</span>
               <div
-                className={`relative w-1 h-4 flex flex-col items-center justify-center ${
+                className={`relative ${isEffectiveCompact ? 'w-1 h-3' : 'w-1.5 h-4'} flex flex-col items-center justify-center ${
                   isCompassActive ? 'animate-pulse' : ''
                 }`}
               >
-                <div className="w-0 h-0 border-l-[2px] border-l-transparent border-r-[2px] border-r-transparent border-b-[6px] border-b-rose-500" />
-                <div className="w-1 h-1 rounded-full bg-amber-300 border border-amber-500 z-10 my-[-0.5px]" />
-                <div className="w-0 h-0 border-l-[2px] border-l-transparent border-r-[2px] border-r-transparent border-t-[6px] border-t-slate-300" />
+                {/* Red North needle with pixel tip */}
+                <div className={`w-0 h-0 border-l-[2px] border-l-transparent border-r-[2px] border-r-transparent ${isEffectiveCompact ? 'border-b-[5px]' : 'border-b-[7px]'} border-b-rose-500 filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]`} />
+                {/* Brass Center rivet */}
+                <div className={`${isEffectiveCompact ? 'w-1 h-1' : 'w-1.5 h-1.5'} rounded-full bg-amber-300 border border-amber-600 z-10 my-[-1px] shadow-sm`} />
+                {/* Silver South needle */}
+                <div className={`w-0 h-0 border-l-[2px] border-l-transparent border-r-[2px] border-r-transparent ${isEffectiveCompact ? 'border-t-[5px]' : 'border-t-[7px]'} border-t-slate-300 filter drop-shadow-[0_1px_1px_rgba(0,0,0,0.8)]`} />
               </div>
             </div>
 
             <canvas
               ref={canvasRef}
-              width={MAP_W}
-              height={MAP_H}
-              onClick={handleMapClick}
-              onTouchEnd={handleTouchMap}
+              width={MINI_MAP_W}
+              height={MINI_MAP_H}
+              onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
               onMouseLeave={handleMouseLeave}
-              className="block w-[196px] sm:w-[204px] h-[143px] cursor-crosshair object-contain touch-none"
-              title="Arah gerakan NPC diperbarui real-time. Klik titik peta untuk berjalan."
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              className={`block ${canvasDisplayClass} object-contain touch-none select-none ${
+                isDraggingMap
+                  ? 'cursor-grabbing'
+                  : zoom > 1.0
+                  ? 'cursor-grab active:cursor-grabbing'
+                  : 'cursor-crosshair'
+              }`}
+              title="Klik untuk jalan otomatis • Scroll atau tombol +/- untuk zoom • Geser untuk menggeser peta saat zoom"
             />
 
             {/* Quick click-to-move overlay hint on hover */}
-            <div className="absolute inset-x-0 bottom-0 py-0.5 bg-slate-950/80 text-[8px] text-amber-200 text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity font-mono">
-              Klik peta untuk jalan • Panah menunjukkan arah gerak
+            <div className="absolute inset-x-0 bottom-0 py-0.5 bg-slate-950/85 text-[8px] text-amber-200 text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity font-mono">
+              {zoom > 1.0
+                ? 'Geser untuk mengitari peta • Klik untuk jalan'
+                : 'Klik peta untuk jalan • [+] [-] Zoom'}
             </div>
           </div>
 
-          {/* Real-time Hovered Target Inspector Info Box */}
-          {hoveredInfo ? (
-            <div className="bg-amber-950/60 border border-amber-500/50 rounded-lg p-1.5 text-[9px] flex flex-col gap-0.5 animate-in fade-in duration-100">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-amber-300 flex items-center gap-1 truncate">
-                  {hoveredInfo.isQuestTarget ? '🎯' : hoveredInfo.isUnrecoveredZone ? '🌫️' : '👤'} {hoveredInfo.name}
-                </span>
-                {hoveredInfo.facing && (
-                  <span className="text-[8px] text-amber-200/90 font-medium shrink-0">
-                    {hoveredInfo.facing}
+          {/* Bottom Area: Compact Smart Bar vs Expanded Full Details */}
+          {isEffectiveCompact ? (
+            <>
+              {/* Compact Active Quest / Target Banner or Zone Name */}
+              {hoveredInfo ? (
+                <div className="bg-amber-950/80 border border-amber-500/60 rounded-lg px-2 py-1 text-[7.5px] flex items-center justify-between text-amber-300 font-pixel shadow-xs">
+                  <span className="truncate flex items-center gap-1 font-bold">
+                    {hoveredInfo.isQuestTarget ? '🎯' : hoveredInfo.isUnrecoveredZone ? '🌫️' : '👤'}{' '}
+                    {hoveredInfo.name}
                   </span>
-                )}
-              </div>
-              <div className="text-[8px] text-slate-300 truncate">
-                {hoveredInfo.role || hoveredInfo.status}
-              </div>
-              {hoveredInfo.zoneHint && (
-                <div className="text-[7.5px] text-amber-400 italic truncate">
-                  {hoveredInfo.zoneHint}
+                  <span className="text-slate-400 text-[6.5px] shrink-0 ml-1 truncate">
+                    {hoveredInfo.role || hoveredInfo.status}
+                  </span>
                 </div>
-              )}
-            </div>
-          ) : (
-            /* Current Player Zone Location Tag & Compass Mode */
-            <div className="flex items-center justify-between text-[9px] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-lg border border-slate-800/80">
-              <div className="flex items-center gap-1 truncate">
-                <Navigation className="w-3 h-3 text-emerald-400 shrink-0" />
-                <span className="truncate font-medium text-slate-200">{currentZoneName}</span>
-              </div>
-              <span
-                className={`text-[7px] font-pixel px-1 py-0.5 rounded border shrink-0 ${
-                  isCompassActive
-                    ? 'text-amber-300 bg-amber-950/60 border-amber-500/60 animate-pulse'
-                    : 'text-slate-400 bg-slate-800/60 border-slate-700/60'
-                }`}
-              >
-                {isCompassActive ? 'RESONANSI' : 'KOMPAS'}
-              </span>
-            </div>
-          )}
-
-          {/* Active Quest Quick Navigation Card */}
-          {activeQuest && activeTargetNpc ? (
-            <div
-              onClick={() => {
-                if (onNavigateToTile) {
-                  onNavigateToTile(Math.round(activeTargetNpc.x), Math.round(activeTargetNpc.y));
-                }
-              }}
-              title="Klik untuk auto-walk menuju target quest aktif"
-              className="bg-amber-950/40 hover:bg-amber-950/70 border border-amber-500/40 hover:border-amber-400/70 rounded-lg p-1.5 flex items-center justify-between cursor-pointer transition active:scale-[0.98] group/quest"
-            >
-              <div className="flex items-center gap-1.5 min-w-0">
-                <div className="w-5 h-5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-bold text-[10px] shrink-0 group-hover/quest:rotate-12 transition-transform shadow-[0_0_8px_rgba(251,191,36,0.6)]">
-                  !
-                </div>
-                <div className="min-w-0">
-                  <div className="text-[8px] font-pixel text-amber-300 truncate">
-                    TARGET: {activeTargetNpc.name}
-                  </div>
-                  <div className="text-[8.5px] text-slate-300 flex items-center gap-1 truncate">
-                    <span>{activeQuestZoneInfo ? activeQuestZoneInfo.name : 'Lembah'}</span>
-                    <span className="text-slate-500">•</span>
-                    <span
-                      className={`text-[7.5px] font-semibold ${
-                        activeQuestZoneInfo?.isRestored ? 'text-emerald-400' : 'text-amber-400'
-                      }`}
-                    >
-                      {activeQuestZoneInfo?.isRestored ? '✨ Pulih' : '🌫️ Belum Pulih'}
+              ) : activeQuest && activeTargetNpc ? (
+                <button
+                  id="minimap-quest-target-btn"
+                  onClick={() => {
+                    sound.playMenuSelect();
+                    if (onNavigateToTile) {
+                      onNavigateToTile(Math.round(activeTargetNpc.x), Math.round(activeTargetNpc.y));
+                    }
+                  }}
+                  title="Klik untuk auto-walk otomatis menuju target misi aktif!"
+                  className="w-full text-left bg-gradient-to-r from-amber-950/90 via-slate-900 to-amber-950/90 hover:from-amber-900/95 hover:to-amber-900/95 border border-amber-400 rounded-lg px-2 py-1 flex items-center justify-between cursor-pointer transition active:scale-95 shadow-xs group/quest"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="w-3.5 h-3.5 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-pixel font-bold text-[7.5px] shrink-0 animate-pulse">
+                      !
+                    </span>
+                    <span className="font-pixel text-[7.5px] text-amber-200 truncate font-bold">
+                      {activeTargetNpc.name}
                     </span>
                   </div>
+                  <span className="text-[6.5px] font-pixel text-amber-300 flex items-center gap-0.5 shrink-0 font-bold group-hover/quest:underline">
+                    JALAN <ArrowRight className="w-2.5 h-2.5" />
+                  </span>
+                </button>
+              ) : (
+                <div className="flex items-center justify-between text-[7.5px] text-slate-300 bg-slate-900/90 px-2 py-1 rounded-lg border border-slate-800">
+                  <div className="flex items-center gap-1 truncate">
+                    <Navigation className="w-2.5 h-2.5 text-emerald-400 shrink-0" />
+                    <span className="truncate font-bold text-slate-100 text-[8px]">{currentZoneName}</span>
+                  </div>
+                  <span className="text-[6px] font-pixel text-amber-300 font-bold">
+                    {isCompassActive ? 'RESONANSI' : 'LEMBAH'}
+                  </span>
                 </div>
-              </div>
-              <ArrowRight className="w-3.5 h-3.5 text-amber-400 group-hover/quest:translate-x-0.5 transition-transform shrink-0" />
-            </div>
-          ) : (
-            <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-lg p-1.5 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-              <div className="text-[8px] text-emerald-300 font-pixel">
-                SEMUA MISI UTAMA SELESAI
-              </div>
-            </div>
-          )}
+              )}
 
-          {/* Interactive Legend & Movement Indicators */}
-          <div className="flex items-center justify-between text-[7.5px] text-slate-400 px-0.5 pt-0.5 border-t border-slate-800/60">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="flex items-center gap-0.5 text-emerald-400 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" /> Kamu
-              </span>
-              <span className="flex items-center gap-0.5 text-amber-300 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" /> Warga ➔
-              </span>
-              <span className="flex items-center gap-0.5 text-amber-400 font-medium">
-                <span className="w-2 h-2 bg-amber-500 rotate-45 inline-block text-[5px] text-slate-950 text-center leading-none" /> Misi [!]
-              </span>
-              <span className="flex items-center gap-0.5 text-slate-400">
-                <span className="w-1.5 h-1.5 rounded-sm bg-slate-600 inline-block" /> Kelabu
-              </span>
-            </div>
-            <span className="text-[7px] text-slate-500 font-pixel">[M] Tutup</span>
-          </div>
+              {/* Compact Legend Row with Help Toggle */}
+              <div className="flex items-center justify-between text-[6.5px] text-slate-400 pt-0.5 border-t border-slate-800/70 font-pixel">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-emerald-400 flex items-center gap-0.5">
+                    <span className="w-1.5 h-1.5 rounded-xs bg-emerald-500 inline-block" /> Kamu
+                  </span>
+                  <span className="text-amber-300 flex items-center gap-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" /> Warga
+                  </span>
+                  <span className="text-amber-400 flex items-center gap-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 text-slate-950 font-bold inline-flex items-center justify-center text-[5px]">!</span> Misi
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowMobileLegend((prev) => !prev)}
+                  className="text-slate-400 hover:text-amber-300 underline cursor-pointer"
+                >
+                  {showMobileLegend ? 'Tutup' : 'Bantuan'}
+                </button>
+              </div>
+
+              {/* Expandable Mini Help */}
+              {showMobileLegend && (
+                <div className="bg-slate-900/95 border border-slate-700/80 rounded-lg p-1.5 text-[6.5px] text-slate-300 font-pixel flex flex-col gap-0.5 animate-in fade-in duration-100 shadow-lg">
+                  <div className="text-amber-300 font-bold">Panduan Peta:</div>
+                  <div>• Tap peta untuk jalan otomatis (auto-walk).</div>
+                  <div>• Gunakan [+] [-] atau cubit untuk zoom.</div>
+                  <div>• Geser peta dengan jari saat diperbesar.</div>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Real-time Hovered Target Inspector Info Box */}
+              {hoveredInfo ? (
+                <div className="bg-amber-950/70 border border-amber-500/60 rounded-xl p-2 text-[9px] flex flex-col gap-0.5 animate-in fade-in duration-100 shadow-md">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-amber-300 flex items-center gap-1 truncate font-pixel text-[8.5px]">
+                      {hoveredInfo.isQuestTarget ? '🎯' : hoveredInfo.isUnrecoveredZone ? '🌫️' : '👤'}{' '}
+                      {hoveredInfo.name}
+                    </span>
+                    {hoveredInfo.facing && (
+                      <span className="text-[8px] text-amber-200/90 font-medium shrink-0">
+                        {hoveredInfo.facing}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[8px] text-slate-300 truncate">
+                    {hoveredInfo.role || hoveredInfo.status}
+                  </div>
+                  {hoveredInfo.zoneHint && (
+                    <div className="text-[7.5px] text-amber-400 italic truncate mt-0.5">
+                      {hoveredInfo.zoneHint}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Current Player Zone Location Tag & Compass Mode */
+                <div className="flex items-center justify-between text-[9px] text-slate-300 bg-slate-900/90 px-2.5 py-1.5 rounded-xl border border-slate-800">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Navigation className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="truncate font-bold text-slate-100 text-[9.5px]">{currentZoneName}</span>
+                  </div>
+                  <span
+                    className={`text-[7px] font-pixel px-1.5 py-0.5 rounded border shrink-0 font-bold ${
+                      isCompassActive
+                        ? 'text-amber-300 bg-amber-950/70 border-amber-500/70 animate-pulse shadow-[0_0_6px_rgba(251,191,36,0.4)]'
+                        : 'text-slate-400 bg-slate-800/70 border-slate-700/70'
+                    }`}
+                  >
+                    {isCompassActive ? 'RESONANSI' : 'KOMPAS'}
+                  </span>
+                </div>
+              )}
+
+              {/* Active Quest Standout Clickable Button Panel */}
+              {activeQuest && activeTargetNpc ? (
+                <button
+                  id="minimap-quest-target-btn"
+                  onClick={() => {
+                    sound.playMenuSelect();
+                    if (onNavigateToTile) {
+                      onNavigateToTile(Math.round(activeTargetNpc.x), Math.round(activeTargetNpc.y));
+                    }
+                  }}
+                  title="Klik untuk auto-walk otomatis menuju target misi aktif!"
+                  className="w-full text-left bg-gradient-to-r from-amber-950/90 via-slate-900 to-amber-950/90 hover:from-amber-900/95 hover:to-amber-900/95 border-2 border-amber-400 hover:border-amber-300 rounded-xl p-2 flex items-center justify-between cursor-pointer transition active:scale-[0.98] group/quest shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="relative w-6 h-6 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-pixel font-bold text-[11px] shrink-0 group-hover/quest:rotate-12 transition-transform shadow-[0_0_10px_rgba(251,191,36,0.8)] border border-amber-300">
+                      !
+                      <span className="absolute inset-0 rounded-full bg-amber-400/40 animate-ping" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[7px] font-pixel px-1 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-500/40 font-bold">
+                          TARGET
+                        </span>
+                        <span className="text-[8.5px] font-pixel text-amber-200 truncate font-bold">
+                          {activeTargetNpc.name}
+                        </span>
+                      </div>
+                      <div className="text-[8px] text-slate-300 flex items-center gap-1 truncate mt-0.5">
+                        <span>{activeQuestZoneInfo ? activeQuestZoneInfo.name : 'Lembah'}</span>
+                        <span className="text-slate-500">•</span>
+                        <span className="text-amber-300 font-pixel text-[7px] group-hover/quest:underline">
+                          KLIK JALAN OTOMATIS ➔
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-amber-400 group-hover/quest:translate-x-1 transition-transform shrink-0 drop-shadow-[0_0_4px_rgba(251,191,36,0.6)]" />
+                </button>
+              ) : (
+                <div className="bg-emerald-950/40 border-2 border-emerald-500/50 rounded-xl p-2 flex items-center gap-2 shadow-md">
+                  <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 animate-pulse" />
+                  <div className="text-[8.5px] text-emerald-300 font-pixel font-bold">
+                    SEMUA MISI UTAMA SELESAI ✨
+                  </div>
+                </div>
+              )}
+
+              {/* Interactive Legend with Updated Pixel Sprites */}
+              <div className="flex items-center justify-between text-[7.5px] text-slate-300 px-1 pt-1 border-t border-slate-800/80">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                    <span className="w-2.5 h-2.5 rounded-xs bg-emerald-500 border border-emerald-300 inline-flex items-center justify-center text-[5.5px] text-slate-950 font-bold">
+                      웃
+                    </span>
+                    Kamu
+                  </span>
+                  <span className="flex items-center gap-1 text-amber-300 font-medium">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 border border-amber-600 inline-block" />
+                    Warga ➔
+                  </span>
+                  <span className="flex items-center gap-1 text-amber-400 font-medium">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400 border border-slate-950 text-slate-950 text-[6.5px] font-pixel font-bold inline-flex items-center justify-center shadow-xs">
+                      !
+                    </span>
+                    Misi
+                  </span>
+                  <span className="flex items-center gap-1 text-slate-400">
+                    <span className="w-2 h-2 rounded-xs bg-slate-700 border border-slate-600 inline-block" />
+                    Kabut
+                  </span>
+                </div>
+                <span className="text-[7px] text-slate-500 font-pixel">[M] Tutup</span>
+              </div>
+            </>
+          )}
         </div>
       )}
     </>

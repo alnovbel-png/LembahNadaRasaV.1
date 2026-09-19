@@ -140,6 +140,7 @@ export default function App() {
   const [branchChoice, setBranchChoice] = useState<string>('empathy_first');
   const [isMuted, setIsMuted] = useState<boolean>(() => sound.isMuted);
   const [showMiniMap, setShowMiniMap] = useState<boolean>(() => !isMobileOrTabletDevice());
+  const [developerToast, setDeveloperToast] = useState<string | null>(null);
   const [questHint, setQuestHint] = useState<string>(
     'Pusaka Kompas Hati terjatuh di depanmu! Tekan [C] atau tombol Kompas untuk menggunakannya.'
   );
@@ -209,6 +210,79 @@ export default function App() {
     }));
     triggerAllBadgesCelebration();
   }, [triggerAllBadgesCelebration]);
+
+  // Mode Developer (PIN: 12345): Masuk langsung ke Mode Jelajah Bebas dengan 100% Misi & 100% Pencapaian
+  const handleActivateDeveloperMode = useCallback(() => {
+    // 1. Pulihkan dan warnai seluruh 4 wilayah desa (Plaza, Jembatan, Hutan, Menara)
+    setZoneStatus({
+      plaza: true,
+      bridge: true,
+      forest: true,
+      tower: true,
+    });
+
+    // 2. Selesaikan seluruh misi utama (100% Selesai)
+    setQuests((prev) =>
+      prev.map((q) => ({
+        ...q,
+        isCompleted: true,
+      }))
+    );
+
+    // 3. Buka seluruh 10 Lencana Pencapaian PSE (100%) dengan skor empati maksimal
+    const allBadgeIds = PSE_ACHIEVEMENTS.map((b) => b.id);
+    setStats({
+      empathyScore: 500,
+      resonanceUses: 20,
+      calmTechniquesMastered: 5,
+      secretsFound: 5,
+      unlockedBadges: allBadgeIds,
+    });
+
+    // 4. Resolusikan seluruh warga desa ke emosi bahagia, tenang, dan damai
+    setNpcs((prev) =>
+      prev.map((npc) => ({
+        ...npc,
+        isResolved: true,
+        currentDialogueId: `${npc.id}_resolved`,
+        emotionProfile: {
+          ...npc.emotionProfile,
+          surfaceEmotion: 'tenang',
+          deepEmotion: 'gembira',
+          reason: 'Merasa damai dan bahagia karena Lembah Nada Rasa telah kembali harmonis.',
+        },
+      }))
+    );
+
+    // 5. Aktifkan Mode Jelajah Bebas secara langsung
+    hasSeenAllBadgesCelebrationRef.current = true;
+    pendingAllBadgesCelebrationRef.current = false;
+    setIsFreeRoamActive(true);
+    setShowEnding(false);
+    setShowStartMenu(false);
+    setCurrentDialogue(null);
+    setShowSettings(false);
+
+    // 6. Mainkan efek audio selebrasi meriah & efek partikel berkilau
+    sound.unlockAudio();
+    sound.playAllBadgesFanfare();
+    sound.setBgmPhase('restored', true);
+    rendererRef.current?.triggerScreenShake(7, 24);
+    rendererRef.current?.addSparkle(
+      playerRef.current.x + 16,
+      playerRef.current.y + 16,
+      '#f59e0b',
+      45
+    );
+
+    // 7. Tampilkan notifikasi visual toast di layar
+    setDeveloperToast(
+      '🚀 MODE DEVELOPER AKTIF: Mode Jelajah Bebas Terbuka! Misi Utama 100% & Pencapaian 100% Terbuka Penuh.'
+    );
+    setTimeout(() => {
+      setDeveloperToast(null);
+    }, 5000);
+  }, []);
 
   // Sync mute state with sound system
   useEffect(() => {
@@ -438,6 +512,13 @@ export default function App() {
       if (next) {
         sound.playCompassChime();
         setStats((s) => ({ ...s, resonanceUses: s.resonanceUses + 1 }));
+
+        // Trigger radiant sparkle particles burst from Heart Compass
+        if (rendererRef.current && playerRef.current) {
+          const px = playerRef.current.x + 16;
+          const py = playerRef.current.y + 16;
+          rendererRef.current.triggerCompassBurst(px, py);
+        }
       }
       return next;
     });
@@ -704,6 +785,17 @@ export default function App() {
       }
     }
 
+    // River Waterfall Cascade (c=22.5, r=12.5, x: 736, y: 400)
+    const waterfallX = 736;
+    const waterfallY = 400;
+    if (Math.hypot(waterfallX - px, waterfallY - py) < 85) {
+      sound.playWaterfallSplash();
+      rendererRef.current?.triggerScreenShake(3, 10);
+      rendererRef.current?.addSparkle(waterfallX, waterfallY + 10, '#38bdf8', 10);
+      setCurrentDialogue(GAME_DIALOGUES.free_roam_waterfall);
+      return;
+    }
+
     // Check nearest NPC
     let nearestNPC: NPC | null = null;
     let minDist = 65;
@@ -925,6 +1017,37 @@ export default function App() {
           };
           rendererRef.current?.setDestination(walkX, walkY, 'examine');
           rendererRef.current?.addSparkle(cabinDoorX, cabinDoorY, '#f59e0b', 8);
+        }
+        return;
+      }
+
+      // 3d-2. Check if clicking on the River Waterfall (c: 21..24, r: 11..13, center x: 736, y: 400)
+      const wfX = 736;
+      const wfY = 400;
+      if (
+        (worldX >= 695 && worldX <= 775 && worldY >= 365 && worldY <= 435) ||
+        Math.hypot(wfX - worldX, wfY - worldY) < 45
+      ) {
+        if (Math.hypot(wfX - px, wfY - py) < 85) {
+          sound.playWaterfallSplash();
+          rendererRef.current?.triggerScreenShake(3, 10);
+          rendererRef.current?.addSparkle(wfX, wfY + 10, '#38bdf8', 10);
+          setCurrentDialogue(GAME_DIALOGUES.free_roam_waterfall);
+          targetPosRef.current = null;
+          rendererRef.current?.clearDestination();
+        } else {
+          // Walk to safe viewing spot near waterfall on west bank (c=21, r=12)
+          const walkX = 21 * TILE_SIZE + 16;
+          const walkY = 12 * TILE_SIZE + 16;
+          targetPosRef.current = {
+            x: walkX,
+            y: walkY,
+            targetType: 'waterfall',
+            minDistSoFar: Math.hypot(walkX - px, walkY - py),
+            stuckFrames: 0,
+          };
+          rendererRef.current?.setDestination(walkX, walkY, 'examine');
+          rendererRef.current?.addSparkle(wfX, wfY + 10, '#38bdf8', 8);
         }
         return;
       }
@@ -1333,6 +1456,23 @@ export default function App() {
           name: 'Menara Jam Harmoni',
           x: towerDoorX,
           y: towerDoorY,
+        });
+        canvas.style.cursor = 'pointer';
+        return;
+      }
+
+      // 4b-2. Check hover on River Waterfall (c: 21..24, r: 11..13, center x: 736, y: 400)
+      const wfHoverX = 736;
+      const wfHoverY = 400;
+      if (
+        (worldX >= 695 && worldX <= 775 && worldY >= 365 && worldY <= 435) ||
+        Math.hypot(wfHoverX - worldX, wfHoverY - worldY) < 45
+      ) {
+        rendererRef.current?.setHover({
+          type: 'river',
+          name: 'Air Terjun Sungai Harmoni',
+          x: wfHoverX,
+          y: wfHoverY,
         });
         canvas.style.cursor = 'pointer';
         return;
@@ -2581,11 +2721,27 @@ export default function App() {
         unlockedBadges={stats.unlockedBadges}
         empathyScore={stats.empathyScore}
         isMuted={isMuted}
+        isFreeRoamActive={isFreeRoamActive}
         onToggleMute={handleToggleMute}
         onOpenAllBadgesCelebration={() => setShowAllBadgesCelebration(true)}
         onUnlockAllBadges={handleUnlockAllBadgesTest}
         onCaptureMoment={handleCaptureMoment}
+        onNavigateToTile={handleMiniMapNavigate}
+        onActivateDeveloperMode={handleActivateDeveloperMode}
       />
+
+      {/* Developer Mode Toast Notification */}
+      {developerToast && (
+        <div
+          id="developer-mode-toast"
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none px-4 py-2.5 rounded-xl bg-slate-950/95 border-2 border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.55)] flex items-center gap-2.5 max-w-[90vw] animate-bounce"
+        >
+          <Sparkles className="w-5 h-5 text-amber-400 shrink-0 animate-spin" />
+          <p className="text-amber-200 text-xs sm:text-sm font-bold tracking-wide text-center">
+            {developerToast}
+          </p>
+        </div>
+      )}
 
       {/* Capture Moment / Abadikan Momen Modal with decorative overlay */}
       <CaptureMomentModal
