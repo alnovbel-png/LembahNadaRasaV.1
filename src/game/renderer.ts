@@ -92,6 +92,20 @@ export interface FogMistMote {
   depth: number;
 }
 
+export interface FogMysticMote {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  alpha: number;
+  phase: number;
+  depth: number;
+  color: string;
+  haloColor: string;
+}
+
 export type DestinationType = 'walk' | 'interact' | 'examine';
 
 export interface HoverTarget {
@@ -118,6 +132,7 @@ export class GameRenderer {
   private fogLeaves: FogLeaf[] = [];
   private fogWindStreaks: FogWindStreak[] = [];
   private fogMistMotes: FogMistMote[] = [];
+  private fogMysticMotes: FogMysticMote[] = [];
   private fogSystemInitialized: boolean = false;
   // Dynamic smooth transition state for fog & atmospheric particles (fade-in / fade-out)
   private currentFogIntensity: number = 0.0;
@@ -794,19 +809,70 @@ export class GameRenderer {
         // Gentle sand/mortar joints between stones (soft, never harsh black)
         ctx.fillStyle = mortarColor;
         ctx.fillRect(x, y + 15, TILE_SIZE + 1, 1);
+
+        // --- ORNAMEN MODE KABUT: DETAIL TANAH, PANTULAN AIR/BASAH & LUMUT BERPENDAR ---
+        if (!isColored) {
+          // 1. Detail Tanah dan Jalan: celah retakan mikro & lumut abu-abu lapuk
+          ctx.fillStyle = '#334155';
+          if ((r + c) % 3 === 0) {
+            ctx.fillRect(x + 4, y + 6, 5, 1);
+            ctx.fillRect(x + 8, y + 7, 1, 3);
+            ctx.fillRect(x + 22, y + 20, 6, 1);
+            ctx.fillRect(x + 25, y + 21, 1, 4);
+          } else if ((r + c) % 3 === 1) {
+            ctx.fillRect(x + 18, y + 5, 6, 1);
+            ctx.fillRect(x + 20, y + 6, 1, 4);
+            ctx.fillRect(x + 6, y + 22, 5, 1);
+          }
+          // Lumut abu-abu lapuk di sela-sela mortar
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(x + 12, y + 14, 4, 2);
+          ctx.fillRect(x + 24, y + 15, 3, 2);
+
+          // 2. Pantulan di Permukaan Air / Lantai Basah: genangan air mengkilap & kilau partikel
+          const isPuddleTile = (r * 7 + c * 11) % 4 === 0;
+          if (isPuddleTile) {
+            // Lapisan tipis genangan air basah dingin
+            ctx.fillStyle = 'rgba(224, 242, 254, 0.16)';
+            ctx.fillRect(x + 4, y + 4, 12, 8);
+            ctx.fillStyle = 'rgba(186, 230, 253, 0.22)';
+            ctx.fillRect(x + 6, y + 6, 8, 4);
+
+            // Pantulan cahaya lampu jalan jika berada dekat area lentera desa (kolom 12-18)
+            if (c >= 12 && c <= 18 && r >= 12 && r <= 20) {
+              const lampGlint = Math.sin(this.tickCount * 0.08 + c + r) * 0.08 + 0.22;
+              ctx.fillStyle = `rgba(254, 240, 138, ${lampGlint})`;
+              ctx.fillRect(x + 7, y + 7, 5, 2);
+            }
+
+            // Kilau lembut pantulan partikel pendar di atas permukaan basah
+            ctx.fillStyle = 'rgba(240, 249, 255, 0.55)';
+            ctx.fillRect(x + 8, y + 6, 2, 1);
+            ctx.fillRect(x + 11, y + 8, 1, 1);
+          }
+
+          // 3. Tumbuhan Bercahaya (Bioluminescence): lumut berpendar redup di sela-sela lantai batu
+          const hasBiolumMoss = (r * 13 + c * 17) % 5 === 0;
+          if (hasBiolumMoss) {
+            const pulse = Math.sin(this.tickCount * 0.06 + r * 1.5 + c * 2.1) * 0.25 + 0.75;
+            // Pendaran lembut hijau mint & biru toska
+            ctx.fillStyle = `rgba(45, 212, 191, ${0.35 * pulse})`;
+            ctx.fillRect(x + 9, y + 13, 8, 5);
+            ctx.fillStyle = '#2dd4bf';
+            ctx.fillRect(x + 11, y + 14, 4, 2);
+            ctx.fillStyle = '#4ade80';
+            ctx.fillRect(x + 12, y + 15, 2, 1);
+            ctx.fillStyle = '#a7f3d0';
+            ctx.fillRect(x + 13, y + 14, 1, 1);
+          }
+        }
         break;
       }
 
       case TILE.WATER:
-      case TILE.WATER_DEEP: {
-        this.fillTileBase(x, y, isColored ? '#0284c7' : '#1e293b');
-        // Gentle wave
-        const waveShift = Math.floor((this.tickCount / 12 + x / 16) % 4);
-        ctx.fillStyle = isColored ? '#38bdf8' : '#334155';
-        ctx.fillRect(x + waveShift * 4, y + 12, 8, 2);
-        ctx.fillRect(x + 16 - waveShift * 2, y + 24, 6, 2);
+      case TILE.WATER_DEEP:
+        this.drawWaterTile(x, y, isColored, r, c, tile === TILE.WATER_DEEP);
         break;
-      }
 
       case TILE.WOOD_BRIDGE:
         this.drawBridgeDeckTile(x, y, isColored, r, c);
@@ -861,6 +927,25 @@ export class GameRenderer {
         ctx.fillStyle = leafHighlight;
         ctx.fillRect(x + 8, y - 5, 4, 3);
         ctx.fillRect(x + 6, y, 3, 2);
+
+        // Bioluminescent shelf fungi & moss beneath tree roots in fog mode
+        if (!isColored) {
+          const treePulse = Math.sin(this.tickCount * 0.06 + x * 0.5 + y) * 0.25 + 0.75;
+          // Glowing shelf bracket fungus on trunk side
+          ctx.fillStyle = `rgba(56, 189, 248, ${0.4 * treePulse})`;
+          ctx.fillRect(x + 7, y + 21, 5, 3);
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(x + 8, y + 22, 3, 2);
+          ctx.fillStyle = '#bae6fd';
+          ctx.fillRect(x + 9, y + 22, 2, 1);
+          // Bioluminescent root moss
+          ctx.fillStyle = `rgba(74, 222, 128, ${0.35 * treePulse})`;
+          ctx.fillRect(x + 19, y + 24, 6, 4);
+          ctx.fillStyle = '#4ade80';
+          ctx.fillRect(x + 20, y + 25, 4, 2);
+          ctx.fillStyle = '#a7f3d0';
+          ctx.fillRect(x + 21, y + 25, 2, 1);
+        }
         break;
       }
 
@@ -875,6 +960,17 @@ export class GameRenderer {
         // Tree trunk base
         ctx.fillStyle = isColored ? '#451a03' : '#1e293b';
         ctx.fillRect(x + 14, y + 22, 4, 8);
+
+        // Bioluminescent fungi under pine tree in fog mode
+        if (!isColored) {
+          const pinePulse = Math.sin(this.tickCount * 0.05 + x * 0.3) * 0.25 + 0.75;
+          ctx.fillStyle = `rgba(45, 212, 191, ${0.35 * pinePulse})`;
+          ctx.fillRect(x + 9, y + 25, 5, 3);
+          ctx.fillStyle = '#2dd4bf';
+          ctx.fillRect(x + 10, y + 26, 3, 2);
+          ctx.fillStyle = '#6ee7b7';
+          ctx.fillRect(x + 18, y + 25, 3, 2);
+        }
 
         const pineDark = isColored ? '#064e3b' : '#1e293b';
         const pineMid = isColored ? '#047857' : '#334155';
@@ -936,6 +1032,28 @@ export class GameRenderer {
         ctx.fillRect(x + 20, y + 19, 3, 5);
         ctx.fillStyle = isColored ? '#f59e0b' : '#64748b';
         ctx.fillRect(x + 18, y + 15, 7, 4);
+
+        // Tumbuhan Bercahaya (Bioluminescence): jamur berpendar redup di mode kabut
+        if (!isColored) {
+          const shroomPulse = Math.sin(this.tickCount * 0.08 + x * 0.4 + y * 0.3) * 0.25 + 0.75;
+          // Pendaran tudung jamur utama (biru toska magis)
+          ctx.fillStyle = `rgba(56, 189, 248, ${0.4 * shroomPulse})`;
+          ctx.fillRect(x + 3, y + 8, 14, 11);
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(x + 5, y + 11, 10, 6);
+          ctx.fillRect(x + 7, y + 9, 6, 3);
+          ctx.fillStyle = '#bae6fd';
+          ctx.fillRect(x + 7, y + 10, 2, 2);
+          ctx.fillRect(x + 11, y + 13, 2, 2);
+
+          // Pendaran tudung jamur pendamping (hijau zamrud pudar)
+          ctx.fillStyle = `rgba(52, 211, 153, ${0.35 * shroomPulse})`;
+          ctx.fillRect(x + 16, y + 13, 11, 8);
+          ctx.fillStyle = '#34d399';
+          ctx.fillRect(x + 18, y + 15, 7, 4);
+          ctx.fillStyle = '#a7f3d0';
+          ctx.fillRect(x + 19, y + 16, 2, 2);
+        }
         break;
       }
 
@@ -1133,9 +1251,31 @@ export class GameRenderer {
           ctx.fillStyle = '#f472b6';
           ctx.fillRect(px + 8, py + 6, 2, 2);
         } else {
-          // Saat abu-abu belum pulih
-          ctx.fillStyle = 'rgba(51, 65, 85, 0.65)';
+          // Saat abu-abu belum pulih: Air mancur dalam mode kabut dengan pantulan air berkilau
+          ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
           ctx.fillRect(px + 1, py + 1, pw - 2, ph - 2);
+
+          // Lapisan biasan air sejuk berkabut
+          ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+          ctx.fillRect(px + 3, py + 3, pw - 6, ph - 6);
+
+          // Riak-riak air mancur yang memantulkan cahaya lembut
+          const ripplePhase = Math.floor((this.tickCount * 0.08) % 6);
+          ctx.fillStyle = 'rgba(186, 230, 253, 0.28)';
+          ctx.fillRect(px + 8 + ripplePhase, py + 6, pw - 16, 2);
+          ctx.fillRect(px + 6, py + 14 - ripplePhase, pw - 12, 2);
+
+          // Kilau pendaran bintang di permukaan air kolam berkabut
+          const sparklePhase = (this.tickCount * 0.12) % 24;
+          if (sparklePhase < 12) {
+            const spX = px + 14 + (sparklePhase < 6 ? 0 : 18);
+            const spY = py + 8 + (sparklePhase < 6 ? 0 : 10);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(spX, spY, 1, 1);
+            ctx.fillStyle = 'rgba(125, 211, 252, 0.8)';
+            ctx.fillRect(spX - 1, spY, 3, 1);
+            ctx.fillRect(spX, spY - 1, 1, 3);
+          }
         }
 
         // 7. PILAR TENGAH AIR MANCUR BERUKIR (Sculpted Central Stone Fountain Pedestal)
@@ -1569,6 +1709,40 @@ export class GameRenderer {
         ctx.fillRect(x + 24, y + 6, 2, 2);
         ctx.fillRect(x + 6, y + 24, 2, 2);
         ctx.fillRect(x + 24, y + 24, 2, 2);
+
+        // Ornamen Mode Kabut: Pantulan Lantai Basah, Retakan Lapuk & Lumut Berpendar
+        if (!isColored) {
+          // 1. Pantulan di Permukaan Basah: genangan air dingin pada ubin batu plaza
+          const hasPlazaPuddle = (r * 3 + c * 5) % 3 === 0;
+          if (hasPlazaPuddle) {
+            ctx.fillStyle = 'rgba(224, 242, 254, 0.16)';
+            ctx.fillRect(x + 8, y + 8, 16, 16);
+            ctx.fillStyle = 'rgba(186, 230, 253, 0.22)';
+            ctx.fillRect(x + 11, y + 11, 10, 10);
+            // Kilau cahaya pantulan lembut
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+            ctx.fillRect(x + 12, y + 10, 2, 1);
+            ctx.fillRect(x + 18, y + 14, 1, 1);
+          }
+
+          // 2. Retakan mikro ubin lapuk
+          ctx.fillStyle = '#1e293b';
+          if ((r + c) % 2 === 0) {
+            ctx.fillRect(x + 7, y + 14, 4, 1);
+            ctx.fillRect(x + 10, y + 15, 1, 3);
+          }
+
+          // 3. Tumbuhan bercahaya: pendaran lumut redup di sudut mosaik
+          if ((r * 9 + c * 7) % 4 === 0) {
+            const bioPulse = Math.sin(this.tickCount * 0.07 + r * 2 + c) * 0.25 + 0.75;
+            ctx.fillStyle = `rgba(45, 212, 191, ${0.35 * bioPulse})`;
+            ctx.fillRect(x + 22, y + 22, 4, 4);
+            ctx.fillStyle = '#2dd4bf';
+            ctx.fillRect(x + 23, y + 23, 2, 2);
+            ctx.fillStyle = '#a7f3d0';
+            ctx.fillRect(x + 24, y + 23, 1, 1);
+          }
+        }
         break;
       }
 
@@ -1594,6 +1768,21 @@ export class GameRenderer {
           ctx.fillStyle = '#15803d';
           ctx.fillRect(x + 2, y + 26, 3, 3);
           ctx.fillRect(x + 26, y + 2, 3, 3);
+        } else {
+          // Mode kabut: Lumut abu-abu lapuk & pendaran lumut bertahan hidup
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(x + 2, y + 26, 4, 3);
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(x + 3, y + 26, 2, 2);
+
+          // Pendaran lumut redup di sudut batu
+          const curbPulse = Math.sin(this.tickCount * 0.06 + r + c * 1.5) * 0.25 + 0.75;
+          ctx.fillStyle = `rgba(74, 222, 128, ${0.35 * curbPulse})`;
+          ctx.fillRect(x + 24, y + 3, 5, 4);
+          ctx.fillStyle = '#4ade80';
+          ctx.fillRect(x + 25, y + 4, 3, 2);
+          ctx.fillStyle = '#a7f3d0';
+          ctx.fillRect(x + 26, y + 4, 1, 1);
         }
         break;
       }
@@ -1661,6 +1850,26 @@ export class GameRenderer {
           ctx.fillStyle = '#22c55e';
           ctx.fillRect(x + 6, y + 17, 2, 2);
           ctx.fillRect(x + 2, y + 22, 2, 2);
+        } else {
+          // Efek Embun Beku (Frost) pada pagar di mode kabut
+          // Kristal embun beku tipis pada puncak 3 tiang pagar lancip
+          ctx.fillStyle = 'rgba(224, 242, 254, 0.9)';
+          for (let i = 0; i < 3; i++) {
+            const px = x + 4 + i * 10;
+            ctx.fillRect(px + 2, y + 3, 1, 2);
+            ctx.fillRect(px + 1, y + 5, 3, 1);
+          }
+          // Lapisan embun beku sepanjang tepi palang atas
+          ctx.fillRect(x, y + 11, TILE_SIZE + 1, 1);
+          ctx.fillStyle = '#f0fdf4';
+          ctx.fillRect(x + 3, y + 10, 2, 1);
+          ctx.fillRect(x + 14, y + 10, 3, 1);
+          ctx.fillRect(x + 24, y + 10, 2, 1);
+          // Embun beku pada palang bawah
+          ctx.fillStyle = 'rgba(224, 242, 254, 0.75)';
+          ctx.fillRect(x, y + 21, TILE_SIZE + 1, 1);
+          ctx.fillRect(x + 7, y + 20, 2, 1);
+          ctx.fillRect(x + 18, y + 20, 2, 1);
         }
         break;
       }
@@ -2131,6 +2340,21 @@ export class GameRenderer {
             ctx.fillStyle = '#facc15';
             ctx.fillRect(x + 6, y + 7, 2, 3);
           }
+        } else {
+          // Ornamen mode kabut: Embun beku (Frost) & lumut berpendar di sela-sela dinding batu
+          ctx.fillStyle = 'rgba(224, 242, 254, 0.75)';
+          ctx.fillRect(x, y + TILE_SIZE - 7, TILE_SIZE + 1, 1); // Kristal embun beku pada lis batu
+          ctx.fillRect(x + 2, y, 4, 1);
+          ctx.fillRect(x + TILE_SIZE - 5, y, 4, 1);
+
+          // Pendaran lumut bercahaya di celah fondasi batu
+          const houseBioPulse = Math.sin(this.tickCount * 0.06 + c * 2 + r) * 0.25 + 0.75;
+          ctx.fillStyle = `rgba(45, 212, 191, ${0.35 * houseBioPulse})`;
+          ctx.fillRect(x + 8, y + TILE_SIZE - 5, 5, 3);
+          ctx.fillStyle = '#2dd4bf';
+          ctx.fillRect(x + 9, y + TILE_SIZE - 5, 3, 2);
+          ctx.fillStyle = '#a7f3d0';
+          ctx.fillRect(x + 10, y + TILE_SIZE - 4, 1, 1);
         }
         break;
       }
@@ -2155,7 +2379,6 @@ export class GameRenderer {
           ctx.fillRect(x, ly + 1, TILE_SIZE + 1, 5);
           ctx.fillStyle = logMid;
           ctx.fillRect(x, ly + 1, TILE_SIZE + 1, 3);
-          ctx.fillStyle = logLight;
           ctx.fillRect(x, ly + 1, TILE_SIZE + 1, 1);
         }
 
@@ -2197,6 +2420,20 @@ export class GameRenderer {
             ctx.fillStyle = '#c084fc';
             ctx.fillRect(x + 14, y + 9, 4, 5);
           }
+        } else {
+          // Mode kabut: Embun beku (Frost) pada sela kayu & jamur/lumut berpendar di dinding kayu
+          ctx.fillStyle = 'rgba(224, 242, 254, 0.7)';
+          ctx.fillRect(x, y + 7, TILE_SIZE + 1, 1);
+          ctx.fillRect(x, y + 23, TILE_SIZE + 1, 1);
+
+          // Lumut berpendar redup di sela kayu log
+          const cabinPulse = Math.sin(this.tickCount * 0.05 + c + r * 1.8) * 0.25 + 0.75;
+          ctx.fillStyle = `rgba(56, 189, 248, ${0.35 * cabinPulse})`;
+          ctx.fillRect(x + 12, y + 14, 6, 4);
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(x + 13, y + 15, 4, 2);
+          ctx.fillStyle = '#bae6fd';
+          ctx.fillRect(x + 14, y + 15, 2, 1);
         }
         break;
       }
@@ -2344,8 +2581,18 @@ export class GameRenderer {
               ctx.fillStyle = '#fef08a';
               ctx.fillRect(tx + 1 + flicker * 0.5, y + 4, 2, 3);
             } else {
-              ctx.fillStyle = '#1e293b';
-              ctx.fillRect(tx, y + 8, 4, 3);
+              // Mode kabut: Cahaya obor/lentera dinding kuning hangat yang lembut
+              const sconcePulse = Math.sin(this.tickCount * 0.12 + (isLeft ? 0 : 2.5)) * 0.05;
+              ctx.fillStyle = `rgba(254, 240, 138, ${0.26 + sconcePulse})`;
+              ctx.beginPath();
+              ctx.arc(tx + 2, y + 7, 9, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = '#f59e0b';
+              ctx.fillRect(tx, y + 5, 4, 5);
+              ctx.fillStyle = '#fef08a';
+              ctx.fillRect(tx + 1, y + 6, 2, 3);
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(tx + 1, y + 6, 1, 1);
             }
           }
         } else {
@@ -2367,6 +2614,20 @@ export class GameRenderer {
             ctx.fillRect(x + 4, y + 21, 2, 2);
             ctx.fillRect(x + 8, y + 17, 2, 2);
             ctx.fillRect(x + 5, y + 11, 1, 2);
+          } else {
+            // Mode kabut: Lumut berpendar redup di sela-sela dinding batu purba
+            const towerBioPulse = Math.sin(this.tickCount * 0.06 + r * 1.7 + c) * 0.25 + 0.75;
+            ctx.fillStyle = `rgba(45, 212, 191, ${0.35 * towerBioPulse})`;
+            ctx.fillRect(x + 4, y + 18, 6, 4);
+            ctx.fillStyle = '#2dd4bf';
+            ctx.fillRect(x + 5, y + 19, 4, 2);
+            ctx.fillStyle = '#a7f3d0';
+            ctx.fillRect(x + 6, y + 19, 2, 1);
+
+            // Efek embun beku (Frost) pada lis mortar batu
+            ctx.fillStyle = 'rgba(224, 242, 254, 0.65)';
+            ctx.fillRect(x, y + 8, TILE_SIZE + 1, 1);
+            ctx.fillRect(x + 12, y + 5, 8, 1);
           }
         }
         break;
@@ -2701,10 +2962,18 @@ export class GameRenderer {
             ctx.fillRect(x + 11, y + 14, 2, 2);
             ctx.fillRect(x + 18, y + 14, 2, 2);
           } else {
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(x + 10, y + 12, 12, 12);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-            ctx.fillRect(x + 12, y + 14, 2, 3);
+            // Cahaya dari Balik Jendela (Mode Kabut): pendaran kuning hangat lembut lilin menara
+            const towerGlowPulse = Math.sin(this.tickCount * 0.08) * 0.06;
+            ctx.fillStyle = `rgba(254, 240, 138, ${0.32 + towerGlowPulse})`;
+            ctx.fillRect(x + 6, y + 5, 20, 23);
+
+            // Kaca jendela memancarkan cahaya kuning hangat keemasan
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(x + 10, y + 12, 12, 13);
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(x + 11, y + 13, 10, 11);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(x + 14, y + 15, 3, 4); // Inti nyala lilin
           }
 
           ctx.fillStyle = isColored ? '#334155' : '#0f172a';
@@ -2829,12 +3098,12 @@ export class GameRenderer {
         ctx.fillRect(x + 9, y + 4, 14, 16);
 
         // 4. Window glass panes (4-pane window)
-        const isLampLit = !this.isAllMissionsCompleted;
+        const isLampLit = !isColored || !this.isAllMissionsCompleted;
         if (isLampLit) {
-          // Warm glowing golden lantern light
-          const pulse = Math.sin(this.tickCount * 0.08 + x * 0.1) * 0.04;
-          ctx.fillStyle = `rgba(254, 240, 138, ${0.22 + pulse})`;
-          ctx.fillRect(x + 8, y + 3, 16, 18);
+          // Warm glowing golden lantern light from behind window
+          const pulse = Math.sin(this.tickCount * 0.08 + x * 0.1) * 0.05;
+          ctx.fillStyle = `rgba(254, 240, 138, ${0.32 + pulse})`;
+          ctx.fillRect(x + 7, y + 2, 18, 20);
 
           ctx.fillStyle = '#fef08a';
           ctx.fillRect(x + 10, y + 5, 5, 6);
@@ -2889,6 +3158,19 @@ export class GameRenderer {
           ctx.fillRect(x + 18, y + 19, 2, 2);
           ctx.fillRect(x + 10, y + 23, 2, 3);
           ctx.fillRect(x + 17, y + 23, 2, 3);
+        } else {
+          // Mode kabut: Embun beku (Frost) pada tepi kotak tanaman & lumut berpendar
+          ctx.fillStyle = 'rgba(224, 242, 254, 0.8)';
+          ctx.fillRect(x + 7, y + 20, 18, 1);
+          ctx.fillRect(x + 9, y + 19, 3, 1);
+          ctx.fillRect(x + 18, y + 19, 4, 1);
+
+          // Pendaran lumut redup di bawah kotak jendela
+          const boxPulse = Math.sin(this.tickCount * 0.07 + x) * 0.25 + 0.75;
+          ctx.fillStyle = `rgba(45, 212, 191, ${0.35 * boxPulse})`;
+          ctx.fillRect(x + 12, y + 25, 6, 3);
+          ctx.fillStyle = '#2dd4bf';
+          ctx.fillRect(x + 13, y + 25, 4, 2);
         }
         break;
       }
@@ -3096,20 +3378,23 @@ export class GameRenderer {
 
         // 3. Cabin interior hearth glow
         const pulse = Math.sin(this.tickCount * 0.09 + x * 0.2) * 0.05;
-        ctx.fillStyle = `rgba(251, 191, 36, ${0.25 + pulse})`;
+        ctx.fillStyle = isColored ? `rgba(251, 191, 36, ${0.25 + pulse})` : `rgba(254, 240, 138, ${0.35 + pulse})`;
         ctx.fillRect(x + 5, y + 2, 22, 20);
 
-        // Cozy amber window panes with diamond-lattice
-        ctx.fillStyle = isColored ? '#f59e0b' : '#64748b';
+        // Cozy amber window panes with diamond-lattice - glowing in both colored and fog modes!
+        ctx.fillStyle = '#f59e0b';
         ctx.fillRect(x + 9, y + 6, 6, 5);
         ctx.fillRect(x + 17, y + 6, 6, 5);
         ctx.fillRect(x + 9, y + 13, 6, 5);
         ctx.fillRect(x + 17, y + 13, 6, 5);
 
-        // Hearth fire flicker cores
-        ctx.fillStyle = isColored ? '#fef08a' : '#94a3b8';
+        // Hearth fire flicker cores (warm yellow flame of life inside)
+        ctx.fillStyle = '#fef08a';
         ctx.fillRect(x + 11, y + 7, 3, 3);
         ctx.fillRect(x + 18, y + 8, 3, 3);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x + 12, y + 8, 1, 1);
+        ctx.fillRect(x + 19, y + 9, 1, 1);
 
         // Heavy dark mullion cross
         ctx.fillStyle = isColored ? '#292524' : '#0f172a';
@@ -3136,14 +3421,31 @@ export class GameRenderer {
           ctx.fillRect(x + 12, y + 19, 2, 2);
           ctx.fillRect(x + 18, y + 19, 2, 2);
           ctx.fillRect(x + 10, y + 22, 2, 3);
+        } else {
+          // Mode kabut: Embun beku (Frost) pada tepi planter kayu & jamur berpendar
+          ctx.fillStyle = 'rgba(224, 242, 254, 0.8)';
+          ctx.fillRect(x + 5, y + 20, 22, 1);
+          ctx.fillRect(x + 7, y + 19, 3, 1);
+          ctx.fillRect(x + 16, y + 19, 4, 1);
+
+          // Jamur mungil berpendar redup di sela kotak kayu
+          const shroomGlow = Math.sin(this.tickCount * 0.08 + x) * 0.25 + 0.75;
+          ctx.fillStyle = `rgba(56, 189, 248, ${0.4 * shroomGlow})`;
+          ctx.fillRect(x + 9, y + 17, 4, 4);
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(x + 10, y + 18, 2, 2);
+          ctx.fillStyle = '#bae6fd';
+          ctx.fillRect(x + 10, y + 18, 1, 1);
         }
 
         // 5. Forged iron lantern bracket
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(x + 2, y + 7, 3, 2);
         ctx.fillRect(x + 3, y + 5, 2, 6);
-        ctx.fillStyle = isColored ? '#fef08a' : '#64748b';
+        ctx.fillStyle = '#fef08a';
         ctx.fillRect(x + 3, y + 6, 2, 3);
+        ctx.fillStyle = 'rgba(254, 240, 138, 0.28)';
+        ctx.fillRect(x + 1, y + 4, 6, 7);
         break;
       }
 
@@ -3359,6 +3661,39 @@ export class GameRenderer {
           ctx.fillRect(x + 18, y + 25, 2, 2);
           ctx.fillRect(x + 25, y + 26, 3, 2);
           ctx.fillRect(x + 29, y + 24, 2, 2);
+        } else {
+          // Benda Terpakai/Lusuh (Mode Kabut): Kapak penebang, serpihan kayu, dan keranjang anyaman rotan
+          ctx.fillStyle = '#64748b';
+          ctx.fillRect(x + 24, y + 8, 5, 4);
+          ctx.fillStyle = '#94a3b8';
+          ctx.fillRect(x + 27, y + 8, 2, 4);
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(x + 22, y + 3, 3, 7);
+
+          // Serpihan kayu di tanah
+          ctx.fillStyle = '#64748b';
+          ctx.fillRect(x + 18, y + 25, 2, 2);
+          ctx.fillRect(x + 25, y + 26, 3, 2);
+
+          // Keranjang anyaman rotan lusuh pengumpul ranting & kerucut pinus
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(x + 2, y + 21, 8, 8);
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(x + 3, y + 22, 6, 6);
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(x + 4, y + 20, 2, 4); // Ranting kayu bakar dalam keranjang
+          ctx.fillRect(x + 6, y + 19, 2, 5);
+
+          // Embun beku tipis pada puncak tumpukan kayu
+          ctx.fillStyle = 'rgba(224, 242, 254, 0.75)';
+          ctx.fillRect(x + 6, y + 8, 12, 1);
+
+          // Pendaran lumut di dasar tunggul
+          const stumpGlow = Math.sin(this.tickCount * 0.06 + x) * 0.25 + 0.75;
+          ctx.fillStyle = `rgba(45, 212, 191, ${0.35 * stumpGlow})`;
+          ctx.fillRect(x + 20, y + 23, 4, 3);
+          ctx.fillStyle = '#2dd4bf';
+          ctx.fillRect(x + 21, y + 23, 2, 2);
         }
         break;
       }
@@ -3383,8 +3718,8 @@ export class GameRenderer {
         ctx.fillStyle = isColored ? '#451a03' : '#0f172a';
         ctx.fillRect(x + 6, y + 3, 20, 18);
 
-        // 3. Translucent washi rice paper glowing softly
-        ctx.fillStyle = isColored ? '#fef3c7' : '#64748b';
+        // 3. Translucent washi rice paper glowing softly with warm amber/yellow light (Mode Kabut & Colored)
+        ctx.fillStyle = '#fef3c7';
         ctx.fillRect(x + 7, y + 4, 18, 16);
         // Calming peach-amber inner serenity glow
         const zenPulse = Math.sin(this.tickCount * 0.05 + x * 0.1) * 0.04;
@@ -5758,6 +6093,34 @@ export class GameRenderer {
       });
     }
     this.fogMistMotes.sort((a, b) => a.depth - b.depth);
+
+    // 4. Initialize 35 mysterious glowing particles (Partikel Pendar Misterius) floating in the mist
+    const mysticColors = [
+      { color: '#38bdf8', halo: 'rgba(56, 189, 248, 0.4)' }, // Soft cyan-blue
+      { color: '#7dd3fc', halo: 'rgba(125, 211, 252, 0.4)' }, // Pale sky blue
+      { color: '#6ee7b7', halo: 'rgba(110, 231, 183, 0.4)' }, // Pale mystic emerald
+      { color: '#a7f3d0', halo: 'rgba(167, 243, 208, 0.4)' }, // Soft jade green
+      { color: '#86efac', halo: 'rgba(134, 239, 172, 0.35)' }, // Gentle spring mint
+    ];
+    for (let i = 0; i < 35; i++) {
+      const tier = moteDepthConfigs[i % 3];
+      const depth = tier.minDepth + Math.random() * (tier.maxDepth - tier.minDepth);
+      const pal = mysticColors[i % mysticColors.length];
+      this.fogMysticMotes.push({
+        id: i,
+        x: camX + Math.random() * worldW,
+        y: camY + Math.random() * worldH,
+        vx: (0.2 + Math.random() * 0.4) * (0.8 + depth * 0.25),
+        vy: -0.15 - Math.random() * 0.35, // slow upward buoyant floating
+        size: 1.8 + Math.random() * 2.2,
+        alpha: 0.45 + Math.random() * 0.4,
+        phase: Math.random() * Math.PI * 2,
+        depth,
+        color: pal.color,
+        haloColor: pal.halo,
+      });
+    }
+    this.fogMysticMotes.sort((a, b) => a.depth - b.depth);
   }
 
   // Draw atmospheric fog mist, wind gusts, and flying leaves over unrecovered areas with silky fade-in/fade-out transitions
@@ -5882,6 +6245,19 @@ export class GameRenderer {
       h,
       time,
       gustMultiplier,
+      atmosphericIntensity,
+      deltaPlayerX,
+      deltaPlayerY
+    );
+
+    // 5. Mysterious glowing particles (Partikel Pendar Misterius) floating softly in the mist
+    this.renderFogMysticMotes(
+      ctx,
+      camX,
+      camY,
+      w,
+      h,
+      time,
       atmosphericIntensity,
       deltaPlayerX,
       deltaPlayerY
@@ -6254,6 +6630,73 @@ export class GameRenderer {
     }
   }
 
+  // Render floating mysterious light particles (Partikel Pendar Misterius) in soft cyan-blue and mystic green
+  private renderFogMysticMotes(
+    ctx: CanvasRenderingContext2D,
+    camX: number,
+    camY: number,
+    w: number,
+    h: number,
+    time: number,
+    atmosphericIntensity: number,
+    deltaPlayerX: number,
+    deltaPlayerY: number
+  ) {
+    if (atmosphericIntensity <= 0.01) return;
+
+    for (let i = 0; i < this.fogMysticMotes.length; i++) {
+      const m = this.fogMysticMotes[i];
+
+      // Gentle floating motion: slow upward drift with sinusoidal horizontal bobbing
+      m.x += m.vx + Math.sin(m.phase + time * 0.02) * 0.35;
+      m.y += m.vy + Math.cos(m.phase * 1.3 + time * 0.025) * 0.2;
+
+      // Parallax shift relative to camera/player motion
+      m.x -= deltaPlayerX * (m.depth * 0.4);
+      m.y -= deltaPlayerY * (m.depth * 0.4);
+
+      // Boundary wrap around camera viewport
+      if (m.x < camX - 40) m.x = camX + w + 30;
+      if (m.x > camX + w + 40) m.x = camX - 30;
+      if (m.y < camY - 40) m.y = camY + h + 30;
+      if (m.y > camY + h + 40) m.y = camY - 30;
+
+      // Rhythmic glowing pulse
+      const pulse = Math.sin(m.phase + time * 0.045) * 0.3 + 0.7;
+      const alpha = m.alpha * pulse * atmosphericIntensity;
+      if (alpha <= 0.01) continue;
+
+      const screenX = Math.round(m.x - camX);
+      const screenY = Math.round(m.y - camY);
+      const sz = m.size * (0.8 + m.depth * 0.4);
+
+      ctx.save();
+      // 1. Soft radial luminous aura
+      ctx.fillStyle = m.haloColor;
+      ctx.globalAlpha = alpha * 0.55;
+      ctx.beginPath();
+      ctx.arc(screenX, screenY, sz * 2.8, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 2. Magical diamond glint core
+      ctx.fillStyle = m.color;
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.moveTo(screenX, screenY - sz * 1.3);
+      ctx.lineTo(screenX + sz * 1.3, screenY);
+      ctx.lineTo(screenX, screenY + sz * 1.3);
+      ctx.lineTo(screenX - sz * 1.3, screenY);
+      ctx.closePath();
+      ctx.fill();
+
+      // 3. Pure white high-energy center glint
+      ctx.fillStyle = '#ffffff';
+      ctx.globalAlpha = alpha * 0.9;
+      ctx.fillRect(screenX - 1, screenY - 1, 2, 2);
+      ctx.restore();
+    }
+  }
+
   // Draw visual feedback marker when clicking - clearly differentiated by target type!
   private drawDestinationMarker() {
     if (!this.destinationTarget) return;
@@ -6457,14 +6900,238 @@ export class GameRenderer {
     ctx.restore();
   }
 
-  private drawWaterCurrents(camX: number, camY: number, w: number, h: number, isBridgeClear: boolean) {
+  private drawWaterCurrents(_camX: number, _camY: number, _w: number, _h: number, isBridgeClear: boolean) {
     // Extra visual polish on water flow
     const ctx = this.ctx;
+    const waveX = 22 * TILE_SIZE + Math.sin(this.tickCount * 0.05) * 8;
     if (isBridgeClear) {
-      ctx.fillStyle = 'rgba(255,255,255,0.2)';
-      const waveX = 22 * TILE_SIZE + Math.sin(this.tickCount * 0.05) * 8;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
       ctx.fillRect(waveX, 10 * TILE_SIZE, 6, 40);
       ctx.fillRect(waveX + 10, 18 * TILE_SIZE, 8, 30);
+    } else {
+      // In fog mode: luminous mist currents flowing along the river gorge
+      ctx.fillStyle = 'rgba(125, 211, 252, 0.16)';
+      ctx.fillRect(waveX, 10 * TILE_SIZE, 5, 36);
+      ctx.fillRect(waveX + 12, 18 * TILE_SIZE, 6, 28);
+    }
+  }
+
+  /**
+   * 16-Bit Pixel Water Shader & Frame-by-Frame Shimmer Reflection System
+   * Features:
+   * - Organic fluid current flow across tile boundaries (no grid seams)
+   * - Multi-tiered horizontal wave reflection crests with dynamic fluid oscillation
+   * - Moving caustic light ribbons refracting through water
+   * - In Fog Mode (!isColored): Mystical cold moonlight/fog reflection with animated
+   *   frame-by-frame 4-point diamond sparkles, luminous cyan/ice caustics, and deep aquatic shadows
+   * - In Restored Mode (isColored): Rich cerulean azure waters with bright foam crests and sun caustics
+   */
+  private drawWaterTile(x: number, y: number, isColored: boolean, r: number, c: number, isDeep: boolean) {
+    const ctx = this.ctx;
+
+    // 1. Base aquatic tint & depth foundation
+    // In fog mode: deep cold slate navy (#090d16 for deep, #0f172a for standard)
+    // In color mode: deep azure (#0369a1 for deep, #0284c7 for standard)
+    const baseColor = isColored
+      ? (isDeep ? '#0369a1' : '#0284c7')
+      : (isDeep ? '#090d16' : '#0f172a');
+
+    this.fillTileBase(x, y, baseColor);
+
+    // Continuous flow dynamics: river flows southward with gentle sinusoidal meander
+    const flowTick = this.tickCount * 0.07;
+    const spatialSeed = c * 37 + r * 19;
+
+    // Sub-surface depth gradient bands (gives water volume & body)
+    if (!isColored) {
+      // In fog mode: subtle deep obsidian-cyan undertone
+      ctx.fillStyle = isDeep ? '#070b14' : '#141e2e';
+      ctx.fillRect(x, y + 4, TILE_SIZE, 8);
+      ctx.fillRect(x, y + 18, TILE_SIZE, 8);
+
+      // Secondary ambient water body tone
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(x, y + 10, TILE_SIZE, 6);
+      ctx.fillRect(x, y + 24, TILE_SIZE, 6);
+    } else {
+      ctx.fillStyle = isDeep ? '#025282' : '#0369a1';
+      ctx.fillRect(x, y + 4, TILE_SIZE, 8);
+      ctx.fillRect(x, y + 18, TILE_SIZE, 8);
+
+      ctx.fillStyle = isDeep ? '#0369a1' : '#0ea5e9';
+      ctx.fillRect(x, y + 10, TILE_SIZE, 6);
+      ctx.fillRect(x, y + 24, TILE_SIZE, 6);
+    }
+
+    // 2. Animated Caustic Light Refraction Ribbons (Under-surface shimmering fluid currents)
+    // 3 rhythmic caustic wave bands moving diagonally with the river current
+    const causticShift1 = Math.sin(flowTick + spatialSeed * 0.1) * 4;
+    const causticShift2 = Math.cos(flowTick * 0.8 + spatialSeed * 0.15) * 3;
+    const causticShift3 = Math.sin(flowTick * 1.2 - spatialSeed * 0.12) * 3.5;
+
+    if (!isColored) {
+      // Mode Kabut: Ethereal pale cyan & silvery fog-light caustics reflecting through misty water
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.12)';
+      ctx.fillRect(x + 2 + causticShift1, y + 6, 12, 2);
+      ctx.fillRect(x + 18 - causticShift2, y + 14, 11, 2);
+      ctx.fillRect(x + 6 + causticShift3, y + 22, 14, 2);
+
+      ctx.fillStyle = 'rgba(186, 230, 253, 0.18)';
+      ctx.fillRect(x + 5 + causticShift1, y + 7, 7, 1);
+      ctx.fillRect(x + 20 - causticShift2, y + 15, 6, 1);
+      ctx.fillRect(x + 9 + causticShift3, y + 23, 8, 1);
+    } else {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.fillRect(x + 2 + causticShift1, y + 6, 12, 2);
+      ctx.fillRect(x + 18 - causticShift2, y + 14, 11, 2);
+      ctx.fillRect(x + 6 + causticShift3, y + 22, 14, 2);
+
+      ctx.fillStyle = 'rgba(224, 242, 254, 0.40)';
+      ctx.fillRect(x + 5 + causticShift1, y + 7, 7, 1);
+      ctx.fillRect(x + 20 - causticShift2, y + 15, 6, 1);
+      ctx.fillRect(x + 9 + causticShift3, y + 23, 8, 1);
+    }
+
+    // 3. Multi-tier Stepped Surface Wave Crests (16-bit liquid surface ripples)
+    // Wave Tier A (Upper half of tile)
+    const waveShiftA = Math.floor((this.tickCount * 0.09 + c * 0.8 + r * 0.4) % 6);
+    const waveX1 = x + ((waveShiftA * 5 + r * 7) % (TILE_SIZE + 4)) - 2;
+    const waveY1 = y + 9 + Math.floor(Math.sin(flowTick + c * 0.5) * 2);
+
+    // Wave Tier B (Lower half of tile)
+    const waveShiftB = Math.floor((this.tickCount * 0.08 + c * 0.6 - r * 0.5 + 3) % 6);
+    const waveX2 = x + ((waveShiftB * 5 + c * 5) % (TILE_SIZE + 4)) - 2;
+    const waveY2 = y + 23 + Math.floor(Math.cos(flowTick + r * 0.5) * 2);
+
+    if (!isColored) {
+      // Shimmering cold water ripples in fog
+      ctx.fillStyle = 'rgba(71, 85, 105, 0.6)';
+      ctx.fillRect(waveX1, waveY1, 10, 2);
+      ctx.fillRect(waveX2, waveY2, 9, 2);
+
+      // Specular crest line catching diffuse ambient light
+      ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
+      ctx.fillRect(waveX1 + 1, waveY1, 7, 1);
+      ctx.fillRect(waveX2 + 1, waveY2, 6, 1);
+
+      // Luminous ice-cyan edge glint
+      ctx.fillStyle = 'rgba(186, 230, 253, 0.85)';
+      ctx.fillRect(waveX1 + 3, waveY1, 3, 1);
+      ctx.fillRect(waveX2 + 2, waveY2, 3, 1);
+    } else {
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(waveX1, waveY1, 10, 2);
+      ctx.fillRect(waveX2, waveY2, 9, 2);
+
+      ctx.fillStyle = '#bae6fd';
+      ctx.fillRect(waveX1 + 1, waveY1, 7, 1);
+      ctx.fillRect(waveX2 + 1, waveY2, 6, 1);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(waveX1 + 3, waveY1, 3, 1);
+      ctx.fillRect(waveX2 + 2, waveY2, 3, 1);
+    }
+
+    // 4. Frame-by-Frame Sparkle Shader (Pantulan Cahaya Berkilau)
+    // Renders twinkling 16-bit specular starbursts on water surfaces
+    // Each tile possesses 3 deterministic sparkle points that cycle through 5 distinct animation frames:
+    // Frame 0: 1px faint spark
+    // Frame 1: 2x2 bright glint
+    // Frame 2: 4-point diamond starburst with glowing cross-tips & white center core
+    // Frame 3: 2x2 softening glimmer
+    // Frame 4: 1px fading spark
+    const sparklePoints = [
+      { ox: 6, oy: 7, speed: 0.10, offset: 0 },
+      { ox: 22, oy: 15, speed: 0.09, offset: 23 },
+      { ox: 13, oy: 25, speed: 0.11, offset: 41 },
+    ];
+
+    for (let i = 0; i < sparklePoints.length; i++) {
+      const sp = sparklePoints[i];
+      // Deterministic cycle per tile position
+      const phase = (this.tickCount * sp.speed + sp.offset + (c * 17 + r * 29)) % 36;
+
+      // Sparkle active window is 15 ticks (~250ms), otherwise idle
+      if (phase < 15) {
+        const stage = Math.floor(phase / 3); // 0, 1, 2, 3, 4
+        // Sway position slightly with wave
+        const sx = x + sp.ox + Math.floor(Math.sin(flowTick + sp.offset) * 1.5);
+        const sy = y + sp.oy + Math.floor(Math.cos(flowTick + sp.offset) * 1.2);
+
+        if (!isColored) {
+          // --- FOG MODE: Ethereal Mystical Starlight / Moonlight Sparkles ---
+          if (stage === 0) {
+            // Stage 0: Gentle ignition spark (1px cyan-silver)
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.65)';
+            ctx.fillRect(sx, sy, 1, 1);
+          } else if (stage === 1) {
+            // Stage 1: Expanding gleam (2x2 ice blue)
+            ctx.fillStyle = 'rgba(125, 211, 252, 0.85)';
+            ctx.fillRect(sx, sy, 2, 2);
+            ctx.fillStyle = 'rgba(240, 249, 255, 0.9)';
+            ctx.fillRect(sx, sy, 1, 1);
+          } else if (stage === 2) {
+            // Stage 2: APEX - Brilliant 4-Point Diamond Sparkle Star
+            // Outer cross wings (cyan/ice)
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(sx - 2, sy, 5, 1); // Horizontal wing (5px)
+            ctx.fillRect(sx, sy - 2, 1, 5); // Vertical wing (5px)
+
+            // Inner cross (bright ice cyan)
+            ctx.fillStyle = '#bae6fd';
+            ctx.fillRect(sx - 1, sy, 3, 1);
+            ctx.fillRect(sx, sy - 1, 1, 3);
+
+            // Center brilliant white core (pure white gleam)
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(sx, sy, 1, 1);
+
+            // Diagonal micro-halo
+            ctx.fillStyle = 'rgba(56, 189, 248, 0.35)';
+            ctx.fillRect(sx - 1, sy - 1, 1, 1);
+            ctx.fillRect(sx + 1, sy - 1, 1, 1);
+            ctx.fillRect(sx - 1, sy + 1, 1, 1);
+            ctx.fillRect(sx + 1, sy + 1, 1, 1);
+          } else if (stage === 3) {
+            // Stage 3: Softening glimmer
+            ctx.fillStyle = 'rgba(186, 230, 253, 0.85)';
+            ctx.fillRect(sx, sy, 2, 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillRect(sx, sy, 1, 1);
+          } else if (stage === 4) {
+            // Stage 4: Fading ember (1px soft ice blue)
+            ctx.fillStyle = 'rgba(125, 211, 252, 0.45)';
+            ctx.fillRect(sx, sy, 1, 1);
+          }
+        } else {
+          // --- RESTORED MODE: Sunlit Golden / Pure White Water Sparkles ---
+          if (stage === 0) {
+            ctx.fillStyle = 'rgba(254, 240, 138, 0.6)';
+            ctx.fillRect(sx, sy, 1, 1);
+          } else if (stage === 1) {
+            ctx.fillStyle = '#bae6fd';
+            ctx.fillRect(sx, sy, 2, 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(sx, sy, 1, 1);
+          } else if (stage === 2) {
+            // Apex Sunlit Diamond Star
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(sx - 2, sy, 5, 1);
+            ctx.fillRect(sx, sy - 2, 1, 5);
+            ctx.fillStyle = '#fef08a';
+            ctx.fillRect(sx - 1, sy, 3, 1);
+            ctx.fillRect(sx, sy - 1, 1, 3);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(sx, sy, 1, 1);
+          } else if (stage === 3) {
+            ctx.fillStyle = '#e0f2fe';
+            ctx.fillRect(sx, sy, 2, 2);
+          } else if (stage === 4) {
+            ctx.fillStyle = 'rgba(186, 230, 253, 0.5)';
+            ctx.fillRect(sx, sy, 1, 1);
+          }
+        }
+      }
     }
   }
 
