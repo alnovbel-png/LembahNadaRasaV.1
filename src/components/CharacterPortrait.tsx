@@ -244,55 +244,92 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
         </div>
       );
 
-    // 4. PROFESOR KOTEK - AYAM PENELITI EMOSI (SCIENTIST ROOSTER)
+    // 4. PROFESOR KOTEK - AYAM PENELITI EMOSI (SCIENTIST ROOSTER - OFFICIAL MODEL SHEET)
     case 'chicken_glasses':
       return (
         <div
-          className={`${sizeClasses} bg-[#280c10] rounded-xl flex items-center justify-center border-2 border-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.3)] overflow-hidden relative ${className}`}
+          className={`${sizeClasses} bg-[#0b1329] rounded-xl flex items-center justify-center border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.35)] overflow-hidden relative ${className}`}
         >
           <svg viewBox="0 0 32 32" className="w-full h-full p-0.5" style={svgStyle}>
-            {/* Shadow */}
-            <ellipse cx="16" cy="29" rx="9" ry="3" fill="rgba(0,0,0,0.4)" />
-            {/* Colorful Rooster Sickle Tail Feathers (Emerald, Copper, Royal Blue) */}
-            <path d="M 5,23 Q 0,16 3,10 Q 7,5 11,8 Q 7,14 6,24 Z" fill="#047857" />
-            <path d="M 6,21 Q 2,13 6,8 Q 9,5 12,10 Z" fill="#b45309" />
-            <path d="M 4,25 Q 0,20 2,15 Q 5,12 8,18 Z" fill="#1e1b4b" />
+            {/* Ground Shadow */}
+            <ellipse cx="16" cy="29.5" rx="9" ry="2.5" fill="rgba(0,0,0,0.45)" />
+
+            {/* High-Tech Reactor Backpack Canisters peeking over shoulders */}
+            {/* Left Canister: Glowing Green Liquid */}
+            <rect x="5" y="10" width="4" height="2" fill="#475569" rx="0.5" />
+            <rect x="5" y="12" width="4" height="8" fill="#15803d" />
+            <rect x="5.5" y="13" width="3" height="6" fill="#22c55e" />
+            <rect x="6.5" y="14" width="1" height="4" fill="#86efac" />
+            <rect x="5" y="20" width="4" height="2" fill="#334155" rx="0.5" />
+            <rect x="4" y="14" width="1.5" height="5" fill="#78350f" />
+
+            {/* Right Canister: Glowing Orange Liquid & Battery Module */}
+            <rect x="23" y="10" width="4" height="2" fill="#475569" rx="0.5" />
+            <rect x="23" y="12" width="4" height="8" fill="#c2410c" />
+            <rect x="23.5" y="13" width="3" height="6" fill="#f97316" />
+            <rect x="24.5" y="14" width="1" height="4" fill="#fde047" />
+            <rect x="23" y="20" width="4" height="2" fill="#334155" rx="0.5" />
+            <rect x="26.5" y="14" width="2" height="6" fill="#581c87" rx="0.5" />
+
             {/* Scaled Golden Chicken Feet */}
-            <rect x="12" y="25" width="2" height="4" fill="#f59e0b" />
-            <rect x="11" y="28" width="4" height="2" fill="#f59e0b" />
-            <rect x="18" y="25" width="2" height="4" fill="#f59e0b" />
-            <rect x="17" y="28" width="4" height="2" fill="#f59e0b" />
-            {/* Pristine Snowy Plumage Body */}
-            <rect x="10" y="12" width="13" height="13" fill="#ffffff" rx="2" />
-            <rect x="8" y="14" width="4" height="8" fill="#f1f5f9" /> {/* Wing */}
-            <rect x="10" y="13" width="2" height="11" fill="#e2e8f0" />
-            {/* Scholar Tweed Researcher Vest & Black Bowtie */}
-            <rect x="12" y="15" width="9" height="9" fill="#78350f" />
-            <rect x="14" y="15" width="5" height="8" fill="#fef3c7" />
-            <rect x="15" y="15" width="3" height="2" fill="#0f172a" /> {/* Bowtie */}
-            <rect x="16" y="18" width="1" height="1" fill="#f59e0b" /> {/* Button */}
-            {/* Red Royal Comb with Regal Points */}
-            <rect x="13" y="3" width="7" height="4" fill="#dc2626" />
-            <rect x="13" y="1" width="2" height="3" fill="#ef4444" />
-            <rect x="16" y="0" width="2" height="4" fill="#ef4444" />
-            <rect x="19" y="1" width="2" height="3" fill="#ef4444" />
-            {/* Head & Crimson Wattle */}
-            <rect x="12" y="6" width="9" height="7" fill="#ffffff" />
-            <rect x="16" y="12" width="3" height="3" fill="#ef4444" /> {/* Wattle */}
+            <rect x="12" y="24" width="2" height="5" fill="#f59e0b" />
+            <rect x="10" y="28" width="5" height="2" fill="#f59e0b" />
+            <rect x="18" y="24" width="2" height="5" fill="#f59e0b" />
+            <rect x="17" y="28" width="5" height="2" fill="#f59e0b" />
+
+            {/* White Lab Coat ("Jas Lab Putih") */}
+            <rect x="9" y="12" width="14" height="13" fill="#ffffff" rx="1.5" />
+            <rect x="9" y="12" width="2" height="13" fill="#e2e8f0" />
+            <rect x="9" y="24" width="14" height="1.5" fill="#cbd5e1" />
+
+            {/* Inner Blue Shirt & Belt */}
+            <rect x="13" y="13" width="6" height="10" fill="#0284c7" />
+            <rect x="13" y="21" width="6" height="2" fill="#0369a1" />
+
+            {/* High-Tech Chest Harness & Sensor Gauge */}
+            <rect x="11" y="13.5" width="10" height="1.5" fill="#78350f" />
+            {/* Center Gauge Casing */}
+            <rect x="13" y="14.5" width="6" height="6.5" fill="#f8fafc" stroke="#334155" strokeWidth="0.8" rx="0.5" />
+            {/* Gold Sensor Dial */}
+            <circle cx="16" cy="16" r="1.2" fill="#f59e0b" />
+            {/* Dual Red & Green Indicator Bars */}
+            <rect x="14" y="18" width="1.5" height="2.5" fill="#ef4444" />
+            <rect x="16.5" y="18" width="1.5" height="2.5" fill="#22c55e" />
+
+            {/* Arms / Wings */}
+            {/* Right Wing (Left on screen): White Lab Coat Sleeve */}
+            <rect x="7" y="13" width="3" height="8" fill="#f1f5f9" rx="1" />
+
+            {/* Left Wing (Right on screen): Bright Red Glove/Sleeve extending out */}
+            <rect x="22" y="14" width="7" height="5" fill="#ef4444" rx="1" />
+            <rect x="22" y="18" width="7" height="1" fill="#b91c1c" />
+            {/* Cyan device/sensor cuff underneath */}
+            <rect x="24" y="19" width="3.5" height="2" fill="#06b6d4" rx="0.5" />
+
+            {/* Head & Feathers */}
+            <rect x="11" y="5" width="10" height="8.5" fill="#ffffff" rx="1" />
+            <rect x="11" y="12" width="10" height="1.5" fill="#f1f5f9" />
+
+            {/* Tall Red Royal Comb */}
+            <rect x="14" y="0" width="4" height="7" fill="#ef4444" rx="1" />
+            <rect x="12" y="2" width="2.5" height="4" fill="#dc2626" rx="0.5" />
+            <rect x="17.5" y="2" width="2.5" height="4" fill="#dc2626" rx="0.5" />
+            <rect x="15" y="1" width="1.5" height="5" fill="#f87171" />
+
             {/* Golden Beak */}
-            <polygon points="21,9 26,10 21,12" fill="#f59e0b" />
-            {/* Professor Golden Monocle / Spectacles with Chain */}
-            <circle cx="16" cy="9" r="3.2" fill="none" stroke="#eab308" strokeWidth="1.2" />
-            <circle cx="16" cy="9" r="2.2" fill="rgba(56,189,248,0.25)" />
-            <rect x="15" y="8" width="2" height="2" fill="#0f172a" />
-            <rect x="15" y="8" width="1" height="1" fill="#ffffff" />
-            {/* Monocle chain dangling down to vest */}
-            <path d="M 13,10 Q 11,13 13,16" fill="none" stroke="#ca8a04" strokeWidth="0.8" />
-            {/* Emotion Thermometer Clipboard held in Wing */}
-            <rect x="20" y="16" width="5" height="8" fill="#b45309" />
-            <rect x="21" y="17" width="3" height="6" fill="#ffffff" />
-            <rect x="22" y="18" width="1" height="2" fill="#ef4444" /> {/* Red high */}
-            <rect x="22" y="20" width="1" height="2" fill="#22c55e" /> {/* Green calm */}
+            <polygon points="19,8.5 25,10 19,11.5" fill="#f59e0b" />
+            <polygon points="19,8.5 23,9.5 19,10" fill="#fbbf24" />
+
+            {/* Crimson Wattle */}
+            <rect x="17.5" y="11.5" width="3.5" height="4" fill="#ef4444" rx="1" />
+            <rect x="18" y="13.5" width="2.5" height="2" fill="#dc2626" />
+
+            {/* Blue Eye with Yellow Spectacles Frame */}
+            <rect x="14" y="7" width="5" height="4.5" fill="none" stroke="#eab308" strokeWidth="1" rx="1" />
+            <rect x="14.5" y="7.5" width="4" height="3.5" fill="rgba(56,189,248,0.2)" />
+            <rect x="15" y="8" width="2.5" height="2.5" fill="#0284c7" />
+            <rect x="16" y="8.5" width="1.5" height="1.5" fill="#0f172a" />
+            <rect x="15.5" y="8" width="1" height="1" fill="#ffffff" />
           </svg>
         </div>
       );
@@ -560,49 +597,89 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
         </div>
       );
 
-    // 10. DIDI - PENGELANA CILIK DESA (WANDERING SCOUT)
+    // 10. DIDI - PENGELANA CILIK DESA (WANDERING SCOUT - OFFICIAL MODEL SHEET)
     case 'wandering_scout':
       return (
         <div
-          className={`${sizeClasses} bg-[#072413] rounded-xl flex items-center justify-center border-2 border-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.3)] overflow-hidden relative ${className}`}
+          className={`${sizeClasses} bg-[#0c1322] rounded-xl flex items-center justify-center border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.35)] overflow-hidden relative ${className}`}
         >
+          {/* Official Explorer Compass Medal Emblem badge on top corner */}
+          <div className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#d97706] flex items-center justify-center border border-amber-300 shadow-sm z-10 pointer-events-none">
+            <div className="w-2 h-2 rounded-full bg-[#1e293b] flex items-center justify-center">
+              <div className="w-1 h-1 bg-[#10b981] rounded-xs" />
+            </div>
+          </div>
+
           <svg viewBox="0 0 32 32" className="w-full h-full p-0.5" style={svgStyle}>
-            {/* Shadow */}
-            <ellipse cx="16" cy="29" rx="10" ry="3.5" fill="rgba(0,0,0,0.4)" />
-            {/* Hiking Boots & Folded Ribbed Socks */}
-            <rect x="10" y="24" width="4" height="2" fill="#e2e8f0" />
-            <rect x="18" y="24" width="4" height="2" fill="#e2e8f0" />
-            <rect x="9" y="26" width="5" height="3" fill="#b45309" />
-            <rect x="18" y="26" width="5" height="3" fill="#b45309" />
-            {/* Cargo Shorts & Belt */}
-            <rect x="10" y="20" width="12" height="5" fill="#475569" />
-            <rect x="10" y="20" width="12" height="1" fill="#1e293b" />
-            {/* Expedition Khaki Shirt & Tangerine Neckerchief */}
-            <rect x="9" y="13" width="14" height="8" fill="#d97706" />
-            <polygon points="16,13 13,17 19,17" fill="#ea580c" /> {/* Neckerchief */}
-            <rect x="15" y="17" width="2" height="2" fill="#78350f" /> {/* Woggle */}
-            {/* Scout Merit Badge Sash with Multi-colored Badges */}
-            <line x1="10" y1="13" x2="20" y2="21" stroke="#15803d" strokeWidth="2.5" />
-            <circle cx="12" cy="15" r="0.8" fill="#ef4444" />
-            <circle cx="15" cy="17.5" r="0.8" fill="#3b82f6" />
-            <circle cx="18" cy="20" r="0.8" fill="#facc15" />
-            {/* Canvas Expedition Backpack with Bedroll */}
-            <rect x="5" y="12" width="5" height="11" fill="#166534" />
-            <rect x="4" y="9" width="7" height="3" fill="#ca8a04" rx="1" /> {/* Rolled Bedroll */}
-            {/* Cheerful Scout Face */}
-            <rect x="10" y="6" width="12" height="8" fill="#fed7aa" />
-            {/* Sparkly Eyes & Happy Grin */}
-            <rect x="11" y="8" width="2" height="2" fill="#0f172a" />
-            <rect x="19" y="8" width="2" height="2" fill="#0f172a" />
-            <rect x="13" y="11" width="6" height="2" fill="#e11d48" rx="0.5" />
-            {/* Forest Ranger Campaign Hat with Golden Eagle Feather */}
-            <rect x="6" y="4" width="20" height="3" fill="#14532d" />
-            <rect x="9" y="1" width="14" height="4" fill="#166534" />
-            <path d="M 21,3 Q 25,-1 23,-3 Q 21,-1 21,3 Z" fill="#facc15" /> {/* Feather */}
-            <rect x="22" y="-1" width="1" height="2" fill="#fef08a" />
-            {/* Carved Wooden Hiking Staff */}
-            <rect x="24" y="9" width="2" height="20" fill="#78350f" />
-            <circle cx="25" cy="9" r="1.5" fill="#ca8a04" /> {/* Totem head */}
+            {/* Ground Shadow */}
+            <ellipse cx="16" cy="28.5" rx="10" ry="2.5" fill="rgba(0,0,0,0.45)" />
+
+            {/* Canvas Expedition Backpack & Rolled Bedroll (peeking on viewer's left) */}
+            <rect x="4" y="9" width="6" height="4" fill="#b45309" />
+            <rect x="5" y="10" width="4" height="2" fill="#d97706" />
+            <rect x="4" y="13" width="6" height="9" fill="#14532d" />
+            <rect x="5" y="14" width="4" height="7" fill="#16a34a" />
+
+            {/* Slate Gray Cargo Trousers */}
+            <rect x="9" y="19" width="14" height="5" fill="#475569" />
+            <rect x="15" y="20" width="2" height="4" fill="#1e293b" /> {/* Inseam gap */}
+
+            {/* Caramel Leather Hiking Boots */}
+            <rect x="9" y="24" width="6" height="4" fill="#c2410c" />
+            <rect x="17" y="24" width="6" height="4" fill="#c2410c" />
+            <rect x="9" y="27" width="6" height="1.5" fill="#9a3412" />
+            <rect x="17" y="27" width="6" height="1.5" fill="#9a3412" />
+
+            {/* Orange Explorer Jacket */}
+            <rect x="9" y="12" width="14" height="8" fill="#ea580c" />
+            <rect x="14" y="12" width="4" height="2" fill="#c2410c" /> {/* Inner collar */}
+
+            {/* Green Backpack Harness Straps */}
+            <rect x="10" y="12" width="2" height="8" fill="#15803d" />
+            <rect x="20" y="12" width="2" height="8" fill="#15803d" />
+
+            {/* Chest Badges & Pockets (Official Model Sheet) */}
+            {/* Green Walkie-Talkie Clip */}
+            <rect x="11" y="13" width="2" height="3" fill="#15803d" />
+            <rect x="11" y="13" width="2" height="1" fill="#86efac" />
+            {/* Blue Pocket */}
+            <rect x="13" y="15" width="3" height="2" fill="#0284c7" />
+            {/* Dark Red Badge */}
+            <rect x="17" y="15" width="2" height="2" fill="#991b1b" />
+            {/* Green Badge */}
+            <rect x="15" y="17" width="3" height="2" fill="#16a34a" />
+
+            {/* Arms & Hands */}
+            {/* Right Arm hanging down */}
+            <rect x="6" y="13" width="3" height="5" fill="#ea580c" />
+            <rect x="6" y="18" width="3" height="3" fill="#fcd3a7" />
+            {/* Left Arm holding staff */}
+            <rect x="23" y="13" width="3" height="5" fill="#ea580c" />
+            <rect x="23" y="14" width="4" height="3" fill="#fcd3a7" />
+
+            {/* Tall Wooden Walking Staff */}
+            <rect x="24" y="7" width="4" height="4" fill="#b45309" />
+            <rect x="25" y="8" width="2" height="2" fill="#d97706" />
+            <rect x="25" y="10" width="2" height="18" fill="#78350f" />
+            <rect x="25" y="10" width="1" height="18" fill="#92400e" />
+
+            {/* Square Peach Head */}
+            <rect x="9" y="6" width="14" height="7" fill="#fcd3a7" />
+            {/* Solid Black Square Eyes */}
+            <rect x="11" y="7" width="2" height="2" fill="#000000" />
+            <rect x="19" y="7" width="2" height="2" fill="#000000" />
+            {/* Gentle Black Smile */}
+            <rect x="14" y="10" width="4" height="1" fill="#000000" />
+            <rect x="13" y="9.5" width="1" height="1" fill="#000000" />
+            <rect x="18" y="9.5" width="1" height="1" fill="#000000" />
+
+            {/* Green Scout Fedora Hat with Center Crease */}
+            <rect x="5" y="5" width="22" height="2" fill="#14532d" />
+            <rect x="6" y="4" width="20" height="1" fill="#16a34a" />
+            <rect x="9" y="0" width="14" height="5" fill="#16a34a" />
+            <rect x="14" y="-1" width="4" height="2" fill="#14532d" /> {/* Center Crease */}
+            <rect x="10" y="-1" width="4" height="1" fill="#22c55e" /> {/* Left peak */}
+            <rect x="18" y="-1" width="4" height="1" fill="#22c55e" /> {/* Right peak */}
           </svg>
         </div>
       );

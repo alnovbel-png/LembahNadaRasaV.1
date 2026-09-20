@@ -685,11 +685,11 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
     zone: 'plaza',
     zoneName: 'Sudut Riset Rahasia Alun-Alun Selatan',
     locationCoordinates: { x: 16, y: 19 },
-    locationHint: 'Bersembunyi di dekat semak bunga kuning di selatan alun-alun memakai kacamata bulat.',
+    locationHint: 'Bersembunyi di dekat semak bunga kuning di selatan alun-alun dengan jas lab putih, sarung tangan merah, dan tabung reaktor emosi di punggungnya.',
     personality: 'Eksentrik, jenaka, super cerdas, dan percaya bahwa tawa adalah teknologi pengurang stres tercanggih.',
     favoriteQuote: '"Kukuruyuuuk! Satu tawa sehat melepaskan triliunan molekul endorfin yang memusnahkan amukan amigdala!"',
     sprite: 'chicken_glasses',
-    bio: 'Profesor Kotek adalah ayam cendekiawan misterius yang memakai kacamata baca. Ia melakukan eksperimen ilmiah tentang bagaimana humor sehat dan senyuman konyol mampu mencairkan suasana paling kaku sekalipun.',
+    bio: 'Profesor Kotek adalah ayam cendekiawan jenius yang mengenakan jas laboratorium putih, ransel tabung reaktor emosi (cairan hijau dan oranye), serta sarung tangan penelitian merah. Ia meriset formula ilmiah bagaimana humor sehat dan senyuman mampu menstabilkan gelombang neurokimiawi hati secara instan.',
     surfaceEmotion: {
       type: 'gembira',
       label: 'Kegembiraan Intelektual Jenaka',

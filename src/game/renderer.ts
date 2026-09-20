@@ -4991,83 +4991,330 @@ export class GameRenderer {
         break;
       }
 
-      case 'chicken_glasses': { // Profesor Kotek - Emotional Science Rooster
-        // 1. Pecker rhythm
+      case 'chicken_glasses': { // Profesor Kotek - Emotional Science Rooster (Official 4-Direction Model Sheet)
+        // 1. Pecker rhythm & subtle head turn
         const peckX = Math.cos(this.tickCount * 0.12) * 1.5 + headTurnX;
         const peckY = Math.sin(this.tickCount * 0.12) * 1.5 + headBob;
 
-        // 2. Magnificent Sickle Tail Feathers (Emerald, Bronze, Indigo)
-        const tailWag = Math.sin(this.tickCount * 0.1) * 2;
-        ctx.fillStyle = '#047857';
-        ctx.fillRect(nx + 2, ny + 11 + idleBob + tailWag, 5, 8);
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(nx + 4, ny + 9 + idleBob + tailWag, 4, 7);
-        ctx.fillStyle = '#1e1b4b';
-        ctx.fillRect(nx + 2, ny + 15 + idleBob + tailWag, 5, 6);
+        // Determine orientation: 'up' (Belakang), 'down' (Depan), 'right' (Samping Ka), 'left' (Samping Kii)
+        const facing = npc.facing || (turnDir === -1 ? 'left' : turnDir === 1 ? 'right' : 'down');
 
-        // 3. Scaled Golden Feet
-        ctx.fillStyle = '#f59e0b';
-        ctx.fillRect(nx + 12, ny + 24, 2, 4);
-        ctx.fillRect(nx + 11, ny + 27, 4, 2);
-        ctx.fillRect(nx + 18, ny + 24, 2, 4);
-        ctx.fillRect(nx + 17, ny + 27, 4, 2);
+        if (facing === 'up') {
+          // ==================== BELAKANG (BACK VIEW) ====================
+          // 1. Scaled Golden Chicken Feet
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(nx + 12, ny + 23, 2, 5);
+          ctx.fillRect(nx + 10, ny + 27, 4, 2);
+          ctx.fillRect(nx + 18, ny + 23, 2, 5);
+          ctx.fillRect(nx + 17, ny + 27, 4, 2);
 
-        // 4. Snowy Plumage Body
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(nx + 9, ny + 11 + idleBob, 14, 13);
-        ctx.fillStyle = '#f1f5f9';
-        ctx.fillRect(nx + 7, ny + 13 + idleBob, 4, 8); // Left wing
+          // 2. White Lab Coat Bottom Hem
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 9, ny + 18 + idleBob, 14, 5);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.fillRect(nx + 9, ny + 22 + idleBob, 14, 1);
 
-        // 5. Tweed Scholar Vest & Black Bowtie
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(nx + 12, ny + 14 + idleBob, 9, 9);
-        ctx.fillStyle = '#fef3c7';
-        ctx.fillRect(nx + 14, ny + 14 + idleBob, 5, 8);
-        ctx.fillStyle = '#0f172a'; // Bowtie
-        ctx.fillRect(nx + 15, ny + 14 + idleBob, 3, 2);
-        ctx.fillStyle = '#f59e0b'; // Button
-        ctx.fillRect(nx + 16, ny + 17 + idleBob, 1, 1);
+          // 3. High-Tech Chemical/Emotion Backpack ("Tas Tabung Reaktor Riset Emosi")
+          // Steel mounting frame
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(nx + 6, ny + 10 + idleBob, 20, 11);
 
-        // 6. Regal Red Royal Comb with Multiple Points
-        ctx.fillStyle = '#dc2626';
-        ctx.fillRect(nx + 12 + peckX, ny + 3 + peckY, 7, 4);
-        ctx.fillStyle = '#ef4444';
-        ctx.fillRect(nx + 12 + peckX, ny + 1 + peckY, 2, 3);
-        ctx.fillRect(nx + 15 + peckX, ny + 0 + peckY, 2, 4);
-        ctx.fillRect(nx + 18 + peckX, ny + 1 + peckY, 2, 3);
+          // Left Canister: Glowing Green Liquid (#22c55e)
+          ctx.fillStyle = '#475569'; // Top metal cap
+          ctx.fillRect(nx + 7, ny + 9 + idleBob, 4, 2);
+          ctx.fillStyle = '#15803d'; // Outer glass
+          ctx.fillRect(nx + 7, ny + 11 + idleBob, 4, 9);
+          ctx.fillStyle = '#22c55e'; // Green liquid core
+          ctx.fillRect(nx + 8, ny + 12 + idleBob, 2, 7);
+          ctx.fillStyle = '#86efac'; // Bubble / glow line
+          ctx.fillRect(nx + 8, ny + 14 + idleBob, 1, 2);
+          ctx.fillStyle = '#334155'; // Bottom metal cap
+          ctx.fillRect(nx + 7, ny + 20 + idleBob, 4, 2);
 
-        // 7. Rooster Head & Crimson Wattle
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(nx + 11 + peckX, ny + 5 + peckY, 9, 8);
-        ctx.fillStyle = '#ef4444'; // Wattle
-        ctx.fillRect(nx + 15 + peckX, ny + 12 + peckY, 3, 3);
+          // Right Canister: Glowing Orange/Amber Liquid (#f97316)
+          ctx.fillStyle = '#475569'; // Top metal cap
+          ctx.fillRect(nx + 21, ny + 9 + idleBob, 4, 2);
+          ctx.fillStyle = '#c2410c'; // Outer glass
+          ctx.fillRect(nx + 21, ny + 11 + idleBob, 4, 9);
+          ctx.fillStyle = '#f97316'; // Orange liquid core
+          ctx.fillRect(nx + 22, ny + 12 + idleBob, 2, 7);
+          ctx.fillStyle = '#fde047'; // Glow line
+          ctx.fillRect(nx + 22, ny + 14 + idleBob, 1, 2);
+          ctx.fillStyle = '#334155'; // Bottom metal cap
+          ctx.fillRect(nx + 21, ny + 20 + idleBob, 4, 2);
 
-        // 8. Golden Beak
-        ctx.fillStyle = '#f59e0b';
-        const beakX = turnDir === -1 ? nx + 7 : nx + 19;
-        ctx.fillRect(beakX + peckX, ny + 8 + peckY, 4, 3);
+          // Center Processor Unit (Metal gray with status LEDs & cables)
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(nx + 12, ny + 11 + idleBob, 8, 9);
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(nx + 13, ny + 12 + idleBob, 6, 5);
+          ctx.fillStyle = '#ef4444'; // Red status light
+          ctx.fillRect(nx + 14, ny + 13 + idleBob, 2, 1);
+          ctx.fillStyle = '#22c55e'; // Green status light
+          ctx.fillRect(nx + 14, ny + 15 + idleBob, 2, 1);
+          ctx.fillStyle = '#f59e0b'; // Amber gauge
+          ctx.fillRect(nx + 17, ny + 13 + idleBob, 1, 3);
+          ctx.fillStyle = '#94a3b8'; // Connecting tubes
+          ctx.fillRect(nx + 11, ny + 18 + idleBob, 10, 1);
 
-        // 9. Golden Monocle with Chain to Vest
-        ctx.strokeStyle = '#eab308';
-        ctx.lineWidth = 1.2;
-        ctx.strokeRect(nx + 14 + peckX + eyeTurnX, ny + 7 + peckY, 5, 5);
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(nx + 15 + peckX + eyeTurnX, ny + 8 + peckY, 2, 2);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(nx + 15 + peckX + eyeTurnX, ny + 8 + peckY, 1, 1);
-        // Chain
-        ctx.fillStyle = '#ca8a04';
-        ctx.fillRect(nx + 13 + peckX, ny + 11 + peckY, 1, 4);
+          // Side modules: Brown pack and dark purple canister on right
+          ctx.fillStyle = '#92400e';
+          ctx.fillRect(nx + 25, ny + 11 + idleBob, 2, 7);
+          ctx.fillStyle = '#581c87';
+          ctx.fillRect(nx + 26, ny + 14 + idleBob, 2, 5);
 
-        // 10. Emotion Gauge Clipboard held in wing
-        ctx.fillStyle = '#b45309';
-        ctx.fillRect(nx + 20, ny + 15 + idleBob, 5, 8);
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(nx + 21, ny + 16 + idleBob, 3, 6);
-        ctx.fillStyle = '#ef4444'; // Red high gauge
-        ctx.fillRect(nx + 22, ny + 17 + idleBob, 1, 2);
-        ctx.fillStyle = '#22c55e'; // Green calm gauge
-        ctx.fillRect(nx + 22, ny + 19 + idleBob, 1, 2);
+          // 4. Arms / Wings
+          // Left Wing: Red glove/sleeve sticking out to the left
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(nx + 2, ny + 13 + idleBob, 6, 5);
+          ctx.fillStyle = '#b91c1c';
+          ctx.fillRect(nx + 2, ny + 17 + idleBob, 6, 1);
+          // Right Wing: White lab coat sleeve
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 24, ny + 13 + idleBob, 3, 7);
+
+          // 5. Head from behind & Red Comb
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 11 + peckX, ny + 5 + peckY, 10, 8);
+          ctx.fillStyle = '#e2e8f0';
+          ctx.fillRect(nx + 11 + peckX, ny + 11 + peckY, 10, 2);
+          // Tall Red Royal Comb
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(nx + 14 + peckX, ny - 2 + peckY, 4, 8);
+          ctx.fillStyle = '#f87171';
+          ctx.fillRect(nx + 15 + peckX, ny - 1 + peckY, 2, 6);
+
+        } else if (facing === 'right') {
+          // ==================== SAMPING KA. (SIDE RIGHT) ====================
+          // 1. Scaled Golden Feet in walking profile
+          ctx.fillStyle = '#d97706'; // Back leg
+          ctx.fillRect(nx + 13, ny + 23, 2, 5);
+          ctx.fillRect(nx + 12, ny + 27, 4, 2);
+          ctx.fillStyle = '#f59e0b'; // Front leg
+          ctx.fillRect(nx + 18, ny + 23, 2, 5);
+          ctx.fillRect(nx + 17, ny + 27, 5, 2);
+
+          // 2. High-Tech Backpack on back (left side of sprite)
+          ctx.fillStyle = '#334155'; // Bracket
+          ctx.fillRect(nx + 6, ny + 11 + idleBob, 3, 9);
+          ctx.fillStyle = '#92400e'; // Pack
+          ctx.fillRect(nx + 5, ny + 12 + idleBob, 2, 7);
+          // Glowing Green Canister
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(nx + 7, ny + 9 + idleBob, 4, 2);
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(nx + 7, ny + 11 + idleBob, 4, 9);
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(nx + 8, ny + 12 + idleBob, 2, 7);
+          ctx.fillStyle = '#86efac';
+          ctx.fillRect(nx + 8, ny + 13 + idleBob, 1, 3);
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(nx + 7, ny + 20 + idleBob, 4, 2);
+          ctx.fillStyle = '#78350f'; // Tube
+          ctx.fillRect(nx + 9, ny + 21 + idleBob, 2, 2);
+
+          // 3. White Lab Coat & Blue Shirt
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 10, ny + 12 + idleBob, 9, 12);
+          ctx.fillStyle = '#0284c7'; // Blue shirt at chest front
+          ctx.fillRect(nx + 17, ny + 13 + idleBob, 3, 8);
+          ctx.fillStyle = '#f8fafc'; // Coat lapel
+          ctx.fillRect(nx + 15, ny + 12 + idleBob, 2, 12);
+
+          // 4. Clipboard / Research Notes tucked under wing
+          ctx.fillStyle = '#92400e'; // Clipboard wood
+          ctx.fillRect(nx + 19, ny + 15 + idleBob, 3, 8);
+          ctx.fillStyle = '#ffffff'; // Paper
+          ctx.fillRect(nx + 20, ny + 16 + idleBob, 2, 6);
+          ctx.fillStyle = '#22c55e'; // Emotion graph line
+          ctx.fillRect(nx + 20, ny + 17 + idleBob, 1, 2);
+
+          // 5. White Wing over body
+          ctx.fillStyle = '#f1f5f9';
+          ctx.fillRect(nx + 12, ny + 14 + idleBob, 5, 7);
+
+          // 6. Head Facing Right
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 13 + peckX, ny + 5 + peckY, 8, 8);
+          // Tall Red Comb
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(nx + 14 + peckX, ny - 2 + peckY, 4, 8);
+          ctx.fillStyle = '#f87171';
+          ctx.fillRect(nx + 15 + peckX, ny - 1 + peckY, 2, 6);
+          // Golden Beak
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(nx + 21 + peckX, ny + 8 + peckY, 5, 3);
+          // Crimson Wattle
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(nx + 20 + peckX, ny + 11 + peckY, 3, 4);
+          // Blue Eye with Yellow Spectacles Frame
+          ctx.strokeStyle = '#eab308';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(nx + 16 + peckX, ny + 7 + peckY, 4, 4);
+          ctx.fillStyle = '#0284c7';
+          ctx.fillRect(nx + 17 + peckX, ny + 8 + peckY, 2, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 17 + peckX, ny + 8 + peckY, 1, 1);
+
+        } else if (facing === 'left') {
+          // ==================== SAMPING KII. (SIDE LEFT) ====================
+          // 1. Scaled Golden Feet in walking profile
+          ctx.fillStyle = '#d97706'; // Back leg
+          ctx.fillRect(nx + 17, ny + 23, 2, 5);
+          ctx.fillRect(nx + 16, ny + 27, 4, 2);
+          ctx.fillStyle = '#f59e0b'; // Front leg
+          ctx.fillRect(nx + 12, ny + 23, 2, 5);
+          ctx.fillRect(nx + 10, ny + 27, 5, 2);
+
+          // 2. High-Tech Backpack on back (right side of sprite)
+          ctx.fillStyle = '#334155'; // Bracket
+          ctx.fillRect(nx + 23, ny + 11 + idleBob, 3, 9);
+          ctx.fillStyle = '#92400e'; // Pack
+          ctx.fillRect(nx + 25, ny + 12 + idleBob, 2, 7);
+          // Glowing Canister
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(nx + 21, ny + 9 + idleBob, 4, 2);
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(nx + 21, ny + 11 + idleBob, 4, 9);
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(nx + 22, ny + 12 + idleBob, 2, 7);
+          ctx.fillStyle = '#86efac';
+          ctx.fillRect(nx + 22, ny + 13 + idleBob, 1, 3);
+          ctx.fillStyle = '#334155';
+          ctx.fillRect(nx + 21, ny + 20 + idleBob, 4, 2);
+          ctx.fillStyle = '#78350f'; // Tube
+          ctx.fillRect(nx + 21, ny + 21 + idleBob, 2, 2);
+
+          // 3. White Lab Coat & Blue Shirt
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 13, ny + 12 + idleBob, 9, 12);
+          ctx.fillStyle = '#0284c7'; // Blue shirt at chest front
+          ctx.fillRect(nx + 12, ny + 13 + idleBob, 3, 8);
+          ctx.fillStyle = '#f8fafc'; // Coat lapel
+          ctx.fillRect(nx + 15, ny + 12 + idleBob, 2, 12);
+
+          // 4. Clipboard / Research Notes under Wing
+          ctx.fillStyle = '#92400e'; // Clipboard wood
+          ctx.fillRect(nx + 10, ny + 15 + idleBob, 3, 8);
+          ctx.fillStyle = '#ffffff'; // Paper
+          ctx.fillRect(nx + 10, ny + 16 + idleBob, 2, 6);
+          ctx.fillStyle = '#ef4444'; // Emotion graph line
+          ctx.fillRect(nx + 11, ny + 17 + idleBob, 1, 2);
+
+          // 5. White Wing over body
+          ctx.fillStyle = '#f1f5f9';
+          ctx.fillRect(nx + 15, ny + 14 + idleBob, 5, 7);
+
+          // 6. Head Facing Left
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 11 + peckX, ny + 5 + peckY, 8, 8);
+          // Tall Red Comb
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(nx + 14 + peckX, ny - 2 + peckY, 4, 8);
+          ctx.fillStyle = '#f87171';
+          ctx.fillRect(nx + 15 + peckX, ny - 1 + peckY, 2, 6);
+          // Golden Beak
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(nx + 6 + peckX, ny + 8 + peckY, 5, 3);
+          // Crimson Wattle
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(nx + 9 + peckX, ny + 11 + peckY, 3, 4);
+          // Blue Eye with Yellow Spectacles Frame
+          ctx.strokeStyle = '#eab308';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(nx + 12 + peckX, ny + 7 + peckY, 4, 4);
+          ctx.fillStyle = '#0284c7';
+          ctx.fillRect(nx + 13 + peckX, ny + 8 + peckY, 2, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 13 + peckX, ny + 8 + peckY, 1, 1);
+
+        } else {
+          // ==================== DEPAN (FRONT VIEW - DEFAULT) ====================
+          // 1. Scaled Golden Rooster Legs & Feet
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(nx + 12, ny + 23, 2, 5);
+          ctx.fillRect(nx + 10, ny + 27, 5, 2);
+          ctx.fillRect(nx + 18, ny + 23, 2, 5);
+          ctx.fillRect(nx + 17, ny + 27, 5, 2);
+
+          // 2. Backpack Apparatus Peek Behind Shoulders
+          // Left side (our left): Green canister cap & purple module
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(nx + 6, ny + 9 + idleBob, 3, 2);
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(nx + 6, ny + 11 + idleBob, 3, 3);
+          ctx.fillStyle = '#581c87';
+          ctx.fillRect(nx + 5, ny + 14 + idleBob, 2, 5);
+          // Right side (our right): Orange canister cap & cyan tube
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(nx + 23, ny + 9 + idleBob, 3, 2);
+          ctx.fillStyle = '#f97316';
+          ctx.fillRect(nx + 23, ny + 11 + idleBob, 3, 3);
+
+          // 3. White Lab Coat & Blue Shirt
+          ctx.fillStyle = '#ffffff'; // White lab coat
+          ctx.fillRect(nx + 9, ny + 12 + idleBob, 14, 12);
+          ctx.fillStyle = '#f1f5f9';
+          ctx.fillRect(nx + 9, ny + 12 + idleBob, 2, 12);
+          ctx.fillStyle = '#0284c7'; // Blue shirt down center
+          ctx.fillRect(nx + 13, ny + 13 + idleBob, 6, 9);
+          ctx.fillStyle = '#0369a1'; // Waist/belt line
+          ctx.fillRect(nx + 13, ny + 20 + idleBob, 6, 2);
+
+          // 4. High-Tech Chest Harness & Dual-Sensor Badge
+          ctx.fillStyle = '#78350f'; // Harness straps
+          ctx.fillRect(nx + 11, ny + 13 + idleBob, 10, 1.5);
+          // Base casing (beige/white with dark border)
+          ctx.fillStyle = '#f8fafc';
+          ctx.fillRect(nx + 13, ny + 14 + idleBob, 6, 6);
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 0.8;
+          ctx.strokeRect(nx + 13, ny + 14 + idleBob, 6, 6);
+          // Golden round sensor at top
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(nx + 15, ny + 14 + idleBob, 2, 2);
+          // Dual indicator bars
+          ctx.fillStyle = '#ef4444'; // Left red bar
+          ctx.fillRect(nx + 14, ny + 17 + idleBob, 1.5, 2.5);
+          ctx.fillStyle = '#22c55e'; // Right green bar
+          ctx.fillRect(nx + 16.5, ny + 17 + idleBob, 1.5, 2.5);
+
+          // 5. Wings & Arms
+          // Right Wing (our left): Folded white lab coat sleeve
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 7, ny + 13 + idleBob, 3, 8);
+          // Left Wing (our right): Bright Red Glove/Sleeve extending out with cyan device!
+          ctx.fillStyle = '#ef4444'; // Red glove
+          ctx.fillRect(nx + 22, ny + 14 + idleBob, 7, 4.5);
+          ctx.fillStyle = '#b91c1c'; // Red cuff shading
+          ctx.fillRect(nx + 22, ny + 17.5 + idleBob, 7, 1);
+          ctx.fillStyle = '#06b6d4'; // Cyan gadget cuff below glove
+          ctx.fillRect(nx + 24, ny + 18.5 + idleBob, 3, 2);
+
+          // 6. Head & Red Royal Comb
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 11 + peckX, ny + 5 + peckY, 10, 8);
+          // Tall Red Royal Comb
+          ctx.fillStyle = '#ef4444';
+          ctx.fillRect(nx + 14 + peckX, ny - 2 + peckY, 4, 8);
+          ctx.fillStyle = '#f87171';
+          ctx.fillRect(nx + 15 + peckX, ny - 1 + peckY, 2, 6);
+
+          // Golden Beak & Crimson Wattle
+          ctx.fillStyle = '#f59e0b';
+          ctx.fillRect(nx + 18 + peckX, ny + 8 + peckY, 4, 3);
+          ctx.fillStyle = '#ef4444'; // Wattle
+          ctx.fillRect(nx + 17 + peckX, ny + 11 + peckY, 3, 4);
+
+          // Blue Eye with Yellow Spectacles Frame
+          ctx.strokeStyle = '#eab308';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(nx + 14 + peckX + eyeTurnX, ny + 7 + peckY, 4, 4);
+          ctx.fillStyle = '#0284c7';
+          ctx.fillRect(nx + 15 + peckX + eyeTurnX, ny + 8 + peckY, 2, 2);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(nx + 15 + peckX + eyeTurnX, ny + 8 + peckY, 1, 1);
+        }
         break;
       }
 
@@ -5340,79 +5587,397 @@ export class GameRenderer {
         break;
       }
 
-      case 'wandering_scout': { // Didi - Little Wanderer Scout
-        // 1. Hiking Boots & Ribbed Socks
-        const scoutLegStride = Math.sin(this.tickCount * 0.25) * 2;
-        ctx.fillStyle = '#e2e8f0'; // Socks
-        ctx.fillRect(nx + 10, ny + 23, 4, 2);
-        ctx.fillRect(nx + 18, ny + 23, 4, 2);
-        ctx.fillStyle = '#b45309'; // Boots
-        ctx.fillRect(nx + 9, ny + 25 + scoutLegStride, 5, 3);
-        ctx.fillRect(nx + 18, ny + 25 - scoutLegStride, 5, 3);
+      case 'wandering_scout': { // Didi - Little Wanderer Scout (Official 4-Direction Model Sheet)
+        // Determine orientation: 'up' (Belakang), 'down' (Depan), 'right' (Kanan), 'left' (Kiri)
+        const facing = npc.facing || (turnDir === -1 ? 'left' : turnDir === 1 ? 'right' : 'down');
 
-        // 2. Cargo Shorts & Belt
-        ctx.fillStyle = '#475569';
-        ctx.fillRect(nx + 10, ny + 19 + idleBob, 12, 5);
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(nx + 10, ny + 19 + idleBob, 12, 1);
+        if (facing === 'up') {
+          // ==================== BELAKANG (BACK VIEW) ====================
+          // 1. Soft Ground Shadow
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+          ctx.fillRect(nx + 6, ny + 27, 20, 3.5);
 
-        // 3. Canvas Expedition Backpack with Rolled Bedroll
-        ctx.fillStyle = '#14532d';
-        ctx.fillRect(nx + 5, ny + 12 + idleBob, 6, 11);
-        ctx.fillStyle = '#16a34a';
-        ctx.fillRect(nx + 6, ny + 13 + idleBob, 4, 9);
-        ctx.fillStyle = '#ca8a04'; // Bedroll
-        ctx.fillRect(nx + 4, ny + 9 + idleBob, 8, 3);
+          // 2. Slate Gray Trousers & Brown Hiking Boots
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(nx + 9, ny + 19 + idleBob, 14, 5);
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(nx + 15, ny + 20 + idleBob, 2, 4); // Inseam gap
 
-        // 4. Explorer Khaki Shirt with Tangerine Neckerchief
-        ctx.fillStyle = '#d97706';
-        ctx.fillRect(nx + 9, ny + 13 + idleBob, 14, 8);
-        ctx.fillStyle = '#ea580c'; // Neckerchief
-        ctx.fillRect(nx + 13 + headTurnX * 0.4, ny + 13 + idleBob, 6, 4);
-        ctx.fillStyle = '#78350f'; // Wooden woggle
-        ctx.fillRect(nx + 15 + headTurnX * 0.4, ny + 16 + idleBob, 2, 2);
+          // Hiking Boots
+          ctx.fillStyle = '#c2410c';
+          ctx.fillRect(nx + 9, ny + 24, 6, 4);
+          ctx.fillRect(nx + 17, ny + 24, 6, 4);
+          ctx.fillStyle = '#9a3412'; // Soles
+          ctx.fillRect(nx + 9, ny + 27, 6, 1.5);
+          ctx.fillRect(nx + 17, ny + 27, 6, 1.5);
 
-        // 5. Scout Merit Badge Sash with Colorful Badges
-        ctx.fillStyle = '#15803d';
-        ctx.fillRect(nx + 10, ny + 14 + idleBob, 3, 2);
-        ctx.fillRect(nx + 13, ny + 16 + idleBob, 3, 2);
-        ctx.fillRect(nx + 16, ny + 18 + idleBob, 3, 2);
-        ctx.fillStyle = '#ef4444'; // Red badge
-        ctx.fillRect(nx + 11, ny + 14 + idleBob, 1, 1);
-        ctx.fillStyle = '#3b82f6'; // Blue badge
-        ctx.fillRect(nx + 14, ny + 16 + idleBob, 1, 1);
-        ctx.fillStyle = '#facc15'; // Yellow badge
-        ctx.fillRect(nx + 17, ny + 18 + idleBob, 1, 1);
+          // 3. Wooden Walking Staff & Arms
+          // Viewer's Left (Didi's Left Arm holding tall walking staff)
+          ctx.fillStyle = '#b45309'; // Knob
+          ctx.fillRect(nx + 5, ny + 7 + idleBob, 4, 4);
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(nx + 6, ny + 8 + idleBob, 2, 2);
+          ctx.fillStyle = '#78350f'; // Shaft
+          ctx.fillRect(nx + 6, ny + 10 + idleBob, 2, 18);
+          ctx.fillStyle = '#ea580c'; // Sleeve
+          ctx.fillRect(nx + 5, ny + 13 + idleBob, 3, 5);
+          ctx.fillStyle = '#fcd3a7'; // Peach Hand gripping staff
+          ctx.fillRect(nx + 4, ny + 14 + idleBob, 4, 3);
 
-        // 6. Cheerful Face, Sparkly Eyes & Grin
-        ctx.fillStyle = '#fed7aa';
-        ctx.fillRect(nx + 10 + headTurnX, ny + 6 + headBob, 12, 8);
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(nx + 11 + headTurnX + eyeTurnX, ny + 8 + headBob, 2, 2);
-        ctx.fillRect(nx + 19 + headTurnX + eyeTurnX, ny + 8 + headBob, 2, 2);
-        ctx.fillStyle = '#e11d48'; // Grin
-        ctx.fillRect(nx + 13 + headTurnX, ny + 11 + headBob, 6, 2);
+          // Viewer's Right (Didi's Right Arm hanging down)
+          ctx.fillStyle = '#ea580c';
+          ctx.fillRect(nx + 24, ny + 13 + idleBob, 3, 5);
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 24, ny + 18 + idleBob, 3, 3);
 
-        // 7. Forest Ranger Campaign Hat with Golden Eagle Feather
-        ctx.fillStyle = '#14532d';
-        ctx.fillRect(nx + 6 + headTurnX, ny + 4 + headBob, 20, 3);
-        ctx.fillStyle = '#166534';
-        ctx.fillRect(nx + 9 + headTurnX, ny + 1 + headBob, 14, 4);
-        const featherWiggle = Math.sin(this.tickCount * 0.2) * 2;
-        ctx.fillStyle = '#facc15'; // Eagle feather
-        ctx.fillRect(nx + 20 + headTurnX + featherWiggle, ny - 2 + headBob, 2, 5);
-        ctx.fillStyle = '#fef08a';
-        ctx.fillRect(nx + 21 + headTurnX + featherWiggle, ny - 3 + headBob, 1, 3);
+          // 4. Large Expedition Green Backpack & Rolled Mat
+          // Rolled Sleeping Mat / Bedroll on Top (Tan camel leather)
+          ctx.fillStyle = '#92400e';
+          ctx.fillRect(nx + 5, ny + 8 + idleBob, 22, 4);
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(nx + 6, ny + 9 + idleBob, 20, 2);
+          ctx.fillStyle = '#b45309'; // Roll ends
+          ctx.fillRect(nx + 5, ny + 9 + idleBob, 2, 2);
+          ctx.fillRect(nx + 25, ny + 9 + idleBob, 2, 2);
 
-        // 8. Carved Wooden Hiking Staff & Friendly Wave
-        ctx.fillStyle = '#78350f';
-        ctx.fillRect(nx + 24, ny + 9 + idleBob, 2, 19);
-        ctx.fillStyle = '#ca8a04'; // Totem head
-        ctx.fillRect(nx + 23, ny + 8 + idleBob, 4, 3);
-        if (isNoticingPlayer) {
-          const wave = Math.sin(this.tickCount * 0.3) * 3;
-          ctx.fillStyle = '#fed7aa';
-          ctx.fillRect(nx + 7 + wave, ny + 9 + idleBob, 4, 4);
+          // Main Green Pack Body
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(nx + 8, ny + 11 + idleBob, 16, 11);
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 8, ny + 11 + idleBob, 1, 11);
+          ctx.fillRect(nx + 23, ny + 11 + idleBob, 1, 11);
+          // Side Pouch on Right
+          ctx.fillStyle = '#166534';
+          ctx.fillRect(nx + 24, ny + 12 + idleBob, 2, 8);
+
+          // Leather Harness Straps & Silver Buckles
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(nx + 11, ny + 8 + idleBob, 2, 10);
+          ctx.fillRect(nx + 19, ny + 8 + idleBob, 2, 10);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.fillRect(nx + 10.5, ny + 13 + idleBob, 3, 2);
+          ctx.fillRect(nx + 18.5, ny + 13 + idleBob, 3, 2);
+
+          // Lower Pouch with Orange Zipper
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 10, ny + 16 + idleBob, 12, 5);
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 10, ny + 16 + idleBob, 12, 1);
+          ctx.fillStyle = '#ea580c'; // Zipper tab
+          ctx.fillRect(nx + 14, ny + 18 + idleBob, 4, 1);
+
+          // 5. Head from Behind (Black Hair & Green Hat)
+          ctx.fillStyle = '#000000'; // Black Hair at nape
+          ctx.fillRect(nx + 11 + headTurnX, ny + 7 + headBob, 10, 3);
+
+          // Green Scout Fedora Hat with Center Crease
+          ctx.fillStyle = '#14532d'; // Brim underside
+          ctx.fillRect(nx + 5 + headTurnX, ny + 5 + headBob, 22, 2);
+          ctx.fillStyle = '#16a34a'; // Brim top
+          ctx.fillRect(nx + 6 + headTurnX, ny + 4 + headBob, 20, 1);
+          // Crown
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 9 + headTurnX, ny + 0 + headBob, 14, 5);
+          // Center Crease
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 14 + headTurnX, ny - 1 + headBob, 4, 2);
+          // Left & Right Crown Peaks
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(nx + 10 + headTurnX, ny - 1 + headBob, 4, 1);
+          ctx.fillRect(nx + 18 + headTurnX, ny - 1 + headBob, 4, 1);
+
+        } else if (facing === 'left') {
+          // ==================== KIRI (SIDE LEFT VIEW) ====================
+          // 1. Soft Ground Shadow
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+          ctx.fillRect(nx + 4, ny + 27, 22, 3.5);
+
+          // 2. Green Backpack & Rolled Mat on the Right (Behind him)
+          // Green Backpack body
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(nx + 19, ny + 12 + idleBob, 7, 10);
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 25, ny + 12 + idleBob, 1, 10);
+          // Lower side pocket with buckle
+          ctx.fillStyle = '#166534';
+          ctx.fillRect(nx + 20, ny + 17 + idleBob, 4, 4);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.fillRect(nx + 21, ny + 18 + idleBob, 2, 1);
+
+          // Rolled Bedroll on top (Spiral Roll detail!)
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(nx + 20, ny + 8 + idleBob, 6, 5);
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(nx + 21, ny + 9 + idleBob, 4, 3);
+          ctx.fillStyle = '#78350f'; // Spiral curl
+          ctx.fillRect(nx + 22, ny + 9 + idleBob, 2, 1);
+          ctx.fillRect(nx + 23, ny + 10 + idleBob, 1, 2);
+
+          // 3. Legs & Boots (Profile Stride)
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(nx + 12, ny + 19 + idleBob, 9, 5);
+          ctx.fillRect(nx + 12, ny + 22 + idleBob, 5, 2);
+          // Boots pointing left
+          ctx.fillStyle = '#c2410c';
+          ctx.fillRect(nx + 11, ny + 24, 7, 4);
+          ctx.fillRect(nx + 9, ny + 25, 4, 3); // Toe
+          ctx.fillStyle = '#9a3412';
+          ctx.fillRect(nx + 9, ny + 27, 9, 1.5);
+
+          // 4. Torso & Orange Jacket (Profile)
+          ctx.fillStyle = '#ea580c';
+          ctx.fillRect(nx + 11, ny + 12 + idleBob, 9, 8);
+          // Green harness strap
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(nx + 13, ny + 12 + idleBob, 3, 2);
+          ctx.fillRect(nx + 14, ny + 14 + idleBob, 3, 2);
+          ctx.fillRect(nx + 15, ny + 18 + idleBob, 6, 2);
+
+          // 5. Walking Staff & Hand in Front (Left)
+          // Knob
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(nx + 5, ny + 7 + idleBob, 4, 4);
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(nx + 6, ny + 8 + idleBob, 2, 2);
+          // Shaft
+          ctx.fillStyle = '#78350f';
+          ctx.fillRect(nx + 6, ny + 10 + idleBob, 2, 18);
+          // Arm & Hand
+          ctx.fillStyle = '#ea580c';
+          ctx.fillRect(nx + 9, ny + 13 + idleBob, 5, 4);
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 5, ny + 14 + idleBob, 4, 3);
+
+          // 6. Head Profile Facing Left
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 10 + headTurnX, ny + 6 + headBob, 10, 7);
+          ctx.fillRect(nx + 9 + headTurnX, ny + 9 + headBob, 2, 2); // Nose bump
+          // Black eye
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(nx + 11 + headTurnX, ny + 7 + headBob, 2, 2);
+          // Mouth
+          ctx.fillRect(nx + 10 + headTurnX, ny + 11 + headBob, 2, 1);
+          // Ear with inner contour
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 16 + headTurnX, ny + 8 + headBob, 3, 4);
+          ctx.fillStyle = '#c2410c';
+          ctx.fillRect(nx + 17 + headTurnX, ny + 9 + headBob, 1, 2);
+
+          // 7. Green Hat in Profile
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 5 + headTurnX, ny + 5 + headBob, 18, 2);
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 6 + headTurnX, ny + 4 + headBob, 16, 1);
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 8 + headTurnX, ny + 0 + headBob, 12, 5);
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 13 + headTurnX, ny - 1 + headBob, 3, 2);
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(nx + 9 + headTurnX, ny - 1 + headBob, 3, 1);
+          ctx.fillRect(nx + 16 + headTurnX, ny - 1 + headBob, 3, 1);
+
+        } else if (facing === 'right') {
+          // ==================== KANAN (SIDE RIGHT VIEW) ====================
+          // 1. Soft Ground Shadow
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+          ctx.fillRect(nx + 6, ny + 27, 22, 3.5);
+
+          // 2. Green Backpack & Rolled Mat on the Left (Behind him)
+          // Green Backpack body
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(nx + 6, ny + 12 + idleBob, 7, 10);
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 6, ny + 12 + idleBob, 1, 10);
+          // Lower side pocket with buckle
+          ctx.fillStyle = '#166534';
+          ctx.fillRect(nx + 8, ny + 17 + idleBob, 4, 4);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.fillRect(nx + 9, ny + 18 + idleBob, 2, 1);
+
+          // Rolled Bedroll on top (Spiral Roll detail!)
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(nx + 6, ny + 8 + idleBob, 6, 5);
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(nx + 7, ny + 9 + idleBob, 4, 3);
+          ctx.fillStyle = '#78350f'; // Spiral curl
+          ctx.fillRect(nx + 8, ny + 9 + idleBob, 2, 1);
+          ctx.fillRect(nx + 8, ny + 10 + idleBob, 1, 2);
+
+          // 3. Legs & Boots (Profile Stride)
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(nx + 11, ny + 19 + idleBob, 9, 5);
+          ctx.fillRect(nx + 15, ny + 22 + idleBob, 5, 2);
+          // Boots pointing right
+          ctx.fillStyle = '#c2410c';
+          ctx.fillRect(nx + 14, ny + 24, 7, 4);
+          ctx.fillRect(nx + 19, ny + 25, 4, 3); // Toe
+          ctx.fillStyle = '#9a3412';
+          ctx.fillRect(nx + 14, ny + 27, 9, 1.5);
+
+          // 4. Torso & Orange Jacket (Profile)
+          ctx.fillStyle = '#ea580c';
+          ctx.fillRect(nx + 12, ny + 12 + idleBob, 9, 8);
+          // Green harness strap
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(nx + 16, ny + 12 + idleBob, 3, 2);
+          ctx.fillRect(nx + 15, ny + 14 + idleBob, 3, 2);
+          ctx.fillRect(nx + 11, ny + 18 + idleBob, 6, 2);
+
+          // 5. Walking Staff & Hand in Front (Right)
+          // Knob
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(nx + 23, ny + 7 + idleBob, 4, 4);
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(nx + 24, ny + 8 + idleBob, 2, 2);
+          // Shaft
+          ctx.fillStyle = '#78350f';
+          ctx.fillRect(nx + 24, ny + 10 + idleBob, 2, 18);
+          // Arm & Hand
+          ctx.fillStyle = '#ea580c';
+          ctx.fillRect(nx + 18, ny + 13 + idleBob, 5, 4);
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 23, ny + 14 + idleBob, 4, 3);
+
+          // 6. Head Profile Facing Right
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 12 + headTurnX, ny + 6 + headBob, 10, 7);
+          ctx.fillRect(nx + 21 + headTurnX, ny + 9 + headBob, 2, 2); // Nose bump
+          // Black eye
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(nx + 19 + headTurnX, ny + 7 + headBob, 2, 2);
+          // Mouth
+          ctx.fillRect(nx + 20 + headTurnX, ny + 11 + headBob, 2, 1);
+          // Ear with inner contour
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 13 + headTurnX, ny + 8 + headBob, 3, 4);
+          ctx.fillStyle = '#c2410c';
+          ctx.fillRect(nx + 14 + headTurnX, ny + 9 + headBob, 1, 2);
+
+          // 7. Green Hat in Profile
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 9 + headTurnX, ny + 5 + headBob, 18, 2);
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 10 + headTurnX, ny + 4 + headBob, 16, 1);
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 12 + headTurnX, ny + 0 + headBob, 12, 5);
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 16 + headTurnX, ny - 1 + headBob, 3, 2);
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(nx + 13 + headTurnX, ny - 1 + headBob, 3, 1);
+          ctx.fillRect(nx + 20 + headTurnX, ny - 1 + headBob, 3, 1);
+
+        } else {
+          // ==================== DEPAN (FRONT VIEW - DEFAULT) ====================
+          // 1. Soft Ground Shadow
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+          ctx.fillRect(nx + 6, ny + 27, 20, 3.5);
+
+          // 2. Backpack & Bedroll Peeking Behind Left Shoulder (Viewer's Left)
+          // Tan Rolled Bedroll
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(nx + 4, ny + 9 + idleBob, 6, 4);
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(nx + 5, ny + 10 + idleBob, 4, 2);
+          // Green Pack Body
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 4, ny + 13 + idleBob, 6, 9);
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 5, ny + 14 + idleBob, 4, 7);
+
+          // 3. Slate Gray Trousers & Brown Hiking Boots
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(nx + 9, ny + 19 + idleBob, 14, 5);
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(nx + 15, ny + 20 + idleBob, 2, 4); // Inseam gap
+
+          // Hiking Boots
+          ctx.fillStyle = '#c2410c';
+          ctx.fillRect(nx + 9, ny + 24, 6, 4);
+          ctx.fillRect(nx + 17, ny + 24, 6, 4);
+          ctx.fillStyle = '#9a3412'; // Soles
+          ctx.fillRect(nx + 9, ny + 27, 6, 1.5);
+          ctx.fillRect(nx + 17, ny + 27, 6, 1.5);
+
+          // 4. Torso & Orange Explorer Jacket
+          ctx.fillStyle = '#ea580c';
+          ctx.fillRect(nx + 9, ny + 12 + idleBob, 14, 8);
+          ctx.fillStyle = '#c2410c'; // Inner collar
+          ctx.fillRect(nx + 14, ny + 12 + idleBob, 4, 2);
+
+          // Green Shoulder Straps
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(nx + 10, ny + 12 + idleBob, 2, 8);
+          ctx.fillRect(nx + 20, ny + 12 + idleBob, 2, 8);
+
+          // Badges & Pocket Details (From official model sheet)
+          // Green Walkie-Talkie / Clip on left chest (viewer's left)
+          ctx.fillStyle = '#15803d';
+          ctx.fillRect(nx + 11, ny + 13 + idleBob, 2, 3);
+          ctx.fillStyle = '#86efac';
+          ctx.fillRect(nx + 11, ny + 13 + idleBob, 2, 1);
+          // Blue Pocket / Tag
+          ctx.fillStyle = '#0284c7';
+          ctx.fillRect(nx + 13, ny + 15 + idleBob, 3, 2);
+          // Dark Red Badge
+          ctx.fillStyle = '#991b1b';
+          ctx.fillRect(nx + 17, ny + 15 + idleBob, 2, 2);
+          // Green Pocket / Badge
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 15, ny + 17 + idleBob, 3, 2);
+
+          // 5. Arms & Hands
+          // Right Arm (viewer's left): Hanging down
+          ctx.fillStyle = '#ea580c';
+          ctx.fillRect(nx + 6, ny + 13 + idleBob, 3, 5);
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 6, ny + 18 + idleBob, 3, 3);
+
+          // Left Arm (viewer's right): Gripping walking staff
+          ctx.fillStyle = '#ea580c';
+          ctx.fillRect(nx + 23, ny + 13 + idleBob, 3, 5);
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 23, ny + 14 + idleBob, 4, 3);
+
+          // 6. Tall Wooden Walking Staff (Viewer's Right)
+          // Round Knob
+          ctx.fillStyle = '#b45309';
+          ctx.fillRect(nx + 24, ny + 7 + idleBob, 4, 4);
+          ctx.fillStyle = '#d97706';
+          ctx.fillRect(nx + 25, ny + 8 + idleBob, 2, 2);
+          // Shaft
+          ctx.fillStyle = '#78350f';
+          ctx.fillRect(nx + 25, ny + 10 + idleBob, 2, 18);
+          ctx.fillStyle = '#92400e';
+          ctx.fillRect(nx + 25, ny + 10 + idleBob, 1, 18);
+
+          // 7. Head & Cheerful Face
+          ctx.fillStyle = '#fcd3a7';
+          ctx.fillRect(nx + 9 + headTurnX, ny + 6 + headBob, 14, 7);
+          // Solid Black Square Eyes
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(nx + 11 + headTurnX + eyeTurnX, ny + 7 + headBob, 2, 2);
+          ctx.fillRect(nx + 19 + headTurnX + eyeTurnX, ny + 7 + headBob, 2, 2);
+          // Friendly Smile
+          ctx.fillRect(nx + 14 + headTurnX, ny + 10 + headBob, 4, 1);
+          ctx.fillRect(nx + 13 + headTurnX, ny + 9.5 + headBob, 1, 1);
+          ctx.fillRect(nx + 18 + headTurnX, ny + 9.5 + headBob, 1, 1);
+
+          // 8. Green Scout Fedora Hat with Center Crease
+          // Brim
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 5 + headTurnX, ny + 5 + headBob, 22, 2);
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 6 + headTurnX, ny + 4 + headBob, 20, 1);
+          // Creased Crown
+          ctx.fillStyle = '#16a34a';
+          ctx.fillRect(nx + 9 + headTurnX, ny + 0 + headBob, 14, 5);
+          // Center Crease
+          ctx.fillStyle = '#14532d';
+          ctx.fillRect(nx + 14 + headTurnX, ny - 1 + headBob, 4, 2);
+          // Peaks
+          ctx.fillStyle = '#22c55e';
+          ctx.fillRect(nx + 10 + headTurnX, ny - 1 + headBob, 4, 1);
+          ctx.fillRect(nx + 18 + headTurnX, ny - 1 + headBob, 4, 1);
         }
         break;
       }
@@ -5880,15 +6445,26 @@ export class GameRenderer {
         ctx.fillStyle = '#ef4444';
         ctx.fillRect(rx - 1, ry - 1, 2, 2); // Red wax seal
       } else if (npc.sprite === 'chicken_glasses') {
-        // Research flask / magnifying pulse for Prof. Kotek
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillRect(rx - 2, ry - 2, 4, 4);
-        ctx.fillStyle = '#fef08a';
-        ctx.fillRect(rx - 1, ry - 3, 2, 1);
+        // Dual emotion reactor canisters (green & orange) for Prof. Kotek
+        ctx.fillStyle = '#22c55e'; // Green liquid canister
+        ctx.fillRect(rx - 3, ry - 3, 3, 5);
+        ctx.fillStyle = '#f97316'; // Orange liquid canister
+        ctx.fillRect(rx + 1, ry - 3, 3, 5);
+        ctx.fillStyle = '#475569'; // Metal caps
+        ctx.fillRect(rx - 3, ry - 4, 7, 1);
+        ctx.fillRect(rx - 3, ry + 2, 7, 1);
       } else {
-        // Scout compass for Didi
-        ctx.fillStyle = '#10b981';
-        ctx.fillRect(rx - 2, ry - 2, 4, 4);
+        // Official Scout Compass Emblem for Didi (matching model sheet badge)
+        ctx.fillStyle = '#d97706'; // Outer gold/bronze circular rim
+        ctx.beginPath();
+        ctx.arc(rx, ry - 0.5, 4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#1e293b'; // Dark slate inner circle
+        ctx.beginPath();
+        ctx.arc(rx, ry - 0.5, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = '#10b981'; // Emerald central sensor/compass core
+        ctx.fillRect(rx - 1, ry - 1.5, 2, 2);
       }
       ctx.restore();
     }
