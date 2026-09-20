@@ -388,8 +388,8 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-2 sm:p-4 overflow-y-auto animate-fadeIn">
-      <div className="bg-slate-900 border-2 border-amber-400/90 rounded-2xl max-w-4xl w-full max-h-[95vh] flex flex-col shadow-[0_0_50px_rgba(245,158,11,0.25)] text-slate-100 overflow-hidden my-auto">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-2 sm:p-4 overflow-y-auto animate-backdrop-fade-in">
+      <div className="bg-slate-900 border-2 border-amber-400/90 rounded-2xl max-w-4xl w-full max-h-[95vh] flex flex-col shadow-[0_0_50px_rgba(245,158,11,0.25)] text-slate-100 overflow-hidden my-auto modal-glow-frame animate-fade-in-slide-up">
         {/* Header */}
         <div className="px-5 py-3 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">

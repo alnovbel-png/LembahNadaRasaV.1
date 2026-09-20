@@ -57,8 +57,8 @@ export const HelpModal: React.FC<HelpModalProps> = ({
   const sfxPercent = Math.round(sfxVolume * 100);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-3">
-      <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-3 animate-backdrop-fade-in">
+      <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden modal-glow-frame animate-fade-in-slide-up">
         {/* Header */}
         <div className="px-5 py-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between">
           <div className="flex items-center gap-2">

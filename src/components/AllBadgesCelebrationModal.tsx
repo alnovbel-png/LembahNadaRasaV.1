@@ -96,8 +96,8 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-2 sm:p-4 overflow-y-auto animate-fadeIn">
-      <div className="bg-slate-900 border-2 border-amber-400/90 rounded-2xl max-w-2xl w-full p-4 sm:p-6 text-slate-100 shadow-[0_0_50px_rgba(245,158,11,0.25)] relative my-auto max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-2 sm:p-4 overflow-y-auto animate-backdrop-fade-in">
+      <div className="bg-slate-900 border-2 border-amber-400/90 rounded-2xl max-w-2xl w-full p-4 sm:p-6 text-slate-100 shadow-[0_0_50px_rgba(245,158,11,0.25)] relative my-auto max-h-[92vh] flex flex-col modal-glow-frame animate-fade-in-slide-up">
         {/* Glow ambient background decoration */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-24 bg-amber-500/20 blur-3xl pointer-events-none" />
 
@@ -106,7 +106,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
           id="close-all-badges-modal-btn"
           onClick={onClose}
           title="Tutup Apresiasi"
-          className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-400 hover:text-slate-100 border border-slate-700 transition z-10 cursor-pointer"
+          className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-800/90 hover:bg-rose-950/60 hover:border-rose-500/50 hover:scale-110 hover:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-slate-400 hover:text-slate-100 border border-slate-700 transition-all duration-200 z-10 cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
@@ -134,10 +134,10 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
           <button
             id="tab-all-badges-dialogue-btn"
             onClick={() => setActiveTab('dialogue')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer ${
               activeTab === 'dialogue'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-500/20 ring-1 ring-amber-400/40'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)]'
             }`}
           >
             <MessageSquareQuote className="w-4 h-4 text-amber-400" />
@@ -147,10 +147,10 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
           <button
             id="tab-all-badges-gallery-btn"
             onClick={() => setActiveTab('gallery')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer ${
               activeTab === 'gallery'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-500/20 ring-1 ring-amber-400/40'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)]'
             }`}
           >
             <Award className="w-4 h-4 text-amber-400" />
@@ -160,10 +160,10 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
           <button
             id="tab-all-badges-certificate-btn"
             onClick={() => setActiveTab('certificate')}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer ${
               activeTab === 'certificate'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm shadow-amber-500/20 ring-1 ring-amber-400/40'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)]'
             }`}
           >
             <ShieldCheck className="w-4 h-4 text-amber-400" />
@@ -476,7 +476,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                   onClose();
                   onOpenJournal();
                 }}
-                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition cursor-pointer flex items-center gap-1"
+                className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:border-amber-400/50 hover:scale-105 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] text-slate-300 text-xs font-semibold border border-slate-700 transition-all duration-200 cursor-pointer flex items-center gap-1"
               >
                 <BookOpen className="w-3 h-3 text-cyan-400" />
                 <span>Lihat di Jurnal</span>
@@ -490,7 +490,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                   onClose();
                   onFreeRoam();
                 }}
-                className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition cursor-pointer flex items-center gap-1 shadow-sm"
+                className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 hover:scale-105 hover:shadow-[0_0_16px_rgba(16,185,129,0.5)] active:scale-95 text-white text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1 shadow-sm"
               >
                 <Compass className="w-3 h-3 text-emerald-200" />
                 <span>Jelajah Bebas</span>
@@ -500,7 +500,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
             <button
               id="modal-close-dismiss-btn"
               onClick={onClose}
-              className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition cursor-pointer shadow"
+              className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 hover:scale-105 hover:shadow-[0_0_18px_rgba(245,158,11,0.65)] active:scale-95 text-slate-950 text-xs font-bold transition-all duration-200 cursor-pointer shadow"
             >
               Lanjutkan
             </button>

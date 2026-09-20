@@ -1027,20 +1027,13 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   const isMobileOrTablet = useIsMobileOrTablet();
   const isPortrait = useIsPortrait();
 
-  // Mobile optimization states:
-  // - Default to compact mode on mobile & tablet to keep gameplay unblocked
-  const [isCompact, setIsCompact] = useState<boolean>(() => isMobileOrTablet);
+  // Screen optimization states:
+  // - Default to compact mode (Tampilan Ringkas) immediately when game starts to keep screen clear
+  const [isCompact, setIsCompact] = useState<boolean>(true);
   const [isTranslucent, setIsTranslucent] = useState<boolean>(false);
   const [showMobileLegend, setShowMobileLegend] = useState<boolean>(false);
 
-  // Sync default mode when device changes
-  useEffect(() => {
-    if (isMobileOrTablet) {
-      setIsCompact(true);
-    }
-  }, [isMobileOrTablet, isPortrait]);
-
-  const isEffectiveCompact = isCompact || (isMobileOrTablet && isCompact !== false);
+  const isEffectiveCompact = isCompact;
 
   // Responsive position calculation:
   // - Mobile Portrait: docked neatly bottom-right above action buttons, leaving the entire left & center free

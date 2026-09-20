@@ -146,8 +146,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const badgeProgressPercent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-3">
-      <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-3 animate-backdrop-fade-in">
+      <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden modal-glow-frame animate-fade-in-slide-up">
         {/* Header */}
         <div className="px-5 py-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
@@ -164,7 +164,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <button
                 id="settings-header-capture-moment-btn"
                 onClick={onCaptureMoment}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-95 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition cursor-pointer"
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 hover:scale-105 hover:shadow-[0_0_16px_rgba(245,158,11,0.6)] active:scale-95 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition-all duration-200 cursor-pointer"
                 title="Ambil screenshot area game saat ini dengan bingkai dekoratif"
               >
                 <Camera className="w-4 h-4 text-slate-950" />
@@ -175,7 +175,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               id="close-settings-btn"
               onClick={onClose}
               aria-label="Tutup menu pengaturan"
-              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700/50 transition cursor-pointer"
+              className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-rose-950/50 hover:scale-110 hover:shadow-[0_0_10px_rgba(244,63,94,0.4)] transition-all duration-200 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -187,10 +187,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             id="settings-tab-quest-btn"
             onClick={() => setActiveTab('quest')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-center ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 hover:scale-[1.03] cursor-pointer text-center ${
               activeTab === 'quest'
-                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
-                : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 ring-2 ring-amber-400/50'
+                : 'bg-slate-900/90 hover:bg-slate-800 hover:border-amber-400/50 hover:shadow-[0_0_14px_rgba(245,158,11,0.25)] text-slate-300 hover:text-white border border-slate-800'
             }`}
           >
             <Target className="w-4 h-4 shrink-0" />
@@ -205,10 +205,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             id="settings-tab-achievements-btn"
             onClick={() => setActiveTab('achievements')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-center ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 hover:scale-[1.03] cursor-pointer text-center ${
               activeTab === 'achievements'
-                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
-                : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 ring-2 ring-amber-400/50'
+                : 'bg-slate-900/90 hover:bg-slate-800 hover:border-amber-400/50 hover:shadow-[0_0_14px_rgba(245,158,11,0.25)] text-slate-300 hover:text-white border border-slate-800'
             }`}
           >
             <Award className="w-4 h-4 shrink-0" />
@@ -223,10 +223,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             id="settings-tab-audio-btn"
             onClick={() => setActiveTab('audio')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-center ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 hover:scale-[1.03] cursor-pointer text-center ${
               activeTab === 'audio'
-                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
-                : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 ring-2 ring-amber-400/50'
+                : 'bg-slate-900/90 hover:bg-slate-800 hover:border-amber-400/50 hover:shadow-[0_0_14px_rgba(245,158,11,0.25)] text-slate-300 hover:text-white border border-slate-800'
             }`}
           >
             <Volume2 className="w-4 h-4 shrink-0" />
@@ -246,10 +246,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             id="settings-tab-controls-btn"
             onClick={() => setActiveTab('controls')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer text-center ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 hover:scale-[1.03] cursor-pointer text-center ${
               activeTab === 'controls'
-                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20'
-                : 'bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800'
+                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 ring-2 ring-amber-400/50'
+                : 'bg-slate-900/90 hover:bg-slate-800 hover:border-amber-400/50 hover:shadow-[0_0_14px_rgba(245,158,11,0.25)] text-slate-300 hover:text-white border border-slate-800'
             }`}
           >
             <Gamepad2 className="w-4 h-4 shrink-0" />

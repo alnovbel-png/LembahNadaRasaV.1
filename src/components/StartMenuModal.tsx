@@ -49,7 +49,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-3 sm:p-4 md:p-6 overflow-y-auto animate-backdrop-fade-in">
       {/* Animated Background Ambience Glow */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center">
         <div className="w-[320px] sm:w-[500px] h-[320px] sm:h-[500px] bg-amber-500/10 rounded-full blur-[90px] animate-pulse" />
@@ -57,7 +57,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
       </div>
 
       {/* Main Start Menu Card */}
-      <div className="relative w-full max-w-xl bg-slate-900/95 border-2 border-amber-500/80 rounded-2xl sm:rounded-3xl shadow-[0_0_50px_rgba(245,158,11,0.2)] p-4 sm:p-6 md:p-8 flex flex-col items-center text-center my-auto">
+      <div className="relative w-full max-w-xl bg-slate-900/95 border-2 border-amber-500/80 rounded-2xl sm:rounded-3xl shadow-[0_0_50px_rgba(245,158,11,0.2)] p-4 sm:p-6 md:p-8 flex flex-col items-center text-center my-auto modal-glow-frame animate-fade-in-slide-up">
         {/* Top Header Bar: Sound & Offline Utilities */}
         <div className="w-full flex items-center justify-between pb-3 mb-2 border-b border-slate-800">
           <div className="flex items-center gap-1.5 text-amber-400/90 text-xs font-pixel">

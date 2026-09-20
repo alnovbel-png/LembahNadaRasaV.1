@@ -26,8 +26,8 @@ export const EndingModal: React.FC<EndingModalProps> = ({
   const isPerfect = endingType === 'perfect';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-3 overflow-y-auto">
-      <div className="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-xl w-full p-6 text-center shadow-2xl text-slate-100 relative my-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-3 overflow-y-auto animate-backdrop-fade-in">
+      <div className="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-xl w-full p-6 text-center shadow-2xl text-slate-100 relative my-auto modal-glow-frame animate-fade-in-slide-up">
         {/* Close / Free Roam Quick Dismiss Button */}
         <button
           id="close-ending-modal-btn"

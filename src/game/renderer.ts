@@ -92,20 +92,6 @@ export interface FogMistMote {
   depth: number;
 }
 
-export interface FogMysticMote {
-  id: number;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  size: number;
-  alpha: number;
-  phase: number;
-  depth: number;
-  color: string;
-  haloColor: string;
-}
-
 export type DestinationType = 'walk' | 'interact' | 'examine';
 
 export interface HoverTarget {
@@ -132,7 +118,6 @@ export class GameRenderer {
   private fogLeaves: FogLeaf[] = [];
   private fogWindStreaks: FogWindStreak[] = [];
   private fogMistMotes: FogMistMote[] = [];
-  private fogMysticMotes: FogMysticMote[] = [];
   private fogSystemInitialized: boolean = false;
   // Dynamic smooth transition state for fog & atmospheric particles (fade-in / fade-out)
   private currentFogIntensity: number = 0.0;
@@ -4291,229 +4276,305 @@ export class GameRenderer {
       ? Math.floor(Math.sin(walkTick * 2) * 1.5)
       : Math.floor(Math.sin(this.tickCount * 0.05) * 0.5);
 
+    // Subtle backpack inertia bobbing: slightly offset in phase from body bob to simulate leather bag weight & momentum
+    const backpackBob = player.isMoving
+      ? Math.round(Math.sin(walkTick * 2 - 0.45) * 1.8)
+      : Math.round(Math.sin(this.tickCount * 0.05 - 0.3) * 0.5);
+
     // 1. Soft oval ground shadow beneath feet
     ctx.fillStyle = 'rgba(18, 38, 28, 0.42)';
     ctx.beginPath();
     ctx.ellipse(px + 16, py + 29, 11, 4.5, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Color Palette based on reference image (karakter ezzel.jpg)
-    const HAIR_COLOR = '#7d3817';
-    const HAIR_HIGHLIGHT = '#8c421d';
-    const SKIN_COLOR = '#fcd7b0';
-    const EYE_COLOR = '#192134';
-    const SCARF_COLOR = '#ef4444';
-    const SCARF_LIGHT = '#f87171';
-    const COAT_COLOR = '#1ea282';
-    const COAT_SHADE = '#168c70';
-    const BUCKLE_COLOR = '#f5b822';
-    const BUCKLE_LIGHT = '#fef08a';
-    const LEGS_COLOR = '#242c3d';
+    // Color Palette matching the exact reference image (karakter ezzel.jpg)
+    const HAIR_COLOR = '#8e4a23';       // Warm medium brown hair
+    const HAIR_DARK = '#723816';        // Hair shadow/outline
+    const SKIN_COLOR = '#fcd0a1';       // Warm peach skin tone
+    const EYE_COLOR = '#172033';        // Dark navy/charcoal eye blocks
+    const SCARF_COLOR = '#ef4444';      // Vibrant warm red scarf
+    const SCARF_SHADOW = '#dc2626';     // Scarf fold shade
+    const TUNIC_COLOR = '#259d88';      // Vibrant emerald teal tunic
+    const TUNIC_SHADOW = '#1b7d6c';     // Tunic shadow
+    const BUCKLE_COLOR = '#f4b728';     // Golden yellow belt buckle
+    const BUCKLE_SHADOW = '#d99b16';    // Buckle shade
+    const BELT_COLOR = '#1f483f';       // Dark teal/charcoal belt band
+    const PANTS_COLOR = '#232d3f';      // Dark blue-gray pants
+    const BACKPACK_COLOR = '#532924';   // Rich warm leather brown backpack
+    const BACKPACK_SHADOW = '#3c1c18';  // Backpack shadow/straps
+    const BACKPACK_STRAP = '#3e201b';   // Dark leather strap
+    const BACKPACK_HIGHLIGHT = '#6a3630'; // Backpack highlight
 
     // Compass anchor position based on orientation
     let compassX = px + 16;
     let compassY = py + 24 + bob;
 
-    // 2. Render Character Body & Limbs by Direction
+    // 2. Render Character Body & Limbs by Direction matching 4-panel reference
     if (player.facing === 'down') {
-      // ===== DEPAN / FRONT VIEW (Top-Left of reference) =====
-      // Legs / Pants
-      ctx.fillStyle = LEGS_COLOR;
-      const legStride = player.isMoving ? Math.round(Math.sin(walkTick) * 2.5) : 0;
-      // Left leg & Right leg stepping alternately
-      ctx.fillRect(px + 10, py + 26 + legStride, 4, 5 - Math.max(0, legStride));
-      ctx.fillRect(px + 18, py + 26 - legStride, 4, 5 - Math.max(0, -legStride));
+      // ===== DEPAN / FRONT VIEW (Panel 1: Top-Left of reference) =====
+      const legStride = player.isMoving ? Math.round(Math.sin(walkTick) * 3) : 0;
 
-      // Torso: Emerald/Jade Teal Tunic
-      ctx.fillStyle = COAT_COLOR;
-      ctx.fillRect(px + 8, py + 15 + bob, 16, 11);
-      // Subtle side seam shadows
-      ctx.fillStyle = COAT_SHADE;
-      ctx.fillRect(px + 8, py + 15 + bob, 2, 11);
-      ctx.fillRect(px + 22, py + 15 + bob, 2, 11);
+      // Backpack visible peeking behind shoulders and sides with inertia bobbing
+      ctx.fillStyle = BACKPACK_SHADOW;
+      ctx.fillRect(px + 6, py + 12 + backpackBob, 20, 14);
+      ctx.fillStyle = BACKPACK_COLOR;
+      ctx.fillRect(px + 7, py + 13 + backpackBob, 18, 12);
 
-      // Gold Buckle centered at bottom hem
+      // Pants / Legs (Dark charcoal/navy)
+      ctx.fillStyle = PANTS_COLOR;
+      if (player.isMoving) {
+        ctx.fillRect(px + 10, py + 24 + legStride, 5, 6 - Math.max(0, legStride));
+        ctx.fillRect(px + 17, py + 24 - legStride, 5, 6 - Math.max(0, -legStride));
+      } else {
+        ctx.fillRect(px + 10, py + 24, 5, 6);
+        ctx.fillRect(px + 17, py + 24, 5, 6);
+      }
+
+      // Torso / Tunic (Teal #259d88)
+      ctx.fillStyle = TUNIC_COLOR;
+      ctx.fillRect(px + 8, py + 15 + bob, 16, 10);
+
+      // Yellow Belt Buckle centered at bottom hem
       ctx.fillStyle = BUCKLE_COLOR;
-      ctx.fillRect(px + 14, py + 22 + bob, 4, 4);
-      ctx.fillStyle = BUCKLE_LIGHT;
-      ctx.fillRect(px + 14, py + 22 + bob, 2, 2);
+      ctx.fillRect(px + 14, py + 21 + bob, 4, 4);
+      ctx.fillStyle = BUCKLE_SHADOW;
+      ctx.fillRect(px + 14, py + 24 + bob, 4, 1);
 
-      // Red Scarf / Collar across shoulders
+      // Backpack Straps passing down the chest (dark brown leather straps)
+      ctx.fillStyle = BACKPACK_STRAP;
+      ctx.fillRect(px + 10, py + 15 + bob, 2, 7);
+      ctx.fillRect(px + 20, py + 15 + bob, 2, 7);
+
+      // Sleeves & Hands (Peach hands at sides)
+      ctx.fillStyle = TUNIC_COLOR;
+      ctx.fillRect(px + 6, py + 16 + bob, 2, 5);
+      ctx.fillRect(px + 24, py + 16 + bob, 2, 5);
+      ctx.fillStyle = SKIN_COLOR;
+      ctx.fillRect(px + 6, py + 21 + bob, 4, 3);
+      ctx.fillRect(px + 22, py + 21 + bob, 4, 3);
+
+      // Red Scarf across collar (Vibrant red horizontal bar)
       ctx.fillStyle = SCARF_COLOR;
-      ctx.fillRect(px + 8, py + 13 + bob, 16, 3);
-      ctx.fillStyle = SCARF_LIGHT;
-      ctx.fillRect(px + 8, py + 13 + bob, 16, 1);
+      ctx.fillRect(px + 7, py + 13 + bob, 18, 3);
+      ctx.fillStyle = SCARF_SHADOW;
+      ctx.fillRect(px + 7, py + 15 + bob, 18, 1);
 
-      // Face Skin Tone
+      // Face (Warm peach square canvas)
       ctx.fillStyle = SKIN_COLOR;
       ctx.fillRect(px + 8, py + 7 + bob, 16, 7);
 
-      // Hair (Brown bangs and side locks framing face)
+      // Hair (Brown blocky hair with top and side locks framing the eyes)
       ctx.fillStyle = HAIR_COLOR;
-      ctx.fillRect(px + 8, py + 3 + bob, 16, 5); // top hair
-      ctx.fillRect(px + 8, py + 7 + bob, 3, 4); // left hair lock
-      ctx.fillRect(px + 21, py + 7 + bob, 3, 4); // right hair lock
-      ctx.fillStyle = HAIR_HIGHLIGHT;
-      ctx.fillRect(px + 9, py + 4 + bob, 14, 2);
+      ctx.fillRect(px + 7, py + 3 + bob, 18, 5);  // Top hair block
+      ctx.fillRect(px + 7, py + 7 + bob, 2, 3);   // Left side lock
+      ctx.fillRect(px + 23, py + 7 + bob, 2, 3);  // Right side lock
+      // Subtle top hair line
+      ctx.fillStyle = HAIR_DARK;
+      ctx.fillRect(px + 7, py + 3 + bob, 18, 1);
 
-      // Eyes (Two distinct dark square eyes spaced symmetrically)
+      // Two Distinct Dark Square Eyes
       ctx.fillStyle = EYE_COLOR;
-      ctx.fillRect(px + 11, py + 8 + bob, 2, 3);
-      ctx.fillRect(px + 19, py + 8 + bob, 2, 3);
+      ctx.fillRect(px + 10, py + 8 + bob, 3, 3);
+      ctx.fillRect(px + 19, py + 8 + bob, 3, 3);
 
       compassX = px + 16;
       compassY = py + 24 + bob;
     } else if (player.facing === 'up') {
-      // ===== BELAKANG / BACK VIEW (Top-Right of reference) =====
-      // Legs / Pants
-      ctx.fillStyle = LEGS_COLOR;
-      const legStride = player.isMoving ? Math.round(Math.sin(walkTick) * 2.5) : 0;
-      ctx.fillRect(px + 10, py + 26 + legStride, 4, 5);
-      ctx.fillRect(px + 18, py + 26 - legStride, 4, 5);
+      // ===== BELAKANG / BACK VIEW (Panel 2: Top-Right of reference) =====
+      const legStride = player.isMoving ? Math.round(Math.sin(walkTick) * 3) : 0;
 
-      // Torso: Solid Teal Tunic Back (no buckle visible from back)
-      ctx.fillStyle = COAT_COLOR;
-      ctx.fillRect(px + 8, py + 15 + bob, 16, 11);
-      ctx.fillStyle = COAT_SHADE;
-      ctx.fillRect(px + 8, py + 15 + bob, 2, 11);
-      ctx.fillRect(px + 22, py + 15 + bob, 2, 11);
+      // Pants / Legs
+      ctx.fillStyle = PANTS_COLOR;
+      if (player.isMoving) {
+        ctx.fillRect(px + 10, py + 24 + legStride, 5, 6);
+        ctx.fillRect(px + 17, py + 24 - legStride, 5, 6);
+      } else {
+        ctx.fillRect(px + 10, py + 24, 5, 6);
+        ctx.fillRect(px + 17, py + 24, 5, 6);
+      }
 
-      // Red Scarf / Collar across back of neck
-      ctx.fillStyle = SCARF_COLOR;
-      ctx.fillRect(px + 8, py + 13 + bob, 16, 3);
-      ctx.fillStyle = SCARF_LIGHT;
-      ctx.fillRect(px + 8, py + 13 + bob, 16, 1);
+      // Torso / Tunic base (shoulders peek behind the backpack)
+      ctx.fillStyle = TUNIC_COLOR;
+      ctx.fillRect(px + 8, py + 15 + bob, 16, 10);
 
-      // Hair (Full brown hair covering entire head)
-      ctx.fillStyle = HAIR_COLOR;
-      ctx.fillRect(px + 8, py + 3 + bob, 16, 10);
-      ctx.fillStyle = HAIR_HIGHLIGHT;
-      ctx.fillRect(px + 9, py + 4 + bob, 14, 3);
-
-      // Tiny peachy skin peeking at neck/ears on left & right (matching reference image)
+      // Sleeves & Hands visible on the sides
+      ctx.fillStyle = TUNIC_COLOR;
+      ctx.fillRect(px + 6, py + 16 + bob, 2, 5);
+      ctx.fillRect(px + 24, py + 16 + bob, 2, 5);
       ctx.fillStyle = SKIN_COLOR;
-      ctx.fillRect(px + 8, py + 11 + bob, 2, 2);
-      ctx.fillRect(px + 22, py + 11 + bob, 2, 2);
+      ctx.fillRect(px + 6, py + 21 + bob, 4, 3);
+      ctx.fillRect(px + 22, py + 21 + bob, 4, 3);
+
+      // Red Scarf across the back of the neck
+      ctx.fillStyle = SCARF_COLOR;
+      ctx.fillRect(px + 7, py + 13 + bob, 18, 3);
+
+      // Full Brown Hair (Back of head)
+      ctx.fillStyle = HAIR_COLOR;
+      ctx.fillRect(px + 7, py + 3 + bob, 18, 11);
+      ctx.fillStyle = HAIR_DARK;
+      ctx.fillRect(px + 7, py + 3 + bob, 18, 1);
+
+      // Tiny peach neck/ear tabs on left and right
+      ctx.fillStyle = SKIN_COLOR;
+      ctx.fillRect(px + 8, py + 12 + bob, 2, 2);
+      ctx.fillRect(px + 22, py + 12 + bob, 2, 2);
+
+      // ===== PROMINENT BROWN BACKPACK ON THE BACK (Inertia bobbing synced to walk cycle) =====
+      // Matches Panel 2 of reference image:
+      // Dark brown rounded box with outline and darker horizontal flap/buckle straps
+      ctx.fillStyle = BACKPACK_SHADOW;
+      // Outline/shadow of backpack
+      ctx.fillRect(px + 9, py + 14 + backpackBob, 14, 13);
+      ctx.fillRect(px + 8, py + 15 + backpackBob, 16, 11);
+      // Main backpack body (Rich brown #532924)
+      ctx.fillStyle = BACKPACK_COLOR;
+      ctx.fillRect(px + 9, py + 15 + backpackBob, 14, 11);
+      ctx.fillStyle = BACKPACK_HIGHLIGHT;
+      ctx.fillRect(px + 10, py + 15 + backpackBob, 12, 2);
+      // Backpack flap detail & buckle straps (dark cross-strap pattern as in reference)
+      ctx.fillStyle = BACKPACK_STRAP;
+      ctx.fillRect(px + 10, py + 18 + backpackBob, 12, 2); // Horizontal flap strap
+      ctx.fillRect(px + 12, py + 17 + backpackBob, 2, 4); // Left vertical buckle tab
+      ctx.fillRect(px + 18, py + 17 + backpackBob, 2, 4); // Right vertical buckle tab
 
       compassX = px + 16;
       compassY = py + 24 + bob;
     } else if (player.facing === 'right') {
-      // ===== KANAN / SIDE RIGHT VIEW (Bottom-Left of reference) =====
+      // ===== KANAN / SIDE RIGHT VIEW (Panel 3: Bottom-Left of reference) =====
       const legSwing = player.isMoving ? Math.round(Math.sin(walkTick) * 3.5) : 0;
-      const armSwing = player.isMoving ? Math.round(Math.cos(walkTick) * 3) : 0;
 
-      // Legs: Scissor walk stride when moving, side stance when idle
-      ctx.fillStyle = LEGS_COLOR;
+      // Legs / Pants (Side scissor stride)
+      ctx.fillStyle = PANTS_COLOR;
       if (player.isMoving) {
-        // Front leg swinging right / forward
-        ctx.fillRect(px + 14 + legSwing, py + 26, 4, 5);
-        // Back leg swinging left / backward
-        ctx.fillRect(px + 10 - legSwing, py + 26, 4, 5);
+        ctx.fillRect(px + 14 + legSwing, py + 24, 6, 6);
+        ctx.fillRect(px + 9 - legSwing, py + 24, 6, 6);
       } else {
-        // Idle side stance
-        ctx.fillRect(px + 12, py + 26, 5, 5);
+        ctx.fillRect(px + 11, py + 24, 7, 6);
       }
 
-      // Torso: Jade Teal Coat
-      ctx.fillStyle = COAT_COLOR;
-      ctx.fillRect(px + 9, py + 15 + bob, 13, 11);
+      // ===== PROMINENT BACKPACK ON THE BACK (Protrudes on left side with inertia bobbing) =====
+      ctx.fillStyle = BACKPACK_SHADOW;
+      ctx.fillRect(px + 5, py + 14 + backpackBob, 5, 12);
+      ctx.fillRect(px + 6, py + 13 + backpackBob, 4, 14);
+      ctx.fillStyle = BACKPACK_COLOR;
+      ctx.fillRect(px + 6, py + 14 + backpackBob, 4, 12);
+      ctx.fillStyle = BACKPACK_HIGHLIGHT;
+      ctx.fillRect(px + 7, py + 14 + backpackBob, 2, 4);
 
-      // Gold Buckle visible at front edge (right edge of waist)
+      // Torso / Teal Tunic
+      ctx.fillStyle = TUNIC_COLOR;
+      ctx.fillRect(px + 10, py + 15 + bob, 11, 10);
+
+      // Dark Belt Line
+      ctx.fillStyle = BELT_COLOR;
+      ctx.fillRect(px + 9, py + 22 + bob, 12, 2);
+
+      // Yellow Buckle at front edge (Right waist)
       ctx.fillStyle = BUCKLE_COLOR;
-      ctx.fillRect(px + 20, py + 22 + bob, 3, 4);
-      ctx.fillStyle = BUCKLE_LIGHT;
-      ctx.fillRect(px + 20, py + 22 + bob, 1, 2);
+      ctx.fillRect(px + 19, py + 21 + bob, 3, 4);
 
-      // Arm & Hand: Swings with counter-stride motion
-      const sleeveX = px + 13 - armSwing;
-      ctx.fillStyle = COAT_SHADE;
-      ctx.fillRect(sleeveX, py + 16 + bob, 4, 6);
-      ctx.fillStyle = SKIN_COLOR; // skin hand at sleeve tip
-      ctx.fillRect(sleeveX + 1, py + 22 + bob, 3, 3);
+      // Backpack Shoulder Strap going down front chest
+      ctx.fillStyle = BACKPACK_STRAP;
+      ctx.fillRect(px + 16, py + 15 + bob, 2, 5);
 
-      // Red Scarf under chin
-      ctx.fillStyle = SCARF_COLOR;
-      ctx.fillRect(px + 9, py + 13 + bob, 13, 3);
-      ctx.fillStyle = SCARF_LIGHT;
-      ctx.fillRect(px + 9, py + 13 + bob, 13, 1);
-
-      // Head: Brown hair top & back, Peach face with protruding nose profile on right
-      // Face Skin
+      // Arm & Hand (Peach hand facing forward)
+      ctx.fillStyle = TUNIC_COLOR;
+      ctx.fillRect(px + 13, py + 16 + bob, 4, 6);
       ctx.fillStyle = SKIN_COLOR;
-      ctx.fillRect(px + 12, py + 7 + bob, 9, 7);
-      // Protruding nose/cheek profile step to the right (as seen in reference)
-      ctx.fillRect(px + 21, py + 9 + bob, 2, 3);
+      ctx.fillRect(px + 14, py + 21 + bob, 3, 3);
 
-      // Hair (Top and back of head on left)
+      // Red Scarf under chin (wrapping from neck around)
+      ctx.fillStyle = SCARF_COLOR;
+      ctx.fillRect(px + 9, py + 13 + bob, 12, 3);
+      ctx.fillStyle = SCARF_SHADOW;
+      ctx.fillRect(px + 9, py + 15 + bob, 12, 1);
+
+      // Face Skin Profile (with step for nose on the right)
+      ctx.fillStyle = SKIN_COLOR;
+      ctx.fillRect(px + 11, py + 7 + bob, 10, 7);
+      // Nose step
+      ctx.fillRect(px + 20, py + 9 + bob, 2, 3);
+
+      // Hair (Brown blocky hair covering top and back)
       ctx.fillStyle = HAIR_COLOR;
-      ctx.fillRect(px + 9, py + 3 + bob, 13, 5); // top
-      ctx.fillRect(px + 8, py + 4 + bob, 5, 9); // back
-      ctx.fillStyle = HAIR_HIGHLIGHT;
-      ctx.fillRect(px + 10, py + 4 + bob, 10, 2);
+      ctx.fillRect(px + 8, py + 3 + bob, 13, 5);  // Top hair
+      ctx.fillRect(px + 8, py + 4 + bob, 5, 9);   // Back hair block
+      ctx.fillStyle = HAIR_DARK;
+      ctx.fillRect(px + 8, py + 3 + bob, 13, 1);
 
-      // Eye: One dark square eye on the right
+      // One Dark Square Eye on the right profile
       ctx.fillStyle = EYE_COLOR;
       ctx.fillRect(px + 17, py + 8 + bob, 2, 3);
 
       compassX = px + 21;
       compassY = py + 24 + bob;
     } else if (player.facing === 'left') {
-      // ===== KIRI / SIDE LEFT VIEW (Bottom-Right of reference) =====
+      // ===== KIRI / SIDE LEFT VIEW (Panel 4: Bottom-Right of reference) =====
       const legSwing = player.isMoving ? Math.round(Math.sin(walkTick) * 3.5) : 0;
-      const armSwing = player.isMoving ? Math.round(Math.cos(walkTick) * 3) : 0;
 
-      // Legs: Scissor walk stride when moving, side stance when idle
-      ctx.fillStyle = LEGS_COLOR;
+      // Legs / Pants (Side scissor stride)
+      ctx.fillStyle = PANTS_COLOR;
       if (player.isMoving) {
-        // Front leg swinging left / forward
-        ctx.fillRect(px + 10 - legSwing, py + 26, 4, 5);
-        // Back leg swinging right / backward
-        ctx.fillRect(px + 14 + legSwing, py + 26, 4, 5);
+        ctx.fillRect(px + 9 - legSwing, py + 24, 6, 6);
+        ctx.fillRect(px + 14 + legSwing, py + 24, 6, 6);
       } else {
-        // Idle side stance
-        ctx.fillRect(px + 11, py + 26, 5, 5);
+        ctx.fillRect(px + 11, py + 24, 7, 6);
       }
 
-      // Torso: Jade Teal Coat
-      ctx.fillStyle = COAT_COLOR;
-      ctx.fillRect(px + 10, py + 15 + bob, 13, 11);
+      // ===== PROMINENT BACKPACK ON THE BACK (Protrudes on right side with inertia bobbing) =====
+      ctx.fillStyle = BACKPACK_SHADOW;
+      ctx.fillRect(px + 20, py + 14 + backpackBob, 5, 12);
+      ctx.fillRect(px + 20, py + 13 + backpackBob, 4, 14);
+      ctx.fillStyle = BACKPACK_COLOR;
+      ctx.fillRect(px + 20, py + 14 + backpackBob, 4, 12);
+      ctx.fillStyle = BACKPACK_HIGHLIGHT;
+      ctx.fillRect(px + 21, py + 14 + backpackBob, 2, 4);
 
-      // Gold Buckle visible at front edge (left edge of waist)
+      // Torso / Teal Tunic
+      ctx.fillStyle = TUNIC_COLOR;
+      ctx.fillRect(px + 9, py + 15 + bob, 11, 10);
+
+      // Dark Belt Line
+      ctx.fillStyle = BELT_COLOR;
+      ctx.fillRect(px + 9, py + 22 + bob, 12, 2);
+
+      // Yellow Buckle at front edge (Left waist)
       ctx.fillStyle = BUCKLE_COLOR;
-      ctx.fillRect(px + 9, py + 22 + bob, 3, 4);
-      ctx.fillStyle = BUCKLE_LIGHT;
-      ctx.fillRect(px + 10, py + 22 + bob, 1, 2);
+      ctx.fillRect(px + 8, py + 21 + bob, 3, 4);
 
-      // Arm & Hand: Swings with counter-stride motion
-      const sleeveX = px + 15 + armSwing;
-      ctx.fillStyle = COAT_SHADE;
-      ctx.fillRect(sleeveX, py + 16 + bob, 4, 6);
-      ctx.fillStyle = SKIN_COLOR; // skin hand at sleeve tip
-      ctx.fillRect(sleeveX, py + 22 + bob, 3, 3);
+      // Backpack Shoulder Strap going down front chest
+      ctx.fillStyle = BACKPACK_STRAP;
+      ctx.fillRect(px + 12, py + 15 + bob, 2, 5);
 
-      // Red Scarf under chin
-      ctx.fillStyle = SCARF_COLOR;
-      ctx.fillRect(px + 10, py + 13 + bob, 13, 3);
-      ctx.fillStyle = SCARF_LIGHT;
-      ctx.fillRect(px + 10, py + 13 + bob, 13, 1);
-
-      // Head: Brown hair top & back, Peach face with protruding nose profile on left
-      // Face Skin
+      // Arm & Hand (Peach hand facing forward)
+      ctx.fillStyle = TUNIC_COLOR;
+      ctx.fillRect(px + 13, py + 16 + bob, 4, 6);
       ctx.fillStyle = SKIN_COLOR;
-      ctx.fillRect(px + 11, py + 7 + bob, 9, 7);
-      // Protruding nose/cheek profile step to the left (as seen in reference)
-      ctx.fillRect(px + 9, py + 9 + bob, 2, 3);
+      ctx.fillRect(px + 13, py + 21 + bob, 3, 3);
 
-      // Hair (Top and back of head on right)
+      // Red Scarf under chin (wrapping from neck around)
+      ctx.fillStyle = SCARF_COLOR;
+      ctx.fillRect(px + 9, py + 13 + bob, 12, 3);
+      ctx.fillStyle = SCARF_SHADOW;
+      ctx.fillRect(px + 9, py + 15 + bob, 12, 1);
+
+      // Face Skin Profile (with step for nose on the left)
+      ctx.fillStyle = SKIN_COLOR;
+      ctx.fillRect(px + 9, py + 7 + bob, 10, 7);
+      // Nose step
+      ctx.fillRect(px + 8, py + 9 + bob, 2, 3);
+
+      // Hair (Brown blocky hair covering top and back)
       ctx.fillStyle = HAIR_COLOR;
-      ctx.fillRect(px + 10, py + 3 + bob, 13, 5); // top
-      ctx.fillRect(px + 19, py + 4 + bob, 5, 9); // back
-      ctx.fillStyle = HAIR_HIGHLIGHT;
-      ctx.fillRect(px + 12, py + 4 + bob, 10, 2);
+      ctx.fillRect(px + 9, py + 3 + bob, 13, 5);  // Top hair
+      ctx.fillRect(px + 17, py + 4 + bob, 5, 9);  // Back hair block
+      ctx.fillStyle = HAIR_DARK;
+      ctx.fillRect(px + 9, py + 3 + bob, 13, 1);
 
-      // Eye: One dark square eye on the left
+      // One Dark Square Eye on the left profile
       ctx.fillStyle = EYE_COLOR;
-      ctx.fillRect(px + 13, py + 8 + bob, 2, 3);
+      ctx.fillRect(px + 11, py + 8 + bob, 2, 3);
 
       compassX = px + 11;
       compassY = py + 24 + bob;
@@ -5643,19 +5704,22 @@ export class GameRenderer {
     }
 
     // Name badge / interaction prompt floating above NPC (smoothly bobs with headBob)
-    ctx.font = '9px "Press Start 2P", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    const displayName = npc.isResolved ? `✨ ${npc.name}` : npc.name;
-    const textW = ctx.measureText(displayName).width;
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
-    ctx.fillRect(nx + 16 - textW / 2 - 5, ny - 11 + headBob, textW + 10, 14);
-    ctx.strokeStyle = npc.isResolved ? '#22c55e' : '#eab308';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(nx + 16 - textW / 2 - 5, ny - 11 + headBob, textW + 10, 14);
+    // Label nama dihilangkan khusus bagi NPC yang sedang mengobrol dengan NPC lain
+    if (!npc.isChatting) {
+      ctx.font = '9px "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      const displayName = npc.isResolved ? `✨ ${npc.name}` : npc.name;
+      const textW = ctx.measureText(displayName).width;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.fillRect(nx + 16 - textW / 2 - 5, ny - 11 + headBob, textW + 10, 14);
+      ctx.strokeStyle = npc.isResolved ? '#22c55e' : '#eab308';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(nx + 16 - textW / 2 - 5, ny - 11 + headBob, textW + 10, 14);
 
-    ctx.fillStyle = npc.isResolved ? '#4ade80' : '#fef08a';
-    ctx.fillText(displayName, nx + 16, ny + headBob);
+      ctx.fillStyle = npc.isResolved ? '#4ade80' : '#fef08a';
+      ctx.fillText(displayName, nx + 16, ny + headBob);
+    }
 
     // Indikator visual 'tanda tanya' (?) melayang di atas NPC yang belum terselesaikan konfliknya
     if (!npc.isResolved) {
@@ -5718,6 +5782,115 @@ export class GameRenderer {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(qCenterX + 7, qCenterY - 7, 2, 2);
       }
+    }
+
+    // -----------------------------------------------------------------------
+    // FREE ROAM: CHATTING BUBBLE INDICATOR (Icon bubble chat kecil di atas NPC)
+    // -----------------------------------------------------------------------
+    if (npc.isChatting) {
+      const bubblePhase = this.tickCount * 0.12 + npc.x * 1.5;
+      const bubbleBob = Math.sin(bubblePhase) * 2.5;
+      const bx = nx + 16;
+      const by = ny - 13 + bubbleBob;
+
+      ctx.save();
+      // Soft ambient glow
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+      ctx.beginPath();
+      ctx.arc(bx, by, 12, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Bubble drop shadow
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.beginPath();
+      ctx.arc(bx + 1, by + 1.5, 9, 0, Math.PI * 2);
+      ctx.fill();
+
+      // White speech bubble body
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(bx, by, 8.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Speech pointer tail
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(bx - 3, by + 6.5);
+      ctx.lineTo(bx + 3, by + 6.5);
+      ctx.lineTo(bx, by + 11);
+      ctx.closePath();
+      ctx.fill();
+
+      // Crisp outline
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.arc(bx, by, 8.5, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Tail outline
+      ctx.beginPath();
+      ctx.moveTo(bx - 3, by + 6.5);
+      ctx.lineTo(bx, by + 11);
+      ctx.lineTo(bx + 3, by + 6.5);
+      ctx.stroke();
+
+      // Animated 3 speech dots (... typing/chatting effect)
+      const dotTick = (this.tickCount * 0.15) % 3;
+      const dotColor1 = dotTick < 1 ? '#0284c7' : '#94a3b8';
+      const dotColor2 = dotTick >= 1 && dotTick < 2 ? '#0284c7' : '#94a3b8';
+      const dotColor3 = dotTick >= 2 ? '#0284c7' : '#94a3b8';
+
+      ctx.fillStyle = dotColor1;
+      ctx.fillRect(bx - 4.5, by - 1, 2, 2);
+      ctx.fillStyle = dotColor2;
+      ctx.fillRect(bx - 1, by - 1, 2, 2);
+      ctx.fillStyle = dotColor3;
+      ctx.fillRect(bx + 2.5, by - 1, 2, 2);
+
+      ctx.restore();
+    } else if (npc.isRoaming) {
+      // Roaming indicator badge (small compass / footsteps icon indicator)
+      const roamPhase = this.tickCount * 0.14 + npc.x * 2;
+      const roamBob = Math.sin(roamPhase) * 2;
+      const rx = nx + 16;
+      const ry = ny - 24 + roamBob;
+
+      ctx.save();
+      // Amber glow for active wandering
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.2)';
+      ctx.beginPath();
+      ctx.arc(rx, ry, 11, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Badge body
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(rx, ry, 7.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+
+      // Tiny icon depending on sprite / character
+      if (npc.sprite === 'squirrel') {
+        // Mail envelope for Kiki delivering letters
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(rx - 3.5, ry - 2.5, 7, 5);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(rx - 1, ry - 1, 2, 2); // Red wax seal
+      } else if (npc.sprite === 'chicken_glasses') {
+        // Research flask / magnifying pulse for Prof. Kotek
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(rx - 2, ry - 2, 4, 4);
+        ctx.fillStyle = '#fef08a';
+        ctx.fillRect(rx - 1, ry - 3, 2, 1);
+      } else {
+        // Scout compass for Didi
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(rx - 2, ry - 2, 4, 4);
+      }
+      ctx.restore();
     }
   }
 
@@ -6093,34 +6266,6 @@ export class GameRenderer {
       });
     }
     this.fogMistMotes.sort((a, b) => a.depth - b.depth);
-
-    // 4. Initialize 35 mysterious glowing particles (Partikel Pendar Misterius) floating in the mist
-    const mysticColors = [
-      { color: '#38bdf8', halo: 'rgba(56, 189, 248, 0.4)' }, // Soft cyan-blue
-      { color: '#7dd3fc', halo: 'rgba(125, 211, 252, 0.4)' }, // Pale sky blue
-      { color: '#6ee7b7', halo: 'rgba(110, 231, 183, 0.4)' }, // Pale mystic emerald
-      { color: '#a7f3d0', halo: 'rgba(167, 243, 208, 0.4)' }, // Soft jade green
-      { color: '#86efac', halo: 'rgba(134, 239, 172, 0.35)' }, // Gentle spring mint
-    ];
-    for (let i = 0; i < 35; i++) {
-      const tier = moteDepthConfigs[i % 3];
-      const depth = tier.minDepth + Math.random() * (tier.maxDepth - tier.minDepth);
-      const pal = mysticColors[i % mysticColors.length];
-      this.fogMysticMotes.push({
-        id: i,
-        x: camX + Math.random() * worldW,
-        y: camY + Math.random() * worldH,
-        vx: (0.2 + Math.random() * 0.4) * (0.8 + depth * 0.25),
-        vy: -0.15 - Math.random() * 0.35, // slow upward buoyant floating
-        size: 1.8 + Math.random() * 2.2,
-        alpha: 0.45 + Math.random() * 0.4,
-        phase: Math.random() * Math.PI * 2,
-        depth,
-        color: pal.color,
-        haloColor: pal.halo,
-      });
-    }
-    this.fogMysticMotes.sort((a, b) => a.depth - b.depth);
   }
 
   // Draw atmospheric fog mist, wind gusts, and flying leaves over unrecovered areas with silky fade-in/fade-out transitions
@@ -6245,19 +6390,6 @@ export class GameRenderer {
       h,
       time,
       gustMultiplier,
-      atmosphericIntensity,
-      deltaPlayerX,
-      deltaPlayerY
-    );
-
-    // 5. Mysterious glowing particles (Partikel Pendar Misterius) floating softly in the mist
-    this.renderFogMysticMotes(
-      ctx,
-      camX,
-      camY,
-      w,
-      h,
-      time,
       atmosphericIntensity,
       deltaPlayerX,
       deltaPlayerY
@@ -6626,73 +6758,6 @@ export class GameRenderer {
         ctx.stroke();
       }
 
-      ctx.restore();
-    }
-  }
-
-  // Render floating mysterious light particles (Partikel Pendar Misterius) in soft cyan-blue and mystic green
-  private renderFogMysticMotes(
-    ctx: CanvasRenderingContext2D,
-    camX: number,
-    camY: number,
-    w: number,
-    h: number,
-    time: number,
-    atmosphericIntensity: number,
-    deltaPlayerX: number,
-    deltaPlayerY: number
-  ) {
-    if (atmosphericIntensity <= 0.01) return;
-
-    for (let i = 0; i < this.fogMysticMotes.length; i++) {
-      const m = this.fogMysticMotes[i];
-
-      // Gentle floating motion: slow upward drift with sinusoidal horizontal bobbing
-      m.x += m.vx + Math.sin(m.phase + time * 0.02) * 0.35;
-      m.y += m.vy + Math.cos(m.phase * 1.3 + time * 0.025) * 0.2;
-
-      // Parallax shift relative to camera/player motion
-      m.x -= deltaPlayerX * (m.depth * 0.4);
-      m.y -= deltaPlayerY * (m.depth * 0.4);
-
-      // Boundary wrap around camera viewport
-      if (m.x < camX - 40) m.x = camX + w + 30;
-      if (m.x > camX + w + 40) m.x = camX - 30;
-      if (m.y < camY - 40) m.y = camY + h + 30;
-      if (m.y > camY + h + 40) m.y = camY - 30;
-
-      // Rhythmic glowing pulse
-      const pulse = Math.sin(m.phase + time * 0.045) * 0.3 + 0.7;
-      const alpha = m.alpha * pulse * atmosphericIntensity;
-      if (alpha <= 0.01) continue;
-
-      const screenX = Math.round(m.x - camX);
-      const screenY = Math.round(m.y - camY);
-      const sz = m.size * (0.8 + m.depth * 0.4);
-
-      ctx.save();
-      // 1. Soft radial luminous aura
-      ctx.fillStyle = m.haloColor;
-      ctx.globalAlpha = alpha * 0.55;
-      ctx.beginPath();
-      ctx.arc(screenX, screenY, sz * 2.8, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 2. Magical diamond glint core
-      ctx.fillStyle = m.color;
-      ctx.globalAlpha = alpha;
-      ctx.beginPath();
-      ctx.moveTo(screenX, screenY - sz * 1.3);
-      ctx.lineTo(screenX + sz * 1.3, screenY);
-      ctx.lineTo(screenX, screenY + sz * 1.3);
-      ctx.lineTo(screenX - sz * 1.3, screenY);
-      ctx.closePath();
-      ctx.fill();
-
-      // 3. Pure white high-energy center glint
-      ctx.fillStyle = '#ffffff';
-      ctx.globalAlpha = alpha * 0.9;
-      ctx.fillRect(screenX - 1, screenY - 1, 2, 2);
       ctx.restore();
     }
   }

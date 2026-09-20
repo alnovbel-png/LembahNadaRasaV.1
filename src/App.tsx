@@ -10,6 +10,8 @@ import {
   INITIAL_NPCS,
   INITIAL_QUESTS,
   INITIAL_ITEMS,
+  NPC_RESOLVED_DIALOGUES,
+  NPC_INTRO_DIALOGUES,
 } from './game/constants';
 import { GAME_DIALOGUES } from './game/dialogueData';
 import {
@@ -64,6 +66,8 @@ export default function App() {
     secretsFound: 0,
     unlockedBadges: [],
   });
+  const statsRef = useRef<PlayerStats>(stats);
+  statsRef.current = stats;
 
   // Player position & movement
   const playerRef = useRef<Player>({
@@ -94,19 +98,72 @@ export default function App() {
   // Step counter for footstep audio pacing and left/right cadence
   const stepCounterRef = useRef<number>(0);
 
-  // Autonomous patrol / wander state for Didi (scout) and Pak Joko (farmer)
+  // Autonomous patrol / wander state for Roaming NPCs:
+  // 1. Didi: Grand Circuit (Plaza -> Kebun -> Hutan -> Menara Jam -> return)
   const didiPatrolRef = useRef({
     currentWaypointIndex: 0,
     waitTicks: 0,
     waypoints: [
-      { x: 11, y: 17, wait: 120 }, // Crossroads
-      { x: 9, y: 17, wait: 30 },
-      { x: 7, y: 17, wait: 140 }, // Farm entrance / signpost
-      { x: 7, y: 19, wait: 120 }, // Near farmhouse
-      { x: 7, y: 17, wait: 40 },
-      { x: 11, y: 17, wait: 100 }, // Back to crossroads
-      { x: 14, y: 17, wait: 120 }, // East pathway
-      { x: 11, y: 17, wait: 80 },  // Return
+      // Plaza Alun-Alun
+      { x: 11, y: 15, wait: 120, label: 'Alun-Alun' },
+      { x: 11, y: 17, wait: 30, label: 'Simpang Alun-Alun' },
+      // Menuju Kebun Sayur & Pertanian Pak Joko
+      { x: 7, y: 17, wait: 40, label: 'Jalur Kebun' },
+      { x: 7, y: 22, wait: 140, label: 'Kebun Harapan Pak Joko' },
+      { x: 7, y: 17, wait: 40, label: 'Kembali ke Jalur Tengah' },
+      { x: 11, y: 17, wait: 40, label: 'Simpang Tengah' },
+      // Menuju Hutan Pinus Utara
+      { x: 11, y: 14, wait: 30, label: 'Jalur Menuju Hutan' },
+      { x: 11, y: 10, wait: 40, label: 'Pintu Gerbang Hutan' },
+      { x: 11, y: 7, wait: 140, label: 'Kawasan Hutan Pinus' },
+      { x: 11, y: 10, wait: 30, label: 'Kembali dari Hutan' },
+      { x: 11, y: 14, wait: 30, label: 'Simpang Plaza Timur' },
+      // Menuju Jembatan & Menara Jam Harmoni
+      { x: 15, y: 15, wait: 30, label: 'Jalan Jembatan Barat' },
+      { x: 21, y: 15, wait: 60, label: 'Jembatan Harmoni' },
+      { x: 26, y: 15, wait: 40, label: 'Seberang Jembatan Timur' },
+      { x: 30, y: 15, wait: 30, label: 'Simpang Jalan Menara' },
+      { x: 30, y: 9, wait: 150, label: 'Pelataran Menara Jam' },
+      { x: 30, y: 15, wait: 40, label: 'Turun dari Menara' },
+      { x: 26, y: 15, wait: 30, label: 'Kembali ke Jembatan' },
+      { x: 21, y: 15, wait: 40, label: 'Menyeberang Jembatan' },
+      { x: 15, y: 15, wait: 30, label: 'Kembali ke Alun-Alun' },
+    ],
+  });
+
+  // 2. Kiki: Delivery Route delivering letters between village residents
+  const kikiPatrolRef = useRef({
+    currentWaypointIndex: 0,
+    waitTicks: 0,
+    waypoints: [
+      { x: 8, y: 13, wait: 140, label: 'Kotak Pos Alun-Alun' },
+      { x: 11, y: 13, wait: 40, label: 'Jalur Timur Plaza' },
+      { x: 11, y: 16, wait: 40, label: 'Simpang Selatan Plaza' },
+      { x: 7, y: 16, wait: 50, label: 'Menuju Rumah Warga Barat' },
+      { x: 7, y: 20, wait: 150, label: 'Kirim Surat ke Kebun Pak Joko' },
+      { x: 7, y: 16, wait: 40, label: 'Kembali ke Jalur Tengah' },
+      { x: 14, y: 16, wait: 40, label: 'Menuju Dermaga & Jembatan' },
+      { x: 20, y: 15, wait: 160, label: 'Kirim Surat Apresiasi Kakek Ranu' },
+      { x: 14, y: 15, wait: 40, label: 'Kembali Menuju Alun-Alun' },
+      { x: 11, y: 11, wait: 50, label: 'Jalur Utara Menuju Hutan' },
+      { x: 11, y: 7, wait: 150, label: 'Kirim Surat untuk Bimo & Hutan' },
+      { x: 11, y: 11, wait: 40, label: 'Kembali ke Alun-Alun' },
+    ],
+  });
+
+  // 3. Prof. Kotek: Emotional Science Field Researcher measuring happiness resonance
+  const kotekPatrolRef = useRef({
+    currentWaypointIndex: 0,
+    waitTicks: 0,
+    waypoints: [
+      { x: 16, y: 19, wait: 140, label: 'Pos Riset Alun-Alun Selatan' },
+      { x: 13, y: 18, wait: 60, label: 'Sensor Resonansi Dekat Bunga' },
+      { x: 11, y: 17, wait: 50, label: 'Pusat Gelombang Simpang Desa' },
+      { x: 9, y: 19, wait: 160, label: 'Mengukur Gelombang Tawa Petani' },
+      { x: 11, y: 17, wait: 50, label: 'Kembali ke Pusat Sinyal' },
+      { x: 14, y: 15, wait: 50, label: 'Meneliti Resonansi Gemercik Air' },
+      { x: 18, y: 15, wait: 150, label: 'Sensor Harmoni Dekat Jembatan' },
+      { x: 14, y: 17, wait: 60, label: 'Kembali ke Pos Pengamatan' },
     ],
   });
 
@@ -239,19 +296,62 @@ export default function App() {
       unlockedBadges: allBadgeIds,
     });
 
-    // 4. Resolusikan seluruh warga desa ke emosi bahagia, tenang, dan damai
+    // 4. Resolusikan seluruh warga desa ke emosi bahagia, tenang, dan damai serta atur posisi mengobrol
     setNpcs((prev) =>
-      prev.map((npc) => ({
-        ...npc,
-        isResolved: true,
-        currentDialogueId: `${npc.id}_resolved`,
-        emotionProfile: {
-          ...npc.emotionProfile,
-          surfaceEmotion: 'tenang',
-          deepEmotion: 'gembira',
-          reason: 'Merasa damai dan bahagia karena Lembah Nada Rasa telah kembali harmonis.',
-        },
-      }))
+      prev.map((npc) => {
+        const base = {
+          ...npc,
+          isResolved: true,
+          currentDialogueId: NPC_RESOLVED_DIALOGUES[npc.id] || `${npc.id}_resolved`,
+          emotionProfile: {
+            ...npc.emotionProfile,
+            surfaceEmotion: 'tenang',
+            deepEmotion: 'gembira',
+            reason: 'Merasa damai dan bahagia karena Lembah Nada Rasa telah kembali harmonis.',
+          },
+        };
+
+        // Chatting Pair 1: Kak Citra & Moka in Plaza Flower Garden
+        if (npc.id === 'kak_citra') {
+          return { ...base, x: 13, y: 16, facing: 'right', isChatting: true, chatPartnerId: 'moka_cat' };
+        }
+        if (npc.id === 'moka_cat') {
+          return { ...base, x: 14, y: 16, facing: 'left', isChatting: true, chatPartnerId: 'kak_citra' };
+        }
+        // Chatting Pair 2: Kakek Ranu & Bimo at Bridge Pavilion
+        if (npc.id === 'kakek_ranu') {
+          return { ...base, x: 23, y: 15, facing: 'right', isChatting: true, chatPartnerId: 'bimo' };
+        }
+        if (npc.id === 'bimo') {
+          return { ...base, x: 24, y: 15, facing: 'left', isChatting: true, chatPartnerId: 'kakek_ranu' };
+        }
+        // Chatting Pair 3: Pak Teguh & Ibu Sari at Forest Edge
+        if (npc.id === 'teguh_woodcutter') {
+          return { ...base, x: 10, y: 6, facing: 'right', isChatting: true, chatPartnerId: 'sari_fruit' };
+        }
+        if (npc.id === 'sari_fruit') {
+          return { ...base, x: 11, y: 6, facing: 'left', isChatting: true, chatPartnerId: 'teguh_woodcutter' };
+        }
+        // Chatting Pair 4: Kakek Damai & Bung Jala at Riverbank
+        if (npc.id === 'kakek_damai') {
+          return { ...base, x: 25, y: 19, facing: 'right', isChatting: true, chatPartnerId: 'jala_fisher' };
+        }
+        if (npc.id === 'jala_fisher') {
+          return { ...base, x: 26, y: 19, facing: 'left', isChatting: true, chatPartnerId: 'kakek_damai' };
+        }
+        // Roaming NPCs
+        if (npc.id === 'kiki') {
+          return { ...base, isRoaming: true, roamActivity: 'Mengantar Surat Apresiasi Desa' };
+        }
+        if (npc.id === 'prof_kotek') {
+          return { ...base, isRoaming: true, roamActivity: 'Riset Lapangan Resonansi Emosi' };
+        }
+        if (npc.id === 'didi_scout' || npc.id === 'didi') {
+          return { ...base, isRoaming: true, roamActivity: 'Patroli Rute Harmoni Desa' };
+        }
+
+        return base;
+      })
     );
 
     // 5. Aktifkan Mode Jelajah Bebas secara langsung
@@ -630,6 +730,193 @@ export default function App() {
     [checkCollision]
   );
 
+  // Helper to reliably find dialogue node for an NPC in any game state (including Developer Mode / Free Roam)
+  const getNPCDialogueNode = useCallback((npc: NPC): DialogueNode | null => {
+    const unlocked = stats.unlockedBadges || [];
+
+    // Badge status for chatting pairs
+    const citraBadgeUnlocked = unlocked.includes('badge_counselor_zones');
+    const mokaBadgeUnlocked = unlocked.includes('badge_active_listening');
+    const citraMokaPairActive = citraBadgeUnlocked && mokaBadgeUnlocked;
+
+    const teguhBadgeUnlocked = unlocked.includes('badge_woodcutter_anger');
+    const sariBadgeUnlocked = unlocked.includes('badge_fruit_gratitude');
+    const teguhSariPairActive = teguhBadgeUnlocked && sariBadgeUnlocked;
+
+    const damaiBadgeUnlocked = unlocked.includes('badge_circle_of_control');
+    const jalaBadgeUnlocked = unlocked.includes('badge_fisherman_patience');
+    const damaiJalaPairActive = damaiBadgeUnlocked && jalaBadgeUnlocked;
+
+    const ranuResolved = npc.id === 'kakek_ranu' ? npc.isResolved : npcs.find((n) => n.id === 'kakek_ranu')?.isResolved;
+    const bimoResolved = npc.id === 'bimo' ? npc.isResolved : npcs.find((n) => n.id === 'bimo')?.isResolved;
+    const ranuBimoPairActive = Boolean(ranuResolved && bimoResolved);
+
+    // 0. In Free Roam mode:
+    // Pair chatting and contextual dialogue ONLY occur after the dialogue interaction to earn the badge has been completed!
+    if (isFreeRoamActive) {
+      // Chatting Pair 1: Kak Citra & Moka
+      if (npc.id === 'kak_citra') {
+        if (citraMokaPairActive && GAME_DIALOGUES.chat_citra_moka_citra) {
+          return GAME_DIALOGUES.chat_citra_moka_citra;
+        }
+        if (!citraBadgeUnlocked && GAME_DIALOGUES.citra_intro) {
+          return GAME_DIALOGUES.citra_intro;
+        }
+        if (GAME_DIALOGUES.citra_resolved) {
+          return GAME_DIALOGUES.citra_resolved;
+        }
+      }
+
+      if (npc.id === 'moka_cat') {
+        if (citraMokaPairActive && GAME_DIALOGUES.chat_citra_moka_moka) {
+          return GAME_DIALOGUES.chat_citra_moka_moka;
+        }
+        if (!mokaBadgeUnlocked && GAME_DIALOGUES.moka_intro) {
+          return GAME_DIALOGUES.moka_intro;
+        }
+        if (GAME_DIALOGUES.moka_resolved) {
+          return GAME_DIALOGUES.moka_resolved;
+        }
+      }
+
+      // Chatting Pair 2: Kakek Ranu & Bimo
+      if (npc.id === 'kakek_ranu') {
+        if (ranuBimoPairActive && GAME_DIALOGUES.chat_ranu_bimo_ranu) {
+          return GAME_DIALOGUES.chat_ranu_bimo_ranu;
+        }
+        if (!ranuResolved && GAME_DIALOGUES.ranu_intro) {
+          return GAME_DIALOGUES.ranu_intro;
+        }
+        if (GAME_DIALOGUES.ranu_resolved) {
+          return GAME_DIALOGUES.ranu_resolved;
+        }
+      }
+
+      if (npc.id === 'bimo') {
+        if (ranuBimoPairActive && GAME_DIALOGUES.chat_ranu_bimo_bimo) {
+          return GAME_DIALOGUES.chat_ranu_bimo_bimo;
+        }
+        if (!bimoResolved && GAME_DIALOGUES.bimo_intro) {
+          return GAME_DIALOGUES.bimo_intro;
+        }
+        if (GAME_DIALOGUES.bimo_resolved) {
+          return GAME_DIALOGUES.bimo_resolved;
+        }
+      }
+
+      // Chatting Pair 3: Pak Teguh & Ibu Sari
+      if (npc.id === 'teguh_woodcutter') {
+        if (teguhSariPairActive && GAME_DIALOGUES.chat_teguh_sari_teguh) {
+          return GAME_DIALOGUES.chat_teguh_sari_teguh;
+        }
+        if (!teguhBadgeUnlocked && GAME_DIALOGUES.teguh_intro) {
+          return GAME_DIALOGUES.teguh_intro;
+        }
+        if (GAME_DIALOGUES.teguh_resolved) {
+          return GAME_DIALOGUES.teguh_resolved;
+        }
+      }
+
+      if (npc.id === 'sari_fruit') {
+        if (teguhSariPairActive && GAME_DIALOGUES.chat_teguh_sari_sari) {
+          return GAME_DIALOGUES.chat_teguh_sari_sari;
+        }
+        if (!sariBadgeUnlocked && GAME_DIALOGUES.sari_intro) {
+          return GAME_DIALOGUES.sari_intro;
+        }
+        if (GAME_DIALOGUES.sari_resolved) {
+          return GAME_DIALOGUES.sari_resolved;
+        }
+      }
+
+      // Chatting Pair 4: Kakek Damai & Bung Jala
+      if (npc.id === 'kakek_damai') {
+        if (damaiJalaPairActive && GAME_DIALOGUES.chat_damai_jala_damai) {
+          return GAME_DIALOGUES.chat_damai_jala_damai;
+        }
+        if (!damaiBadgeUnlocked && GAME_DIALOGUES.damai_intro) {
+          return GAME_DIALOGUES.damai_intro;
+        }
+        if (GAME_DIALOGUES.damai_resolved) {
+          return GAME_DIALOGUES.damai_resolved;
+        }
+      }
+
+      if (npc.id === 'jala_fisher') {
+        if (damaiJalaPairActive && GAME_DIALOGUES.chat_damai_jala_jala) {
+          return GAME_DIALOGUES.chat_damai_jala_jala;
+        }
+        if (!jalaBadgeUnlocked && GAME_DIALOGUES.jala_intro) {
+          return GAME_DIALOGUES.jala_intro;
+        }
+        if (GAME_DIALOGUES.jala_resolved) {
+          return GAME_DIALOGUES.jala_resolved;
+        }
+      }
+
+      // Roaming NPCs: require badge dialogue before roaming banter
+      if (npc.id === 'prof_kotek') {
+        if (!unlocked.includes('badge_laughter_medicine') && GAME_DIALOGUES.kotek_intro) {
+          return GAME_DIALOGUES.kotek_intro;
+        }
+        if (GAME_DIALOGUES.prof_kotek_roaming) {
+          return GAME_DIALOGUES.prof_kotek_roaming;
+        }
+      }
+
+      if (npc.id === 'didi' || npc.id === 'didi_scout') {
+        if (!unlocked.includes('badge_friendly_greeter') && GAME_DIALOGUES.didi_intro) {
+          return GAME_DIALOGUES.didi_intro;
+        }
+        if (GAME_DIALOGUES.didi_roaming) {
+          return GAME_DIALOGUES.didi_roaming;
+        }
+      }
+
+      if (npc.id === 'pak_joko') {
+        if (!unlocked.includes('badge_growth_mindset') && GAME_DIALOGUES.joko_intro) {
+          return GAME_DIALOGUES.joko_intro;
+        }
+        if (GAME_DIALOGUES.pak_joko_resolved) {
+          return GAME_DIALOGUES.pak_joko_resolved;
+        }
+      }
+
+      if (npc.id === 'kiki' && GAME_DIALOGUES.kiki_roaming) {
+        return GAME_DIALOGUES.kiki_roaming;
+      }
+
+      if (npc.id === 'penjaga_kabut' && GAME_DIALOGUES.chat_nenek_wilis) {
+        return GAME_DIALOGUES.chat_nenek_wilis;
+      }
+    }
+
+    // 1. If NPC is resolved, prioritize resolved dialogue key from mapping or explicit currentDialogueId
+    if (npc.isResolved) {
+      const resolvedKey = NPC_RESOLVED_DIALOGUES[npc.id] || npc.currentDialogueId || `${npc.id}_resolved`;
+      if (GAME_DIALOGUES[resolvedKey]) return GAME_DIALOGUES[resolvedKey];
+    }
+
+    // 2. Try explicit currentDialogueId
+    if (npc.currentDialogueId && GAME_DIALOGUES[npc.currentDialogueId]) {
+      return GAME_DIALOGUES[npc.currentDialogueId];
+    }
+
+    // 3. Try mapped intro key or standard intro fallback
+    const introKey = NPC_INTRO_DIALOGUES[npc.id] || `${npc.id}_intro`;
+    if (GAME_DIALOGUES[introKey]) {
+      return GAME_DIALOGUES[introKey];
+    }
+
+    // 4. Try mapped resolved key as fallback
+    const fallbackResolvedKey = NPC_RESOLVED_DIALOGUES[npc.id];
+    if (fallbackResolvedKey && GAME_DIALOGUES[fallbackResolvedKey]) {
+      return GAME_DIALOGUES[fallbackResolvedKey];
+    }
+
+    return null;
+  }, [isFreeRoamActive, stats.unlockedBadges, npcs]);
+
   // Main interaction trigger: Talk to nearest NPC or examine object
   const handleInteract = useCallback(() => {
     if (currentDialogue) return; // already in dialogue
@@ -798,7 +1085,7 @@ export default function App() {
 
     // Check nearest NPC
     let nearestNPC: NPC | null = null;
-    let minDist = 65;
+    let minDist = 75;
 
     for (const npc of npcs) {
       const nx = npc.x * TILE_SIZE + 16;
@@ -821,13 +1108,12 @@ export default function App() {
       nearestNPC.facing = px > nx ? 'right' : 'left';
 
       sound.playVoiceBlip();
-      const dialogueKey = nearestNPC.currentDialogueId || `${nearestNPC.id}_intro`;
-      const node = GAME_DIALOGUES[dialogueKey] || GAME_DIALOGUES[`${nearestNPC.id}_intro`];
+      const node = getNPCDialogueNode(nearestNPC);
       if (node) {
         setCurrentDialogue(node);
       }
     }
-  }, [currentDialogue, npcs, zoneStatus]);
+  }, [currentDialogue, npcs, zoneStatus, isFreeRoamActive, getNPCDialogueNode]);
 
   // Click / Tap on Floor or NPC/Props to walk there automatically
   const handleCanvasClick = useCallback(
@@ -1272,7 +1558,7 @@ export default function App() {
         const ny = clickedNPC.y * TILE_SIZE + 16;
         const distToPlayer = Math.hypot(nx - px, ny - py);
 
-        if (distToPlayer < 65) {
+        if (distToPlayer < 75) {
           // Close enough to talk immediately without moving!
           const p = playerRef.current;
           if (Math.abs(nx - px) > Math.abs(ny - py)) {
@@ -1283,8 +1569,7 @@ export default function App() {
           clickedNPC.facing = px > nx ? 'right' : 'left';
 
           sound.playVoiceBlip();
-          const dialogueKey = clickedNPC.currentDialogueId || `${clickedNPC.id}_intro`;
-          const node = GAME_DIALOGUES[dialogueKey] || GAME_DIALOGUES[`${clickedNPC.id}_intro`];
+          const node = getNPCDialogueNode(clickedNPC);
           if (node) setCurrentDialogue(node);
           targetPosRef.current = null;
           rendererRef.current?.clearDestination();
@@ -1341,7 +1626,7 @@ export default function App() {
       rendererRef.current?.setDestination(clampedX, clampedY, 'walk');
       rendererRef.current?.addSparkle(clampedX, clampedY, '#38bdf8', 5);
     },
-    [currentDialogue, npcs, zoneStatus, getSafeNPCTalkPosition, mapLayout, checkCollision, sound]
+    [currentDialogue, npcs, zoneStatus, getSafeNPCTalkPosition, mapLayout, checkCollision, sound, getNPCDialogueNode]
   );
 
   // Mouse move handler for interactive object hover hints and cursor styling
@@ -1528,6 +1813,26 @@ export default function App() {
       // Check badge rewards from choice
       if (choice.unlocksBadge) {
         const bId = choice.unlocksBadge;
+        if (bId === 'badge_woodcutter_anger') {
+          resolveNPC('teguh_woodcutter', { surfaceEmotion: 'tenang', deepEmotion: 'gembira', reason: 'Menguasai jeda regulasi amarah dan meredakan emosi sebelum berbicara.' }, 'teguh_resolved');
+        } else if (bId === 'badge_fruit_gratitude') {
+          resolveNPC('sari_fruit', { surfaceEmotion: 'gembira', deepEmotion: 'haru', reason: 'Bersyukur atas limpahan panen buah dan melipatgandakan sukacita dengan berbagi.' }, 'sari_resolved');
+        } else if (bId === 'badge_fisherman_patience') {
+          resolveNPC('jala_fisher', { surfaceEmotion: 'tenang', deepEmotion: 'haru', reason: 'Kesabaran berbuah manis, menikmati ketenangan batin tepi sungai.' }, 'jala_resolved');
+        } else if (bId === 'badge_growth_mindset') {
+          resolveNPC('pak_joko', { surfaceEmotion: 'gembira', deepEmotion: 'tenang', reason: 'Bangga membagikan rahasia pola pikir berkembang kepada generasi muda.' }, 'pak_joko_resolved');
+        } else if (bId === 'badge_counselor_zones') {
+          resolveNPC('kak_citra', { surfaceEmotion: 'tenang', deepEmotion: 'gembira', reason: 'Bahagia karena anak-anak memahami 4 zona regulasi emosi.' }, 'citra_resolved');
+        } else if (bId === 'badge_circle_of_control') {
+          resolveNPC('kakek_damai', { surfaceEmotion: 'tenang', deepEmotion: 'tenang', reason: 'Melihat anak-anak berlatih fokus pada lingkaran kendali diri.' }, 'damai_resolved');
+        } else if (bId === 'badge_active_listening') {
+          resolveNPC('moka_cat', { surfaceEmotion: 'tenang', deepEmotion: 'gembira', reason: 'Gembira anak-anak mendengarkan dengan telinga dan mata hati.' }, 'moka_resolved');
+        } else if (bId === 'badge_laughter_medicine') {
+          resolveNPC('prof_kotek', { surfaceEmotion: 'gembira', deepEmotion: 'gembira', reason: 'Tawa ceria dan endorfin positif menyebar ke seluruh penjuru desa.' }, 'kotek_resolved');
+        } else if (bId === 'badge_friendly_greeter') {
+          resolveNPC('didi_scout', { surfaceEmotion: 'gembira', deepEmotion: 'tenang', reason: 'Senang menyapa setiap pengelana dengan senyuman tulus.' }, 'didi_resolved');
+        }
+
         setStats((prev) => {
           const existing = prev.unlockedBadges ?? [];
           if (existing.includes(bId)) return prev;
@@ -2140,12 +2445,7 @@ export default function App() {
               reachedNPC.facing = pCenterX > nx ? 'right' : 'left';
 
               sound.playVoiceBlip();
-              const dialogueKey =
-                reachedNPC.currentDialogueId ||
-                `${reachedNPC.id}_intro`;
-              const node =
-                GAME_DIALOGUES[dialogueKey] ||
-                GAME_DIALOGUES[`${reachedNPC.id}_intro`];
+              const node = getNPCDialogueNode(reachedNPC);
               if (node) setCurrentDialogue(node);
             } else if (reachedTarget.targetType === 'cabin') {
               sound.playSecretFound();
@@ -2308,12 +2608,7 @@ export default function App() {
                 blockedNPC.facing = pCenterX > bnx ? 'right' : 'left';
 
                 sound.playVoiceBlip();
-                const dialogueKey =
-                  blockedNPC.currentDialogueId ||
-                  `${blockedNPC.id}_intro`;
-                const node =
-                  GAME_DIALOGUES[dialogueKey] ||
-                  GAME_DIALOGUES[`${blockedNPC.id}_intro`];
+                const node = getNPCDialogueNode(blockedNPC);
                 if (node) setCurrentDialogue(node);
                 return;
               }
@@ -2327,20 +2622,22 @@ export default function App() {
         p.isMoving = false;
       }
 
-      // Autonomous behaviors for NPCs (Didi roaming and Pak Joko tending crops)
+      // Autonomous behaviors for NPCs (Free Roam movement and routines)
       if (!currentDialogue) {
         const px = p.x + 16;
         const py = p.y + 16;
 
-        // 1. Didi the wandering scout
-        const didi = npcs.find((n) => n.id === 'didi');
+        // 1. Didi the wandering scout (Grand Circuit: Plaza -> Kebun -> Hutan -> Menara Jam)
+        const didi = npcs.find((n) => n.id === 'didi_scout' || n.id === 'didi');
         if (didi) {
+          didi.isRoaming = true;
+          didi.roamActivity = 'Patroli Rute Harmoni Desa';
           const didiWorldX = didi.x * TILE_SIZE + 16;
           const didiWorldY = didi.y * TILE_SIZE + 16;
           const distToPlayer = Math.hypot(didiWorldX - px, didiWorldY - py);
 
           if (distToPlayer < 55) {
-            // Notice and face player
+            // Notice and face player attentively
             if (Math.abs(px - didiWorldX) > Math.abs(py - didiWorldY)) {
               didi.facing = px > didiWorldX ? 'right' : 'left';
             } else {
@@ -2363,7 +2660,7 @@ export default function App() {
                   (patrol.currentWaypointIndex + 1) % patrol.waypoints.length;
               }
             } else {
-              const moveSpeed = 0.025; // Gentle stroll speed in tile units per frame
+              const moveSpeed = 0.024; // Gentle stroll speed in tile units per frame
               const angle = Math.atan2(diffY, diffX);
               didi.x += Math.cos(angle) * Math.min(moveSpeed, distToWp);
               didi.y += Math.sin(angle) * Math.min(moveSpeed, distToWp);
@@ -2377,8 +2674,100 @@ export default function App() {
           }
         }
 
-        // 2. Pak Joko the farmer tending crops
-        const joko = npcs.find((n) => n.id === 'joko');
+        // 2. Kiki the postal squirrel (Delivering mail across village zones during Free Roam or once resolved)
+        const kiki = npcs.find((n) => n.id === 'kiki');
+        if (kiki && (isFreeRoamActive || kiki.isResolved)) {
+          kiki.isRoaming = true;
+          kiki.roamActivity = 'Mengantar Surat Apresiasi Desa';
+          const kikiWorldX = kiki.x * TILE_SIZE + 16;
+          const kikiWorldY = kiki.y * TILE_SIZE + 16;
+          const distToPlayer = Math.hypot(kikiWorldX - px, kikiWorldY - py);
+
+          if (distToPlayer < 55) {
+            if (Math.abs(px - kikiWorldX) > Math.abs(py - kikiWorldY)) {
+              kiki.facing = px > kikiWorldX ? 'right' : 'left';
+            } else {
+              kiki.facing = py > kikiWorldY ? 'down' : 'up';
+            }
+          } else {
+            const patrol = kikiPatrolRef.current;
+            const targetWp = patrol.waypoints[patrol.currentWaypointIndex];
+            const diffX = targetWp.x - kiki.x;
+            const diffY = targetWp.y - kiki.y;
+            const distToWp = Math.hypot(diffX, diffY);
+
+            if (distToWp < 0.04) {
+              kiki.x = targetWp.x;
+              kiki.y = targetWp.y;
+              patrol.waitTicks++;
+              if (patrol.waitTicks >= targetWp.wait) {
+                patrol.waitTicks = 0;
+                patrol.currentWaypointIndex =
+                  (patrol.currentWaypointIndex + 1) % patrol.waypoints.length;
+              }
+            } else {
+              const moveSpeed = 0.026; // Nimble postal squirrel hop speed
+              const angle = Math.atan2(diffY, diffX);
+              kiki.x += Math.cos(angle) * Math.min(moveSpeed, distToWp);
+              kiki.y += Math.sin(angle) * Math.min(moveSpeed, distToWp);
+
+              if (Math.abs(diffX) > Math.abs(diffY)) {
+                kiki.facing = diffX > 0 ? 'right' : 'left';
+              } else {
+                kiki.facing = diffY > 0 ? 'down' : 'up';
+              }
+            }
+          }
+        }
+
+        // 3. Prof. Kotek the emotional science rooster (Patrolling and measuring happiness frequency)
+        const kotek = npcs.find((n) => n.id === 'prof_kotek');
+        if (kotek && (isFreeRoamActive || kotek.isResolved)) {
+          kotek.isRoaming = true;
+          kotek.roamActivity = 'Riset Lapangan Resonansi Emosi';
+          const kotekWorldX = kotek.x * TILE_SIZE + 16;
+          const kotekWorldY = kotek.y * TILE_SIZE + 16;
+          const distToPlayer = Math.hypot(kotekWorldX - px, kotekWorldY - py);
+
+          if (distToPlayer < 55) {
+            if (Math.abs(px - kotekWorldX) > Math.abs(py - kotekWorldY)) {
+              kotek.facing = px > kotekWorldX ? 'right' : 'left';
+            } else {
+              kotek.facing = py > kotekWorldY ? 'down' : 'up';
+            }
+          } else {
+            const patrol = kotekPatrolRef.current;
+            const targetWp = patrol.waypoints[patrol.currentWaypointIndex];
+            const diffX = targetWp.x - kotek.x;
+            const diffY = targetWp.y - kotek.y;
+            const distToWp = Math.hypot(diffX, diffY);
+
+            if (distToWp < 0.04) {
+              kotek.x = targetWp.x;
+              kotek.y = targetWp.y;
+              patrol.waitTicks++;
+              if (patrol.waitTicks >= targetWp.wait) {
+                patrol.waitTicks = 0;
+                patrol.currentWaypointIndex =
+                  (patrol.currentWaypointIndex + 1) % patrol.waypoints.length;
+              }
+            } else {
+              const moveSpeed = 0.021; // Stately researcher strut
+              const angle = Math.atan2(diffY, diffX);
+              kotek.x += Math.cos(angle) * Math.min(moveSpeed, distToWp);
+              kotek.y += Math.sin(angle) * Math.min(moveSpeed, distToWp);
+
+              if (Math.abs(diffX) > Math.abs(diffY)) {
+                kotek.facing = diffX > 0 ? 'right' : 'left';
+              } else {
+                kotek.facing = diffY > 0 ? 'down' : 'up';
+              }
+            }
+          }
+        }
+
+        // 4. Pak Joko the farmer tending crops (Daily agricultural care routine)
+        const joko = npcs.find((n) => n.id === 'pak_joko' || n.id === 'joko');
         if (joko) {
           const jokoWorldX = joko.x * TILE_SIZE + 16;
           const jokoWorldY = joko.y * TILE_SIZE + 16;
@@ -2401,6 +2790,67 @@ export default function App() {
               joko.x = nextStep.x;
               joko.y = nextStep.y;
               joko.facing = nextStep.facing;
+            }
+          }
+        }
+
+        // 5. Chatting NPC pairs during Free Roam mode:
+        // Set dynamic gaze & face-to-face orientation when player is not right next to them
+        // Pair chatting is ONLY enabled when the interaction dialogue to earn the badge has been completed for both NPCs!
+        if (isFreeRoamActive) {
+          const unlocked = statsRef.current?.unlockedBadges || [];
+          const chattingPairs = [
+            {
+              a: 'kak_citra',
+              b: 'moka_cat',
+              facingA: 'right' as const,
+              facingB: 'left' as const,
+              isUnlocked: unlocked.includes('badge_counselor_zones') && unlocked.includes('badge_active_listening'),
+            },
+            {
+              a: 'kakek_ranu',
+              b: 'bimo',
+              facingA: 'right' as const,
+              facingB: 'left' as const,
+              isUnlocked: Boolean(npcs.find((n) => n.id === 'kakek_ranu')?.isResolved && npcs.find((n) => n.id === 'bimo')?.isResolved),
+            },
+            {
+              a: 'teguh_woodcutter',
+              b: 'sari_fruit',
+              facingA: 'right' as const,
+              facingB: 'left' as const,
+              isUnlocked: unlocked.includes('badge_woodcutter_anger') && unlocked.includes('badge_fruit_gratitude'),
+            },
+            {
+              a: 'kakek_damai',
+              b: 'jala_fisher',
+              facingA: 'right' as const,
+              facingB: 'left' as const,
+              isUnlocked: unlocked.includes('badge_circle_of_control') && unlocked.includes('badge_fisherman_patience'),
+            },
+          ];
+
+          for (const pair of chattingPairs) {
+            const npcA = npcs.find((n) => n.id === pair.a);
+            const npcB = npcs.find((n) => n.id === pair.b);
+            if (npcA && npcB) {
+              if (pair.isUnlocked) {
+                npcA.isChatting = true;
+                npcB.isChatting = true;
+                npcA.chatPartnerId = pair.b;
+                npcB.chatPartnerId = pair.a;
+
+                // If player is not within talking proximity, face their chat partner
+                const distA = Math.hypot(npcA.x * TILE_SIZE + 16 - px, npcA.y * TILE_SIZE + 16 - py);
+                const distB = Math.hypot(npcB.x * TILE_SIZE + 16 - px, npcB.y * TILE_SIZE + 16 - py);
+                if (distA >= 55) npcA.facing = pair.facingA;
+                if (distB >= 55) npcB.facing = pair.facingB;
+              } else {
+                npcA.isChatting = false;
+                npcB.isChatting = false;
+                npcA.chatPartnerId = undefined;
+                npcB.chatPartnerId = undefined;
+              }
             }
           }
         }
@@ -2508,7 +2958,196 @@ export default function App() {
       '#34d399',
       30
     );
+
+    const unlocked = stats.unlockedBadges || [];
+    const citraMokaUnlocked = unlocked.includes('badge_counselor_zones') && unlocked.includes('badge_active_listening');
+    const teguhSariUnlocked = unlocked.includes('badge_woodcutter_anger') && unlocked.includes('badge_fruit_gratitude');
+    const damaiJalaUnlocked = unlocked.includes('badge_circle_of_control') && unlocked.includes('badge_fisherman_patience');
+
+    // Arrange talking pairs in their scenic spots if badges earned; otherwise keep individual positions
+    setNpcs((prev) => {
+      const ranuResolved = prev.find((n) => n.id === 'kakek_ranu')?.isResolved;
+      const bimoResolved = prev.find((n) => n.id === 'bimo')?.isResolved;
+      const ranuBimoUnlocked = Boolean(ranuResolved && bimoResolved);
+
+      return prev.map((npc) => {
+        // Chatting Pair 1: Kak Citra & Moka in Plaza Flower Garden
+        if (npc.id === 'kak_citra') {
+          if (citraMokaUnlocked) {
+            return { ...npc, x: 13, y: 16, facing: 'right' as const, isChatting: true, chatPartnerId: 'moka_cat' };
+          }
+          return { ...npc, isChatting: false, chatPartnerId: undefined };
+        }
+        if (npc.id === 'moka_cat') {
+          if (citraMokaUnlocked) {
+            return { ...npc, x: 14, y: 16, facing: 'left' as const, isChatting: true, chatPartnerId: 'kak_citra' };
+          }
+          return { ...npc, isChatting: false, chatPartnerId: undefined };
+        }
+        // Chatting Pair 2: Kakek Ranu & Bimo at Bridge Pavilion
+        if (npc.id === 'kakek_ranu') {
+          if (ranuBimoUnlocked) {
+            return { ...npc, x: 23, y: 15, facing: 'right' as const, isChatting: true, chatPartnerId: 'bimo' };
+          }
+          return { ...npc, isChatting: false, chatPartnerId: undefined };
+        }
+        if (npc.id === 'bimo') {
+          if (ranuBimoUnlocked) {
+            return { ...npc, x: 24, y: 15, facing: 'left' as const, isChatting: true, chatPartnerId: 'kakek_ranu' };
+          }
+          return { ...npc, isChatting: false, chatPartnerId: undefined };
+        }
+        // Chatting Pair 3: Pak Teguh & Ibu Sari at Forest Edge
+        if (npc.id === 'teguh_woodcutter') {
+          if (teguhSariUnlocked) {
+            return { ...npc, x: 10, y: 6, facing: 'right' as const, isChatting: true, chatPartnerId: 'sari_fruit' };
+          }
+          return { ...npc, isChatting: false, chatPartnerId: undefined };
+        }
+        if (npc.id === 'sari_fruit') {
+          if (teguhSariUnlocked) {
+            return { ...npc, x: 11, y: 6, facing: 'left' as const, isChatting: true, chatPartnerId: 'teguh_woodcutter' };
+          }
+          return { ...npc, isChatting: false, chatPartnerId: undefined };
+        }
+        // Chatting Pair 4: Kakek Damai & Bung Jala at Riverbank
+        if (npc.id === 'kakek_damai') {
+          if (damaiJalaUnlocked) {
+            return { ...npc, x: 25, y: 19, facing: 'right' as const, isChatting: true, chatPartnerId: 'jala_fisher' };
+          }
+          return { ...npc, isChatting: false, chatPartnerId: undefined };
+        }
+        if (npc.id === 'jala_fisher') {
+          if (damaiJalaUnlocked) {
+            return { ...npc, x: 26, y: 19, facing: 'left' as const, isChatting: true, chatPartnerId: 'kakek_damai' };
+          }
+          return { ...npc, isChatting: false, chatPartnerId: undefined };
+        }
+        // Roaming NPCs
+        if (npc.id === 'kiki') {
+          return { ...npc, isRoaming: true, roamActivity: 'Mengantar Surat Apresiasi Desa' };
+        }
+        if (npc.id === 'prof_kotek') {
+          return { ...npc, isRoaming: true, roamActivity: 'Riset Lapangan Resonansi Emosi' };
+        }
+        if (npc.id === 'didi_scout' || npc.id === 'didi') {
+          return { ...npc, isRoaming: true, roamActivity: 'Patroli Rute Harmoni Desa' };
+        }
+        return npc;
+      });
+    });
   };
+
+  // Synchronize NPC chatting states and pair positions dynamically during Free Roam as badges are unlocked
+  useEffect(() => {
+    if (!isFreeRoamActive) return;
+
+    const unlocked = stats.unlockedBadges || [];
+    const citraMokaUnlocked = unlocked.includes('badge_counselor_zones') && unlocked.includes('badge_active_listening');
+    const teguhSariUnlocked = unlocked.includes('badge_woodcutter_anger') && unlocked.includes('badge_fruit_gratitude');
+    const damaiJalaUnlocked = unlocked.includes('badge_circle_of_control') && unlocked.includes('badge_fisherman_patience');
+
+    setNpcs((prev) => {
+      const ranuResolved = prev.find((n) => n.id === 'kakek_ranu')?.isResolved;
+      const bimoResolved = prev.find((n) => n.id === 'bimo')?.isResolved;
+      const ranuBimoUnlocked = Boolean(ranuResolved && bimoResolved);
+
+      let changed = false;
+      const updated = prev.map((npc) => {
+        // Pair 1: Kak Citra & Moka
+        if (npc.id === 'kak_citra') {
+          if (citraMokaUnlocked && (!npc.isChatting || npc.x !== 13 || npc.y !== 16)) {
+            changed = true;
+            return { ...npc, x: 13, y: 16, facing: 'right' as const, isChatting: true, chatPartnerId: 'moka_cat' };
+          }
+          if (!citraMokaUnlocked && npc.isChatting) {
+            changed = true;
+            return { ...npc, isChatting: false, chatPartnerId: undefined };
+          }
+        }
+        if (npc.id === 'moka_cat') {
+          if (citraMokaUnlocked && (!npc.isChatting || npc.x !== 14 || npc.y !== 16)) {
+            changed = true;
+            return { ...npc, x: 14, y: 16, facing: 'left' as const, isChatting: true, chatPartnerId: 'kak_citra' };
+          }
+          if (!citraMokaUnlocked && npc.isChatting) {
+            changed = true;
+            return { ...npc, isChatting: false, chatPartnerId: undefined };
+          }
+        }
+
+        // Pair 2: Kakek Ranu & Bimo
+        if (npc.id === 'kakek_ranu') {
+          if (ranuBimoUnlocked && (!npc.isChatting || npc.x !== 23 || npc.y !== 15)) {
+            changed = true;
+            return { ...npc, x: 23, y: 15, facing: 'right' as const, isChatting: true, chatPartnerId: 'bimo' };
+          }
+          if (!ranuBimoUnlocked && npc.isChatting) {
+            changed = true;
+            return { ...npc, isChatting: false, chatPartnerId: undefined };
+          }
+        }
+        if (npc.id === 'bimo') {
+          if (ranuBimoUnlocked && (!npc.isChatting || npc.x !== 24 || npc.y !== 15)) {
+            changed = true;
+            return { ...npc, x: 24, y: 15, facing: 'left' as const, isChatting: true, chatPartnerId: 'kakek_ranu' };
+          }
+          if (!ranuBimoUnlocked && npc.isChatting) {
+            changed = true;
+            return { ...npc, isChatting: false, chatPartnerId: undefined };
+          }
+        }
+
+        // Pair 3: Pak Teguh & Ibu Sari
+        if (npc.id === 'teguh_woodcutter') {
+          if (teguhSariUnlocked && (!npc.isChatting || npc.x !== 10 || npc.y !== 6)) {
+            changed = true;
+            return { ...npc, x: 10, y: 6, facing: 'right' as const, isChatting: true, chatPartnerId: 'sari_fruit' };
+          }
+          if (!teguhSariUnlocked && npc.isChatting) {
+            changed = true;
+            return { ...npc, isChatting: false, chatPartnerId: undefined };
+          }
+        }
+        if (npc.id === 'sari_fruit') {
+          if (teguhSariUnlocked && (!npc.isChatting || npc.x !== 11 || npc.y !== 6)) {
+            changed = true;
+            return { ...npc, x: 11, y: 6, facing: 'left' as const, isChatting: true, chatPartnerId: 'teguh_woodcutter' };
+          }
+          if (!teguhSariUnlocked && npc.isChatting) {
+            changed = true;
+            return { ...npc, isChatting: false, chatPartnerId: undefined };
+          }
+        }
+
+        // Pair 4: Kakek Damai & Bung Jala
+        if (npc.id === 'kakek_damai') {
+          if (damaiJalaUnlocked && (!npc.isChatting || npc.x !== 25 || npc.y !== 19)) {
+            changed = true;
+            return { ...npc, x: 25, y: 19, facing: 'right' as const, isChatting: true, chatPartnerId: 'jala_fisher' };
+          }
+          if (!damaiJalaUnlocked && npc.isChatting) {
+            changed = true;
+            return { ...npc, isChatting: false, chatPartnerId: undefined };
+          }
+        }
+        if (npc.id === 'jala_fisher') {
+          if (damaiJalaUnlocked && (!npc.isChatting || npc.x !== 26 || npc.y !== 19)) {
+            changed = true;
+            return { ...npc, x: 26, y: 19, facing: 'left' as const, isChatting: true, chatPartnerId: 'kakek_damai' };
+          }
+          if (!damaiJalaUnlocked && npc.isChatting) {
+            changed = true;
+            return { ...npc, isChatting: false, chatPartnerId: undefined };
+          }
+        }
+
+        return npc;
+      });
+
+      return changed ? updated : prev;
+    });
+  }, [isFreeRoamActive, stats.unlockedBadges]);
 
   // Dynamic quest hint banner
   useEffect(() => {

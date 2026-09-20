@@ -51,6 +51,11 @@ export interface NPC {
   isResolved: boolean;
   isCustomSecret?: boolean;
   isOptionalEducator?: boolean; // NPC opsional untuk wawasan PSE & achievement
+  isRoaming?: boolean;
+  roamActivity?: string; // e.g. 'Memeriksa Sensor Emosi', 'Mengantar Surat Desa', 'Patroli Harmoni Desa'
+  isChatting?: boolean;
+  chatPartnerId?: string;
+  chatTopic?: string;
 }
 
 export interface Item {

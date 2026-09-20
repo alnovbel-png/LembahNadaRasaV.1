@@ -243,7 +243,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               id="top-unified-menu-btn"
               onClick={() => setIsMenuOpen(true)}
               aria-label="Buka Menu Game"
-              className="px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 active:bg-amber-500/20 text-amber-300 shadow-xl backdrop-blur-md transition flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95"
+              className="px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:border-amber-300 hover:bg-slate-900 hover:scale-105 hover:shadow-[0_0_14px_rgba(245,158,11,0.5)] active:bg-amber-500/20 text-amber-300 shadow-xl backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95"
             >
               <Menu className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
               <span className="font-pixel text-[8px] sm:text-[9px] tracking-tight">MENU</span>
@@ -257,10 +257,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 id="top-map-toggle-btn"
                 onClick={onToggleMiniMap}
                 title={isMiniMapOpen ? 'Sembunyikan Peta Mini [M]' : 'Buka Peta Mini [M]'}
-                className={`px-2.5 py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
+                className={`px-2.5 py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
                   isMiniMapOpen
-                    ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
-                    : 'bg-slate-950/90 border-slate-700 hover:bg-slate-900 text-slate-300'
+                    ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.6)] hover:shadow-[0_0_20px_rgba(245,158,11,0.8)]'
+                    : 'bg-slate-950/90 border-slate-700 hover:border-amber-400/60 hover:bg-slate-900 text-slate-300 hover:shadow-[0_0_12px_rgba(245,158,11,0.3)]'
                 }`}
               >
                 <MapIcon
@@ -277,7 +277,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 id="top-regulation-btn"
                 onClick={onOpenRegulation}
                 title="Buka Studio Regulasi Emosi & Relaksasi [R]"
-                className="px-2.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:bg-cyan-900/90 text-cyan-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+                className="px-2.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:border-cyan-300 hover:bg-cyan-900/90 hover:scale-105 hover:shadow-[0_0_16px_rgba(6,182,212,0.5)] active:scale-95 text-cyan-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
               >
                 <Wind className="w-4 h-4 text-cyan-300" />
                 <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Regulasi</span>
@@ -289,7 +289,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               id="top-journal-btn"
               onClick={onOpenJournal}
               title="Buka Jurnal Kompas Hati & Tas [J]"
-              className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:bg-slate-900 text-amber-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:border-amber-400 hover:bg-slate-900 hover:scale-105 hover:shadow-[0_0_16px_rgba(245,158,11,0.5)] active:scale-95 text-amber-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-amber-400" />
               <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Jurnal</span>
@@ -301,7 +301,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 id="top-ending-btn"
                 onClick={onOpenEnding}
                 title="Buka Sertifikat Kelulusan & Menu Akhir Kisah"
-                className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 border border-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.6)] font-bold transition flex items-center gap-1.5 text-xs cursor-pointer"
+                className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 hover:scale-105 hover:shadow-[0_0_20px_rgba(245,158,11,0.85)] active:scale-95 text-slate-950 border border-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.6)] font-bold transition-all duration-200 flex items-center gap-1.5 text-xs cursor-pointer"
               >
                 <Award className="w-4 h-4 text-slate-950" />
                 <span>Sertifikat</span>
@@ -312,7 +312,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               id="top-settings-btn"
               onClick={onOpenSettings}
               title="Menu Pengaturan: Misi, Pencapaian, Audio & Kontrol [O]"
-              className="px-3 py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 hover:scale-105 hover:shadow-[0_0_16px_rgba(245,158,11,0.5)] active:scale-95 text-amber-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-bold cursor-pointer"
             >
               <Sliders className="w-4 h-4 text-amber-400" />
               <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Pengaturan</span>
@@ -329,13 +329,13 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           onClick={() => setIsMenuOpen(false)}
         >
           <div
-            className="bg-slate-900/98 border border-amber-500/60 rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md overflow-hidden text-slate-100 flex flex-col max-h-[90vh] mt-10 sm:mt-0"
+            className="bg-slate-900/98 border border-amber-500/60 rounded-2xl shadow-2xl w-full max-w-sm sm:max-w-md overflow-hidden text-slate-100 flex flex-col max-h-[90vh] mt-10 sm:mt-0 modal-glow-frame"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Menu Header */}
             <div className="px-4 py-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/90">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-sm">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-sm hover:scale-110 transition-transform">
                   🎒
                 </div>
                 <div>
@@ -349,7 +349,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               </div>
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 flex items-center justify-center transition cursor-pointer"
+                className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-rose-950/60 hover:border hover:border-rose-500/50 hover:scale-110 hover:shadow-[0_0_10px_rgba(244,63,94,0.4)] active:bg-slate-600 text-slate-300 flex items-center justify-center transition-all cursor-pointer"
                 aria-label="Tutup Menu"
               >
                 <X className="w-4 h-4" />
@@ -365,7 +365,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     onToggleMiniMap();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-amber-500/50 flex items-center justify-between text-left transition cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-amber-400/80 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.3)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300">
@@ -375,7 +375,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                       <div className="font-semibold text-xs text-amber-200 flex items-center gap-1.5">
                         <span>Peta Lembah</span>
                         {isMiniMapOpen && (
-                          <span className="text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-bold">
+                          <span className="text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-bold shadow-[0_0_8px_rgba(245,158,11,0.5)]">
                             Aktif
                           </span>
                         )}
@@ -398,7 +398,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     onOpenRegulation();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-cyan-500/40 hover:border-cyan-400/80 flex items-center justify-between text-left transition cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-cyan-500/40 hover:border-cyan-300 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(6,182,212,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
@@ -425,7 +425,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   onOpenJournal();
                   setIsMenuOpen(false);
                 }}
-                className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-amber-500/40 hover:border-amber-400/80 flex items-center justify-between text-left transition cursor-pointer"
+                className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-amber-500/40 hover:border-amber-400 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
@@ -436,7 +436,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                       Jurnal & Tas Petualang
                     </div>
                     <div className="text-[10.5px] text-slate-400">
-                      Kamus emosi PSE, barang pusaka & wawasan empati
+                      Lore cerita desa, barang pusaka & wawasan empati
                     </div>
                   </div>
                 </div>
@@ -452,10 +452,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     onOpenEnding();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:bg-amber-500/40 border border-amber-400 flex items-center justify-between text-left transition cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:bg-amber-500/40 border border-amber-400 hover:border-amber-300 hover:scale-[1.02] hover:shadow-[0_0_18px_rgba(245,158,11,0.5)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
+                    <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-[0_0_10px_rgba(245,158,11,0.5)]">
                       <Award className="w-5 h-5 text-slate-950" />
                     </div>
                     <div>
@@ -467,7 +467,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                       </div>
                     </div>
                   </div>
-                  <span className="text-[9px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.5 rounded">
+                  <span className="text-[9px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.5 rounded shadow">
                     LULUS
                   </span>
                 </button>
@@ -479,7 +479,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   onOpenSettings();
                   setIsMenuOpen(false);
                 }}
-                className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-slate-500 flex items-center justify-between text-left transition cursor-pointer"
+                className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-amber-400/70 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.3)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center text-slate-200">
@@ -506,7 +506,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     onOpenStartMenu();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full p-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 active:bg-slate-750 border border-amber-500/40 hover:border-amber-400 flex items-center justify-between text-left transition cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 active:bg-slate-750 border border-amber-500/40 hover:border-amber-400 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
@@ -595,10 +595,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
             id="btn-compass-mobile"
             onClick={onCompassToggle}
             aria-label="Kompas Hati"
-            className={`relative w-12 h-12 sm:w-13 sm:h-13 rounded-full border-2 flex flex-col items-center justify-center text-xs font-bold shadow-lg transition active:scale-95 cursor-pointer ${
+            className={`relative w-12 h-12 sm:w-13 sm:h-13 rounded-full border-2 flex flex-col items-center justify-center text-xs font-bold shadow-lg transition-all duration-200 hover:scale-110 active:scale-95 cursor-pointer ${
               isCompassActive
-                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.75)] ring-2 ring-amber-300/70'
-                : 'bg-slate-950/90 text-amber-300 border-amber-400/70 hover:bg-slate-900'
+                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_24px_rgba(245,158,11,0.85)] hover:shadow-[0_0_30px_rgba(245,158,11,1)] ring-2 ring-amber-300/70'
+                : 'bg-slate-950/90 text-amber-300 border-amber-400/70 hover:border-amber-300 hover:bg-slate-900 hover:shadow-[0_0_18px_rgba(245,158,11,0.6)]'
             }`}
           >
             {isCompassActive && (
@@ -622,7 +622,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
             id="btn-action-mobile"
             onClick={onActionPress}
             aria-label="Aksi / Berbicara"
-            className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-emerald-600 active:bg-emerald-400 text-white active:text-slate-950 border-2 border-emerald-300 flex flex-col items-center justify-center text-xs font-bold shadow-xl active:scale-95 transition cursor-pointer"
+            className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white hover:scale-110 hover:shadow-[0_0_24px_rgba(16,185,129,0.85)] active:text-slate-950 border-2 border-emerald-300 flex flex-col items-center justify-center text-xs font-bold shadow-xl active:scale-95 transition-all duration-200 cursor-pointer"
           >
             <span className="text-sm sm:text-base font-black">A</span>
             <span className="text-[7.5px] font-pixel tracking-tighter">AKSI</span>

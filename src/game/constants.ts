@@ -685,6 +685,8 @@ export const INITIAL_NPCS: NPC[] = [
     currentDialogueId: 'didi_intro',
     isResolved: false,
     isOptionalEducator: true,
+    isRoaming: true,
+    roamActivity: 'Patroli Rute Harmoni Desa',
   },
   {
     id: 'teguh_woodcutter',
@@ -744,6 +746,39 @@ export const INITIAL_NPCS: NPC[] = [
     isOptionalEducator: true,
   },
 ];
+
+// Explicit mappings between NPC IDs and their resolved/intro dialogue keys in GAME_DIALOGUES
+export const NPC_RESOLVED_DIALOGUES: Record<string, string> = {
+  kiki: 'kiki_resolved',
+  kakek_ranu: 'ranu_resolved',
+  bimo: 'bimo_resolved',
+  prof_kotek: 'kotek_resolved',
+  penjaga_kabut: 'tower_resolved',
+  kak_citra: 'citra_resolved',
+  kakek_damai: 'damai_resolved',
+  moka_cat: 'moka_resolved',
+  pak_joko: 'pak_joko_resolved',
+  didi_scout: 'didi_resolved',
+  teguh_woodcutter: 'teguh_resolved',
+  sari_fruit: 'sari_resolved',
+  jala_fisher: 'jala_resolved',
+};
+
+export const NPC_INTRO_DIALOGUES: Record<string, string> = {
+  kiki: 'kiki_intro',
+  kakek_ranu: 'ranu_intro',
+  bimo: 'bimo_intro',
+  prof_kotek: 'kotek_intro',
+  penjaga_kabut: 'tower_intro',
+  kak_citra: 'citra_intro',
+  kakek_damai: 'damai_intro',
+  moka_cat: 'moka_intro',
+  pak_joko: 'joko_intro',
+  didi_scout: 'didi_intro',
+  teguh_woodcutter: 'teguh_intro',
+  sari_fruit: 'sari_intro',
+  jala_fisher: 'jala_intro',
+};
 
 // Quests flow
 export const INITIAL_QUESTS: GameQuest[] = [

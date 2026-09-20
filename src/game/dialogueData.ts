@@ -1696,4 +1696,140 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     thoughtBubble: 'Arus emosi mengalir deras layaknya air terjun; kita tidak perlu menahannya, cukup sadari dan biarkan ia mengalir dengan tenang.',
     emotionAura: 'tenang',
   },
+
+  // =========================================================================
+  // FREE ROAM ROAMING & CONTEXTUAL CHATTING NPC DIALOGUES
+  // =========================================================================
+
+  // 1. ROAMING: PROF. KOTEK (Emotional Science Field Researcher)
+  prof_kotek_roaming: {
+    id: 'prof_kotek_roaming',
+    speaker: 'Profesor Kotek',
+    speakerRole: 'Ayam Saintis Emosi (Sedang Riset Keliling)',
+    portrait: 'chicken_glasses',
+    text: 'PETOK-KUKU-RUYUK! Ezzel! Kau lihat sensor galvanometer di kacamata monitorku? Gelombang kebahagiaan warga desa hari ini berfluktuasi pada frekuensi emas 528 Hz! Aku sedang patroli meneliti resonansi tawa antara Alun-Alun dan Kebun!',
+    thoughtBubble: 'Indeks stres desa turun 98,7%! Kehangatan komunikasi adalah vaksin emosi terbaik!',
+    emotionAura: 'gembira',
+  },
+
+  // 2. ROAMING: KIKI (Mail Courier on Delivery Route)
+  kiki_roaming: {
+    id: 'kiki_roaming',
+    speaker: 'Kiki',
+    speakerRole: 'Tupai Pos Cilik (Sedang Antar Surat Desa)',
+    portrait: 'squirrel',
+    text: 'Syuut... Halo Ezzel! Tas selempang posku penuh dengan surat-surat apresiasi antar warga! Ada kartu ucapan terima kasih untuk Kakek Ranu, catatan resep untuk Ibu Sari, dan puisi persahabatan untuk Bimo. Menghubungkan hati warga membuat langkah kakiku melayang ringan!',
+    thoughtBubble: 'Setiap surat yang terantar adalah seberkas senyuman yang menyinari sudut desa!',
+    emotionAura: 'gembira',
+  },
+
+  // 3. ROAMING: DIDI (Village Scout Patrol: Plaza -> Kebun -> Hutan -> Menara Jam)
+  didi_roaming: {
+    id: 'didi_roaming',
+    speaker: 'Didi',
+    speakerRole: 'Pengelana Cilik Desa (Patroli Rute Harmoni)',
+    portrait: 'wandering_scout',
+    text: 'Halo kawan Ezzel! Aku baru saja menyelesaikan satu putaran ekspedisi: dari air mancur Alun-Alun, menyusuri pematang kebun sayur Pak Joko, melintasi rimbunnya hutan pinus Pak Teguh, hingga puncak tangga Menara Jam! Seluruh desa bernapas dalam irama damai yang menakjubkan!',
+    thoughtBubble: 'Langkah kaki penjelajah yang ramah menyatukan setiap penjuru desa!',
+    emotionAura: 'gembira',
+  },
+
+  // 4. CHATTING PAIR 1: KAK CITRA (Konselor Bunga) & MOKA (Kucing Pustakawan)
+  // Location: Plaza / Flower Garden (Taman Alun-alun)
+  chat_citra_moka_citra: {
+    id: 'chat_citra_moka_citra',
+    speaker: 'Kak Citra',
+    speakerRole: 'Konselor Cilik Taman Bunga (Mengobrol dengan Moka)',
+    portrait: 'girl_counselor',
+    text: 'Oh, Ezzel! Kebetulan sekali kau mampir! Moka dan aku baru saja membahas betapa sejuknya taman bunga ini saat warna-warna emosi desa kembali mekar. Moka bilang, anak-anak desa sekarang jauh lebih tenang saat mengungkapkan isi hati mereka.',
+    thoughtBubble: 'Mendengarkan bersama Moka terasa seperti membaca buku penuh kehangatan persahabatan.',
+    emotionAura: 'tenang',
+    nextId: 'chat_citra_moka_moka',
+  },
+  chat_citra_moka_moka: {
+    id: 'chat_citra_moka_moka',
+    speaker: 'Moka',
+    speakerRole: 'Kucing Pustakawan Lembut',
+    portrait: 'cat_librarian',
+    text: 'Purrr... Meow... Betul sekali, Ezzel! Ketika Kak Citra mendengarkan dengan penuh empati dan aku mendengkur di pangkuan, semua rasa cemas perlahan meleleh. Kehadiran utuh tanpa menghakimi adalah pelukan paling menenangkan.',
+    thoughtBubble: 'Dengkuran kucing dan kelembutan Kak Citra: perpaduan terbaik untuk merawat jiwa!',
+    emotionAura: 'tenang',
+  },
+
+  // 5. CHATTING PAIR 2: KAKEK RANU (Tukang Kayu) & BIMO (Murid Pembuat Jam)
+  // Location: Jembatan Kayu / Dermaga (Bridge Pavilion)
+  chat_ranu_bimo_ranu: {
+    id: 'chat_ranu_bimo_ranu',
+    speaker: 'Kakek Ranu',
+    speakerRole: 'Tukang Kayu & Penjaga Jembatan (Mengobrol dengan Bimo)',
+    portrait: 'old_man',
+    text: 'Ha! Lihat siapa yang datang! Ezzel! Bimo anak cerdas ini sedang memperlihatkan cetak biru bantalan roda kayu untuk engsel jembatan baru. Dulu kakek cepat tersulut emosi, tapi sekarang kami berdua belajar bahwa kayu yang fleksibel takkan mudah patah diterpa arus!',
+    thoughtBubble: 'Membimbing generasi muda seperti Bimo membuat hatiku kembali hangat dan dihargai.',
+    emotionAura: 'gembira',
+    nextId: 'chat_ranu_bimo_bimo',
+  },
+  chat_ranu_bimo_bimo: {
+    id: 'chat_ranu_bimo_bimo',
+    speaker: 'Bimo',
+    speakerRole: 'Murid Pembuat Jam (Belajar bersama Kakek Ranu)',
+    portrait: 'boy_glasses',
+    text: 'Kakek Ranu mengajariku bahwa presisi roda gigi jam dan kekokohan balok jembatan memiliki prinsip yang sama: keduanya membutuhkan kesabaran dalam mengukur dan keikhlasan saat memperbaiki kesalahan!',
+    thoughtBubble: 'Aku tak lagi takut berbuat salah karena Kakek Ranu selalu menyemangati dengan sabar!',
+    emotionAura: 'gembira',
+  },
+
+  // 6. CHATTING PAIR 3: PAK TEGUH (Penebang Kayu Bijak) & IBU SARI (Petani Buah)
+  // Location: North Forest Edge (Batas Hutan Pinus)
+  chat_teguh_sari_teguh: {
+    id: 'chat_teguh_sari_teguh',
+    speaker: 'Pak Teguh',
+    speakerRole: 'Penebang Kayu Bijak (Mengobrol dengan Ibu Sari)',
+    portrait: 'woodcutter',
+    text: 'Wah, Ezzel! Selamat sore! Ibu Sari baru saja membawakan sekeranjang apel manis hutan yang baru dipetik. Kami sedang bertukar cerita tentang cara merawat pohon: memangkas cabang duri yang berlebih sama pentingnya dengan mengendalikan amarah sebelum melukai orang lain.',
+    thoughtBubble: 'Udara hutan segar dan rasa manis buah Ibu Sari menyejukkan hati yang letih.',
+    emotionAura: 'gembira',
+    nextId: 'chat_teguh_sari_sari',
+  },
+  chat_teguh_sari_sari: {
+    id: 'chat_teguh_sari_sari',
+    speaker: 'Ibu Sari',
+    speakerRole: 'Petani Kebun Buah Hutan',
+    portrait: 'fruit_farmer',
+    text: 'Dan kayu bakar kering yang dipotong Pak Teguh sangat membantu kami menyalakan api tungku untuk memanggang pai apel desa! Berbagi berkah alam dan mensyukuri kerja keras sesama warga adalah sumber kebahagiaan terbesar kami di sini!',
+    thoughtBubble: 'Rasa syukur yang dibagi bersama tetangga melipatgandakan manisnya rezeki.',
+    emotionAura: 'gembira',
+  },
+
+  // 7. CHATTING PAIR 4: KAKEK DAMAI (Praktisi Mindful) & BUNG JALA (Pemancing Sabar)
+  // Location: Zen Riverbank Pavilion (Pelataran Tepi Sungai Timur)
+  chat_damai_jala_damai: {
+    id: 'chat_damai_jala_damai',
+    speaker: 'Kakek Damai',
+    speakerRole: 'Praktisi Mindful & Pohon Bonsai (Mengobrol dengan Bung Jala)',
+    portrait: 'zen_master',
+    text: 'Salam hening dan damai, Ezzel... Bung Jala dan kakek sedang menikmati tarian riak air sungai di bawah naungan pohon willow. Kami menyadari bahwa memancing dan bermeditasi memiliki hakikat serupa: melepaskan keinginan tergesa-gesa dan hadir utuh di saat ini.',
+    thoughtBubble: 'Di dalam keheningan tepian sungai, jiwa menemukan kembali ketenangannya.',
+    emotionAura: 'tenang',
+    nextId: 'chat_damai_jala_jala',
+  },
+  chat_damai_jala_jala: {
+    id: 'chat_damai_jala_jala',
+    speaker: 'Bung Jala',
+    speakerRole: 'Pemancing Sabar Tepi Sungai',
+    portrait: 'fisherman',
+    text: 'Benar sekali, Ezzel. Ikan tidak bisa dipaksa menyambar umpan, seperti halnya emosi yang tak bisa dipaksa reda seketika. Kita hanya perlu mengamati pelampung, menarik napas dalam, dan mempercayai aliran waktu dengan sabar.',
+    thoughtBubble: 'Kesabaran bukan sekadar menunggu, tapi menjaga hati tetap jernih selama prosesnya.',
+    emotionAura: 'tenang',
+  },
+
+  // 8. SOLE GUARDIAN: NENEK WILIS (Sosok Kabut / Penjaga Menara Jam)
+  chat_nenek_wilis: {
+    id: 'chat_nenek_wilis',
+    speaker: 'Nenek Wilis',
+    speakerRole: 'Penjaga Menara & Pustakawan Desa (Menatap Keindahan Lembah)',
+    portrait: 'spirit_elder',
+    text: 'Ezzel cucuku tersayang... Lihatlah desa dari undakan menara ini. Kiki yang lincah mengantar surat, Didi yang ceria berpatroli, Profesor Kotek yang tekun mencatat tawa warga, dan para tetangga yang saling bercengkerama penuh kasih. Engkau telah mengembalikan bukan hanya warna, melainkan jiwa dari Harmoni Raya.',
+    thoughtBubble: 'Setiap detak Jam Harmoni kini berdentang selaras dengan degup cinta kasih seluruh warga desa.',
+    emotionAura: 'gembira',
+  },
 };
