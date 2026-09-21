@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { GameRenderer, Player } from './game/renderer';
 import {
   generateMapLayout,
@@ -26,6 +26,7 @@ import {
 } from './types/game';
 import { sound } from './utils/audio';
 import { freeRoamWorld } from './game/freeRoamWorld';
+import { findTilePath } from './game/pathfinder';
 import { DialogueBox } from './components/DialogueBox';
 import { EmotionRegulationModal, RegulationMode } from './components/EmotionRegulationModal';
 import { CompassJournalModal } from './components/CompassJournalModal';
@@ -36,6 +37,7 @@ import { CaptureMomentModal } from './components/CaptureMomentModal';
 import { VirtualControls } from './components/VirtualControls';
 import { MiniMap } from './components/MiniMap';
 import { StartMenuModal } from './components/StartMenuModal';
+import { MissionNotificationModal, MissionStepData } from './components/MissionNotificationModal';
 import { Sparkles, Compass } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
 import { PSE_ACHIEVEMENTS } from './game/constants';
@@ -93,6 +95,9 @@ export default function App() {
     targetType?: string;
     minDistSoFar?: number;
     stuckFrames?: number;
+    waypoints?: Array<{ x: number; y: number; col?: number; row?: number }>;
+    waypointIndex?: number;
+    isGuidedMode?: boolean;
   } | null>(null);
 
   // Step counter for footstep audio pacing and left/right cadence
@@ -180,6 +185,12 @@ export default function App() {
 
   // Active UI states
   const [showStartMenu, setShowStartMenu] = useState<boolean>(true);
+  const [playerName, setPlayerName] = useState<string>(() => {
+    return localStorage.getItem('lembah_player_name') || 'Ezzel';
+  });
+  const [playerAvatar, setPlayerAvatar] = useState<'boy' | 'girl'>(() => {
+    return (localStorage.getItem('lembah_player_avatar') as 'boy' | 'girl') || 'boy';
+  });
   const [isCompassActive, setIsCompassActive] = useState<boolean>(false);
   const [currentDialogue, setCurrentDialogue] = useState<DialogueNode | null>(null);
   const [showBreathingMiniGame, setShowBreathingMiniGame] = useState<boolean>(false);
@@ -201,6 +212,17 @@ export default function App() {
   const [questHint, setQuestHint] = useState<string>(
     'Pusaka Kompas Hati terjatuh di depanmu! Tekan [C] atau tombol Kompas untuk menggunakannya.'
   );
+  // Dedicated Sequential Mission Pop-up state
+  const [showMissionModal, setShowMissionModal] = useState<boolean>(false);
+  const [isNewMissionUnlock, setIsNewMissionUnlock] = useState<boolean>(false);
+  const lastStepRef = useRef<number>(1);
+  // Intro / Narrator & Petunjuk Awal completion tracker
+  const [hasCompletedIntroTutorial, setHasCompletedIntroTutorial] = useState<boolean>(false);
+  const hasCompletedIntroTutorialRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    hasCompletedIntroTutorialRef.current = hasCompletedIntroTutorial;
+  }, [hasCompletedIntroTutorial]);
 
   // Capture Moment state
   const [showCaptureMoment, setShowCaptureMoment] = useState<boolean>(false);
@@ -393,7 +415,17 @@ export default function App() {
   }, []);
 
   // Handler for starting the game adventure directly into the story from opening menu
-  const handleStartGame = useCallback(() => {
+  const handleStartGame = useCallback((name: string, avatar: 'boy' | 'girl') => {
+    const finalName = name.trim() || (avatar === 'girl' ? 'Ezsela' : 'Ezzel');
+    setPlayerName(finalName);
+    setPlayerAvatar(avatar);
+    localStorage.setItem('lembah_player_name', finalName);
+    localStorage.setItem('lembah_player_avatar', avatar);
+    if (rendererRef.current) {
+      rendererRef.current.setPlayerAvatar(avatar);
+      rendererRef.current.setPlayerName(finalName);
+    }
+
     sound.unlockAudio();
     sound.playCompassChime();
     setShowStartMenu(false);
@@ -498,34 +530,56 @@ export default function App() {
     }
   }, [inventory, npcs, stats.unlockedBadges, resolveNPC, triggerAllBadgesCelebration]);
 
-  // Click on mini-map to auto-navigate
-  const handleMiniMapNavigate = useCallback(
-    (tileX: number, tileY: number) => {
-      if (currentDialogue) return;
-      const isOutOfBounds = tileY < 0 || tileY >= MAP_ROWS || tileX < 0 || tileX >= MAP_COLS;
-      const clickedTile = isOutOfBounds ? TILE.CLIFF : mapLayout[tileY]?.[tileX] ?? TILE.CLIFF;
-      if (isOutOfBounds || isTileSolid(clickedTile)) {
-        targetPosRef.current = null;
-        rendererRef.current?.clearDestination();
-        playerRef.current.isMoving = false;
-        sound.playBlocked();
-        return;
-      }
-      const targetWorldX = tileX * TILE_SIZE + 16;
-      const targetWorldY = tileY * TILE_SIZE + 16;
-      const px = playerRef.current.x + 16;
-      const py = playerRef.current.y + 16;
-      targetPosRef.current = {
-        x: targetWorldX,
-        y: targetWorldY,
-        minDistSoFar: Math.hypot(targetWorldX - px, targetWorldY - py),
-        stuckFrames: 0,
-      };
-      rendererRef.current?.setDestination(targetWorldX, targetWorldY, 'walk');
-      sound.playMenuSelect();
-    },
-    [currentDialogue, mapLayout]
-  );
+  // Immediately synchronize active quest target into renderer whenever mission or tutorial state updates
+  useEffect(() => {
+    if (!rendererRef.current) return;
+    const isMissionCompleted =
+      isFreeRoamActive ||
+      (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower);
+
+    if (isMissionCompleted || !hasCompletedIntroTutorial) {
+      rendererRef.current.setActiveQuestTarget(null);
+      return;
+    }
+
+    if (!zoneStatus.plaza) {
+      const kiki = npcs.find((n) => n.id === 'kiki');
+      rendererRef.current.setActiveQuestTarget({
+        npcId: 'kiki',
+        stepNumber: 1,
+        label: 'Kiki',
+        targetX: (kiki?.x ?? 8) * TILE_SIZE + 16,
+        targetY: (kiki?.y ?? 14) * TILE_SIZE + 16,
+      });
+    } else if (!zoneStatus.bridge) {
+      const ranu = npcs.find((n) => n.id === 'kakek_ranu');
+      rendererRef.current.setActiveQuestTarget({
+        npcId: 'kakek_ranu',
+        stepNumber: 2,
+        label: 'Kakek Ranu',
+        targetX: (ranu?.x ?? 20) * TILE_SIZE + 16,
+        targetY: (ranu?.y ?? 15) * TILE_SIZE + 16,
+      });
+    } else if (!zoneStatus.forest) {
+      const bimo = npcs.find((n) => n.id === 'bimo');
+      rendererRef.current.setActiveQuestTarget({
+        npcId: 'bimo',
+        stepNumber: 3,
+        label: 'Bimo',
+        targetX: (bimo?.x ?? 7) * TILE_SIZE + 16,
+        targetY: (bimo?.y ?? 6) * TILE_SIZE + 16,
+      });
+    } else if (!zoneStatus.tower) {
+      const penjaga = npcs.find((n) => n.id === 'penjaga_kabut');
+      rendererRef.current.setActiveQuestTarget({
+        npcId: 'penjaga_kabut',
+        stepNumber: 4,
+        label: 'Menara Jam',
+        targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
+        targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
+      });
+    }
+  }, [zoneStatus, npcs, isFreeRoamActive, hasCompletedIntroTutorial]);
 
   // Camera viewport
   const [viewportSize, setViewportSize] = useState({ width: 800, height: 600 });
@@ -601,9 +655,20 @@ export default function App() {
   // Initialize Canvas Renderer
   useEffect(() => {
     if (canvasRef.current && !rendererRef.current) {
-      rendererRef.current = new GameRenderer(canvasRef.current);
+      const renderer = new GameRenderer(canvasRef.current);
+      renderer.setPlayerAvatar(playerAvatar);
+      renderer.setPlayerName(playerName);
+      rendererRef.current = renderer;
     }
-  }, []);
+  }, [playerAvatar, playerName]);
+
+  // Sync avatar and name representation if changed
+  useEffect(() => {
+    if (rendererRef.current) {
+      rendererRef.current.setPlayerAvatar(playerAvatar);
+      rendererRef.current.setPlayerName(playerName);
+    }
+  }, [playerAvatar, playerName]);
 
   // Toggle Resonance Compass
   const handleToggleCompass = useCallback(() => {
@@ -672,6 +737,30 @@ export default function App() {
       return false;
     },
     [mapLayout, zoneStatus, isFreeRoamActive]
+  );
+
+  // Check if a tile coordinate is passable for A* pathfinding
+  const isTilePassable = useCallback(
+    (c: number, r: number): boolean => {
+      if (r < 0 || r >= MAP_ROWS || c < 0 || c >= MAP_COLS) return false;
+      const tile = mapLayout[r]?.[c];
+      if (tile === undefined || isTileSolid(tile)) return false;
+
+      // Bridge gate check: if bridge not yet restored, prevent crossing beyond x = 20*TILE_SIZE
+      if (!zoneStatus.bridge && c >= 21 && c <= 24 && r >= 14 && r <= 16) {
+        return false;
+      }
+
+      // Windmill solid footprint in Free Roam / Restored world (c: 15..16, r: 24..25)
+      if (isFreeRoamActive || (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)) {
+        if ((c === 15 || c === 16) && (r === 24 || r === 25)) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+    [mapLayout, zoneStatus.bridge, isFreeRoamActive, zoneStatus.plaza, zoneStatus.forest, zoneStatus.tower]
   );
 
   // Calculate safe, walkable talk position near an NPC without colliding with any obstacles/assets
@@ -891,6 +980,58 @@ export default function App() {
       }
     }
 
+    // Sequential Mission Flow Enforcer: Guide player through missions strictly 1 by 1
+    if (!isFreeRoamActive) {
+      // Step 1: Misi 1 (Target: Kiki di Plaza Alun-Alun)
+      if (!zoneStatus.plaza) {
+        if (npc.id === 'kakek_ranu') {
+          return GAME_DIALOGUES.ranu_locked_need_kiki;
+        }
+        if (npc.id === 'bimo') {
+          return GAME_DIALOGUES.bimo_locked_need_bridge;
+        }
+        if (npc.id === 'penjaga_kabut') {
+          return GAME_DIALOGUES.tower_locked_need_gear;
+        }
+      }
+      // Step 2: Misi 2 (Target: Kakek Ranu di Jembatan Kayu)
+      else if (!zoneStatus.bridge) {
+        if (npc.id === 'kiki') {
+          return GAME_DIALOGUES.kiki_remind_bridge || GAME_DIALOGUES.kiki_resolved;
+        }
+        if (npc.id === 'bimo') {
+          return GAME_DIALOGUES.bimo_locked_need_bridge;
+        }
+        if (npc.id === 'penjaga_kabut') {
+          return GAME_DIALOGUES.tower_locked_need_gear;
+        }
+      }
+      // Step 3: Misi 3 (Target: Bimo di Hutan Sunyi)
+      else if (!zoneStatus.forest) {
+        if (npc.id === 'kiki') {
+          return GAME_DIALOGUES.kiki_remind_bridge || GAME_DIALOGUES.kiki_resolved;
+        }
+        if (npc.id === 'kakek_ranu') {
+          return GAME_DIALOGUES.ranu_remind_bimo || GAME_DIALOGUES.ranu_resolved;
+        }
+        if (npc.id === 'penjaga_kabut') {
+          return GAME_DIALOGUES.tower_locked_need_gear;
+        }
+      }
+      // Step 4: Misi 4 (Target: Menara Jam Harmoni)
+      else if (!zoneStatus.tower) {
+        if (npc.id === 'kiki') {
+          return GAME_DIALOGUES.kiki_resolved;
+        }
+        if (npc.id === 'kakek_ranu') {
+          return GAME_DIALOGUES.ranu_remind_bimo || GAME_DIALOGUES.ranu_resolved;
+        }
+        if (npc.id === 'bimo') {
+          return GAME_DIALOGUES.bimo_remind_tower || GAME_DIALOGUES.bimo_resolved;
+        }
+      }
+    }
+
     // 1. If NPC is resolved, prioritize resolved dialogue key from mapping or explicit currentDialogueId
     if (npc.isResolved) {
       const resolvedKey = NPC_RESOLVED_DIALOGUES[npc.id] || npc.currentDialogueId || `${npc.id}_resolved`;
@@ -915,7 +1056,7 @@ export default function App() {
     }
 
     return null;
-  }, [isFreeRoamActive, stats.unlockedBadges, npcs]);
+  }, [isFreeRoamActive, stats.unlockedBadges, npcs, zoneStatus]);
 
   // Main interaction trigger: Talk to nearest NPC or examine object
   const handleInteract = useCallback(() => {
@@ -980,11 +1121,15 @@ export default function App() {
       sound.playTowerBell();
       rendererRef.current?.triggerScreenShake(4, 12);
       rendererRef.current?.addSparkle(towerDoorX, towerDoorY, '#fbbf24', 12);
-      setCurrentDialogue(
-        zoneStatus.tower
-          ? GAME_DIALOGUES.tower_examine_restored
-          : GAME_DIALOGUES.tower_examine
-      );
+      if (!isFreeRoamActive && (!zoneStatus.plaza || !zoneStatus.bridge || !zoneStatus.forest)) {
+        setCurrentDialogue(GAME_DIALOGUES.tower_locked_need_gear);
+      } else {
+        setCurrentDialogue(
+          zoneStatus.tower
+            ? GAME_DIALOGUES.tower_examine_restored
+            : GAME_DIALOGUES.tower_examine
+        );
+      }
       return;
     }
 
@@ -1256,11 +1401,15 @@ export default function App() {
           sound.playTowerBell();
           rendererRef.current?.triggerScreenShake(4, 12);
           rendererRef.current?.addSparkle(towerDoorX, towerDoorY, '#fbbf24', 12);
-          setCurrentDialogue(
-            zoneStatus.tower
-              ? GAME_DIALOGUES.tower_examine_restored
-              : GAME_DIALOGUES.tower_examine
-          );
+          if (!isFreeRoamActive && (!zoneStatus.plaza || !zoneStatus.bridge || !zoneStatus.forest)) {
+            setCurrentDialogue(GAME_DIALOGUES.tower_locked_need_gear);
+          } else {
+            setCurrentDialogue(
+              zoneStatus.tower
+                ? GAME_DIALOGUES.tower_examine_restored
+                : GAME_DIALOGUES.tower_examine
+            );
+          }
           targetPosRef.current = null;
           rendererRef.current?.clearDestination();
         } else {
@@ -1789,6 +1938,18 @@ export default function App() {
     rendererRef.current?.setHover(null);
   }, []);
 
+  // Complete initial prologue (Narrator & Petunjuk Awal) and unveil the mission guidance
+  const completeIntroTutorial = useCallback(() => {
+    setHasCompletedIntroTutorial((prev) => {
+      if (prev) return prev;
+      hasCompletedIntroTutorialRef.current = true;
+      setIsNewMissionUnlock(true);
+      setShowMissionModal(true);
+      sound.playSecretFound();
+      return true;
+    });
+  }, []);
+
   // Dialogue choice selection
   const handleChoiceSelect = useCallback(
     (choice: ChoiceOption) => {
@@ -1862,11 +2023,21 @@ export default function App() {
         processDialogueTriggers(nextNode);
         setCurrentDialogue(nextNode);
       } else {
+        const finishedId = currentDialogue?.id;
         setCurrentDialogue(null);
+        if (
+          finishedId === 'kiki_wait' ||
+          finishedId?.startsWith('intro_start') ||
+          choice.resultDialogueId === 'kiki_wait' ||
+          currentDialogue?.speaker?.includes('Narator') ||
+          currentDialogue?.speaker?.includes('Petunjuk')
+        ) {
+          completeIntroTutorial();
+        }
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [currentDialogue, completeIntroTutorial]
   );
 
   // Add Item to bag
@@ -2061,6 +2232,114 @@ export default function App() {
     }
   }, [resolveNPC]);
 
+  // Auto-navigate using A* pathfinding to guarantee collision-free travel across the map
+  const handleMiniMapNavigate = useCallback(
+    (tileX: number, tileY: number, targetNPC?: NPC | null, isGuided: boolean = false) => {
+      if (currentDialogue) return;
+
+      const px = playerRef.current.x + 16;
+      const py = playerRef.current.y + 16;
+      const startCol = Math.floor(px / TILE_SIZE);
+      const startRow = Math.floor(py / TILE_SIZE);
+
+      // Find path using A* pathfinder
+      const waypoints = findTilePath(startCol, startRow, tileX, tileY, isTilePassable);
+
+      if (!waypoints || waypoints.length === 0) {
+        // If already at or directly adjacent to target tile
+        if (Math.hypot(tileX * TILE_SIZE + 16 - px, tileY * TILE_SIZE + 16 - py) < 48) {
+          if (targetNPC) {
+            const dialogueNode = getNPCDialogueNode(targetNPC);
+            if (dialogueNode) {
+              processDialogueTriggers(dialogueNode);
+              setCurrentDialogue(dialogueNode);
+              sound.playVoiceBlip();
+            }
+          }
+          return;
+        }
+        targetPosRef.current = null;
+        rendererRef.current?.clearDestination();
+        playerRef.current.isMoving = false;
+        sound.playBlocked();
+        return;
+      }
+
+      // If targeting an NPC, ensure the final waypoint is the safe interaction spot
+      if (targetNPC) {
+        const safeSpot = getSafeNPCTalkPosition(targetNPC, px, py);
+        waypoints[waypoints.length - 1] = {
+          x: safeSpot.x,
+          y: safeSpot.y,
+          col: Math.floor(safeSpot.x / TILE_SIZE),
+          row: Math.floor(safeSpot.y / TILE_SIZE),
+        };
+      }
+
+      const finalTarget = waypoints[waypoints.length - 1];
+
+      targetPosRef.current = {
+        x: finalTarget.x,
+        y: finalTarget.y,
+        targetNPC: targetNPC ?? null,
+        targetType: targetNPC ? 'interact' : 'walk',
+        minDistSoFar: Math.hypot(finalTarget.x - px, finalTarget.y - py),
+        stuckFrames: 0,
+        waypoints,
+        waypointIndex: 0,
+        isGuidedMode: isGuided,
+      };
+
+      rendererRef.current?.setDestination(finalTarget.x, finalTarget.y, targetNPC ? 'interact' : 'walk');
+      rendererRef.current?.addSparkle(finalTarget.x, finalTarget.y, isGuided ? '#fbbf24' : '#38bdf8', 8);
+      sound.playMenuSelect();
+    },
+    [currentDialogue, isTilePassable, getSafeNPCTalkPosition, getNPCDialogueNode, processDialogueTriggers]
+  );
+
+  // Kid-friendly guided mode: navigates straight to current mission target with zero obstacle collisions
+  const handleGuideToMission = useCallback(
+    (stepNumber?: number) => {
+      if (currentDialogue) {
+        setCurrentDialogue(null);
+      }
+      let step = stepNumber;
+      if (!step) {
+        if (!zoneStatus.plaza) step = 1;
+        else if (!zoneStatus.bridge) step = 2;
+        else if (!zoneStatus.forest) step = 3;
+        else if (!zoneStatus.tower) step = 4;
+        else step = 5;
+      }
+
+      let targetNpcId: string | null = null;
+      let targetTile = { x: 11, y: 15 };
+
+      if (step === 1) {
+        targetNpcId = 'kiki';
+        targetTile = { x: 8, y: 14 };
+      } else if (step === 2) {
+        targetNpcId = 'kakek_ranu';
+        targetTile = { x: 20, y: 15 };
+      } else if (step === 3) {
+        targetNpcId = 'bimo';
+        targetTile = { x: 7, y: 6 };
+      } else if (step === 4) {
+        targetNpcId = 'penjaga_kabut';
+        targetTile = { x: 29, y: 8 };
+      }
+
+      const targetNpc = targetNpcId ? npcs.find((n) => n.id === targetNpcId) || null : null;
+      if (targetNpc) {
+        targetTile = { x: targetNpc.x, y: targetNpc.y };
+      }
+
+      sound.playSecretFound();
+      handleMiniMapNavigate(targetTile.x, targetTile.y, targetNpc, true);
+    },
+    [currentDialogue, zoneStatus, npcs, handleMiniMapNavigate]
+  );
+
   // Advance dialogue when pressing Next or Spacebar
   const handleDialogueNext = useCallback(() => {
     if (!currentDialogue) return;
@@ -2081,7 +2360,18 @@ export default function App() {
       setCurrentDialogue(nextNode);
     } else {
       const finishedId = currentDialogue.id;
+      const finishedSpeaker = currentDialogue.speaker;
       setCurrentDialogue(null);
+
+      // Check if finished intro sequence (narrator & initial instructions)
+      if (
+        finishedId === 'kiki_wait' ||
+        finishedId?.startsWith('intro_start') ||
+        finishedSpeaker?.includes('Narator') ||
+        finishedSpeaker?.includes('Petunjuk')
+      ) {
+        completeIntroTutorial();
+      }
 
       // Trigger Climax Ending Modal ONLY AFTER the player finishes reading the final dialogue!
       if (
@@ -2121,7 +2411,18 @@ export default function App() {
   const handleDialogueClose = useCallback(() => {
     if (!currentDialogue) return;
     const closedId = currentDialogue.id;
+    const closedSpeaker = currentDialogue.speaker;
     setCurrentDialogue(null);
+
+    // If closed during intro sequence, mark intro completed so user is not stuck
+    if (
+      closedId === 'kiki_wait' ||
+      closedId?.startsWith('intro_start') ||
+      closedSpeaker?.includes('Narator') ||
+      closedSpeaker?.includes('Petunjuk')
+    ) {
+      completeIntroTutorial();
+    }
 
     // If closed during climax ending, trigger celebration modal smoothly
     if (
@@ -2395,12 +2696,26 @@ export default function App() {
           p.y += dy;
         }
       } else if (targetPosRef.current) {
-        // Point-and-click / tap-to-move pathing
+        // Point-and-click / tap-to-move / guided pathing
         const target = targetPosRef.current;
         const pCenterX = p.x + 16;
         const pCenterY = p.y + 16;
-        const distX = target.x - pCenterX;
-        const distY = target.y - pCenterY;
+
+        const hasWaypoints = Boolean(target.waypoints && target.waypoints.length > 0);
+        let curTargetX = target.x;
+        let curTargetY = target.y;
+
+        if (hasWaypoints && target.waypoints) {
+          const wpIdx = target.waypointIndex ?? 0;
+          const currentWp = target.waypoints[wpIdx];
+          if (currentWp) {
+            curTargetX = currentWp.x;
+            curTargetY = currentWp.y;
+          }
+        }
+
+        const distX = curTargetX - pCenterX;
+        const distY = curTargetY - pCenterY;
         const dist = Math.hypot(distX, distY);
 
         // Progress watchdog: track whether player is making forward progress towards destination
@@ -2420,12 +2735,25 @@ export default function App() {
           npcDist = Math.hypot(nx - pCenterX, ny - pCenterY);
         }
 
-        // Destination reached:
-        // 1. Reached close to target (dist <= 6)
-        // 2. OR when approaching an NPC and already in speaking distance (npcDist <= 46px)
-        const isCloseEnough = dist <= 6 || (reachedNPC && npcDist <= 46);
-        // If blocked by obstacle/inaccessible terrain for > 18 frames without moving closer, cancel and stop!
-        const isStuck = (target.stuckFrames ?? 0) > 18;
+        // If following waypoints and we reached current waypoint, advance to next waypoint!
+        if (hasWaypoints && target.waypoints) {
+          const wpIdx = target.waypointIndex ?? 0;
+          const isLastWp = wpIdx >= target.waypoints.length - 1;
+
+          if (!isLastWp && (dist <= 10 || (reachedNPC && npcDist <= 46))) {
+            target.waypointIndex = wpIdx + 1;
+            target.minDistSoFar = undefined;
+            target.stuckFrames = 0;
+            if (target.isGuidedMode && wpIdx % 2 === 0) {
+              rendererRef.current?.addSparkle(pCenterX, pCenterY, '#fbbf24', 3);
+            }
+          }
+        }
+
+        const isLastWaypoint =
+          !hasWaypoints || (target.waypoints && (target.waypointIndex ?? 0) >= target.waypoints.length - 1);
+        const isCloseEnough = (isLastWaypoint && dist <= 8) || (reachedNPC && npcDist <= 46);
+        const isStuck = (target.stuckFrames ?? 0) > 30;
 
         if (isCloseEnough || isStuck) {
           targetPosRef.current = null;
@@ -2445,8 +2773,14 @@ export default function App() {
               reachedNPC.facing = pCenterX > nx ? 'right' : 'left';
 
               sound.playVoiceBlip();
+              if (target.isGuidedMode) {
+                rendererRef.current?.addSparkle(nx, ny, '#fbbf24', 12);
+              }
               const node = getNPCDialogueNode(reachedNPC);
-              if (node) setCurrentDialogue(node);
+              if (node) {
+                processDialogueTriggers(node);
+                setCurrentDialogue(node);
+              }
             } else if (reachedTarget.targetType === 'cabin') {
               sound.playSecretFound();
               rendererRef.current?.addSparkle(11 * TILE_SIZE + 16, 4 * TILE_SIZE + 16, '#f59e0b', 8);
@@ -2468,11 +2802,15 @@ export default function App() {
               sound.playTowerBell();
               rendererRef.current?.triggerScreenShake(4, 12);
               rendererRef.current?.addSparkle(30 * TILE_SIZE + 16, 6 * TILE_SIZE + 16, '#fbbf24', 12);
-              setCurrentDialogue(
-                zoneStatus.tower
-                  ? GAME_DIALOGUES.tower_examine_restored
-                  : GAME_DIALOGUES.tower_examine
-              );
+              if (!isFreeRoamActive && (!zoneStatus.plaza || !zoneStatus.bridge || !zoneStatus.forest)) {
+                setCurrentDialogue(GAME_DIALOGUES.tower_locked_need_gear);
+              } else {
+                setCurrentDialogue(
+                  zoneStatus.tower
+                    ? GAME_DIALOGUES.tower_examine_restored
+                    : GAME_DIALOGUES.tower_examine
+                );
+              }
             } else if (reachedTarget.targetType === 'windmill') {
               sound.playSecretFound();
               rendererRef.current?.triggerScreenShake(3, 10);
@@ -2509,7 +2847,8 @@ export default function App() {
             }
           }
         } else {
-          const moveStep = Math.min(speed, dist);
+          const effectiveSpeed = target.isGuidedMode ? Math.max(speed, 3.0) : speed;
+          const moveStep = Math.min(effectiveSpeed, dist);
           const angle = Math.atan2(distY, distX);
           const stepX = Math.cos(angle) * moveStep;
           const stepY = Math.sin(angle) * moveStep;
@@ -2897,6 +3236,47 @@ export default function App() {
           isFreeRoamActive ||
           (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower);
 
+        // Update active sequential quest target for on-screen NPC beacon & off-screen arrow guide
+        if (isMissionCompleted || !hasCompletedIntroTutorialRef.current) {
+          rendererRef.current.setActiveQuestTarget(null);
+        } else if (!zoneStatus.plaza) {
+          const kiki = npcs.find((n) => n.id === 'kiki');
+          rendererRef.current.setActiveQuestTarget({
+            npcId: 'kiki',
+            stepNumber: 1,
+            label: 'Kiki',
+            targetX: (kiki?.x ?? 8) * TILE_SIZE + 16,
+            targetY: (kiki?.y ?? 14) * TILE_SIZE + 16,
+          });
+        } else if (!zoneStatus.bridge) {
+          const ranu = npcs.find((n) => n.id === 'kakek_ranu');
+          rendererRef.current.setActiveQuestTarget({
+            npcId: 'kakek_ranu',
+            stepNumber: 2,
+            label: 'Kakek Ranu',
+            targetX: (ranu?.x ?? 20) * TILE_SIZE + 16,
+            targetY: (ranu?.y ?? 15) * TILE_SIZE + 16,
+          });
+        } else if (!zoneStatus.forest) {
+          const bimo = npcs.find((n) => n.id === 'bimo');
+          rendererRef.current.setActiveQuestTarget({
+            npcId: 'bimo',
+            stepNumber: 3,
+            label: 'Bimo',
+            targetX: (bimo?.x ?? 7) * TILE_SIZE + 16,
+            targetY: (bimo?.y ?? 6) * TILE_SIZE + 16,
+          });
+        } else if (!zoneStatus.tower) {
+          const penjaga = npcs.find((n) => n.id === 'penjaga_kabut');
+          rendererRef.current.setActiveQuestTarget({
+            npcId: 'penjaga_kabut',
+            stepNumber: 4,
+            label: 'Menara Jam',
+            targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
+            targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
+          });
+        }
+
         rendererRef.current.render(
           mapLayout,
           p,
@@ -2945,12 +3325,18 @@ export default function App() {
     setIsFreeRoamActive(false);
     setShowStartMenu(true);
     setCurrentDialogue(null);
+    setHasCompletedIntroTutorial(false);
+    hasCompletedIntroTutorialRef.current = false;
+    setShowMissionModal(false);
+    lastStepRef.current = 1;
   };
 
   // Enter free roam mode after game completion
   const handleFreeRoam = () => {
     setShowEnding(false);
     setIsFreeRoamActive(true);
+    setHasCompletedIntroTutorial(true);
+    hasCompletedIntroTutorialRef.current = true;
     sound.playSecretFound();
     rendererRef.current?.addSparkle(
       playerRef.current.x + 16,
@@ -3149,26 +3535,110 @@ export default function App() {
     });
   }, [isFreeRoamActive, stats.unlockedBadges]);
 
-  // Dynamic quest hint banner
-  useEffect(() => {
+  // Computed active sequential mission data
+  const currentMissionData = useMemo<MissionStepData>(() => {
     if (isFreeRoamActive) {
-      setQuestHint('🌿 Mode Jelajah Bebas: Seluruh Lembah Nada Rasa telah pulih! Nikmati keindahan desa.');
-    } else if (!zoneStatus.plaza) {
-      setQuestHint(
-        isCompassActive
-          ? 'Misi 1: Dekati Kiki si tupai di barat air mancur dan ajak ia berbicara.'
-          : 'Misi 1: Dekati Kiki si tupai di barat air mancur. Aktifkan Kompas Hati [C / Tombol Hati].'
-      );
-    } else if (!zoneStatus.bridge) {
-      setQuestHint('Misi 2: Pergi ke timur menuju Jembatan Kayu. Bicara dengan Kakek Ranu.');
-    } else if (!zoneStatus.forest) {
-      setQuestHint('Misi 3: Cari Bimo di Hutan Sunyi (barat laut). Bantu ia mengatasi rasa malu.');
-    } else if (!zoneStatus.tower) {
-      setQuestHint('Misi 4: Bawa Roda Gigi Emas ke Menara Jam di timur laut!');
-    } else {
-      setQuestHint('Harmoni Lembah Pulih Sepenuhnya! Bicaralah pada warga untuk merayakan!');
+      return {
+        step: 5,
+        total: 4,
+        badge: 'JELAJAH BEBAS',
+        title: 'Semua Misi Selesai!',
+        speaker: 'Ezsel & Warga Desa',
+        portrait: 'player',
+        hint: '🌿 Seluruh Lembah Nada Rasa telah pulih dan berseri! Nikmati keindahan desa dan sapa warga.',
+        locationName: 'Lembah Nada Rasa',
+        targetCoords: { x: 11, y: 15 },
+        isCompleted: true,
+      };
     }
+    if (!zoneStatus.plaza) {
+      return {
+        step: 1,
+        total: 4,
+        badge: 'MISI 1 DARI 4',
+        title: 'Misi 1: Redakan Amarah Kiki',
+        speaker: 'Kiki Si Tupai',
+        portrait: 'squirrel',
+        hint: isCompassActive
+          ? 'Dekati Kiki si tupai di barat air mancur alun-alun, lalu ajak ia berbicara [Spasi / Tombol Bicara].'
+          : 'Dekati Kiki di barat air mancur alun-alun. Aktifkan Kompas Hati [Tekan C / Tombol Hati] untuk membaca perasaannya!',
+        locationName: 'Alun-Alun & Air Mancur',
+        targetCoords: { x: 8, y: 14 },
+        isCompleted: false,
+      };
+    }
+    if (!zoneStatus.bridge) {
+      return {
+        step: 2,
+        total: 4,
+        badge: 'MISI 2 DARI 4',
+        title: 'Misi 2: Temui Kakek Ranu',
+        speaker: 'Kakek Ranu',
+        portrait: 'old_man',
+        hint: 'Pergi ke arah timur menuju Jembatan Kayu. Dengarkan kekhawatiran Kakek Ranu dan bantu perbaiki jembatan.',
+        locationName: 'Jembatan Kayu (Arah Timur)',
+        targetCoords: { x: 20, y: 15 },
+        isCompleted: false,
+      };
+    }
+    if (!zoneStatus.forest) {
+      return {
+        step: 3,
+        total: 4,
+        badge: 'MISI 3 DARI 4',
+        title: 'Misi 3: Tolong Bimo di Hutan',
+        speaker: 'Bimo',
+        portrait: 'boy_glasses',
+        hint: 'Pergi ke arah barat laut memasuki Hutan Sunyi. Temukan Bimo yang bersembunyi karena merasa malu.',
+        locationName: 'Hutan Sunyi (Barat Laut)',
+        targetCoords: { x: 7, y: 6 },
+        isCompleted: false,
+      };
+    }
+    if (!zoneStatus.tower) {
+      return {
+        step: 4,
+        total: 4,
+        badge: 'MISI 4 DARI 4',
+        title: 'Misi 4: Aktifkan Menara Jam',
+        speaker: 'Sosok Kabut',
+        portrait: 'spirit_elder',
+        hint: 'Bawa Roda Gigi Emas ke Menara Jam di timur laut. Pasang roda gigi untuk membunyikan lonceng harmoni!',
+        locationName: 'Menara Jam Harmoni (Timur Laut)',
+        targetCoords: { x: 29, y: 8 },
+        isCompleted: false,
+      };
+    }
+    return {
+      step: 5,
+      total: 4,
+      badge: 'SELESAI',
+      title: 'Lembah Pulih Sepenuhnya!',
+      speaker: 'Ezsel & Warga Desa',
+      portrait: 'player',
+      hint: 'Harmoni Lembah Pulih Sepenuhnya! Bicaralah pada warga untuk merayakan keberhasilanmu!',
+      locationName: 'Seluruh Desa',
+      targetCoords: { x: 11, y: 15 },
+      isCompleted: true,
+    };
   }, [zoneStatus, isFreeRoamActive, isCompassActive]);
+
+  // Sync hint string for other systems
+  useEffect(() => {
+    setQuestHint(currentMissionData.hint);
+  }, [currentMissionData.hint]);
+
+  // Auto celebratory popup when completing previous step and unlocking next sequential mission
+  useEffect(() => {
+    if (showStartMenu || !hasCompletedIntroTutorial) return;
+    const currentStep = currentMissionData.step;
+    if (currentStep !== lastStepRef.current && currentStep <= 4) {
+      lastStepRef.current = currentStep;
+      setIsNewMissionUnlock(true);
+      setShowMissionModal(true);
+      sound.playSecretFound();
+    }
+  }, [currentMissionData.step, showStartMenu, hasCompletedIntroTutorial]);
 
   // Adaptive BGM Synchronization:
   // Phase 1: 'fog' - Saat Masa Kabut Kelabu (hampa, misterius, sepi, piano lambat teredam & desiran angin)
@@ -3221,24 +3691,49 @@ export default function App() {
         </div>
       </main>
 
-      {/* Dynamic Quest Tracker Banner - Full text visible across all screen sizes without truncation */}
-      {!showStartMenu && (
-        <div className="fixed top-12 sm:top-14 md:top-16 left-1/2 -translate-x-1/2 z-20 w-[94%] max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-3xl pointer-events-none">
+      {/* Dynamic Quest Tracker Banner - Positioned cleanly below the top header bar */}
+      {!showStartMenu && hasCompletedIntroTutorial && !currentDialogue && (
+        <div
+          id="quest-tracker-banner"
+          className="fixed top-13 sm:top-14 md:top-16 left-1/2 -translate-x-1/2 z-20 w-[94%] sm:w-[90%] max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-3xl pointer-events-none animate-fade-in-slide-down"
+        >
           <div
-            onClick={() => handleOpenSettings('quest')}
-            title="Klik untuk melihat detail misi & objektif"
-            className="bg-slate-950/95 border border-amber-500/60 hover:border-amber-400 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 shadow-2xl backdrop-blur-md flex items-center gap-2 sm:gap-3 pointer-events-auto cursor-pointer transition active:scale-[0.99] group"
+            onClick={() => {
+              setIsNewMissionUnlock(false);
+              setShowMissionModal(true);
+            }}
+            title="Klik untuk melihat panduan langkah misi lengkap"
+            className="bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-200 border-2 sm:border-3 border-amber-600 hover:border-amber-700 rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-[0_6px_20px_rgba(245,158,11,0.45),0_0_0_2px_rgba(255,255,255,0.9)] flex items-center gap-2 sm:gap-3 pointer-events-auto cursor-pointer transition-all active:scale-[0.99] group text-slate-950"
           >
-            <div className="flex items-center gap-1.5 bg-amber-500/20 border border-amber-400/50 rounded-lg px-2 py-0.5 text-amber-300 font-pixel text-[8px] sm:text-[9px] shrink-0 tracking-wider shadow-sm group-hover:bg-amber-500/30 transition-colors">
-              <Sparkles className="w-3 h-3 text-amber-400 shrink-0 animate-pulse" />
-              <span>MISI</span>
+            {/* Scarlet/Crimson Badge */}
+            <div className="flex items-center gap-1 sm:gap-1.5 bg-rose-600 border border-rose-300 rounded-lg sm:rounded-xl px-2 sm:px-3 py-0.5 sm:py-1 text-white font-pixel text-[8px] sm:text-[10px] shrink-0 font-black shadow-sm group-hover:bg-rose-500 transition-colors">
+              <Sparkles className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-yellow-300 shrink-0" />
+              <span>{currentMissionData.step <= 4 ? `MISI ${currentMissionData.step}/4` : 'SELESAI'}</span>
             </div>
+
+            {/* Instruction Text with Pixelify Sans - 2 lines max on mobile with comfortable leading */}
             <p
               style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
-              className="text-amber-100 text-xs sm:text-[13px] md:text-sm font-medium leading-normal sm:leading-relaxed tracking-normal break-words whitespace-normal flex-1 text-left sm:text-center select-text"
+              className="text-slate-950 text-[10px] sm:text-[13px] md:text-sm font-bold leading-tight sm:leading-snug tracking-tight break-words flex-1 text-left select-text line-clamp-2 sm:line-clamp-none"
             >
-              {questHint}
+              {currentMissionData.hint}
             </p>
+
+            {/* Direct Kid-Friendly "Tuntun Saya" Action Button */}
+            {!currentMissionData.isCompleted && (
+              <button
+                id="banner-guide-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGuideToMission(currentMissionData.step);
+                }}
+                className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-slate-950 hover:bg-slate-900 active:scale-95 text-amber-300 hover:text-amber-200 border border-amber-400 font-pixel text-[8px] sm:text-[10px] font-bold shadow-sm transition flex items-center gap-1 shrink-0 cursor-pointer"
+                title="Tuntun karakter otomatis berjalan ke target misi"
+              >
+                <span>Tuntun</span>
+                <span className="text-[9px] sm:text-xs">🏃</span>
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -3290,6 +3785,8 @@ export default function App() {
           onSkipRegulation={handleSkipRegulation}
           onClose={handleDialogueClose}
           isCompassActive={isCompassActive}
+          playerName={playerName}
+          playerAvatar={playerAvatar}
         />
       )}
 
@@ -3403,6 +3900,7 @@ export default function App() {
         isOpen={showAllBadgesCelebration}
         onClose={() => setShowAllBadgesCelebration(false)}
         stats={stats}
+        playerName={playerName}
         onOpenJournal={() => {
           setShowAllBadgesCelebration(false);
           setShowJournal(true);
@@ -3421,6 +3919,7 @@ export default function App() {
         stats={stats}
         branchTag={branchChoice}
         endingType={endingType}
+        playerName={playerName}
       />
 
       {/* Opening Start Menu Modal (Displayed before entering the game story) */}
@@ -3430,6 +3929,19 @@ export default function App() {
         onOpenControls={() => handleOpenSettings('controls')}
         onOpenAudioSettings={() => handleOpenSettings('audio')}
         isSettingsOpen={showSettings}
+        initialPlayerName={playerName}
+        initialPlayerAvatar={playerAvatar}
+      />
+
+      {/* Prominent Sequential Mission Guidance Pop-Up for Kids */}
+      <MissionNotificationModal
+        isOpen={showMissionModal && hasCompletedIntroTutorial && !showStartMenu && !currentDialogue}
+        onClose={() => setShowMissionModal(false)}
+        mission={currentMissionData}
+        onNavigateToTarget={(tx, ty) => {
+          handleGuideToMission(currentMissionData.step);
+        }}
+        isNewUnlock={isNewMissionUnlock}
       />
     </div>
   );

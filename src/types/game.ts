@@ -29,6 +29,7 @@ export interface DialogueNode {
   emotionAura?: EmotionType;
   choices?: ChoiceOption[];
   nextId?: string;
+  isWrongFeedback?: boolean; // Feedback when an answer is wrong, loops back to retry
   triggerBreathing?: boolean;
   triggerRegulationMode?: 'breathing' | 'grounding' | 'stop' | 'shakeout';
   triggerColorRestoreZone?: string;

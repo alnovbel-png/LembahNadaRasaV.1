@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DialogueNode, ChoiceOption } from '../types/game';
 import { sound } from '../utils/audio';
-import { Eye, MessageCircle, Sparkles } from 'lucide-react';
+import { Eye, MessageCircle, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { CharacterPortrait } from './CharacterPortrait';
 
 interface DialogueBoxProps {
@@ -11,6 +11,8 @@ interface DialogueBoxProps {
   onSkipRegulation?: () => void;
   onClose?: () => void;
   isCompassActive: boolean;
+  playerName?: string;
+  playerAvatar?: 'boy' | 'girl';
 }
 
 export const DialogueBox: React.FC<DialogueBoxProps> = ({
@@ -20,16 +22,38 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   onSkipRegulation,
   onClose,
   isCompassActive,
+  playerName = 'Ezzel',
+  playerAvatar = 'boy',
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'wrong' | 'correct'>('idle');
+  const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
+
+  // Helper to replace generic protagonist names with user's nickname
+  const formatName = (str: string) => {
+    if (!str) return str;
+    const name = (playerName && playerName.trim()) || 'Ezzel';
+    return str
+      .replace(/\bEzzel\b/g, name)
+      .replace(/\bEzsel\b/g, name)
+      .replace(/\bezzel\b/g, name.toLowerCase())
+      .replace(/\bezsel\b/g, name.toLowerCase());
+  };
+
+  const processedSpeaker = formatName(dialogue.speaker);
+  const processedRole = formatName(dialogue.speakerRole);
+  const processedFullText = formatName(dialogue.text);
+  const processedThought = dialogue.thoughtBubble ? formatName(dialogue.thoughtBubble) : undefined;
 
   // Typewriter effect
   useEffect(() => {
     setDisplayedText('');
     setIsTyping(true);
+    setFeedbackStatus('idle');
+    setSelectedChoiceId(null);
     let index = 0;
-    const fullText = dialogue.text;
+    const fullText = processedFullText;
 
     const interval = setInterval(() => {
       if (index < fullText.length) {
@@ -45,12 +69,12 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     }, 18);
 
     return () => clearInterval(interval);
-  }, [dialogue]);
+  }, [dialogue, processedFullText]);
 
   // Handle immediate text skip or exit
   const handleExitOrSkip = () => {
     if (isTyping) {
-      setDisplayedText(dialogue.text);
+      setDisplayedText(processedFullText);
       setIsTyping(false);
     } else if (onClose) {
       onClose();
@@ -59,9 +83,39 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     }
   };
 
+  // Choice selection with rich visual and audio quiz feedback
+  const handleChoiceClick = (choice: ChoiceOption) => {
+    if (feedbackStatus !== 'idle') return;
+    setSelectedChoiceId(choice.id);
+
+    const isWrong = choice.impactScore <= 0 || choice.resultDialogueId.includes('wrong');
+
+    if (isWrong) {
+      // 1. Incorrect response: Red dialog box, error buzzer, device vibration
+      setFeedbackStatus('wrong');
+      sound.playQuizWrong();
+      setTimeout(() => {
+        onChoiceSelect(choice);
+        setFeedbackStatus('idle');
+        setSelectedChoiceId(null);
+      }, 1200);
+    } else {
+      // 2. Correct response: Green dialog box, cheerful applause fanfare, device vibration & floating stars
+      setFeedbackStatus('correct');
+      sound.playApplause();
+      setTimeout(() => {
+        onChoiceSelect(choice);
+        setFeedbackStatus('idle');
+        setSelectedChoiceId(null);
+      }, 1500);
+    }
+  };
+
   // Keyboard navigation for dialogue
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (feedbackStatus !== 'idle') return;
+
       // Escape closes or exits dialogue immediately
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -77,14 +131,14 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         // Number keys 1, 2, 3, 4, 5
         const num = parseInt(e.key);
         if (num >= 1 && num <= dialogue.choices.length) {
-          onChoiceSelect(dialogue.choices[num - 1]);
+          handleChoiceClick(dialogue.choices[num - 1]);
           return;
         }
 
         if (e.code === 'Space') {
           if (isTyping) {
             e.preventDefault();
-            setDisplayedText(dialogue.text);
+            setDisplayedText(processedFullText);
             setIsTyping(false);
           }
         }
@@ -93,7 +147,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           e.preventDefault();
           if (isTyping) {
             // Finish typing immediately
-            setDisplayedText(dialogue.text);
+            setDisplayedText(processedFullText);
             setIsTyping(false);
           } else {
             onNext();
@@ -104,11 +158,19 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogue, isTyping, onChoiceSelect, onNext, onClose]);
+  }, [dialogue, isTyping, processedFullText, onNext, onClose, feedbackStatus]);
 
   // Character portraits rendering
   const renderPortrait = (type: string) => {
     switch (type) {
+      case 'player':
+      case 'ezzel':
+        return (
+          <CharacterPortrait
+            sprite={playerAvatar === 'girl' ? 'player_girl' : 'player'}
+            size="dialogue"
+          />
+        );
       case 'celebration':
         return (
           <div className="w-16 h-16 bg-amber-950/90 rounded-lg flex items-center justify-center text-3xl border-2 border-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.5)]">
@@ -189,17 +251,124 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     dialogue.triggerRegulationMode || dialogue.triggerBreathing
   );
 
+  const isWrongFeedback = Boolean(
+    dialogue.isWrongFeedback ||
+    dialogue.id.includes('wrong') ||
+    dialogue.id.includes('dismiss') ||
+    dialogue.id.includes('rebuke') ||
+    dialogue.id.includes('shame') ||
+    dialogue.id.includes('fixed_feedback') ||
+    (dialogue.nextId && (
+      dialogue.nextId.includes('_intro') ||
+      dialogue.nextId.includes('_question') ||
+      dialogue.nextId.includes('_practice')
+    ) && (
+      dialogue.id.includes('wrong') ||
+      dialogue.id.includes('rebuke') ||
+      dialogue.id.includes('shame') ||
+      dialogue.id.includes('dismiss') ||
+      dialogue.id.includes('fixed')
+    ))
+  );
+
+  const isMissionNotice = Boolean(
+    dialogue.speaker?.includes('Misi') ||
+    dialogue.id?.includes('locked') ||
+    dialogue.id?.includes('quest') ||
+    dialogue.id?.includes('remind') ||
+    dialogue.speakerRole?.includes('Penunjuk Misi')
+  );
+
+  // Dynamic styling based on quiz feedback status
+  let dialogBoxStyle =
+    'bg-slate-950/95 border-2 border-amber-400/90 hover:border-amber-300 shadow-[0_12px_45px_rgba(0,0,0,0.85)] hover:shadow-[0_12px_55px_rgba(245,158,11,0.25)] text-slate-100';
+
+  if (feedbackStatus === 'wrong') {
+    dialogBoxStyle =
+      'bg-red-950/95 border-4 border-red-500 shadow-[0_0_50px_rgba(239,68,68,0.95),0_0_0_2px_rgba(254,202,202,0.8)] animate-shake text-rose-100';
+  } else if (feedbackStatus === 'correct') {
+    dialogBoxStyle =
+      'bg-emerald-950/95 border-4 border-emerald-400 shadow-[0_0_55px_rgba(52,211,153,0.95),0_0_0_2px_rgba(167,243,208,0.8)] text-emerald-100';
+  } else if (isMissionNotice) {
+    dialogBoxStyle =
+      'bg-gradient-to-b from-slate-950 via-slate-900 to-amber-950/90 border-3 border-amber-400 shadow-[0_12px_45px_rgba(245,158,11,0.4),0_0_0_2px_rgba(254,240,138,0.6)] text-slate-100';
+  }
+
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-3 pointer-events-none">
-      <div className="pointer-events-auto w-full max-w-xl bg-slate-950/95 border-2 border-amber-400/90 hover:border-amber-300 rounded-2xl p-4 sm:p-5 shadow-[0_12px_45px_rgba(0,0,0,0.85)] hover:shadow-[0_12px_55px_rgba(245,158,11,0.25)] backdrop-blur-md text-slate-100 flex flex-col gap-3 font-pixel transition-all duration-300 animate-fade-in-slide-up">
+      <div
+        className={`pointer-events-auto w-full max-w-xl rounded-2xl p-4 sm:p-5 backdrop-blur-md flex flex-col gap-3 font-pixel transition-all duration-300 animate-fade-in-slide-up relative overflow-hidden ${dialogBoxStyle}`}
+      >
+        {/* Floating Applause & Celebration Overlay */}
+        {feedbackStatus === 'correct' && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-30">
+            <div className="flex gap-4 text-3xl sm:text-4xl animate-applause-float">
+              <span>👏</span>
+              <span>✨</span>
+              <span>💖</span>
+              <span>🌟</span>
+              <span>👏</span>
+            </div>
+          </div>
+        )}
+
+        {/* Quiz Feedback Banner: Wrong Answer */}
+        {feedbackStatus === 'wrong' && (
+          <div className="bg-red-600 text-white px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-bold flex items-center justify-between shadow-lg border border-red-300 animate-pulse">
+            <div className="flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-yellow-300 shrink-0" />
+              <span>JAWABAN KURANG TEPAT — MARI COBA PIKIRKAN LAGI</span>
+            </div>
+            <span className="text-[8px] bg-red-950 text-rose-200 px-2 py-0.5 rounded font-bold">
+              Perhatikan Perasaannya
+            </span>
+          </div>
+        )}
+
+        {/* Quiz Feedback Banner: Correct Answer & Applause */}
+        {feedbackStatus === 'correct' && (
+          <div className="bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 text-slate-950 px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-lg border border-emerald-200">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-slate-950 shrink-0 animate-bounce" />
+              <span>HEBAT SEKALI! JAWABAN BIJAK & PENUH EMPATI! 🎉</span>
+            </div>
+            <span className="text-[8px] bg-emerald-950 text-emerald-200 px-2 py-0.5 rounded font-bold">
+              +Poin Empati 👏
+            </span>
+          </div>
+        )}
+
+        {/* Mission Notice Banner for Children (when not showing quiz feedback) */}
+        {isMissionNotice && feedbackStatus === 'idle' && (
+          <div className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-slate-950 px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-md border border-amber-500">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-slate-950 animate-bounce" />
+              <span>PANDUAN ALUR MISI BERURUTAN</span>
+            </div>
+            <span className="text-[8px] bg-slate-950 text-amber-300 px-2 py-0.5 rounded font-bold">
+              Wajib Selesaikan 1 per 1
+            </span>
+          </div>
+        )}
+
         {/* Header: Speaker & Role */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-2">
           <div className="flex items-center gap-2">
-            <span className="font-pixel text-[11px] sm:text-xs text-amber-300 font-bold tracking-wider">
-              {dialogue.speaker}
+            <span
+              className={`font-pixel text-[11px] sm:text-xs font-bold tracking-wider ${
+                feedbackStatus === 'wrong'
+                  ? 'text-rose-300'
+                  : feedbackStatus === 'correct'
+                  ? 'text-emerald-300'
+                  : isMissionNotice
+                  ? 'text-amber-400'
+                  : 'text-amber-300'
+              }`}
+            >
+              {processedSpeaker}
             </span>
             <span className="font-pixel text-[8px] sm:text-[9px] bg-slate-800/90 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">
-              {dialogue.speakerRole}
+              {processedRole}
             </span>
           </div>
 
@@ -213,7 +382,8 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             <button
               id="dialogue-header-close-btn"
               onClick={handleExitOrSkip}
-              className="px-2 py-0.5 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-500/50 text-[8px] sm:text-[9px] font-pixel transition-all duration-200 hover:scale-105 hover:shadow-[0_0_12px_rgba(244,63,94,0.45)] active:scale-95 flex items-center gap-1 cursor-pointer"
+              disabled={feedbackStatus !== 'idle'}
+              className="px-2 py-0.5 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-500/50 text-[8px] sm:text-[9px] font-pixel transition-all duration-200 hover:scale-105 hover:shadow-[0_0_12px_rgba(244,63,94,0.45)] active:scale-95 flex items-center gap-1 cursor-pointer disabled:opacity-40"
               title="Tutup / Lewati Dialog (ESC)"
             >
               <span>{isTyping ? 'LEWATI' : 'TUTUP [ESC]'}</span>
@@ -224,11 +394,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
         {/* Middle: Portrait + Dialogue text */}
         <div className="flex gap-3 items-start">
-          <div className="shrink-0 transition-transform duration-200 hover:scale-105 hover:rotate-1">{renderPortrait(dialogue.portrait)}</div>
+          <div className="shrink-0 transition-transform duration-200 hover:scale-105 hover:rotate-1">
+            {renderPortrait(dialogue.portrait)}
+          </div>
 
           <div className="flex-1 flex flex-col gap-2">
             {/* Thought bubble if resonance is active */}
-            {dialogue.thoughtBubble && isCompassActive && (
+            {processedThought && isCompassActive && (
               <div className="bg-indigo-950/90 border border-indigo-500/50 rounded-lg p-2 text-indigo-200 flex items-start gap-2 shadow-inner hover:scale-[1.015] hover:shadow-[0_0_14px_rgba(99,102,241,0.35)] transition-all duration-200">
                 <Eye className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
                 <div className="space-y-1">
@@ -236,7 +408,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     Suara Hati Terdalam (Kompas):
                   </span>
                   <p className="font-pixel text-[9px] sm:text-[10px] leading-relaxed italic text-indigo-100">
-                    "{dialogue.thoughtBubble}"
+                    "{processedThought}"
                   </p>
                 </div>
               </div>
@@ -252,7 +424,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               <button
                 id="dialogue-fast-forward-btn"
                 onClick={() => {
-                  setDisplayedText(dialogue.text);
+                  setDisplayedText(processedFullText);
                   setIsTyping(false);
                 }}
                 className="self-end text-[8px] font-pixel text-amber-400 hover:text-amber-200 bg-slate-900/80 hover:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/30 hover:border-amber-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all duration-200 flex items-center gap-1 cursor-pointer"
@@ -267,24 +439,57 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         <div className="mt-1 pt-2 border-t border-slate-800/80">
           {dialogue.choices && dialogue.choices.length > 0 ? (
             <div className="flex flex-col gap-2">
-              <span className="font-pixel text-[8px] sm:text-[9px] text-amber-400 font-semibold flex items-center gap-1.5">
-                <MessageCircle className="w-3 h-3 text-amber-400" />
+              <span
+                className={`font-pixel text-[8px] sm:text-[9px] font-semibold flex items-center gap-1.5 ${
+                  feedbackStatus === 'wrong'
+                    ? 'text-rose-300'
+                    : feedbackStatus === 'correct'
+                    ? 'text-emerald-300'
+                    : 'text-amber-400'
+                }`}
+              >
+                <MessageCircle className="w-3 h-3" />
                 Pilih Responmu (1-{dialogue.choices.length} atau klik):
               </span>
               <div className="grid grid-cols-1 gap-1.5">
-                {dialogue.choices.map((choice, index) => (
-                  <button
-                    key={choice.id}
-                    id={`choice-${choice.id}`}
-                    onClick={() => onChoiceSelect(choice)}
-                    className="w-full text-left px-2.5 py-2 rounded-lg bg-slate-900/90 hover:bg-amber-950/70 border border-slate-700 hover:border-amber-400 hover:scale-[1.025] hover:shadow-[0_0_16px_rgba(245,158,11,0.45)] font-pixel text-[9px] sm:text-[10px] transition-all duration-200 ease-out flex items-start gap-2 text-slate-200 hover:text-amber-100 cursor-pointer active:scale-[0.98] group"
-                  >
-                    <span className="bg-slate-800 text-amber-300 border border-slate-600 group-hover:bg-amber-500 group-hover:text-slate-950 group-hover:border-amber-300 rounded px-1.5 py-0.5 text-[9px] font-pixel shrink-0 transition-colors">
-                      {index + 1}
-                    </span>
-                    <span className="flex-1 leading-relaxed">{choice.text}</span>
-                  </button>
-                ))}
+                {dialogue.choices.map((choice, index) => {
+                  const isSelected = selectedChoiceId === choice.id;
+                  let btnStyle =
+                    'bg-slate-900/90 hover:bg-amber-950/70 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-100';
+
+                  if (isSelected && feedbackStatus === 'wrong') {
+                    btnStyle =
+                      'bg-red-900/80 border-2 border-red-400 text-white shadow-[0_0_16px_rgba(239,68,68,0.7)] scale-[1.02]';
+                  } else if (isSelected && feedbackStatus === 'correct') {
+                    btnStyle =
+                      'bg-emerald-900/80 border-2 border-emerald-400 text-white shadow-[0_0_16px_rgba(16,185,129,0.7)] scale-[1.02]';
+                  }
+
+                  return (
+                    <button
+                      key={choice.id}
+                      id={`choice-${choice.id}`}
+                      onClick={() => handleChoiceClick(choice)}
+                      disabled={feedbackStatus !== 'idle'}
+                      className={`w-full text-left px-2.5 py-2 rounded-lg font-pixel text-[9px] sm:text-[10px] transition-all duration-200 ease-out flex items-start gap-2 cursor-pointer active:scale-[0.98] group disabled:cursor-not-allowed ${btnStyle}`}
+                    >
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[9px] font-pixel shrink-0 transition-colors ${
+                          isSelected && feedbackStatus === 'wrong'
+                            ? 'bg-red-500 text-white border border-red-300'
+                            : isSelected && feedbackStatus === 'correct'
+                            ? 'bg-emerald-400 text-slate-950 border border-emerald-200'
+                            : 'bg-slate-800 text-amber-300 border border-slate-600 group-hover:bg-amber-500 group-hover:text-slate-950 group-hover:border-amber-300'
+                        }`}
+                      >
+                        {index + 1}
+                      </span>
+                      <span className="flex-1 leading-relaxed">
+                        {formatName(choice.text)}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           ) : (
@@ -303,7 +508,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 id="dialogue-next-btn"
                 onClick={() => {
                   if (isTyping) {
-                    setDisplayedText(dialogue.text);
+                    setDisplayedText(processedFullText);
                     setIsTyping(false);
                   } else {
                     onNext();
@@ -314,6 +519,8 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.55)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
                     : isRegulationTrigger && !isTyping
                     ? 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 border border-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.55)] hover:shadow-[0_0_30px_rgba(6,182,212,0.85)]'
+                    : isWrongFeedback && !isTyping
+                    ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.65)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
                     : 'bg-amber-400 hover:bg-amber-300 text-slate-950 hover:shadow-[0_0_20px_rgba(245,158,11,0.65)]'
                 }`}
               >
@@ -324,10 +531,18 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     ? 'SELESAIKAN & LIHAT SERTIFIKAT [SPASI]'
                     : isRegulationTrigger
                     ? 'MULAI LATIHAN BERSAMA KIKI [SPASI]'
+                    : isWrongFeedback
+                    ? 'KEMBALI KE DIALOG AWAL [SPASI]'
                     : 'LANJUT [SPASI]'}
                 </span>
                 <span className="text-xs">
-                  {isEndingDialogue && !isTyping ? '🏆' : isRegulationTrigger && !isTyping ? '🧘' : '▶'}
+                  {isEndingDialogue && !isTyping
+                    ? '🏆'
+                    : isRegulationTrigger && !isTyping
+                    ? '🧘'
+                    : isWrongFeedback && !isTyping
+                    ? '↩'
+                    : '▶'}
                 </span>
               </button>
             </div>

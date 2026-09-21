@@ -23,6 +23,7 @@ import {
   Terminal,
   KeyRound,
   ShieldCheck,
+  Lock,
 } from 'lucide-react';
 import { useAudioSettings, BgmPhase, sound } from '../utils/audio';
 import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
@@ -323,53 +324,110 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              {/* Daftar Misi Utama */}
+              {/* Daftar Misi Utama Berurutan */}
               <div>
-                <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <Target className="w-4 h-4 text-amber-400" />
-                  Alur Misi Utama Kisah
-                </h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                    <Target className="w-4 h-4 text-amber-400" />
+                    Alur Misi Utama Kisah (Wajib Berurutan)
+                  </h3>
+                  <span className="text-[10px] text-amber-400/80 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30">
+                    Selesaikan 1 per 1
+                  </span>
+                </div>
                 <div className="space-y-3">
-                  {effectiveQuests.map((q) => (
-                    <div
-                      key={q.id}
-                      className={`p-3.5 rounded-xl border transition ${
-                        q.isCompleted
-                          ? 'bg-slate-950/40 border-emerald-500/40'
-                          : 'bg-slate-950/80 border-amber-500/40 shadow-sm'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          {q.isCompleted ? (
-                            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                          ) : (
-                            <Clock className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-                          )}
-                          <h4 className={`text-sm font-bold ${q.isCompleted ? 'text-slate-300 line-through' : 'text-amber-200'}`}>
-                            {q.title}
-                          </h4>
-                        </div>
-                        <span
-                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                  {(() => {
+                    const activeQuestIdx = effectiveQuests.findIndex((q) => !q.isCompleted);
+                    return effectiveQuests.map((q, idx) => {
+                      const isActive = idx === activeQuestIdx;
+                      const isLocked = !q.isCompleted && idx > activeQuestIdx;
+
+                      // Preset coordinates for each sequential quest
+                      const questCoords = [
+                        { x: 8, y: 14 },  // Misi 1: Kiki di Alun-Alun
+                        { x: 20, y: 15 }, // Misi 2: Kakek Ranu di Jembatan
+                        { x: 7, y: 5 },   // Misi 3: Bimo di Hutan Sunyi
+                        { x: 29, y: 8 },  // Misi 4: Menara Jam
+                      ][idx] || { x: 11, y: 14 };
+
+                      return (
+                        <div
+                          key={q.id}
+                          className={`p-3.5 rounded-xl border transition ${
                             q.isCompleted
-                              ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                              : 'bg-amber-950 text-amber-300 border border-amber-700'
+                              ? 'bg-slate-950/40 border-emerald-500/40 opacity-90'
+                              : isActive
+                              ? 'bg-gradient-to-r from-amber-500/25 via-amber-400/20 to-amber-500/10 border-2 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)]'
+                              : 'bg-slate-950/40 border-slate-800 opacity-60'
                           }`}
                         >
-                          {q.isCompleted ? 'Selesai' : 'Sedang Berjalan'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
-                        {q.description}
-                      </p>
-                      {!q.isCompleted && (
-                        <div className="mt-2 text-xs bg-amber-950/40 border border-amber-500/20 rounded-lg p-2 text-amber-200 font-medium">
-                          💡 <strong>Petunjuk:</strong> {q.stepHint}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              {q.isCompleted ? (
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                              ) : isActive ? (
+                                <Clock className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
+                              ) : (
+                                <Lock className="w-4 h-4 text-slate-500 shrink-0" />
+                              )}
+                              <h4
+                                className={`text-sm font-bold ${
+                                  q.isCompleted
+                                    ? 'text-slate-400 line-through'
+                                    : isActive
+                                    ? 'text-amber-200'
+                                    : 'text-slate-400'
+                                }`}
+                              >
+                                {q.title}
+                              </h4>
+                            </div>
+                            <span
+                              className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
+                                q.isCompleted
+                                  ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                                  : isActive
+                                  ? 'bg-amber-500 text-slate-950 font-black border border-amber-300 shadow-sm animate-pulse'
+                                  : 'bg-slate-900 text-slate-500 border border-slate-800'
+                              }`}
+                            >
+                              {q.isCompleted ? '✓ Selesai' : isActive ? '👉 Misi Aktif' : '🔒 Terkunci'}
+                            </span>
+                          </div>
+
+                          <p className={`text-xs mt-1.5 leading-relaxed ${isActive ? 'text-amber-100/90' : 'text-slate-400'}`}>
+                            {q.description}
+                          </p>
+
+                          {isActive && (
+                            <div className="mt-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-amber-950/60 border border-amber-400/40 rounded-lg p-2.5 text-amber-200">
+                              <div className="text-xs font-medium">
+                                💡 <strong>Petunjuk Langkah:</strong> {q.stepHint}
+                              </div>
+                              {onNavigateToTile && (
+                                <button
+                                  onClick={() => {
+                                    onClose();
+                                    onNavigateToTile(questCoords.x, questCoords.y);
+                                  }}
+                                  className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-bold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                                >
+                                  <span>Tuntun ke Lokasi 🏃</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                          {isLocked && (
+                            <div className="mt-2 text-[11px] text-slate-500 italic flex items-center gap-1">
+                              <Lock className="w-3 h-3 text-slate-600 shrink-0" />
+                              <span>Selesaikan Misi {idx} terlebih dahulu untuk membuka petualangan ini.</span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      );
+                    });
+                  })()}
                 </div>
               </div>
 

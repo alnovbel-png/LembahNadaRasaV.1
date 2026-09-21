@@ -128,6 +128,43 @@ export class GameRenderer {
   private fogRibbonParallaxX: number[] = [0, 0, 0];
   private fogRibbonParallaxY: number[] = [0, 0, 0];
 
+  // Active sequential quest tracking for eye-catching visual guidance
+  private activeQuestTarget: {
+    npcId: string;
+    stepNumber: number;
+    label: string;
+    targetX: number;
+    targetY: number;
+  } | null = null;
+
+  public setActiveQuestTarget(
+    target: {
+      npcId: string;
+      stepNumber: number;
+      label: string;
+      targetX: number;
+      targetY: number;
+    } | null
+  ) {
+    this.activeQuestTarget = target;
+  }
+
+  // Player custom avatar representation (boy or girl)
+  public playerAvatar: 'boy' | 'girl' = 'boy';
+
+  public setPlayerAvatar(avatar: 'boy' | 'girl') {
+    this.playerAvatar = avatar;
+  }
+
+  // Player custom nickname
+  public playerName: string = 'Ezzel';
+
+  public setPlayerName(name: string) {
+    if (name && name.trim()) {
+      this.playerName = name.trim();
+    }
+  }
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     const context = canvas.getContext('2d', { alpha: false });
@@ -689,6 +726,98 @@ export class GameRenderer {
         ctx.restore();
       }
     }
+
+    ctx.restore();
+
+    // 10. Screen-space Directional Guide Arrow for Active Mission Target (Off-screen indicator for children)
+    this.drawOffScreenQuestArrow(cameraX, cameraY, viewportW, viewportH, zoom);
+  }
+
+  // Draw bouncing off-screen directional arrow pointing toward active mission target
+  private drawOffScreenQuestArrow(
+    camX: number,
+    camY: number,
+    viewportW: number,
+    viewportH: number,
+    zoom: number
+  ) {
+    if (!this.activeQuestTarget || this.isAllMissionsCompleted) return;
+
+    const { targetX, targetY, stepNumber, label } = this.activeQuestTarget;
+    const ctx = this.ctx;
+
+    // Convert target world position to screen coordinates
+    const screenX = (targetX - camX) * zoom;
+    const screenY = (targetY - camY) * zoom;
+
+    // Margin padding from screen edges
+    const marginX = 64;
+    const marginY = 64;
+    const isOffScreen =
+      screenX < marginX ||
+      screenX > viewportW - marginX ||
+      screenY < marginY ||
+      screenY > viewportH - marginY;
+
+    if (!isOffScreen) return; // Target is visible inside view, no arrow needed
+
+    ctx.save();
+    const centerX = viewportW / 2;
+    const centerY = viewportH / 2;
+    const dx = screenX - centerX;
+    const dy = screenY - centerY;
+    const angle = Math.atan2(dy, dx);
+
+    // Clamp indicator position to screen edges
+    const radiusX = viewportW / 2 - marginX;
+    const radiusY = viewportH / 2 - marginY;
+    const clampX = Math.max(marginX, Math.min(viewportW - marginX, centerX + Math.cos(angle) * radiusX));
+    const clampY = Math.max(marginY + 25, Math.min(viewportH - marginY - 15, centerY + Math.sin(angle) * radiusY));
+
+    const bounce = Math.sin(this.tickCount * 0.18) * 4;
+    const arrowX = clampX + Math.cos(angle) * bounce;
+    const arrowY = clampY + Math.sin(angle) * bounce;
+
+    // Glowing aura behind arrow
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.45)';
+    ctx.beginPath();
+    ctx.arc(arrowX, arrowY, 18, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mission direction pill
+    const indicatorText = `➔ MISI ${stepNumber}: ${label}`;
+    ctx.font = 'bold 9px "Pixelify Sans", "Press Start 2P", monospace';
+    const textW = ctx.measureText(indicatorText).width;
+
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.rect(arrowX - textW / 2 - 8, arrowY - 26, textW + 16, 18);
+    ctx.fill();
+    ctx.strokeStyle = '#fef08a';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    ctx.fillStyle = '#0f172a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(indicatorText, arrowX, arrowY - 17);
+
+    // Pointer arrow tip pointing toward target direction
+    ctx.save();
+    ctx.translate(arrowX, arrowY + 2);
+    ctx.rotate(angle);
+    ctx.fillStyle = '#f59e0b';
+    ctx.strokeStyle = '#fef08a';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(11, 0);
+    ctx.lineTo(-6, -7);
+    ctx.lineTo(-2, 0);
+    ctx.lineTo(-6, 7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
 
     ctx.restore();
   }
@@ -4377,6 +4506,24 @@ export class GameRenderer {
       ctx.fillRect(px + 10, py + 8 + bob, 3, 3);
       ctx.fillRect(px + 19, py + 8 + bob, 3, 3);
 
+      // Girl Avatar features (Twin ribbons, ponytail bobs, and rosy cheeks)
+      if (this.playerAvatar === 'girl') {
+        // Rosy Cheeks
+        ctx.fillStyle = '#fda4af';
+        ctx.fillRect(px + 9, py + 11 + bob, 2, 1);
+        ctx.fillRect(px + 21, py + 11 + bob, 2, 1);
+
+        // Twin Hairclips / Ribbons
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(px + 5, py + 6 + bob, 2, 2);
+        ctx.fillRect(px + 25, py + 6 + bob, 2, 2);
+
+        // Twin Ponytails
+        ctx.fillStyle = '#854d0e';
+        ctx.fillRect(px + 4, py + 8 + bob, 2, 5);
+        ctx.fillRect(px + 26, py + 8 + bob, 2, 5);
+      }
+
       compassX = px + 16;
       compassY = py + 24 + bob;
     } else if (player.facing === 'up') {
@@ -4419,6 +4566,17 @@ export class GameRenderer {
       ctx.fillStyle = SKIN_COLOR;
       ctx.fillRect(px + 8, py + 12 + bob, 2, 2);
       ctx.fillRect(px + 22, py + 12 + bob, 2, 2);
+
+      // Girl Avatar features (Back view: Twin ribbons and ponytail bobs)
+      if (this.playerAvatar === 'girl') {
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(px + 5, py + 6 + bob, 2, 2);
+        ctx.fillRect(px + 25, py + 6 + bob, 2, 2);
+
+        ctx.fillStyle = '#854d0e';
+        ctx.fillRect(px + 4, py + 8 + bob, 2, 6);
+        ctx.fillRect(px + 26, py + 8 + bob, 2, 6);
+      }
 
       // ===== PROMINENT BROWN BACKPACK ON THE BACK (Inertia bobbing synced to walk cycle) =====
       // Matches Panel 2 of reference image:
@@ -4507,6 +4665,16 @@ export class GameRenderer {
       ctx.fillStyle = EYE_COLOR;
       ctx.fillRect(px + 17, py + 8 + bob, 2, 3);
 
+      // Girl Avatar details (Right view: ribbon, ponytail, blush)
+      if (this.playerAvatar === 'girl') {
+        ctx.fillStyle = '#fda4af';
+        ctx.fillRect(px + 18, py + 11 + bob, 2, 1); // Rosy cheek
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(px + 9, py + 6 + bob, 2, 2);  // Ribbon
+        ctx.fillStyle = '#854d0e';
+        ctx.fillRect(px + 7, py + 7 + bob, 2, 5);  // Ponytail bob
+      }
+
       compassX = px + 21;
       compassY = py + 24 + bob;
     } else if (player.facing === 'left') {
@@ -4576,6 +4744,16 @@ export class GameRenderer {
       ctx.fillStyle = EYE_COLOR;
       ctx.fillRect(px + 11, py + 8 + bob, 2, 3);
 
+      // Girl Avatar details (Left view: ribbon, ponytail, blush)
+      if (this.playerAvatar === 'girl') {
+        ctx.fillStyle = '#fda4af';
+        ctx.fillRect(px + 10, py + 11 + bob, 2, 1); // Rosy cheek
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(px + 21, py + 6 + bob, 2, 2);  // Ribbon
+        ctx.fillStyle = '#854d0e';
+        ctx.fillRect(px + 23, py + 7 + bob, 2, 5);  // Ponytail bob
+      }
+
       compassX = px + 11;
       compassY = py + 24 + bob;
     }
@@ -4637,10 +4815,13 @@ export class GameRenderer {
       ctx.restore();
     }
 
-    // 4. Protagonist Name Banner: "Ezzel" (Authentic retro design from reference image)
+    // 4. Protagonist Name Banner (Dynamic nickname chosen by player)
     // Box: dark teal background, cyan-teal border (2px), crisp mint pixel text with drop shadow
     ctx.save();
-    const tagW = 54;
+    const displayName = this.playerName || 'Ezzel';
+    ctx.font = '8px "Press Start 2P", monospace';
+    const textWidth = ctx.measureText(displayName).width;
+    const tagW = Math.max(50, Math.round(textWidth + 14));
     const tagH = 15;
     const tagX = px + 16 - tagW / 2;
     // Anchor nicely above the hair, slightly dampened bob
@@ -4659,8 +4840,7 @@ export class GameRenderer {
     ctx.lineWidth = 2;
     ctx.strokeRect(tagX + 1, tagY + 1, tagW - 2, tagH - 2);
 
-    // Pixel lettering "Ezzel"
-    ctx.font = '8px "Press Start 2P", monospace';
+    // Pixel lettering
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const textCenterX = px + 16;
@@ -4668,11 +4848,11 @@ export class GameRenderer {
 
     // Dark teal drop shadow on letters for 3D pixel effect
     ctx.fillStyle = '#1c6858';
-    ctx.fillText('Ezzel', textCenterX + 1, textCenterY + 1);
+    ctx.fillText(displayName, textCenterX + 1, textCenterY + 1);
 
     // Minty cyan glowing letters matching reference image
     ctx.fillStyle = '#9ef4dc';
-    ctx.fillText('Ezzel', textCenterX, textCenterY);
+    ctx.fillText(displayName, textCenterX, textCenterY);
     ctx.restore();
   }
 
@@ -6268,6 +6448,26 @@ export class GameRenderer {
         break;
     }
 
+    // Ground target indicator for active sequential quest NPC
+    const isActiveQuestTarget = Boolean(this.activeQuestTarget && this.activeQuestTarget.npcId === npc.id);
+    if (isActiveQuestTarget) {
+      const ringPhase = this.tickCount * 0.1;
+      const ringPulse = (Math.sin(ringPhase) + 1) / 2;
+      const rOuter = 16 + ringPulse * 5;
+      ctx.save();
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.ellipse(nx + 16, ny + 27, rOuter, rOuter * 0.45, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.35)';
+      ctx.beginPath();
+      ctx.ellipse(nx + 16, ny + 27, rOuter * 0.75, rOuter * 0.35, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
     // Name badge / interaction prompt floating above NPC (smoothly bobs with headBob)
     // Label nama dihilangkan khusus bagi NPC yang sedang mengobrol dengan NPC lain
     if (!npc.isChatting) {
@@ -6278,16 +6478,73 @@ export class GameRenderer {
       const textW = ctx.measureText(displayName).width;
       ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
       ctx.fillRect(nx + 16 - textW / 2 - 5, ny - 11 + headBob, textW + 10, 14);
-      ctx.strokeStyle = npc.isResolved ? '#22c55e' : '#eab308';
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = npc.isResolved ? '#22c55e' : isActiveQuestTarget ? '#f59e0b' : '#eab308';
+      ctx.lineWidth = isActiveQuestTarget ? 2 : 1;
       ctx.strokeRect(nx + 16 - textW / 2 - 5, ny - 11 + headBob, textW + 10, 14);
 
-      ctx.fillStyle = npc.isResolved ? '#4ade80' : '#fef08a';
+      ctx.fillStyle = npc.isResolved ? '#4ade80' : isActiveQuestTarget ? '#fbbf24' : '#fef08a';
       ctx.fillText(displayName, nx + 16, ny + headBob);
     }
 
-    // Indikator visual 'tanda tanya' (?) melayang di atas NPC yang belum terselesaikan konfliknya
-    if (!npc.isResolved) {
+    // Indikator visual target misi aktif ATAU tanda tanya biasa
+    if (isActiveQuestTarget) {
+      const qPhase = this.tickCount * 0.15;
+      const qBob = Math.sin(qPhase) * 4;
+      const qCenterX = nx + 16;
+      const qCenterY = ny - 28 + qBob;
+
+      // Soft pulsating glow halo behind the mission badge
+      const glowPulse = 0.5 + Math.sin(qPhase) * 0.25;
+      ctx.fillStyle = `rgba(245, 158, 11, ${glowPulse})`;
+      ctx.beginPath();
+      ctx.arc(qCenterX, qCenterY + 4, 15, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Bold Red/Gold "★ MISI X" Pill Badge
+      const stepNum = this.activeQuestTarget?.stepNumber || 1;
+      const badgeText = `★ MISI ${stepNum}`;
+      ctx.font = 'bold 8px "Pixelify Sans", "Press Start 2P", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const bW = ctx.measureText(badgeText).width;
+
+      ctx.fillStyle = '#dc2626'; // Bright eye-catching scarlet badge
+      ctx.fillRect(qCenterX - bW / 2 - 5, qCenterY - 14, bW + 10, 13);
+      ctx.strokeStyle = '#fef08a';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(qCenterX - bW / 2 - 5, qCenterY - 14, bW + 10, 13);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(badgeText, qCenterX, qCenterY - 7);
+
+      // Golden Circular Balloon with Exclamation Point [ ! ]
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(qCenterX, qCenterY + 6, 8.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#fef08a';
+      ctx.beginPath();
+      ctx.arc(qCenterX - 2, qCenterY + 4, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#78350f';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.arc(qCenterX, qCenterY + 6, 8.5, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.font = 'bold 12px "Press Start 2P", monospace';
+      ctx.fillStyle = '#1e1b4b';
+      ctx.fillText('!', qCenterX, qCenterY + 7);
+
+      // Sparkle stars
+      const sp = Math.floor((this.tickCount * 0.15) % 4);
+      ctx.fillStyle = '#ffffff';
+      if (sp === 0) ctx.fillRect(qCenterX - 14, qCenterY, 3, 3);
+      else if (sp === 1) ctx.fillRect(qCenterX + 12, qCenterY - 5, 3, 3);
+      else if (sp === 2) ctx.fillRect(qCenterX + 13, qCenterY + 7, 3, 3);
+      else ctx.fillRect(qCenterX - 11, qCenterY - 9, 3, 3);
+    } else if (!npc.isResolved) {
       const qPhase = this.tickCount * 0.12 + npc.x * 2.3;
       const qBob = Math.sin(qPhase) * 3.5;
       const qCenterX = nx + 16;

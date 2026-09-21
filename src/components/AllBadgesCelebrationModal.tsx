@@ -18,6 +18,7 @@ import {
 import { PlayerStats } from '../types/game';
 import { PSE_ACHIEVEMENTS } from '../game/constants';
 import { sound } from '../utils/audio';
+import { downloadCertificateAsJpg } from '../utils/certificateGenerator';
 
 interface AllBadgesCelebrationModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ interface AllBadgesCelebrationModalProps {
   stats: PlayerStats;
   onOpenJournal?: () => void;
   onFreeRoam?: () => void;
+  playerName?: string;
 }
 
 export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps> = ({
@@ -33,9 +35,32 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
   stats,
   onOpenJournal,
   onFreeRoam,
+  playerName = 'Ezzel',
 }) => {
   const [activeTab, setActiveTab] = useState<'dialogue' | 'gallery' | 'certificate'>('dialogue');
-  const [studentName, setStudentName] = useState('Ezzel');
+  const [studentName, setStudentName] = useState(playerName);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  useEffect(() => {
+    if (playerName) {
+      setStudentName(playerName);
+    }
+  }, [playerName]);
+
+  const handleDownloadJpg = async () => {
+    setIsDownloading(true);
+    const success = await downloadCertificateAsJpg({
+      recipientName: studentName || playerName || 'Ezzel',
+      empathyScore: stats.empathyScore,
+      isAllBadges: true,
+    });
+    setIsDownloading(false);
+    if (success) {
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 3000);
+    }
+  };
 
   // Trigger celebration audio and sound when opened
   useEffect(() => {
@@ -441,11 +466,19 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
               <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
                 <button
                   id="print-all-badges-certificate-btn"
-                  onClick={() => window.print()}
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md transition cursor-pointer"
+                  onClick={handleDownloadJpg}
+                  disabled={isDownloading}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md transition cursor-pointer disabled:opacity-60"
+                  title="Unduh piagam sebagai file foto JPG yang mudah dibuka anak-anak"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Cetak / Simpan Piagam Apresiasi</span>
+                  <span>
+                    {isDownloading
+                      ? 'Menyiapkan Gambar...'
+                      : downloadSuccess
+                      ? '✓ Gambar Tersimpan!'
+                      : 'Simpan Gambar Piagam (JPG)'}
+                  </span>
                 </button>
 
                 <button

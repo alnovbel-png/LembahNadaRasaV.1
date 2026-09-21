@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Award, RotateCcw, Sparkles, Heart, CheckCircle, Download, Compass, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Award, RotateCcw, Sparkles, Heart, CheckCircle, Download, Compass, X, Image as ImageIcon } from 'lucide-react';
 import { PlayerStats } from '../types/game';
+import { downloadCertificateAsJpg } from '../utils/certificateGenerator';
 
 interface EndingModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface EndingModalProps {
   stats: PlayerStats;
   branchTag?: string;
   endingType: 'perfect' | 'resilient';
+  playerName?: string;
 }
 
 export const EndingModal: React.FC<EndingModalProps> = ({
@@ -18,8 +20,31 @@ export const EndingModal: React.FC<EndingModalProps> = ({
   stats,
   branchTag,
   endingType,
+  playerName = 'Ezzel',
 }) => {
-  const [studentName, setStudentName] = useState('Ezzel');
+  const [studentName, setStudentName] = useState(playerName);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadSuccess, setDownloadSuccess] = useState(false);
+
+  useEffect(() => {
+    if (playerName) {
+      setStudentName(playerName);
+    }
+  }, [playerName]);
+
+  const handleDownloadJpg = async () => {
+    setIsDownloading(true);
+    const success = await downloadCertificateAsJpg({
+      recipientName: studentName || playerName || 'Ezzel',
+      empathyScore: stats.empathyScore,
+      decisionPath: branchTag,
+    });
+    setIsDownloading(false);
+    if (success) {
+      setDownloadSuccess(true);
+      setTimeout(() => setDownloadSuccess(false), 3000);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -148,14 +173,22 @@ export const EndingModal: React.FC<EndingModalProps> = ({
             <span>Coba Bermain Lagi</span>
           </button>
 
-          {/* Print Certificate */}
+          {/* Simpan Gambar Sertifikat JPG */}
           <button
             id="print-cert-btn"
-            onClick={() => window.print()}
-            className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs sm:text-sm flex items-center gap-2 transition hover:scale-105 active:scale-95"
+            onClick={handleDownloadJpg}
+            disabled={isDownloading}
+            className="px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md transition hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
+            title="Unduh sertifikat sebagai file foto JPG yang mudah dibuka anak-anak"
           >
-            <Download className="w-4 h-4" />
-            <span>Cetak Sertifikat</span>
+            <Download className="w-4 h-4 text-slate-950" />
+            <span>
+              {isDownloading
+                ? 'Menyiapkan Gambar...'
+                : downloadSuccess
+                ? '✓ Berhasil Disimpan!'
+                : 'Simpan Gambar Sertifikat (JPG)'}
+            </span>
           </button>
         </div>
 

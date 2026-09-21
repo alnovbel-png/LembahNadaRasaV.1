@@ -203,13 +203,13 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           </span>
         </div>
 
-        {/* Center: Compass Toggle Button with Sparkle Feedback */}
-        <div className="pointer-events-auto">
+        {/* Center: Compass Toggle Button with Sparkle Feedback (Hidden on Mobile, Visible on Desktop/Tablet) */}
+        <div className="pointer-events-auto hidden md:block">
           <button
             id="toggle-resonance-btn"
             onClick={onCompassToggle}
             title="Aktifkan Kompas Resonansi Hati [C]"
-            className={`relative px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
+            className={`relative px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition hidden md:flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
               isCompassActive
                 ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.7)] font-bold ring-2 ring-amber-300/60'
                 : 'bg-slate-950/90 text-amber-300 border-amber-500/40 hover:bg-slate-900'

@@ -780,39 +780,39 @@ export const NPC_INTRO_DIALOGUES: Record<string, string> = {
   jala_fisher: 'jala_intro',
 };
 
-// Quests flow
+// Quests flow (Alur Misi Utama Berurutan)
 export const INITIAL_QUESTS: GameQuest[] = [
   {
     id: 'quest_start',
-    title: 'Gunakan Kompas Resonansi Hati',
+    title: 'Misi 1: Gunakan Kompas Resonansi Hati',
     targetNPC: 'kiki',
-    description: 'Bumi bergetar dan warna memudar! Ambil Kompas Hati yang bersinar di dekat Air Mancur lalu gunakan pada Kiki.',
+    description: 'Langkah 1: Bumi bergetar dan warna memudar! Dekati Kiki si tupai di barat air mancur Alun-Alun dan aktifkan Kompas Hati.',
     isCompleted: false,
-    stepHint: 'Dekati Kiki di barat air mancur lalu tekan tombol Kompas Resonansi.',
+    stepHint: 'Dekati Kiki di barat air mancur lalu aktifkan Kompas Resonansi [C / Tombol Hati].',
   },
   {
     id: 'quest_bridge',
-    title: 'Misteri Jembatan Terkunci',
+    title: 'Misi 2: Misteri Jembatan Terkunci',
     targetNPC: 'kakek_ranu',
-    description: 'Kakek Ranu mengunci jembatan kayu ke timur. Kenali alasan kemarahannya dengan Kompas dan berikan respon empatik.',
+    description: 'Langkah 2: Kakek Ranu mengunci jembatan kayu ke timur. Kenali alasan kemarahannya dengan Kompas dan berikan respon empatik.',
     isCompleted: false,
-    stepHint: 'Pergi ke timur menuju jembatan. Gunakan Resonansi Emosi untuk melihat luka batin Kakek Ranu.',
+    stepHint: 'Pergi ke timur menuju Jembatan Kayu. Gunakan Resonansi Emosi untuk membantu Kakek Ranu.',
   },
   {
     id: 'quest_bimo',
-    title: 'Jejak Roda Gigi di Hutan Sunyi',
+    title: 'Misi 3: Jejak Roda Gigi di Hutan Sunyi',
     targetNPC: 'bimo',
-    description: 'Bimo bersembunyi di hutan barat laut. Bantu dia mengatasi rasa takut bersalah agar ia berani menyerahkan roda gigi jam.',
+    description: 'Langkah 3: Bimo bersembunyi di hutan barat laut. Bantu dia mengatasi rasa takut bersalah agar ia menyerahkan roda gigi jam.',
     isCompleted: false,
-    stepHint: 'Periksa pepohonan di sudut utara. Bicaralah pada Bimo dengan teknik pemisahan kesalahan.',
+    stepHint: 'Seberangi jembatan ke Hutan Sunyi di barat laut. Temui Bimo di balik pohon rimbun.',
   },
   {
     id: 'quest_tower',
-    title: 'Membuka Hati Menara Jam',
+    title: 'Misi 4: Membuka Hati Menara Jam',
     targetNPC: 'penjaga_kabut',
-    description: 'Bawa Roda Gigi Harmoni ke Menara Jam. Ungkap siapa sosok di balik kabut dan pulihkan warna Lembah Nada Rasa!',
+    description: 'Langkah 4 (Misi Akhir): Bawa Roda Gigi Harmoni ke puncak Menara Jam di timur laut dan pulihkan warna seluruh lembah!',
     isCompleted: false,
-    stepHint: 'Seberangi jembatan yang terbuka, menuju puncak menara jam di timur laut.',
+    stepHint: 'Menuju puncak Menara Jam di timur laut untuk menyatukan kembali harmoni desa.',
   },
 ];
 

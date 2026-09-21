@@ -74,3 +74,64 @@ export function useIsPortrait(): boolean {
 
   return isPortrait;
 }
+
+/**
+ * Accurately determines if the current viewport is in:
+ * - Mobile vertical (smartphone in portrait)
+ * - Mobile horizontal (smartphone in landscape)
+ * - Tablet vertical (tablet in portrait)
+ *
+ * Returns true ONLY for these 3 modes, and false for tablet horizontal and desktop.
+ */
+export function shouldHideMinimapExtraControls(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const minDim = Math.min(w, h);
+  const isPortrait = h >= w;
+
+  // 1. Mobile Phone (shortest dimension < 600px - covers smartphones in both portrait & landscape)
+  const isMobilePhone = minDim < 600;
+  if (isMobilePhone) {
+    // Both mobile vertical (portrait) and mobile horizontal (landscape) hide controls
+    return true;
+  }
+
+  // 2. Tablet check (shortest dimension >= 600px, but touch/tablet UA or screen width < 1024)
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const isTabletUA =
+    /iPad|Tablet|Android(?!.*Mobile)/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const isTabletScreen = (w < 1024 || h < 1024) && (isTouchDevice || isTabletUA || w < 1024);
+
+  // Tablet in vertical / portrait orientation hides controls
+  if (isTabletScreen && isPortrait) {
+    return true;
+  }
+
+  // Tablet in horizontal / landscape and Desktop keep controls visible
+  return false;
+}
+
+/**
+ * React hook that dynamically updates whether minimap extra controls should be hidden.
+ */
+export function useHideMinimapExtraControls(): boolean {
+  const [shouldHide, setShouldHide] = useState<boolean>(shouldHideMinimapExtraControls);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setShouldHide(shouldHideMinimapExtraControls());
+    };
+
+    window.addEventListener('resize', handleUpdate);
+    window.addEventListener('orientationchange', handleUpdate);
+    return () => {
+      window.removeEventListener('resize', handleUpdate);
+      window.removeEventListener('orientationchange', handleUpdate);
+    };
+  }, []);
+
+  return shouldHide;
+}

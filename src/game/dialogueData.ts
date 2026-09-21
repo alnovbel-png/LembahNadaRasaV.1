@@ -77,6 +77,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Tupai Pos Cilik',
     portrait: 'squirrel',
     text: 'Huuu... kamu malah menyalahkanku! Aku semakin gemetar...',
+    isWrongFeedback: true,
     nextId: 'kiki_intro',
   },
   kiki_validate: {
@@ -236,6 +237,115 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     givesItem: 'item_letter',
   },
 
+  // --- SEQUENTIAL QUEST DIALOGUES (ALUR MISI BERURUTAN) ---
+  ranu_locked_need_kiki: {
+    id: 'ranu_locked_need_kiki',
+    speaker: 'Kakek Ranu',
+    speakerRole: 'Tukang Kayu Jembatan',
+    portrait: 'old_man',
+    text: 'Eits, anak muda! Aku melihat si tupai Kiki sedang ketakutan dan panik di dekat Air Mancur Alun-Alun (Plaza). Pergilah ke barat dan selesaikan Misi 1 bersama Kiki dulu, baru temui aku di jembatan ini!',
+    thoughtBubble: 'Desa ini harus dipulihkan mulai dari alun-alun bersama Kiki...',
+    emotionAura: 'tenang',
+    choices: [
+      {
+        id: 'ranu_locked_c1',
+        text: 'Baik Kakek Ranu, aku akan segera pergi ke Alun-Alun menyelesaikan Misi 1 bersama Kiki!',
+        impactScore: 10,
+        resultDialogueId: 'ranu_locked_ack',
+      },
+    ],
+  },
+  ranu_locked_ack: {
+    id: 'ranu_locked_ack',
+    speaker: 'Kakek Ranu',
+    speakerRole: 'Tukang Kayu Jembatan',
+    portrait: 'old_man',
+    text: 'Bagus! Ikuti panah emas [➔ MISI 1] di tepi layarmu untuk menemukan Kiki di Alun-Alun!',
+    emotionAura: 'tenang',
+  },
+
+  bimo_locked_need_bridge: {
+    id: 'bimo_locked_need_bridge',
+    speaker: 'Bimo',
+    speakerRole: 'Anak Pemalu di Balik Pohon',
+    portrait: 'boy_glasses',
+    text: 'Ssst... kabut masih sangat pekat dan jembatan kayu belum dibuka oleh Kakek Ranu! Selesaikan dulu Misi 2 bersama Kakek Ranu di jembatan kayu agar jalan menuju hutan ini aman!',
+    thoughtBubble: 'Jembatan harus dibuka dulu oleh Kakek Ranu...',
+    emotionAura: 'cemas',
+    choices: [
+      {
+        id: 'bimo_locked_c1',
+        text: 'Baik Bimo, aku akan menyelesaikan Misi 2 di jembatan dulu bersama Kakek Ranu!',
+        impactScore: 10,
+        resultDialogueId: 'bimo_locked_ack',
+      },
+    ],
+  },
+  bimo_locked_ack: {
+    id: 'bimo_locked_ack',
+    speaker: 'Bimo',
+    speakerRole: 'Anak Pemalu di Balik Pohon',
+    portrait: 'boy_glasses',
+    text: 'Terima kasih, Ezzel! Ikuti panah emas [➔ MISI 2] di tepi layar menuju jembatan Kakek Ranu!',
+    emotionAura: 'tenang',
+  },
+
+  tower_locked_need_gear: {
+    id: 'tower_locked_need_gear',
+    speaker: 'Sosok Kabut / Menara Jam',
+    speakerRole: 'Monumen Harmoni',
+    portrait: 'clock_tower',
+    text: 'Berhenti! Pintu Menara Jam terkunci rapat dan berselimut kabut tebal! Roda Gigi Harmoni masih berada di tangan Bimo di Hutan Sunyi (Misi 3). Temukan dan bantulah Bimo terlebih dahulu sebelum memulihkan menara ini!',
+    thoughtBubble: 'Menara ini membutuhkan Roda Gigi Harmoni dari Bimo...',
+    emotionAura: 'kecewa',
+    choices: [
+      {
+        id: 'tower_locked_c1',
+        text: 'Aku mengerti! Aku akan segera mencari Bimo di Hutan Sunyi untuk mengambil roda gigi!',
+        impactScore: 10,
+        resultDialogueId: 'tower_locked_ack',
+      },
+    ],
+  },
+  tower_locked_ack: {
+    id: 'tower_locked_ack',
+    speaker: 'Sosok Kabut / Menara Jam',
+    speakerRole: 'Monumen Harmoni',
+    portrait: 'clock_tower',
+    text: 'Pintu menara ini akan terbuka begitu kamu membawa Roda Gigi Harmoni dari Bimo di Misi 3!',
+    emotionAura: 'tenang',
+  },
+
+  kiki_remind_bridge: {
+    id: 'kiki_remind_bridge',
+    speaker: 'Kiki',
+    speakerRole: 'Tupai Pos Cilik',
+    portrait: 'squirrel',
+    text: 'Ciiit! Terima kasih Ezzel, Alun-Alun sudah kembali berwarna! Sekarang giliran Kakek Ranu di Jembatan Kayu (sebelah timur) yang membutuhkan bantuanmu di Misi 2!',
+    thoughtBubble: 'Kakek Ranu di jembatan pasti butuh perhatian hangat...',
+    emotionAura: 'gembira',
+  },
+
+  ranu_remind_bimo: {
+    id: 'ranu_remind_bimo',
+    speaker: 'Kakek Ranu',
+    speakerRole: 'Tukang Kayu & Penjaga Jembatan',
+    portrait: 'old_man',
+    text: 'Jembatan kayu sudah terbuka lebar untukmu! Sekarang seberangilah dan carilah Bimo yang bersembunyi di Hutan Sunyi (sebelah barat laut) di Misi 3!',
+    thoughtBubble: 'Bimo anak yang baik, bantu dia memaafkan dirinya sendiri...',
+    emotionAura: 'tenang',
+  },
+
+  bimo_remind_tower: {
+    id: 'bimo_remind_tower',
+    speaker: 'Bimo',
+    speakerRole: 'Murid Pembuat Jam',
+    portrait: 'boy_glasses',
+    text: 'Roda Gigi Harmoni sudah kamu bawa! Sekarang bawalah roda gigi itu ke puncak Menara Jam di timur laut (Misi 4) untuk mengembalikan harmoni seluruh lembah!',
+    thoughtBubble: 'Menara Jam akan berdetak kembali berkat keberanian kita!',
+    emotionAura: 'gembira',
+  },
+
   // --- KAKEK RANU & JEMBATAN (BRANCHING IMPACTFUL CHOICE) ---
   ranu_intro: {
     id: 'ranu_intro',
@@ -274,6 +384,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Tukang Kayu Desa',
     portrait: 'old_man',
     text: 'KAU BILANG APA?! Tidak punya sopan santun! Pergi dari jembatanku sebelum kuhalau dengan gagang sapu!',
+    isWrongFeedback: true,
     nextId: 'ranu_intro',
   },
   ranu_path_empathy: {
@@ -358,6 +469,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Murid Kelas 4',
     portrait: 'boy_glasses',
     text: 'Huwaaa! Benar kan kataku... aku memang selalu merusak segalanya!',
+    isWrongFeedback: true,
     nextId: 'bimo_intro',
   },
   bimo_ranu_praise: {
@@ -656,6 +768,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Konselor Cilik Lembah',
     portrait: 'girl_counselor',
     text: 'Aduh, jika api disiram minyak, kobaran api akan makin membesar! Saat teman di Zona Merah, amigdalanya sedang siaga. Lebih baik hadir tenang dan beri ruang aman.',
+    isWrongFeedback: true,
     nextId: 'citra_zones_question',
   },
   citra_reward: {
@@ -733,6 +846,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Praktisi Mindful & Bonsai',
     portrait: 'zen_master',
     text: 'Mengeluh menghabiskan energi untuk hal yang tak bisa diubah. Balikkan pandanganmu ke dalam kendali dirimu sendiri.',
+    isWrongFeedback: true,
     nextId: 'damai_practice',
   },
   damai_reward: {
@@ -810,6 +924,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Kucing Pustakawan Lembut',
     portrait: 'cat_librarian',
     text: 'Meow... ucapan menghakimi membuat teman menutup cangkang perasaannya. Cobalah dengan validasi empati.',
+    isWrongFeedback: true,
     nextId: 'moka_question',
   },
   moka_reward: {
@@ -1131,6 +1246,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Petani Kebun Harapan',
     portrait: 'farmer',
     text: 'Waduh, itu namanya Pola Pikir Tetap (Fixed Mindset). Jangan batasi potensi dirimu, nak! Tambahkan kata "BELUM BISA" daripada "TIDAK BISA". Ayo coba renungkan lagi.',
+    isWrongFeedback: true,
     nextId: 'joko_question',
   },
   joko_growth_reward: {
@@ -1210,6 +1326,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Pengelana Cilik Desa',
     portrait: 'wandering_scout',
     text: 'Wah, kalau didiamkan dia pasti merasa kesepian dan terasing. Ingat, satu sapaan kecil kita bisa menjadi pelita besar bagi harinya! Yuk coba lagi!',
+    isWrongFeedback: true,
     nextId: 'didi_question',
   },
   didi_reward: {
@@ -1299,6 +1416,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Penebang Pohon Hutan Bijak',
     portrait: 'woodcutter',
     text: 'Aduh! Jika api dibalas api, seluruh hutan persahabatan akan terbakar hangus! Ambil jeda napas sejenak, yuk coba pikirkan lagi.',
+    isWrongFeedback: true,
     nextId: 'teguh_question',
   },
   teguh_reward: {
@@ -1388,6 +1506,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Petani Kebun Buah Hutan',
     portrait: 'fruit_farmer',
     text: 'Duh, menyombongkan diri membuat buah persahabatan membusuk dan teman menjauh. Rasa syukur yang sejati melahirkan kerendahan hati. Coba lagi ya!',
+    isWrongFeedback: true,
     nextId: 'sari_question',
   },
   sari_reward: {
@@ -1477,6 +1596,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speakerRole: 'Pemancing Sabar Tepi Sungai',
     portrait: 'fisherman',
     text: 'Kalau kail ditarik sebelum ikan menggigit umpan, pancing akan kusut dan ikan kabur. Begitu pula belajar! Tarik napas hening sejenak, yuk pilih lagi.',
+    isWrongFeedback: true,
     nextId: 'jala_question',
   },
   jala_reward: {

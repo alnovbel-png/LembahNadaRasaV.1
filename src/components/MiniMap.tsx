@@ -27,7 +27,7 @@ import {
   drawPixelTextWithShadow,
 } from '../game/miniMapTextures';
 import { sound } from '../utils/audio';
-import { useIsMobileOrTablet, useIsPortrait } from '../utils/device';
+import { useIsMobileOrTablet, useIsPortrait, useHideMinimapExtraControls } from '../utils/device';
 
 interface MiniMapProps {
   isOpen: boolean;
@@ -1026,6 +1026,8 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   // Accurately determine mobile/tablet vs desktop and orientation
   const isMobileOrTablet = useIsMobileOrTablet();
   const isPortrait = useIsPortrait();
+  // Automatically hide extra control buttons strictly on mobile vertical, mobile horizontal, and tablet vertical
+  const hideExtraControls = useHideMinimapExtraControls();
 
   // Screen optimization states:
   // - Default to compact mode (Tampilan Ringkas) immediately when game starts to keep screen clear
@@ -1033,16 +1035,13 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   const [isTranslucent, setIsTranslucent] = useState<boolean>(false);
   const [showMobileLegend, setShowMobileLegend] = useState<boolean>(false);
 
-  const isEffectiveCompact = isCompact;
+  const isEffectiveCompact = hideExtraControls ? true : isCompact;
 
   // Responsive position calculation:
-  // - Mobile Portrait: docked neatly bottom-right above action buttons, leaving the entire left & center free
-  // - Mobile Landscape: docked top-right below top-bar, leaving the action buttons and joystick 100% free
+  // - Mobile & Tablet: docked bottom-right above virtual action buttons, completely free of the top quest tracker banner
   // - Desktop: standard bottom-right
   const containerPosition = isMobileOrTablet
-    ? isPortrait
-      ? 'bottom-[68px] sm:bottom-[76px] right-2 sm:right-4'
-      : 'top-11 right-2 sm:right-3'
+    ? 'bottom-[68px] sm:bottom-[76px] right-2 sm:right-4'
     : 'bottom-4 right-4';
 
   const containerWidthClass = isMobileOrTablet
@@ -1050,7 +1049,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
       ? isPortrait
         ? 'w-[170px]'
         : 'w-[158px]'
-      : 'w-[228px] max-h-[82vh] sm:max-h-[88vh] overflow-y-auto'
+      : 'w-[228px] max-h-[calc(100vh-170px)] sm:max-h-[calc(100vh-180px)] overflow-y-auto'
     : 'w-[240px] sm:w-[252px]';
 
   const canvasDisplayClass = isMobileOrTablet

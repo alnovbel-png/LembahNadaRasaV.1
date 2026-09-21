@@ -988,6 +988,131 @@ class SoundSystem {
     }, 1100);
   }
 
+  // Sound effect and vibration for incorrect quiz answer
+  public playQuizWrong() {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    try {
+      // First low dissonance tone
+      const osc1 = this.ctx.createOscillator();
+      const g1 = this.ctx.createGain();
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(180, t);
+      osc1.frequency.exponentialRampToValueAtTime(130, t + 0.16);
+      g1.gain.setValueAtTime(0.08 * this.sfxVolume, t);
+      g1.gain.linearRampToValueAtTime(0.001, t + 0.16);
+      osc1.connect(g1);
+      g1.connect(this.masterSfxGain || this.ctx.destination);
+      osc1.start(t);
+      osc1.stop(t + 0.17);
+
+      // Second downward buzz
+      setTimeout(() => {
+        if (!this.ctx) return;
+        const t2 = this.ctx.currentTime;
+        const osc2 = this.ctx.createOscillator();
+        const g2 = this.ctx.createGain();
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(140, t2);
+        osc2.frequency.exponentialRampToValueAtTime(95, t2 + 0.22);
+        g2.gain.setValueAtTime(0.09 * this.sfxVolume, t2);
+        g2.gain.linearRampToValueAtTime(0.001, t2 + 0.22);
+        osc2.connect(g2);
+        g2.connect(this.masterSfxGain || this.ctx.destination);
+        osc2.start(t2);
+        osc2.stop(t2 + 0.23);
+      }, 120);
+
+      // Device vibration if available
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate([100, 60, 120]);
+        } catch {
+          // ignore
+        }
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  // Realistic synthesized applause (handclaps) & joyful cheer chords
+  public playApplause() {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    try {
+      // 1. Festive melody chord progression
+      const chords = [
+        { f: 523.25, d: 0.14 }, // C5
+        { f: 659.25, d: 0.14 }, // E5
+        { f: 783.99, d: 0.16 }, // G5
+        { f: 1046.5, d: 0.35 }, // C6
+      ];
+      let delay = 0;
+      chords.forEach((c) => {
+        setTimeout(() => {
+          this.playTone(c.f, 'triangle', c.d, 0.07, 0, false);
+        }, delay * 1000);
+        delay += c.d * 0.8;
+      });
+
+      // 2. Handclap bursts simulating a cheering crowd of children
+      const clapCount = 18;
+      for (let i = 0; i < clapCount; i++) {
+        const clapDelay = 40 + i * 65 + (Math.random() * 30 - 15);
+        setTimeout(() => {
+          if (!this.ctx) return;
+          try {
+            const ct = this.ctx.currentTime;
+            const bufferSize = Math.floor(this.ctx.sampleRate * 0.045);
+            const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let j = 0; j < bufferSize; j++) {
+              data[j] = (Math.random() * 2 - 1) * Math.exp(-j / (bufferSize * 0.28));
+            }
+
+            const noiseSource = this.ctx.createBufferSource();
+            noiseSource.buffer = noiseBuffer;
+
+            // Bandpass filter centered around 1000-1400Hz (human handclap resonance)
+            const clapFilter = this.ctx.createBiquadFilter();
+            clapFilter.type = 'bandpass';
+            clapFilter.frequency.setValueAtTime(1000 + Math.random() * 400, ct);
+            clapFilter.Q.setValueAtTime(2.2, ct);
+
+            const clapGain = this.ctx.createGain();
+            clapGain.gain.setValueAtTime(0.06 * this.sfxVolume, ct);
+            clapGain.gain.exponentialRampToValueAtTime(0.001, ct + 0.045);
+
+            noiseSource.connect(clapFilter);
+            clapFilter.connect(clapGain);
+            clapGain.connect(this.masterSfxGain || this.ctx.destination);
+
+            noiseSource.start(ct);
+            noiseSource.stop(ct + 0.05);
+          } catch {
+            // ignore
+          }
+        }, clapDelay);
+      }
+
+      // 3. Gentle cheering vibration
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try {
+          navigator.vibrate([60, 40, 60, 40, 80]);
+        } catch {
+          // ignore
+        }
+      }
+    } catch {
+      // fallback
+    }
+  }
+
   // Camera shutter click & flash sparkle for Abadikan Momen
   public playCameraShutter() {
     if (this.isMuted || this.sfxVolume <= 0.001) return;

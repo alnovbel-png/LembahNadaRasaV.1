@@ -2,7 +2,7 @@ import React from 'react';
 
 export interface CharacterPortraitProps {
   sprite: string;
-  size?: 'sm' | 'md' | 'lg' | 'dialogue';
+  size?: 'sm' | 'md' | 'lg' | 'dialogue' | 'small';
   isResolved?: boolean;
   className?: string;
 }
@@ -16,10 +16,11 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
   // Dimension styles
   const sizeClasses = {
     sm: 'w-10 h-10',
+    small: 'w-10 h-10',
     md: 'w-14 h-14',
     lg: 'w-20 h-20',
     dialogue: 'w-16 h-16 shrink-0',
-  }[size];
+  }[size] || 'w-12 h-12';
 
   // SVG viewBox is 32x32 standard pixel art grid
   const svgStyle: React.CSSProperties = {
@@ -29,9 +30,10 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
 
   switch (sprite) {
     // =========================================================================
-    // EZSEL (PLAYER / PROTAGONIST) - KEPT 100% UNCHANGED AS MANDATED
+    // EZSEL (PLAYER / PROTAGONIST - BOY & GIRL AVATARS)
     // =========================================================================
     case 'player':
+    case 'player_boy':
       return (
         <div
           className={`${sizeClasses} bg-[#112b29] rounded-xl flex items-center justify-center border-2 border-[#2ca88e] shadow-[0_0_12px_rgba(44,168,142,0.35)] overflow-hidden relative ${className}`}
@@ -66,12 +68,62 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
         </div>
       );
 
+    case 'player_girl':
+      return (
+        <div
+          className={`${sizeClasses} bg-[#24132b] rounded-xl flex items-center justify-center border-2 border-[#ec4899] shadow-[0_0_12px_rgba(236,72,153,0.4)] overflow-hidden relative ${className}`}
+        >
+          <svg viewBox="0 0 32 32" className="w-full h-full p-0.5" style={svgStyle}>
+            {/* Soft Oval Shadow */}
+            <ellipse cx="16" cy="29" rx="10" ry="3.5" fill="rgba(0,0,0,0.4)" />
+            {/* Dark Charcoal Navy Skirt / Legs */}
+            <rect x="10" y="26" width="4" height="5" fill="#242c3d" />
+            <rect x="18" y="26" width="4" height="5" fill="#242c3d" />
+            {/* Emerald Adventurer Tunic */}
+            <rect x="8" y="15" width="16" height="11" fill="#1ea282" />
+            <rect x="8" y="15" width="2" height="11" fill="#168c70" />
+            <rect x="22" y="15" width="2" height="11" fill="#168c70" />
+            {/* Golden Waist Buckle / Compass */}
+            <rect x="14" y="22" width="4" height="4" fill="#f5b822" />
+            <rect x="14" y="22" width="2" height="2" fill="#fef08a" />
+            {/* Ruby Scarf / Collar */}
+            <rect x="8" y="13" width="16" height="3" fill="#e11d48" />
+            <rect x="8" y="13" width="16" height="1" fill="#fb7185" />
+            {/* Face Skin Tone */}
+            <rect x="8" y="7" width="16" height="7" fill="#fcd7b0" />
+            {/* Cute Rosy Blushing Cheeks */}
+            <rect x="9" y="11" width="3" height="2" fill="#fda4af" />
+            <rect x="20" y="11" width="3" height="2" fill="#fda4af" />
+            {/* Long Rich Warm Auburn Hair with Side Locks & Twin Pigtails */}
+            <rect x="8" y="3" width="16" height="5" fill="#713f12" />
+            <rect x="9" y="4" width="14" height="2" fill="#854d0e" />
+            {/* Flowing Side Locks framing face */}
+            <rect x="7" y="7" width="3" height="8" fill="#713f12" />
+            <rect x="22" y="7" width="3" height="8" fill="#713f12" />
+            {/* Cute Twin Ribbon Hairclips (Rose Pink / Ruby) */}
+            <rect x="5" y="6" width="3" height="3" fill="#f43f5e" />
+            <rect x="6" y="7" width="1" height="1" fill="#ffe4e6" />
+            <rect x="24" y="6" width="3" height="3" fill="#f43f5e" />
+            <rect x="25" y="7" width="1" height="1" fill="#ffe4e6" />
+            {/* Cute Twin Ponytail Bobs */}
+            <rect x="4" y="8" width="3" height="6" fill="#854d0e" />
+            <rect x="25" y="8" width="3" height="6" fill="#854d0e" />
+            {/* Expressive Bright Eyes with subtle highlight */}
+            <rect x="11" y="8" width="2" height="3" fill="#1e1b4b" />
+            <rect x="11" y="8" width="1" height="1" fill="#ffffff" />
+            <rect x="19" y="8" width="2" height="3" fill="#1e1b4b" />
+            <rect x="19" y="8" width="1" height="1" fill="#ffffff" />
+          </svg>
+        </div>
+      );
+
     // =========================================================================
     // REDESIGNED NPCS:
     // =========================================================================
 
     // 1. KIKI - TUPAI POS CILIK (POSTAL SQUIRREL)
     case 'squirrel':
+    case 'kiki':
       return (
         <div
           className={`${sizeClasses} bg-[#2c1808] rounded-xl flex items-center justify-center border-2 border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)] overflow-hidden relative ${className}`}
@@ -131,6 +183,7 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
 
     // 2. KAKEK RANU - TUKANG KAYU JEMBATAN (MASTER CARPENTER)
     case 'old_man':
+    case 'kakek_ranu':
       return (
         <div
           className={`${sizeClasses} bg-[#0c1933] rounded-xl flex items-center justify-center border-2 border-blue-400 shadow-[0_0_12px_rgba(59,130,246,0.3)] overflow-hidden relative ${className}`}
@@ -190,6 +243,7 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
 
     // 3. BIMO - MURID PEMBUAT JAM (WATCHMAKER APPRENTICE)
     case 'boy_glasses':
+    case 'bimo':
       return (
         <div
           className={`${sizeClasses} bg-[#271d05] rounded-xl flex items-center justify-center border-2 border-yellow-400 shadow-[0_0_12px_rgba(234,179,8,0.3)] overflow-hidden relative ${className}`}
@@ -337,6 +391,8 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
     // 5. SOSOK KABUT / NENEK WILIS (TOWER GUARDIAN & ELDER LIBRARIAN)
     case 'spirit_elder':
     case 'grandmother':
+    case 'penjaga_kabut':
+    case 'nenek_wilis':
       if (isResolved) {
         // REVEALED FORM: NENEK WILIS (TRADITIONAL ELDER IN ROYAL BATIK KEBAYA)
         return (
