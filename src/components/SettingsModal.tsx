@@ -24,6 +24,8 @@ import {
   KeyRound,
   ShieldCheck,
   Lock,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useAudioSettings, BgmPhase, sound } from '../utils/audio';
 import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
@@ -50,6 +52,8 @@ export interface SettingsModalProps {
   onCaptureMoment?: () => void;
   onNavigateToTile?: (tileX: number, tileY: number) => void;
   onActivateDeveloperMode?: () => void;
+  timeOfDay?: 'day' | 'night';
+  onToggleTimeOfDay?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -68,6 +72,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onCaptureMoment,
   onNavigateToTile,
   onActivateDeveloperMode,
+  timeOfDay = 'day',
+  onToggleTimeOfDay,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
   const [showPeopleGuide, setShowPeopleGuide] = useState(false);
@@ -275,6 +281,75 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB 1: MISI & OBJEKTIF */}
           {activeTab === 'quest' && (
             <div className="space-y-5">
+              {/* Card Suasana Alam: Mode Siang & Malam */}
+              {onToggleTimeOfDay && (
+                <div
+                  className={`border rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md transition-all ${
+                    timeOfDay === 'night'
+                      ? 'bg-gradient-to-r from-indigo-950/50 via-slate-900 to-slate-950 border-indigo-500/50'
+                      : 'bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border-amber-500/50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`p-2.5 rounded-xl border ${
+                        timeOfDay === 'night'
+                          ? 'bg-indigo-500/20 border-indigo-400/40 text-indigo-300'
+                          : 'bg-amber-500/20 border-amber-400/40 text-amber-300'
+                      }`}
+                    >
+                      {timeOfDay === 'night' ? (
+                        <Moon className="w-5 h-5 text-indigo-300 animate-pulse" />
+                      ) : (
+                        <Sun className="w-5 h-5 text-amber-400" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-100">
+                          Siklus Suasana Alam: Mode {timeOfDay === 'night' ? 'Malam' : 'Siang'}
+                        </h4>
+                        <span
+                          className={`text-[9px] font-bold px-1.5 py-0.5 rounded shadow ${
+                            timeOfDay === 'night'
+                              ? 'bg-indigo-500 text-white shadow-[0_0_8px_rgba(99,102,241,0.5)]'
+                              : 'bg-amber-400 text-slate-950 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
+                          }`}
+                        >
+                          {timeOfDay === 'night' ? '🌙 MALAM' : '☀️ SIANG'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 mt-0.5">
+                        {timeOfDay === 'night'
+                          ? 'Malam bertabur bintang, pendaran lentera lembut, cahaya rembulan & kunang-kunang di lembah.'
+                          : 'Siang hari cerah keemasan, semburat sinar mentari, kabut sejuk & kepakan sayap kupu-kupu.'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    id="settings-toggle-daynight-btn"
+                    onClick={onToggleTimeOfDay}
+                    className={`px-3.5 py-2 rounded-xl font-bold text-xs shrink-0 shadow transition cursor-pointer flex items-center gap-1.5 active:scale-95 ${
+                      timeOfDay === 'night'
+                        ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_12px_rgba(99,102,241,0.5)]'
+                        : 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-[0_0_12px_rgba(245,158,11,0.5)]'
+                    }`}
+                  >
+                    {timeOfDay === 'night' ? (
+                      <>
+                        <Sun className="w-4 h-4 text-amber-300" />
+                        <span>Beralih ke Siang</span>
+                      </>
+                    ) : (
+                      <>
+                        <Moon className="w-4 h-4 text-indigo-200" />
+                        <span>Beralih ke Malam</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
+
               {/* Card Abadikan Momen */}
               {onCaptureMoment && (
                 <div className="bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border border-amber-400/50 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
@@ -1062,6 +1137,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Buka Menu Pengaturan</span>
                     <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">O</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <span className="text-slate-300">Ganti Mode Siang / Malam</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">N</span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Panduan Kontrol Cepat</span>

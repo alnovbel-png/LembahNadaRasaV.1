@@ -43,6 +43,26 @@ export interface Butterfly {
   phase: number;
 }
 
+export interface Firefly {
+  id: number;
+  baseX: number;
+  baseY: number;
+  radiusX: number;
+  radiusY: number;
+  speed: number;
+  phase: number;
+  pulseSpeed: number;
+  colorType: 'gold' | 'emerald' | 'cyan';
+}
+
+export interface Star {
+  x: number;
+  y: number;
+  size: number;
+  phase: number;
+  speed: number;
+}
+
 export interface Ripple {
   x: number;
   y: number;
@@ -87,6 +107,64 @@ export class FreeRoamWorld {
     { id: 4, centerX: 26.5 * TILE_SIZE, centerY: 3.5 * TILE_SIZE, radiusX: 26, radiusY: 18, speed: 0.032, colorType: 'cyan', phase: 0.9 },
     // North-East orchard path
     { id: 5, centerX: 28.0 * TILE_SIZE, centerY: 4.8 * TILE_SIZE, radiusX: 30, radiusY: 15, speed: 0.038, colorType: 'orange', phase: 4.2 },
+  ];
+
+  // Nocturnal glowing fireflies (Kunang-Kunang Lembah) dancing across nature spots
+  private fireflies: Firefly[] = [
+    // Alun-Alun Plaza & flower beds
+    { id: 1, baseX: 11 * TILE_SIZE, baseY: 14 * TILE_SIZE, radiusX: 20, radiusY: 14, speed: 0.024, phase: 0.2, pulseSpeed: 0.06, colorType: 'gold' },
+    { id: 2, baseX: 12.5 * TILE_SIZE, baseY: 12.8 * TILE_SIZE, radiusX: 24, radiusY: 16, speed: 0.018, phase: 1.5, pulseSpeed: 0.045, colorType: 'emerald' },
+    { id: 3, baseX: 9 * TILE_SIZE, baseY: 15.5 * TILE_SIZE, radiusX: 18, radiusY: 12, speed: 0.022, phase: 3.1, pulseSpeed: 0.055, colorType: 'gold' },
+    { id: 4, baseX: 14 * TILE_SIZE, baseY: 13.5 * TILE_SIZE, radiusX: 22, radiusY: 15, speed: 0.020, phase: 4.4, pulseSpeed: 0.048, colorType: 'cyan' },
+    // Sacred Ancient Oak grove & mossy stones
+    { id: 5, baseX: 4 * TILE_SIZE, baseY: 5 * TILE_SIZE, radiusX: 28, radiusY: 18, speed: 0.019, phase: 0.8, pulseSpeed: 0.04, colorType: 'emerald' },
+    { id: 6, baseX: 5.5 * TILE_SIZE, baseY: 6.5 * TILE_SIZE, radiusX: 22, radiusY: 16, speed: 0.025, phase: 2.3, pulseSpeed: 0.065, colorType: 'cyan' },
+    { id: 7, baseX: 3.2 * TILE_SIZE, baseY: 7.2 * TILE_SIZE, radiusX: 25, radiusY: 15, speed: 0.021, phase: 3.9, pulseSpeed: 0.05, colorType: 'emerald' },
+    // Rustic Windmill & Golden Wheat Field
+    { id: 8, baseX: 14.5 * TILE_SIZE, baseY: 23.5 * TILE_SIZE, radiusX: 26, radiusY: 17, speed: 0.023, phase: 1.1, pulseSpeed: 0.052, colorType: 'gold' },
+    { id: 9, baseX: 16.5 * TILE_SIZE, baseY: 24.8 * TILE_SIZE, radiusX: 24, radiusY: 14, speed: 0.017, phase: 2.7, pulseSpeed: 0.042, colorType: 'gold' },
+    { id: 10, baseX: 12 * TILE_SIZE, baseY: 23 * TILE_SIZE, radiusX: 20, radiusY: 13, speed: 0.026, phase: 4.8, pulseSpeed: 0.058, colorType: 'emerald' },
+    { id: 11, baseX: 10.5 * TILE_SIZE, baseY: 25.5 * TILE_SIZE, radiusX: 25, radiusY: 16, speed: 0.019, phase: 0.5, pulseSpeed: 0.046, colorType: 'gold' },
+    // Riverbank, Wooden Bridge & Fishing Pier
+    { id: 12, baseX: 21 * TILE_SIZE, baseY: 14.5 * TILE_SIZE, radiusX: 22, radiusY: 14, speed: 0.022, phase: 1.9, pulseSpeed: 0.054, colorType: 'cyan' },
+    { id: 13, baseX: 23.5 * TILE_SIZE, baseY: 17.5 * TILE_SIZE, radiusX: 26, radiusY: 16, speed: 0.024, phase: 3.4, pulseSpeed: 0.062, colorType: 'cyan' },
+    { id: 14, baseX: 20 * TILE_SIZE, baseY: 19 * TILE_SIZE, radiusX: 20, radiusY: 12, speed: 0.018, phase: 5.1, pulseSpeed: 0.044, colorType: 'emerald' },
+    { id: 15, baseX: 22.8 * TILE_SIZE, baseY: 11.2 * TILE_SIZE, radiusX: 24, radiusY: 15, speed: 0.021, phase: 0.9, pulseSpeed: 0.048, colorType: 'cyan' },
+    // Pasture Meadow & Livestock Fencing
+    { id: 16, baseX: 17 * TILE_SIZE, baseY: 3.5 * TILE_SIZE, radiusX: 28, radiusY: 18, speed: 0.016, phase: 2.2, pulseSpeed: 0.038, colorType: 'emerald' },
+    { id: 17, baseX: 19 * TILE_SIZE, baseY: 5 * TILE_SIZE, radiusX: 24, radiusY: 15, speed: 0.023, phase: 4.1, pulseSpeed: 0.056, colorType: 'gold' },
+    // Orchard Apple & Orange Trees
+    { id: 18, baseX: 26 * TILE_SIZE, baseY: 22 * TILE_SIZE, radiusX: 22, radiusY: 14, speed: 0.025, phase: 1.4, pulseSpeed: 0.06, colorType: 'gold' },
+    { id: 19, baseX: 28 * TILE_SIZE, baseY: 24 * TILE_SIZE, radiusX: 25, radiusY: 16, speed: 0.020, phase: 3.7, pulseSpeed: 0.05, colorType: 'emerald' },
+    { id: 20, baseX: 27 * TILE_SIZE, baseY: 26 * TILE_SIZE, radiusX: 20, radiusY: 13, speed: 0.022, phase: 5.3, pulseSpeed: 0.046, colorType: 'gold' },
+    // Clock Tower Gardens & Eastern Spire Grove
+    { id: 21, baseX: 29 * TILE_SIZE, baseY: 8 * TILE_SIZE, radiusX: 24, radiusY: 16, speed: 0.019, phase: 0.7, pulseSpeed: 0.044, colorType: 'cyan' },
+    { id: 22, baseX: 30.5 * TILE_SIZE, baseY: 10 * TILE_SIZE, radiusX: 22, radiusY: 14, speed: 0.026, phase: 2.9, pulseSpeed: 0.062, colorType: 'gold' },
+    { id: 23, baseX: 27.5 * TILE_SIZE, baseY: 9.5 * TILE_SIZE, radiusX: 26, radiusY: 17, speed: 0.021, phase: 4.6, pulseSpeed: 0.052, colorType: 'emerald' },
+    { id: 24, baseX: 29 * TILE_SIZE, baseY: 13 * TILE_SIZE, radiusX: 20, radiusY: 13, speed: 0.024, phase: 1.8, pulseSpeed: 0.058, colorType: 'cyan' },
+  ];
+
+  // Celestial twinkling night stars in sky zone
+  private stars: Star[] = [
+    { x: 120, y: 35, size: 1.5, phase: 0.3, speed: 0.04 },
+    { x: 210, y: 55, size: 1.2, phase: 1.6, speed: 0.05 },
+    { x: 295, y: 25, size: 2.0, phase: 2.9, speed: 0.03 },
+    { x: 380, y: 60, size: 1.3, phase: 4.1, speed: 0.06 },
+    { x: 470, y: 40, size: 1.8, phase: 0.8, speed: 0.04 },
+    { x: 550, y: 70, size: 1.2, phase: 2.1, speed: 0.05 },
+    { x: 630, y: 30, size: 2.2, phase: 3.5, speed: 0.035 },
+    { x: 720, y: 65, size: 1.4, phase: 5.0, speed: 0.045 },
+    { x: 810, y: 38, size: 1.7, phase: 1.2, speed: 0.055 },
+    { x: 890, y: 75, size: 1.3, phase: 2.7, speed: 0.04 },
+    { x: 970, y: 45, size: 2.1, phase: 4.3, speed: 0.03 },
+    { x: 1040, y: 60, size: 1.5, phase: 0.5, speed: 0.06 },
+    { x: 160, y: 90, size: 1.2, phase: 1.9, speed: 0.05 },
+    { x: 260, y: 110, size: 1.6, phase: 3.2, speed: 0.04 },
+    { x: 420, y: 95, size: 1.4, phase: 4.8, speed: 0.05 },
+    { x: 590, y: 105, size: 1.9, phase: 0.9, speed: 0.035 },
+    { x: 760, y: 90, size: 1.3, phase: 2.4, speed: 0.05 },
+    { x: 910, y: 115, size: 1.7, phase: 3.8, speed: 0.045 },
+    { x: 1010, y: 95, size: 1.2, phase: 5.2, speed: 0.06 },
   ];
 
   private ripples: Ripple[] = [];
@@ -1125,8 +1203,13 @@ export class FreeRoamWorld {
 
   // 6. Render Butterflies (Kupu-kupu Berterbangan)
   // Location: around orchard fruit trees (cols 25..28, rows 22..26)
-  public renderButterflies(ctx: CanvasRenderingContext2D, tickCount: number) {
+  public renderButterflies(ctx: CanvasRenderingContext2D, tickCount: number, timeOfDayProgress: number = 0) {
+    // Butterflies naturally rest at dusk/night as fireflies take their place
+    const butterflyAlpha = Math.max(0, 1 - timeOfDayProgress * 1.5);
+    if (butterflyAlpha <= 0.01) return;
+
     ctx.save();
+    ctx.globalAlpha = butterflyAlpha;
 
     for (const b of this.butterflies) {
       const angle = tickCount * b.speed + b.phase;
@@ -1301,92 +1384,256 @@ export class FreeRoamWorld {
     ctx.restore();
   }
 
-  // 9. Render Rich Golden Afternoon Sunlight & Volumetric God Rays
-  // Statically anchored to the world environment (does NOT follow the player or camera)
-  public renderGoldenAfternoonSunlight(
+  // 9. Render Dynamic Atmospheric Environment (Day / Night with Silky-Smooth Transitions)
+  // Seamlessly interpolates between Warm Golden Afternoon Sunlight (Day) and Luminous Starry Night with Dancing Fireflies (Night)
+  public renderAtmosphere(
     ctx: CanvasRenderingContext2D,
-    tickCount: number
+    tickCount: number,
+    timeOfDayProgress: number = 0
   ) {
     ctx.save();
 
     const worldW = MAP_COLS * TILE_SIZE;
     const worldH = MAP_ROWS * TILE_SIZE;
+    const dayFactor = Math.max(0, Math.min(1, 1 - timeOfDayProgress));
+    const nightFactor = Math.max(0, Math.min(1, timeOfDayProgress));
 
-    // 1. Soft warm afternoon ambient color grading anchored statically across the world map
-    const ambientGrad = ctx.createLinearGradient(worldW, 0, 0, worldH);
-    ambientGrad.addColorStop(0, 'rgba(251, 191, 36, 0.055)');
-    ambientGrad.addColorStop(0.5, 'rgba(251, 191, 36, 0.035)');
-    ambientGrad.addColorStop(1, 'rgba(245, 158, 11, 0.02)');
+    // ==========================================
+    // A. DAYTIME ENVIRONMENT: Warm Golden Sun & God Rays
+    // ==========================================
+    if (dayFactor > 0.01) {
+      ctx.save();
+      ctx.globalAlpha = dayFactor;
 
-    ctx.fillStyle = ambientGrad;
-    ctx.fillRect(0, 0, worldW, worldH);
+      // 1. Soft warm afternoon ambient color grading anchored statically across the world map
+      const ambientGrad = ctx.createLinearGradient(worldW, 0, 0, worldH);
+      ambientGrad.addColorStop(0, 'rgba(251, 191, 36, 0.055)');
+      ambientGrad.addColorStop(0.5, 'rgba(251, 191, 36, 0.035)');
+      ambientGrad.addColorStop(1, 'rgba(245, 158, 11, 0.02)');
 
-    // 2. Stationary Diagonal Golden God Rays (Sunbeams) anchored to fixed world landmarks
-    // Streaming down-left from the north-eastern sky across the peaceful valley
-    const sunbeamPulse = Math.sin(tickCount * 0.02) * 0.025 + 0.11;
+      ctx.fillStyle = ambientGrad;
+      ctx.fillRect(0, 0, worldW, worldH);
 
-    // Fixed ray origins and paths across the world coordinates
-    const fixedRays = [
-      { originX: 1160, originY: -40, width: 85, slopeX: -360, length: 820 }, // Eastern orchards & Bell Tower
-      { originX: 960,  originY: -50, width: 95, slopeX: -380, length: 880 }, // Pasture livestock & River Bridge
-      { originX: 770,  originY: -40, width: 90, slopeX: -390, length: 900 }, // Riverbank & fishing dock
-      { originX: 580,  originY: -50, width: 105, slopeX: -390, length: 860 }, // Harmony Plaza & Fountain
-      { originX: 400,  originY: -40, width: 95, slopeX: -370, length: 840 }, // Rustic Windmill & Golden Wheat Field
-      { originX: 220,  originY: -40, width: 85, slopeX: -350, length: 780 }, // Sacred Ancient Oak & West Cottage
-    ];
+      // 2. Stationary Diagonal Golden God Rays (Sunbeams) anchored to fixed world landmarks
+      const sunbeamPulse = Math.sin(tickCount * 0.02) * 0.025 + 0.11;
 
-    for (let i = 0; i < fixedRays.length; i++) {
-      const ray = fixedRays[i];
-      // Subtle organic breathing wobble in width/intensity without shifting ray world position
-      const shimmer = Math.sin(tickCount * 0.018 + i * 1.5) * 6;
-      const ox = ray.originX;
-      const oy = ray.originY;
-      const rw = ray.width + shimmer;
-      const dx = ray.slopeX;
-      const dy = ray.length;
+      const fixedRays = [
+        { originX: 1160, originY: -40, width: 85, slopeX: -360, length: 820 },
+        { originX: 960,  originY: -50, width: 95, slopeX: -380, length: 880 },
+        { originX: 770,  originY: -40, width: 90, slopeX: -390, length: 900 },
+        { originX: 580,  originY: -50, width: 105, slopeX: -390, length: 860 },
+        { originX: 400,  originY: -40, width: 95, slopeX: -370, length: 840 },
+        { originX: 220,  originY: -40, width: 85, slopeX: -350, length: 780 },
+      ];
 
-      const grad = ctx.createLinearGradient(ox, oy, ox + dx, oy + dy);
-      grad.addColorStop(0, `rgba(254, 240, 138, ${sunbeamPulse * 1.35})`);
-      grad.addColorStop(0.45, `rgba(251, 191, 36, ${sunbeamPulse * 0.75})`);
-      grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+      for (let i = 0; i < fixedRays.length; i++) {
+        const ray = fixedRays[i];
+        const shimmer = Math.sin(tickCount * 0.018 + i * 1.5) * 6;
+        const ox = ray.originX;
+        const oy = ray.originY;
+        const rw = ray.width + shimmer;
+        const dx = ray.slopeX;
+        const dy = ray.length;
 
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.moveTo(ox, oy);
-      ctx.lineTo(ox + rw, oy);
-      ctx.lineTo(ox + rw + dx, oy + dy);
-      ctx.lineTo(ox + dx, oy + dy);
-      ctx.closePath();
-      ctx.fill();
+        const grad = ctx.createLinearGradient(ox, oy, ox + dx, oy + dy);
+        grad.addColorStop(0, `rgba(254, 240, 138, ${sunbeamPulse * 1.35})`);
+        grad.addColorStop(0.45, `rgba(251, 191, 36, ${sunbeamPulse * 0.75})`);
+        grad.addColorStop(1, 'rgba(251, 191, 36, 0)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(ox + rw, oy);
+        ctx.lineTo(ox + rw + dx, oy + dy);
+        ctx.lineTo(ox + dx, oy + dy);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // 3. Ambient Golden Dust Motes floating within fixed world areas
+      const worldMotes = [
+        { x: 490, y: 410 }, { x: 530, y: 390 }, { x: 440, y: 450 }, { x: 580, y: 430 },
+        { x: 260, y: 710 }, { x: 330, y: 670 }, { x: 390, y: 740 }, { x: 200, y: 640 },
+        { x: 590, y: 150 }, { x: 650, y: 120 }, { x: 530, y: 170 },
+        { x: 750, y: 510 }, { x: 810, y: 470 }, { x: 720, y: 590 },
+        { x: 930, y: 230 }, { x: 990, y: 190 }, { x: 890, y: 290 }, { x: 960, y: 690 },
+        { x: 170, y: 210 }, { x: 230, y: 170 }, { x: 140, y: 270 },
+      ];
+
+      for (let m = 0; m < worldMotes.length; m++) {
+        const mote = worldMotes[m];
+        const driftX = Math.sin(tickCount * 0.02 + m * 1.2) * 8;
+        const driftY = ((tickCount * 0.12 + m * 15) % 36) - 18;
+        const alpha = Math.sin(tickCount * 0.04 + m) * 0.35 + 0.45;
+
+        ctx.fillStyle = `rgba(254, 243, 199, ${alpha * 0.6})`;
+        ctx.fillRect(Math.floor(mote.x + driftX), Math.floor(mote.y - driftY), 2, 2);
+      }
+
+      ctx.restore();
     }
 
-    // 3. Ambient Golden Dust Motes floating within fixed world areas
-    const worldMotes = [
-      // Harmony Plaza & Mosaic
-      { x: 490, y: 410 }, { x: 530, y: 390 }, { x: 440, y: 450 }, { x: 580, y: 430 },
-      // Wheat field & Windmill
-      { x: 260, y: 710 }, { x: 330, y: 670 }, { x: 390, y: 740 }, { x: 200, y: 640 },
-      // Pasture & Livestock
-      { x: 590, y: 150 }, { x: 650, y: 120 }, { x: 530, y: 170 },
-      // River & Fishing Pier
-      { x: 750, y: 510 }, { x: 810, y: 470 }, { x: 720, y: 590 },
-      // Clock Tower & Eastern Grove
-      { x: 930, y: 230 }, { x: 990, y: 190 }, { x: 890, y: 290 }, { x: 960, y: 690 },
-      // Ancient Sacred Tree
-      { x: 170, y: 210 }, { x: 230, y: 170 }, { x: 140, y: 270 },
-    ];
+    // ==========================================
+    // B. NIGHTTIME ENVIRONMENT: Starry Sky, Moonbeams & Fireflies
+    // ==========================================
+    if (nightFactor > 0.01) {
+      ctx.save();
+      ctx.globalAlpha = nightFactor;
 
-    for (let m = 0; m < worldMotes.length; m++) {
-      const mote = worldMotes[m];
-      const driftX = Math.sin(tickCount * 0.02 + m * 1.2) * 8;
-      const driftY = ((tickCount * 0.12 + m * 15) % 36) - 18;
-      const alpha = Math.sin(tickCount * 0.04 + m) * 0.35 + 0.45;
+      // 1. Soft nocturnal celestial twilight/midnight gradient across the landscape
+      const nightGrad = ctx.createLinearGradient(0, 0, 0, worldH);
+      nightGrad.addColorStop(0, 'rgba(15, 23, 42, 0.42)');
+      nightGrad.addColorStop(0.4, 'rgba(30, 27, 75, 0.32)');
+      nightGrad.addColorStop(1, 'rgba(15, 23, 42, 0.38)');
+      ctx.fillStyle = nightGrad;
+      ctx.fillRect(0, 0, worldW, worldH);
 
-      ctx.fillStyle = `rgba(254, 243, 199, ${alpha * 0.6})`;
-      ctx.fillRect(Math.floor(mote.x + driftX), Math.floor(mote.y - driftY), 2, 2);
+      // 2. Twinkling Night Stars in the upper sky region
+      for (const star of this.stars) {
+        const twinkle = Math.sin(tickCount * star.speed + star.phase);
+        const starAlpha = 0.4 + twinkle * 0.4;
+        if (starAlpha > 0.1) {
+          ctx.fillStyle = `rgba(240, 249, 255, ${starAlpha})`;
+          ctx.fillRect(star.x, star.y, star.size, star.size);
+          // Subtle 4-point sparkle cross on brighter twinkling stars
+          if (twinkle > 0.6 && star.size > 1.4) {
+            ctx.fillStyle = `rgba(186, 230, 253, ${starAlpha * 0.5})`;
+            ctx.fillRect(star.x - 1, star.y, star.size + 2, 1);
+            ctx.fillRect(star.x, star.y - 1, 1, star.size + 2);
+          }
+        }
+      }
+
+      // 3. Volumetric Silver Moonbeams (Streaming down from north-eastern moon)
+      const moonbeamPulse = Math.sin(tickCount * 0.016) * 0.02 + 0.085;
+      const lunarRays = [
+        { originX: 1100, originY: -40, width: 80, slopeX: -350, length: 820 },
+        { originX: 900,  originY: -50, width: 90, slopeX: -370, length: 880 },
+        { originX: 720,  originY: -40, width: 85, slopeX: -380, length: 900 },
+        { originX: 520,  originY: -50, width: 95, slopeX: -380, length: 860 },
+        { originX: 350,  originY: -40, width: 85, slopeX: -360, length: 840 },
+        { originX: 180,  originY: -40, width: 75, slopeX: -340, length: 780 },
+      ];
+
+      for (let i = 0; i < lunarRays.length; i++) {
+        const ray = lunarRays[i];
+        const shimmer = Math.sin(tickCount * 0.015 + i * 1.8) * 5;
+        const ox = ray.originX;
+        const oy = ray.originY;
+        const rw = ray.width + shimmer;
+        const dx = ray.slopeX;
+        const dy = ray.length;
+
+        const grad = ctx.createLinearGradient(ox, oy, ox + dx, oy + dy);
+        grad.addColorStop(0, `rgba(224, 242, 254, ${moonbeamPulse * 1.3})`);
+        grad.addColorStop(0.5, `rgba(186, 230, 253, ${moonbeamPulse * 0.65})`);
+        grad.addColorStop(1, 'rgba(147, 197, 253, 0)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(ox, oy);
+        ctx.lineTo(ox + rw, oy);
+        ctx.lineTo(ox + rw + dx, oy + dy);
+        ctx.lineTo(ox + dx, oy + dy);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // 4. Dancing Glowing Fireflies (Kunang-Kunang Lembah) hovering in nature
+      for (const f of this.fireflies) {
+        const angle = tickCount * f.speed + f.phase;
+        const fx = f.baseX + Math.sin(angle) * f.radiusX;
+        const fy = f.baseY + Math.cos(angle * 1.3) * f.radiusY;
+        const pulse = Math.sin(tickCount * f.pulseSpeed + f.phase) * 0.45 + 0.55;
+
+        // Choose bioluminescent color
+        let glowInner = 'rgba(254, 240, 138, ';
+        let glowMid = 'rgba(245, 158, 11, ';
+        let coreColor = '#fef08a';
+        if (f.colorType === 'emerald') {
+          glowInner = 'rgba(167, 243, 208, ';
+          glowMid = 'rgba(52, 211, 153, ';
+          coreColor = '#a7f3d0';
+        } else if (f.colorType === 'cyan') {
+          glowInner = 'rgba(165, 243, 252, ';
+          glowMid = 'rgba(34, 211, 238, ';
+          coreColor = '#cffafe';
+        }
+
+        // Bioluminescent radial halo
+        const haloRadius = 10 + pulse * 4;
+        const haloGrad = ctx.createRadialGradient(fx, fy, 1, fx, fy, haloRadius);
+        haloGrad.addColorStop(0, `${glowInner}${pulse * 0.7})`);
+        haloGrad.addColorStop(0.4, `${glowMid}${pulse * 0.35})`);
+        haloGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+        ctx.fillStyle = haloGrad;
+        ctx.beginPath();
+        ctx.arc(fx, fy, haloRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Bright sparkling firefly core
+        ctx.fillStyle = coreColor;
+        ctx.fillRect(Math.floor(fx - 0.75), Math.floor(fy - 0.75), 1.5, 1.5);
+      }
+
+      // 5. Warm Glowing Windows of Cottages & Farmhouse at Night
+      // Farmhouse cozy window light (col 3..4, row 18)
+      const farmWinX = 3 * TILE_SIZE + 8;
+      const farmWinY = 18 * TILE_SIZE + 8;
+      const windowPulse = Math.sin(tickCount * 0.05) * 0.06 + 0.88;
+      const farmWinGrad = ctx.createRadialGradient(farmWinX + 8, farmWinY + 6, 2, farmWinX + 8, farmWinY + 6, 32);
+      farmWinGrad.addColorStop(0, `rgba(254, 240, 138, ${0.45 * windowPulse})`);
+      farmWinGrad.addColorStop(0.6, `rgba(245, 158, 11, ${0.2 * windowPulse})`);
+      farmWinGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+      ctx.fillStyle = farmWinGrad;
+      ctx.beginPath();
+      ctx.arc(farmWinX + 8, farmWinY + 6, 32, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Windowpane warm golden glow
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(farmWinX + 4, farmWinY + 2, 8, 8);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(farmWinX + 7, farmWinY + 2, 2, 8);
+      ctx.fillRect(farmWinX + 4, farmWinY + 5, 8, 2);
+
+      // Windmill entrance lantern light (col 15, row 24)
+      const wmDoorX = 15 * TILE_SIZE + 24;
+      const wmDoorY = 24 * TILE_SIZE + 22;
+      const wmGrad = ctx.createRadialGradient(wmDoorX, wmDoorY, 2, wmDoorX, wmDoorY, 28);
+      wmGrad.addColorStop(0, `rgba(254, 240, 138, ${0.4 * windowPulse})`);
+      wmGrad.addColorStop(0.6, `rgba(245, 158, 11, ${0.18 * windowPulse})`);
+      wmGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+      ctx.fillStyle = wmGrad;
+      ctx.beginPath();
+      ctx.arc(wmDoorX, wmDoorY, 28, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Clock Tower Dial (Menara Jam) Celestial Radiance
+      const towerDialX = 29 * TILE_SIZE + 16;
+      const towerDialY = 7 * TILE_SIZE + 12;
+      const towerGrad = ctx.createRadialGradient(towerDialX, towerDialY, 4, towerDialX, towerDialY, 40);
+      towerGrad.addColorStop(0, `rgba(254, 249, 195, ${0.5 * windowPulse})`);
+      towerGrad.addColorStop(0.5, `rgba(251, 191, 36, ${0.22 * windowPulse})`);
+      towerGrad.addColorStop(1, 'rgba(245, 158, 11, 0)');
+      ctx.fillStyle = towerGrad;
+      ctx.beginPath();
+      ctx.arc(towerDialX, towerDialY, 40, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
     }
 
     ctx.restore();
+  }
+
+  // Backward compatibility wrapper for renderGoldenAfternoonSunlight
+  public renderGoldenAfternoonSunlight(
+    ctx: CanvasRenderingContext2D,
+    tickCount: number
+  ) {
+    this.renderAtmosphere(ctx, tickCount, 0);
   }
 
   // 10. Check hover for Free Roam interactive elements

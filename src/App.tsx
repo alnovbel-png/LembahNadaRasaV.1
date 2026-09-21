@@ -71,6 +71,25 @@ export default function App() {
   const statsRef = useRef<PlayerStats>(stats);
   statsRef.current = stats;
 
+  // Day / Night Atmosphere State
+  const [timeOfDay, setTimeOfDay] = useState<'day' | 'night'>('day');
+  const timeOfDayRef = useRef<'day' | 'night'>('day');
+  timeOfDayRef.current = timeOfDay;
+
+  const handleToggleTimeOfDay = useCallback(() => {
+    setTimeOfDay((prev) => {
+      const next = prev === 'day' ? 'night' : 'day';
+      sound.playDayNightTransition(next === 'night');
+      rendererRef.current?.addSparkle(
+        playerRef.current.x + 16,
+        playerRef.current.y + 16,
+        next === 'night' ? '#818cf8' : '#fbbf24',
+        16
+      );
+      return next;
+    });
+  }, []);
+
   // Player position & movement
   const playerRef = useRef<Player>({
     x: 11 * TILE_SIZE,
@@ -186,7 +205,9 @@ export default function App() {
   // Active UI states
   const [showStartMenu, setShowStartMenu] = useState<boolean>(true);
   const [playerName, setPlayerName] = useState<string>(() => {
-    return localStorage.getItem('lembah_player_name') || 'Ezzel';
+    const saved = localStorage.getItem('lembah_player_name');
+    if (saved === 'Ezsela') return 'Ezzy';
+    return saved || 'Ezzel';
   });
   const [playerAvatar, setPlayerAvatar] = useState<'boy' | 'girl'>(() => {
     return (localStorage.getItem('lembah_player_avatar') as 'boy' | 'girl') || 'boy';
@@ -416,7 +437,7 @@ export default function App() {
 
   // Handler for starting the game adventure directly into the story from opening menu
   const handleStartGame = useCallback((name: string, avatar: 'boy' | 'girl') => {
-    const finalName = name.trim() || (avatar === 'girl' ? 'Ezsela' : 'Ezzel');
+    const finalName = name.trim() || (avatar === 'girl' ? 'Ezzy' : 'Ezzel');
     setPlayerName(finalName);
     setPlayerAvatar(avatar);
     localStorage.setItem('lembah_player_name', finalName);
@@ -2603,6 +2624,14 @@ export default function App() {
         setShowSettings(true);
       }
 
+      // Ganti Mode Siang / Malam - Hotkey [N]
+      if (e.key === 'n' || e.key === 'N' || e.code === 'KeyN') {
+        if (!currentDialogue) {
+          e.preventDefault();
+          handleToggleTimeOfDay();
+        }
+      }
+
       // Abadikan Momen (Screenshot game dengan overlay dekoratif) - Hotkey [P]
       if (e.key === 'p' || e.key === 'P' || e.code === 'KeyP') {
         if (!currentDialogue) {
@@ -2643,7 +2672,7 @@ export default function App() {
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, [showStartMenu, showSettings, currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleCaptureMoment]);
+  }, [showStartMenu, showSettings, currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleCaptureMoment, handleToggleTimeOfDay]);
 
   // Main 60 FPS Game Loop
   useEffect(() => {
@@ -2688,7 +2717,8 @@ export default function App() {
             viewportSize.width,
             viewportSize.height,
             GAME_ZOOM,
-            isMissionCompleted
+            isMissionCompleted,
+            timeOfDayRef.current
           );
         }
         animationFrameId = requestAnimationFrame(gameLoop);
@@ -3408,7 +3438,8 @@ export default function App() {
           viewportSize.width,
           viewportSize.height,
           GAME_ZOOM,
-          isMissionCompleted
+          isMissionCompleted,
+          timeOfDayRef.current
         );
       }
 
@@ -3417,7 +3448,7 @@ export default function App() {
 
     animationFrameId = requestAnimationFrame(gameLoop);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [mapLayout, npcs, zoneStatus, isCompassActive, viewportSize, checkCollision, isFreeRoamActive]);
+  }, [mapLayout, npcs, zoneStatus, isCompassActive, viewportSize, checkCollision, isFreeRoamActive, timeOfDay]);
 
   // Restart game for replayability
   const handleRestart = () => {
@@ -3879,6 +3910,8 @@ export default function App() {
           }
           onOpenRegulation={() => handleOpenRegulation('Pemain', 'breathing')}
           onOpenStartMenu={() => setShowStartMenu(true)}
+          timeOfDay={timeOfDay}
+          onToggleTimeOfDay={handleToggleTimeOfDay}
         />
       )}
 
@@ -3985,6 +4018,8 @@ export default function App() {
         onCaptureMoment={handleCaptureMoment}
         onNavigateToTile={handleMiniMapNavigate}
         onActivateDeveloperMode={handleActivateDeveloperMode}
+        timeOfDay={timeOfDay}
+        onToggleTimeOfDay={handleToggleTimeOfDay}
       />
 
       {/* Developer Mode Toast Notification */}

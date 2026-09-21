@@ -934,6 +934,29 @@ class SoundSystem {
     });
   }
 
+  // Smooth Day / Night ambient transition chime
+  public playDayNightTransition(toNight: boolean) {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    if (toNight) {
+      // Descending soothing twilight chimes
+      const nightChimes = [880.0, 659.25, 523.25, 392.0]; // A5, E5, C5, G4
+      nightChimes.forEach((f, idx) => {
+        setTimeout(() => {
+          this.playTone(f, 'sine', 1.2, 0.045, 0, false);
+        }, idx * 110);
+      });
+    } else {
+      // Ascending crisp morning dawn chimes
+      const dayChimes = [392.0, 523.25, 659.25, 783.99]; // G4, C5, E5, G5
+      dayChimes.forEach((f, idx) => {
+        setTimeout(() => {
+          this.playTone(f, 'sine', 1.1, 0.045, 0, false);
+        }, idx * 95);
+      });
+    }
+  }
+
   // Positive emotion validation / Quest solve
   public playSuccessFanfare() {
     if (this.isMuted || this.sfxVolume <= 0.001) return;

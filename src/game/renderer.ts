@@ -128,6 +128,25 @@ export class GameRenderer {
   private fogRibbonParallaxX: number[] = [0, 0, 0];
   private fogRibbonParallaxY: number[] = [0, 0, 0];
 
+  // Dynamic Day & Night cycle engine state with silky-smooth interpolation
+  private targetTimeOfDay: 'day' | 'night' = 'day';
+  private timeOfDayProgress: number = 0.0; // 0.0 = Daytime (Siang), 1.0 = Nighttime (Malam)
+
+  public setTimeOfDay(time: 'day' | 'night', instant: boolean = false) {
+    this.targetTimeOfDay = time;
+    if (instant) {
+      this.timeOfDayProgress = time === 'night' ? 1.0 : 0.0;
+    }
+  }
+
+  public getTimeOfDay(): 'day' | 'night' {
+    return this.targetTimeOfDay;
+  }
+
+  public getTimeOfDayProgress(): number {
+    return this.timeOfDayProgress;
+  }
+
   // Active sequential quest tracking for eye-catching visual guidance
   private activeQuestTarget: {
     npcId: string;
@@ -512,7 +531,8 @@ export class GameRenderer {
     viewportW: number,
     viewportH: number,
     zoom: number = 1.35,
-    isMissionCompleted?: boolean
+    isMissionCompleted?: boolean,
+    timeOfDay?: 'day' | 'night'
   ) {
     this.tickCount++;
     this.isAllMissionsCompleted =
@@ -521,13 +541,31 @@ export class GameRenderer {
         zoneColorStatus.bridge &&
         zoneColorStatus.forest &&
         zoneColorStatus.tower);
+
+    // Synchronize target time of day if supplied
+    if (timeOfDay && timeOfDay !== this.targetTimeOfDay) {
+      this.targetTimeOfDay = timeOfDay;
+    }
+
+    // Silky-smooth cinematic transition between Day (0.0) and Night (1.0)
+    // Rate of 0.016 gives a gorgeous ~1 second crossfade
+    const targetProgress = this.targetTimeOfDay === 'night' ? 1.0 : 0.0;
+    const transitionRate = 0.016;
+    if (this.timeOfDayProgress < targetProgress) {
+      this.timeOfDayProgress = Math.min(targetProgress, this.timeOfDayProgress + transitionRate);
+    } else if (this.timeOfDayProgress > targetProgress) {
+      this.timeOfDayProgress = Math.max(targetProgress, this.timeOfDayProgress - transitionRate);
+    }
+
     const ctx = this.ctx;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
 
-    // Clear background with natural terrain base color rather than harsh black,
-    // ensuring no dark void can ever show at boundaries or subpixel cracks
-    const ambientTerrain = this.isAllMissionsCompleted || zoneColorStatus.plaza ? '#386641' : '#334155';
+    // Clear background with natural terrain base color, shifting smoothly between daytime lush emerald and night slate
+    const isPlazaRestored = this.isAllMissionsCompleted || zoneColorStatus.plaza;
+    const dayTerrain = isPlazaRestored ? '#386641' : '#334155';
+    const nightTerrain = isPlazaRestored ? '#14251b' : '#111827';
+    const ambientTerrain = this.timeOfDayProgress > 0.5 ? nightTerrain : dayTerrain;
     ctx.fillStyle = ambientTerrain;
     ctx.fillRect(0, 0, viewportW, viewportH);
 
@@ -647,8 +685,8 @@ export class GameRenderer {
 
     // 4b. Overhead dynamic life: Butterflies & Farmhouse Chimney Smoke
     if (this.isAllMissionsCompleted) {
-      // Butterflies fluttering near fruit trees
-      freeRoamWorld.renderButterflies(ctx, this.tickCount);
+      // Butterflies fluttering near fruit trees (rest gracefully at dusk/night)
+      freeRoamWorld.renderButterflies(ctx, this.tickCount, this.timeOfDayProgress);
       // Puffy smoke clouds billowing from farmhouse chimney
       freeRoamWorld.renderChimneySmoke(ctx, this.tickCount);
     }
@@ -715,21 +753,34 @@ export class GameRenderer {
       player
     );
 
-    // 9. If all missions completed / in Free Roam: Rich Afternoon Golden Sunlight & God Rays (Anchored to world map, not following player)
+    // 9. If all missions completed / in Free Roam: Dynamic Living World Atmosphere (Sunbeams in Day, Moonbeams/Stars/Fireflies at Night)
     if (this.isAllMissionsCompleted) {
-      // Natural crossfade: sunlight emerges gracefully as the cold fog mist fades out
-      const sunlightCrossfade = Math.max(0.0, Math.min(1.0, 1.0 - this.currentFogIntensity));
-      if (sunlightCrossfade > 0.01) {
+      // Natural crossfade: atmosphere emerges gracefully as the cold fog mist fades out
+      const atmosphereCrossfade = Math.max(0.0, Math.min(1.0, 1.0 - this.currentFogIntensity));
+      if (atmosphereCrossfade > 0.01) {
         ctx.save();
-        ctx.globalAlpha = sunlightCrossfade;
-        freeRoamWorld.renderGoldenAfternoonSunlight(ctx, this.tickCount);
+        ctx.globalAlpha = atmosphereCrossfade;
+        freeRoamWorld.renderAtmosphere(ctx, this.tickCount, this.timeOfDayProgress);
         ctx.restore();
       }
     }
 
+    // 10. Unified Day / Night Dynamic Lighting Pass (Works in BOTH Fog Mode and Free Roam Mode)
+    // Applies sunset twilight blush, nocturnal ambient shadow, radiant streetlamps, and player warm lantern
+    this.renderDayNightLightingPass(
+      ctx,
+      effectiveCamX,
+      effectiveCamY,
+      worldW,
+      worldH,
+      player,
+      map,
+      zoneColorStatus
+    );
+
     ctx.restore();
 
-    // 10. Screen-space Directional Guide Arrow for Active Mission Target (Off-screen indicator for children)
+    // 11. Screen-space Directional Guide Arrow for Active Mission Target (Off-screen indicator for children)
     this.drawOffScreenQuestArrow(cameraX, cameraY, viewportW, viewportH, zoom);
   }
 
@@ -1511,15 +1562,16 @@ export class GameRenderer {
         ctx.fillRect(x + 11, y + 9, 10, 2);
         ctx.fillRect(x + 12, y + 2, 8, 8);
 
-        // Lampu taman: Menyala saat sedang kabut, dimatikan ketika misi sudah selesai
-        const isLampLit = !this.isAllMissionsCompleted;
+        // Lampu taman: Menyala saat sedang kabut, atau saat mode malam tiba di pedesaan
+        const isLampLit = !this.isAllMissionsCompleted || this.timeOfDayProgress > 0.15;
 
         if (isLampLit) {
-          // Sedang kabut: Lampu taman menyala dengan pendaran cahaya hangat menembus kabut
+          // Lampu taman menyala dengan pendaran cahaya hangat
+          const nightGlow = !this.isAllMissionsCompleted ? 1.0 : this.timeOfDayProgress;
           const pulse = Math.sin(this.tickCount * 0.08 + (x + y) * 0.05);
-          const haloAlpha = 0.2 + pulse * 0.05;
+          const haloAlpha = (0.2 + pulse * 0.05) * Math.max(0.4, nightGlow);
 
-          // Pendaran radial gradien memancar menembus lapisan kabut
+          // Pendaran radial gradien memancar menembus lapisan kabut & kegelapan malam
           const gradient = ctx.createRadialGradient(x + 16, y + 6, 2, x + 16, y + 6, 24);
           gradient.addColorStop(0, `rgba(254, 240, 138, ${haloAlpha * 1.6})`);
           gradient.addColorStop(0.5, `rgba(245, 158, 11, ${haloAlpha * 0.8})`);
@@ -1537,7 +1589,7 @@ export class GameRenderer {
           ctx.fillStyle = '#ffffff';
           ctx.fillRect(x + 15, y + 5, 2, 3);
         } else {
-          // Misi sudah selesai: Lampu taman dimatikan di bawah terang sinar matahari
+          // Lampu taman dimatikan di bawah terang sinar matahari siang hari
           ctx.fillStyle = isColored ? '#94a3b8' : '#64748b';
           ctx.fillRect(x + 14, y + 4, 4, 5);
 
@@ -7243,10 +7295,15 @@ export class GameRenderer {
     deltaPlayerX: number,
     deltaPlayerY: number
   ) {
+    const np = this.timeOfDayProgress;
+    const fogR = Math.round(148 * (1 - np) + 24 * np);
+    const fogG = Math.round(163 * (1 - np) + 34 * np);
+    const fogB = Math.round(184 * (1 - np) + 58 * np);
+
     // Top atmospheric cold haze
     const topGrad = ctx.createLinearGradient(0, camY, 0, camY + h * 0.35);
-    topGrad.addColorStop(0, `rgba(148, 163, 184, ${0.16 * intensity})`);
-    topGrad.addColorStop(1, 'rgba(148, 163, 184, 0)');
+    topGrad.addColorStop(0, `rgba(${fogR}, ${fogG}, ${fogB}, ${(0.16 + 0.12 * np) * intensity})`);
+    topGrad.addColorStop(1, `rgba(${fogR}, ${fogG}, ${fogB}, 0)`);
     ctx.fillStyle = topGrad;
     ctx.fillRect(camX, camY, w, h * 0.35);
 
@@ -7264,8 +7321,8 @@ export class GameRenderer {
         centerY,
         outerRadius
       );
-      vignetteGrad.addColorStop(0, 'rgba(148, 163, 184, 0)');
-      vignetteGrad.addColorStop(1, `rgba(100, 116, 139, ${0.12 * intensity})`);
+      vignetteGrad.addColorStop(0, `rgba(${fogR}, ${fogG}, ${fogB}, 0)`);
+      vignetteGrad.addColorStop(1, `rgba(${fogR}, ${fogG}, ${fogB}, ${(0.12 + 0.18 * np) * intensity})`);
       ctx.fillStyle = vignetteGrad;
       ctx.fillRect(camX, camY, w, h);
     }
@@ -7286,7 +7343,7 @@ export class GameRenderer {
       const shiftX = (time * band.speed + this.fogRibbonParallaxX[i]) % (w + 80);
       const bandY = camY + ((band.baseOffset + time * 0.2 + this.fogRibbonParallaxY[i]) % (h + 40)) - 20;
 
-      ctx.fillStyle = `rgba(148, 163, 184, ${band.alpha * intensity})`;
+      ctx.fillStyle = `rgba(${fogR}, ${fogG}, ${fogB}, ${band.alpha * intensity * (1 + 0.2 * np)})`;
       ctx.beginPath();
       ctx.moveTo(camX - 20, bandY);
 
@@ -7593,6 +7650,125 @@ export class GameRenderer {
 
       ctx.restore();
     }
+  }
+
+  // Unified Day & Night dynamic lighting pass
+  // Seamlessly transitions the world between day and night in BOTH Fog Mode and Free Roam Mode
+  private renderDayNightLightingPass(
+    ctx: CanvasRenderingContext2D,
+    camX: number,
+    camY: number,
+    w: number,
+    h: number,
+    player: Player,
+    map: number[][],
+    zoneColorStatus: ZoneColorStatus
+  ) {
+    const progress = this.timeOfDayProgress;
+    if (progress <= 0.001) return; // Full daylight, no shadow overlay required
+
+    ctx.save();
+
+    // 1. Dusk / Twilight blush during transition (peaks smoothly around golden hour)
+    const duskIntensity = Math.sin(progress * Math.PI) * 0.24;
+    if (duskIntensity > 0.01) {
+      const duskGrad = ctx.createLinearGradient(0, camY, 0, camY + h);
+      duskGrad.addColorStop(0, `rgba(244, 63, 94, ${duskIntensity * 0.45})`);
+      duskGrad.addColorStop(0.4, `rgba(249, 115, 22, ${duskIntensity * 0.35})`);
+      duskGrad.addColorStop(1, `rgba(124, 58, 237, ${duskIntensity * 0.25})`);
+      ctx.fillStyle = duskGrad;
+      ctx.fillRect(camX, camY, w, h);
+    }
+
+    // 2. Nocturnal darkness overlay with smooth ambient alpha
+    const nightAlpha = progress * (this.isAllMissionsCompleted ? 0.62 : 0.72);
+    if (nightAlpha > 0.01) {
+      const baseNightColor = this.isAllMissionsCompleted ? '10, 15, 30' : '6, 10, 20';
+      ctx.fillStyle = `rgba(${baseNightColor}, ${nightAlpha})`;
+      ctx.fillRect(camX, camY, w, h);
+
+      // 3. Player's warm exploration lantern aura (lights up surroundings at night)
+      const playerCenterX = player.x + 16;
+      const playerCenterY = player.y + 20;
+      const lanternRadius = 82 + Math.sin(this.tickCount * 0.06) * 4;
+
+      const pLight = ctx.createRadialGradient(
+        playerCenterX,
+        playerCenterY,
+        4,
+        playerCenterX,
+        playerCenterY,
+        lanternRadius
+      );
+      pLight.addColorStop(0, `rgba(254, 240, 138, ${0.45 * progress})`);
+      pLight.addColorStop(0.35, `rgba(245, 158, 11, ${0.28 * progress})`);
+      pLight.addColorStop(0.7, `rgba(217, 119, 6, ${0.1 * progress})`);
+      pLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
+
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.fillStyle = pLight;
+      ctx.beginPath();
+      ctx.arc(playerCenterX, playerCenterY, lanternRadius, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Handheld lantern light source
+      const lanternX = playerCenterX + (player.facing === 'left' ? -11 : 11);
+      const lanternY = playerCenterY - 2;
+      const glowSparkle = ctx.createRadialGradient(lanternX, lanternY, 1, lanternX, lanternY, 20);
+      glowSparkle.addColorStop(0, `rgba(255, 255, 255, ${0.75 * progress})`);
+      glowSparkle.addColorStop(0.3, `rgba(253, 224, 71, ${0.5 * progress})`);
+      glowSparkle.addColorStop(1, 'rgba(253, 224, 71, 0)');
+      ctx.fillStyle = glowSparkle;
+      ctx.beginPath();
+      ctx.arc(lanternX, lanternY, 20, 0, Math.PI * 2);
+      ctx.fill();
+
+      // 4. Street Lamps & Special Light Sources in viewport
+      const startCol = Math.max(0, Math.floor(camX / TILE_SIZE) - 2);
+      const endCol = Math.min(map[0]?.length ?? 0, Math.ceil((camX + w) / TILE_SIZE) + 2);
+      const startRow = Math.max(0, Math.floor(camY / TILE_SIZE) - 2);
+      const endRow = Math.min(map.length, Math.ceil((camY + h) / TILE_SIZE) + 2);
+
+      for (let r = startRow; r < endRow; r++) {
+        const row = map[r];
+        if (!row) continue;
+        for (let c = startCol; c < endCol; c++) {
+          const tile = row[c];
+          if (tile === TILE.LAMP_POST) {
+            const lx = c * TILE_SIZE + 16;
+            const ly = r * TILE_SIZE + 6;
+            const flicker = Math.sin(this.tickCount * 0.08 + (c + r) * 1.5) * 3;
+            const rad = 76 + flicker;
+            const lampLight = ctx.createRadialGradient(lx, ly, 3, lx, ly, rad);
+            lampLight.addColorStop(0, `rgba(254, 240, 138, ${0.6 * progress})`);
+            lampLight.addColorStop(0.35, `rgba(245, 158, 11, ${0.3 * progress})`);
+            lampLight.addColorStop(0.7, `rgba(217, 119, 6, ${0.08 * progress})`);
+            lampLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
+
+            ctx.fillStyle = lampLight;
+            ctx.beginPath();
+            ctx.arc(lx, ly, rad, 0, Math.PI * 2);
+            ctx.fill();
+          } else if (tile === TILE.STONE_LANTERN || tile === TILE.FOUNTAIN) {
+            const ax = c * TILE_SIZE + 16;
+            const ay = r * TILE_SIZE + 16;
+            const altarGlow = ctx.createRadialGradient(ax, ay, 4, ax, ay, 70);
+            altarGlow.addColorStop(0, `rgba(167, 139, 250, ${0.45 * progress})`);
+            altarGlow.addColorStop(0.5, `rgba(99, 102, 241, ${0.2 * progress})`);
+            altarGlow.addColorStop(1, 'rgba(99, 102, 241, 0)');
+            ctx.fillStyle = altarGlow;
+            ctx.beginPath();
+            ctx.arc(ax, ay, 70, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+
+      ctx.restore();
+    }
+
+    ctx.restore();
   }
 
   // Draw visual feedback marker when clicking - clearly differentiated by target type!

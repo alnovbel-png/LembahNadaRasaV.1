@@ -40,12 +40,12 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
 
   // Sync state if initial props change
   useEffect(() => {
-    setPlayerName(initialPlayerName);
+    setPlayerName(initialPlayerName === 'Ezsela' ? 'Ezzy' : initialPlayerName);
     setPlayerAvatar(initialPlayerAvatar);
   }, [initialPlayerName, initialPlayerAvatar]);
 
   const handleStart = () => {
-    const finalName = playerName.trim() || (playerAvatar === 'girl' ? 'Ezsela' : 'Ezzel');
+    const finalName = playerName.trim() || (playerAvatar === 'girl' ? 'Ezzy' : 'Ezzel');
     onStartGame(finalName, playerAvatar);
   };
 
@@ -209,7 +209,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   id="avatar-select-boy"
                   onClick={() => {
                     setPlayerAvatar('boy');
-                    if (playerName === 'Ezsela' || !playerName.trim()) {
+                    if (playerName === 'Ezzy' || playerName === 'Ezsela' || !playerName.trim()) {
                       setPlayerName('Ezzel');
                     }
                   }}
@@ -242,7 +242,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   onClick={() => {
                     setPlayerAvatar('girl');
                     if (playerName === 'Ezzel' || !playerName.trim()) {
-                      setPlayerName('Ezsela');
+                      setPlayerName('Ezzy');
                     }
                   }}
                   className={`p-2 sm:p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1.5 cursor-pointer text-center relative ${
@@ -262,7 +262,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                       Petualang Perempuan
                     </span>
                     <span className="font-pixel text-[9px] text-slate-400">
-                      Avatar: Ezsela
+                      Avatar: Ezzy
                     </span>
                   </div>
                 </button>
@@ -293,13 +293,13 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                     onKeyUp={(e) => {
                       e.stopPropagation();
                     }}
-                    placeholder={playerAvatar === 'girl' ? 'Nama (misal: Ezsela)' : 'Nama (misal: Ezzel)'}
+                    placeholder={playerAvatar === 'girl' ? 'Nama (misal: Ezzy)' : 'Nama (misal: Ezzel)'}
                     maxLength={14}
                     className="min-w-0 flex-1 w-full bg-slate-950 border-2 border-amber-500/60 focus:border-amber-400 text-amber-200 px-2 sm:px-3 py-1 sm:py-2 h-8 sm:h-9 md:h-10 rounded-lg sm:rounded-xl font-pixel text-[10.5px] sm:text-xs md:text-sm tracking-wide focus:outline-none focus:ring-2 focus:ring-amber-400/40 shadow-inner"
                   />
                   <button
                     type="button"
-                    onClick={() => setPlayerName(playerAvatar === 'girl' ? 'Ezsela' : 'Ezzel')}
+                    onClick={() => setPlayerName(playerAvatar === 'girl' ? 'Ezzy' : 'Ezzel')}
                     className="shrink-0 px-2 sm:px-2.5 py-1 sm:py-1.5 h-8 sm:h-9 md:h-10 rounded-lg sm:rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-amber-300 font-pixel text-[8px] sm:text-[9.5px] border border-slate-700 transition cursor-pointer flex items-center justify-center whitespace-nowrap"
                     title="Gunakan nama default"
                   >
@@ -310,7 +310,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   style={{ fontSize: '8px' }}
                   className="font-pixel text-[8px] text-slate-400 leading-tight mt-1"
                 >
-                  💡 Nama <span className="text-amber-300 font-bold">{playerName.trim() || (playerAvatar === 'girl' ? 'Ezsela' : 'Ezzel')}</span> otomatis tertera di dialog warga dan sertifikat!
+                  💡 Nama <span className="text-amber-300 font-bold">{playerName.trim() || (playerAvatar === 'girl' ? 'Ezzy' : 'Ezzel')}</span> otomatis tertera di dialog warga dan sertifikat!
                 </p>
               </div>
             </div>
@@ -323,7 +323,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 className="w-full py-3 sm:py-3.5 px-5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold text-xs sm:text-sm shadow-[0_0_25px_rgba(245,158,11,0.5)] active:scale-[0.98] transition flex items-center justify-center gap-2 group cursor-pointer"
               >
                 <span className="font-pixel text-xs sm:text-sm tracking-wider">
-                  MULAI SEBAGAI {playerName.trim().toUpperCase() || (playerAvatar === 'girl' ? 'EZSELA' : 'EZZEL')}
+                  MULAI SEBAGAI {playerName.trim().toUpperCase() || (playerAvatar === 'girl' ? 'EZZY' : 'EZZEL')}
                 </span>
               </button>
 
