@@ -1263,7 +1263,7 @@ export default function App() {
   // Click / Tap on Floor or NPC/Props to walk there automatically
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (currentDialogue) return; // In active dialogue, don't interrupt
+      if (currentDialogue || showSettings || showStartMenu) return; // In active dialogue, paused settings or start menu, don't walk
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -1781,7 +1781,7 @@ export default function App() {
   // Mouse move handler for interactive object hover hints and cursor styling
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (currentDialogue) {
+      if (currentDialogue || showSettings || showStartMenu) {
         rendererRef.current?.setHover(null);
         return;
       }
@@ -2450,7 +2450,36 @@ export default function App() {
   // Analog virtual joystick vector for smooth mobile & touch movement
   const joystickVectorRef = useRef<{ x: number; y: number } | null>(null);
 
+  // Sync refs for immediate synchronous access within event handlers and high-frequency loops
+  const showSettingsRef = useRef(showSettings);
+  const showStartMenuRef = useRef(showStartMenu);
+
+  useEffect(() => {
+    showSettingsRef.current = showSettings;
+    if (showSettings) {
+      keysPressed.current = {};
+      joystickVectorRef.current = null;
+      targetPosRef.current = null;
+      rendererRef.current?.clearDestination();
+      playerRef.current.isMoving = false;
+    }
+  }, [showSettings]);
+
+  useEffect(() => {
+    showStartMenuRef.current = showStartMenu;
+    if (showStartMenu) {
+      keysPressed.current = {};
+      joystickVectorRef.current = null;
+      targetPosRef.current = null;
+      rendererRef.current?.clearDestination();
+      playerRef.current.isMoving = false;
+    }
+  }, [showStartMenu]);
+
   const handleJoystickMove = useCallback((vec: { x: number; y: number } | null) => {
+    // Cannot interact with controls if settings is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current) return;
+
     joystickVectorRef.current = vec;
     if (vec && (Math.abs(vec.x) > 0.05 || Math.abs(vec.y) > 0.05)) {
       sound.unlockAudio();
@@ -2466,6 +2495,9 @@ export default function App() {
     dir: 'up' | 'down' | 'left' | 'right',
     pressed: boolean
   ) => {
+    // Cannot interact with controls if settings is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current) return;
+
     const keyMap = {
       up: 'ArrowUp',
       down: 'ArrowDown',
@@ -2486,6 +2518,32 @@ export default function App() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       sound.unlockAudio();
+
+      const target = e.target as HTMLElement | null;
+      const isTypingInInput =
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        Boolean(target?.isContentEditable);
+
+      // 1. Tampilan pemilihan karakter dan saat mengetik nama:
+      // Matikan fungsi kontrol permainan agar tidak muncul konflik dengan kontrol permainan
+      if (showStartMenu || isTypingInInput) {
+        keysPressed.current = {};
+        return;
+      }
+
+      // 2. Tampilan menu pengaturan:
+      // Game berada dalam status PAUSE dan tidak bisa berinteraksi dengan tombol kontrol apapun.
+      // Game baru bisa dilanjutkan ketika keluar dari menu pengaturan.
+      if (showSettings) {
+        keysPressed.current = {};
+        // Tombol Escape diizinkan untuk menutup menu pengaturan dan melanjutkan game
+        if (e.key === 'Escape') {
+          setShowSettings(false);
+        }
+        return;
+      }
+
       keysPressed.current[e.key] = true;
       keysPressed.current[e.code] = true;
 
@@ -2554,6 +2612,17 @@ export default function App() {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const isTypingInInput =
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA' ||
+        Boolean(target?.isContentEditable);
+
+      if (showStartMenu || isTypingInInput || showSettings) {
+        keysPressed.current = {};
+        return;
+      }
+
       keysPressed.current[e.key] = false;
       keysPressed.current[e.code] = false;
     };
@@ -2574,7 +2643,7 @@ export default function App() {
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, [currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleCaptureMoment]);
+  }, [showStartMenu, showSettings, currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleCaptureMoment]);
 
   // Main 60 FPS Game Loop
   useEffect(() => {
@@ -2582,6 +2651,57 @@ export default function App() {
 
     const gameLoop = () => {
       const p = playerRef.current;
+
+      // 0. GAME DALAM STATUS PAUSE SAAT MENU PENGATURAN TERBUKA:
+      // Seluruh simulasi dunia berhenti (pergerakan player, NPC, waypoint, suara langkah).
+      // Render frame statis tetap dijalankan agar kanvas tetap tampil stabil di balik dialog pengaturan.
+      if (showSettingsRef.current) {
+        p.isMoving = false;
+        keysPressed.current = {};
+        if (rendererRef.current) {
+          const mapTotalW = MAP_COLS * TILE_SIZE;
+          const mapTotalH = MAP_ROWS * TILE_SIZE;
+          const visibleW = viewportSize.width / GAME_ZOOM;
+          const visibleH = viewportSize.height / GAME_ZOOM;
+          const camX =
+            visibleW >= mapTotalW
+              ? -(visibleW - mapTotalW) / 2
+              : Math.max(0, Math.min(p.x - visibleW / 2 + 16, mapTotalW - visibleW));
+          const camY =
+            visibleH >= mapTotalH
+              ? -(visibleH - mapTotalH) / 2
+              : Math.max(0, Math.min(p.y - visibleH / 2 + 16, mapTotalH - visibleH));
+          cameraRef.current = { x: camX, y: camY };
+
+          const isMissionCompleted =
+            isFreeRoamActive ||
+            (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower);
+
+          rendererRef.current.render(
+            mapLayout,
+            p,
+            npcs,
+            zoneStatus,
+            isCompassActive,
+            camX,
+            camY,
+            viewportSize.width,
+            viewportSize.height,
+            GAME_ZOOM,
+            isMissionCompleted
+          );
+        }
+        animationFrameId = requestAnimationFrame(gameLoop);
+        return;
+      }
+
+      // 0b. GAME DI MENU AWAL / PEMILIHAN KARAKTER:
+      // Player tidak menerima input gerakan keyboard/tombol kontrol permainan
+      if (showStartMenuRef.current) {
+        p.isMoving = false;
+        keysPressed.current = {};
+      }
+
       const speed = 2.8;
 
       let dx = 0;
@@ -3749,6 +3869,7 @@ export default function App() {
           onOpenJournal={() => setShowJournal(true)}
           onOpenSettings={() => handleOpenSettings('quest')}
           isDialogueOpen={!!currentDialogue}
+          isSettingsOpen={showSettings}
           onToggleMiniMap={() => setShowMiniMap((prev) => !prev)}
           isMiniMapOpen={showMiniMap}
           onOpenEnding={() => setShowEnding(true)}

@@ -1028,6 +1028,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   const isPortrait = useIsPortrait();
   // Automatically hide extra control buttons strictly on mobile vertical, mobile horizontal, and tablet vertical
   const hideExtraControls = useHideMinimapExtraControls();
+  const isMobileMode = hideExtraControls || isMobileOrTablet;
 
   // Screen optimization states:
   // - Default to compact mode (Tampilan Ringkas) immediately when game starts to keep screen clear
@@ -1142,29 +1143,33 @@ export const MiniMap: React.FC<MiniMapProps> = ({
               </div>
 
               <div className="flex items-center gap-0.5">
-                {/* Opacity toggle */}
-                <button
-                  onClick={() => {
-                    sound.playMenuSelect();
-                    setIsTranslucent((prev) => !prev);
-                  }}
-                  title={isTranslucent ? 'Tampilan Padat' : 'Tampilan Transparan'}
-                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
-                >
-                  {isTranslucent ? <Eye className="w-3 h-3 text-amber-400" /> : <EyeOff className="w-3 h-3" />}
-                </button>
+                {/* Opacity toggle - Dihapus pada mode mobile */}
+                {!isMobileMode && (
+                  <button
+                    onClick={() => {
+                      sound.playMenuSelect();
+                      setIsTranslucent((prev) => !prev);
+                    }}
+                    title={isTranslucent ? 'Tampilan Padat' : 'Tampilan Transparan'}
+                    className="hidden md:inline-flex p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
+                  >
+                    {isTranslucent ? <Eye className="w-3 h-3 text-amber-400" /> : <EyeOff className="w-3 h-3" />}
+                  </button>
+                )}
 
-                {/* Expand to Full View */}
-                <button
-                  onClick={() => {
-                    sound.playMenuSelect();
-                    setIsCompact(false);
-                  }}
-                  title="Perbesar Peta (Tampilan Lengkap)"
-                  className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
-                >
-                  <Maximize2 className="w-3 h-3 text-amber-400" />
-                </button>
+                {/* Expand to Full View - Dihapus pada mode mobile */}
+                {!isMobileMode && (
+                  <button
+                    onClick={() => {
+                      sound.playMenuSelect();
+                      setIsCompact(false);
+                    }}
+                    title="Perbesar Peta (Tampilan Lengkap)"
+                    className="hidden md:inline-flex p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
+                  >
+                    <Maximize2 className="w-3 h-3 text-amber-400" />
+                  </button>
+                )}
 
                 {/* Close button */}
                 <button
@@ -1321,29 +1326,33 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                   </span>
                 </div>
 
-                {/* Opacity toggle */}
-                <button
-                  onClick={() => {
-                    sound.playMenuSelect();
-                    setIsTranslucent((prev) => !prev);
-                  }}
-                  title={isTranslucent ? 'Tampilan Padat' : 'Tampilan Transparan'}
-                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
-                >
-                  {isTranslucent ? <Eye className="w-3.5 h-3.5 text-amber-400" /> : <EyeOff className="w-3.5 h-3.5" />}
-                </button>
+                {/* Opacity toggle - Dihapus pada mode mobile */}
+                {!isMobileMode && (
+                  <button
+                    onClick={() => {
+                      sound.playMenuSelect();
+                      setIsTranslucent((prev) => !prev);
+                    }}
+                    title={isTranslucent ? 'Tampilan Padat' : 'Tampilan Transparan'}
+                    className="hidden md:inline-flex p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
+                  >
+                    {isTranslucent ? <Eye className="w-3.5 h-3.5 text-amber-400" /> : <EyeOff className="w-3.5 h-3.5" />}
+                  </button>
+                )}
 
-                {/* Minimize to compact */}
-                <button
-                  onClick={() => {
-                    sound.playMenuSelect();
-                    setIsCompact(true);
-                  }}
-                  title="Mode Ringkas (Hemat Layar)"
-                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
-                >
-                  <Minimize2 className="w-3.5 h-3.5 text-amber-400" />
-                </button>
+                {/* Minimize to compact - Dihapus pada mode mobile */}
+                {!isMobileMode && (
+                  <button
+                    onClick={() => {
+                      sound.playMenuSelect();
+                      setIsCompact(true);
+                    }}
+                    title="Mode Ringkas (Hemat Layar)"
+                    className="hidden md:inline-flex p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
+                  >
+                    <Minimize2 className="w-3.5 h-3.5 text-amber-400" />
+                  </button>
+                )}
 
                 <button
                   id="btn-close-minimap"
@@ -1561,17 +1570,19 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-400 text-slate-950 font-bold inline-flex items-center justify-center text-[5px]">!</span> Misi
                   </span>
                 </div>
-                <button
-                  onClick={() => setShowMobileLegend((prev) => !prev)}
-                  className="text-slate-400 hover:text-amber-300 underline cursor-pointer"
-                >
-                  {showMobileLegend ? 'Tutup' : 'Bantuan'}
-                </button>
+                {!isMobileMode && (
+                  <button
+                    onClick={() => setShowMobileLegend((prev) => !prev)}
+                    className="hidden md:inline text-slate-400 hover:text-amber-300 underline cursor-pointer"
+                  >
+                    {showMobileLegend ? 'Tutup' : 'Bantuan'}
+                  </button>
+                )}
               </div>
 
               {/* Expandable Mini Help */}
-              {showMobileLegend && (
-                <div className="bg-slate-900/95 border border-slate-700/80 rounded-lg p-1.5 text-[6.5px] text-slate-300 font-pixel flex flex-col gap-0.5 animate-in fade-in duration-100 shadow-lg">
+              {showMobileLegend && !isMobileMode && (
+                <div className="hidden md:flex bg-slate-900/95 border border-slate-700/80 rounded-lg p-1.5 text-[6.5px] text-slate-300 font-pixel flex-col gap-0.5 animate-in fade-in duration-100 shadow-lg">
                   <div className="text-amber-300 font-bold">Panduan Peta:</div>
                   <div>• Tap peta untuk jalan otomatis (auto-walk).</div>
                   <div>• Gunakan [+] [-] atau cubit untuk zoom.</div>

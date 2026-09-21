@@ -11,6 +11,7 @@ interface VirtualControlsProps {
   onOpenJournal: () => void;
   onOpenSettings: () => void;
   isDialogueOpen?: boolean;
+  isSettingsOpen?: boolean;
   onToggleMiniMap?: () => void;
   isMiniMapOpen?: boolean;
   onOpenEnding?: () => void;
@@ -28,6 +29,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   onOpenJournal,
   onOpenSettings,
   isDialogueOpen = false,
+  isSettingsOpen = false,
   onToggleMiniMap,
   isMiniMapOpen = false,
   onOpenEnding,
@@ -191,12 +193,19 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
     };
   }, [processPosition, resetJoystick]);
 
+  useEffect(() => {
+    if (isSettingsOpen) {
+      resetJoystick();
+      setIsMenuOpen(false);
+    }
+  }, [isSettingsOpen, resetJoystick]);
+
   return (
     <>
       {/* Top Bar Controls - Fits neatly on all screen sizes and mobile orientations */}
-      <header className="fixed top-2 sm:top-3 left-2 sm:left-4 right-2 sm:right-4 flex items-center justify-between z-30 pointer-events-none gap-1.5 sm:gap-2">
+      <header className={`fixed top-2 sm:top-3 left-2 sm:left-4 right-2 sm:right-4 flex items-center justify-between z-30 pointer-events-none gap-1.5 sm:gap-2 transition-opacity duration-200 ${isSettingsOpen ? 'opacity-20 pointer-events-none select-none' : ''}`}>
         {/* Left: Brand / Title Badge */}
-        <div className="bg-slate-950/95 border border-slate-800 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl backdrop-blur-md pointer-events-auto flex items-center gap-1.5 shrink-0">
+        <div className={`bg-slate-950/95 border border-slate-800 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl backdrop-blur-md flex items-center gap-1.5 shrink-0 ${isSettingsOpen ? 'pointer-events-none' : 'pointer-events-auto'}`}>
           <span className="text-xs sm:text-sm">🧭</span>
           <span className="font-pixel text-[8.5px] sm:text-[10px] text-amber-400 font-bold tracking-tight whitespace-nowrap">
             Lembah Nada Rasa
@@ -204,10 +213,11 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
         </div>
 
         {/* Center: Compass Toggle Button with Sparkle Feedback (Hidden on Mobile, Visible on Desktop/Tablet) */}
-        <div className="pointer-events-auto hidden md:block">
+        <div className={`${isSettingsOpen ? 'pointer-events-none' : 'pointer-events-auto'} hidden md:block`}>
           <button
             id="toggle-resonance-btn"
             onClick={onCompassToggle}
+            disabled={isSettingsOpen}
             title="Aktifkan Kompas Resonansi Hati [C]"
             className={`relative px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition hidden md:flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
               isCompassActive
@@ -538,7 +548,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
       )}
 
       {/* VIRTUAL ANALOG JOYSTICK (Mobile and Tablet mode only) */}
-      {!isDialogueOpen && isMobileOrTablet && (
+      {!isDialogueOpen && !isSettingsOpen && isMobileOrTablet && (
         <div className="fixed bottom-3 sm:bottom-5 left-3 sm:left-5 z-30 pointer-events-auto select-none touch-none">
           <div
             ref={joystickBaseRef}
@@ -588,7 +598,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
       )}
 
       {/* On-Screen Action Buttons: Hati & Aksi (Mobile and Tablet mode only) */}
-      {!isDialogueOpen && isMobileOrTablet && (
+      {!isDialogueOpen && !isSettingsOpen && isMobileOrTablet && (
         <div className="fixed bottom-3 sm:bottom-5 right-3 sm:right-5 z-30 flex items-center gap-2.5 sm:gap-3 pointer-events-auto select-none touch-none">
           {/* Button B: Resonance Compass with Sparkle indicator */}
           <button

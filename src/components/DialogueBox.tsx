@@ -27,6 +27,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 }) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
+  const [showChoices, setShowChoices] = useState(false);
   const [feedbackStatus, setFeedbackStatus] = useState<'idle' | 'wrong' | 'correct'>('idle');
   const [selectedChoiceId, setSelectedChoiceId] = useState<string | null>(null);
 
@@ -50,6 +51,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   useEffect(() => {
     setDisplayedText('');
     setIsTyping(true);
+    setShowChoices(false);
     setFeedbackStatus('idle');
     setSelectedChoiceId(null);
     let index = 0;
@@ -128,22 +130,27 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
       }
 
       if (dialogue.choices && dialogue.choices.length > 0) {
-        // Number keys 1, 2, 3, 4, 5
-        const num = parseInt(e.key);
-        if (num >= 1 && num <= dialogue.choices.length) {
-          handleChoiceClick(dialogue.choices[num - 1]);
-          return;
-        }
-
-        if (e.code === 'Space') {
-          if (isTyping) {
+        if (showChoices) {
+          // Number keys 1, 2, 3, 4, 5
+          const num = parseInt(e.key);
+          if (num >= 1 && num <= dialogue.choices.length) {
+            handleChoiceClick(dialogue.choices[num - 1]);
+            return;
+          }
+        } else {
+          if (e.code === 'Space' || e.key === 'Enter') {
             e.preventDefault();
-            setDisplayedText(processedFullText);
-            setIsTyping(false);
+            if (isTyping) {
+              setDisplayedText(processedFullText);
+              setIsTyping(false);
+            } else {
+              sound.playMenuSelect();
+              setShowChoices(true);
+            }
           }
         }
       } else {
-        if (e.code === 'Space') {
+        if (e.code === 'Space' || e.key === 'Enter') {
           e.preventDefault();
           if (isTyping) {
             // Finish typing immediately
@@ -158,7 +165,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogue, isTyping, processedFullText, onNext, onClose, feedbackStatus]);
+  }, [dialogue, isTyping, showChoices, processedFullText, onNext, onClose, feedbackStatus]);
 
   // Character portraits rendering
   const renderPortrait = (type: string) => {
@@ -438,60 +445,98 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         {/* Choices or Next Button */}
         <div className="mt-1 pt-2 border-t border-slate-800/80">
           {dialogue.choices && dialogue.choices.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              <span
-                className={`font-pixel text-[8px] sm:text-[9px] font-semibold flex items-center gap-1.5 ${
-                  feedbackStatus === 'wrong'
-                    ? 'text-rose-300'
-                    : feedbackStatus === 'correct'
-                    ? 'text-emerald-300'
-                    : 'text-amber-400'
-                }`}
-              >
-                <MessageCircle className="w-3 h-3" />
-                Pilih Responmu (1-{dialogue.choices.length} atau klik):
-              </span>
-              <div className="grid grid-cols-1 gap-1.5">
-                {dialogue.choices.map((choice, index) => {
-                  const isSelected = selectedChoiceId === choice.id;
-                  let btnStyle =
-                    'bg-slate-900/90 hover:bg-amber-950/70 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-100';
+            showChoices ? (
+              <div className="flex flex-col gap-2 animate-fade-in-slide-up">
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`font-pixel text-[8px] sm:text-[9px] font-semibold flex items-center gap-1.5 ${
+                      feedbackStatus === 'wrong'
+                        ? 'text-rose-300'
+                        : feedbackStatus === 'correct'
+                        ? 'text-emerald-300'
+                        : 'text-amber-400'
+                    }`}
+                  >
+                    <MessageCircle className="w-3 h-3" />
+                    Pilih Responmu (1-{dialogue.choices.length} atau klik):
+                  </span>
+                  <button
+                    onClick={() => setShowChoices(false)}
+                    className="text-[8px] sm:text-[9px] font-pixel text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
+                    title="Kembali membaca ucapan karakter"
+                  >
+                    ← Baca Ulang Teks
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {dialogue.choices.map((choice, index) => {
+                    const isSelected = selectedChoiceId === choice.id;
+                    let btnStyle =
+                      'bg-slate-900/90 hover:bg-amber-950/70 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-100';
 
-                  if (isSelected && feedbackStatus === 'wrong') {
-                    btnStyle =
-                      'bg-red-900/80 border-2 border-red-400 text-white shadow-[0_0_16px_rgba(239,68,68,0.7)] scale-[1.02]';
-                  } else if (isSelected && feedbackStatus === 'correct') {
-                    btnStyle =
-                      'bg-emerald-900/80 border-2 border-emerald-400 text-white shadow-[0_0_16px_rgba(16,185,129,0.7)] scale-[1.02]';
-                  }
+                    if (isSelected && feedbackStatus === 'wrong') {
+                      btnStyle =
+                        'bg-red-900/80 border-2 border-red-400 text-white shadow-[0_0_16px_rgba(239,68,68,0.7)] scale-[1.02]';
+                    } else if (isSelected && feedbackStatus === 'correct') {
+                      btnStyle =
+                        'bg-emerald-900/80 border-2 border-emerald-400 text-white shadow-[0_0_16px_rgba(16,185,129,0.7)] scale-[1.02]';
+                    }
 
-                  return (
-                    <button
-                      key={choice.id}
-                      id={`choice-${choice.id}`}
-                      onClick={() => handleChoiceClick(choice)}
-                      disabled={feedbackStatus !== 'idle'}
-                      className={`w-full text-left px-2.5 py-2 rounded-lg font-pixel text-[9px] sm:text-[10px] transition-all duration-200 ease-out flex items-start gap-2 cursor-pointer active:scale-[0.98] group disabled:cursor-not-allowed ${btnStyle}`}
-                    >
-                      <span
-                        className={`rounded px-1.5 py-0.5 text-[9px] font-pixel shrink-0 transition-colors ${
-                          isSelected && feedbackStatus === 'wrong'
-                            ? 'bg-red-500 text-white border border-red-300'
-                            : isSelected && feedbackStatus === 'correct'
-                            ? 'bg-emerald-400 text-slate-950 border border-emerald-200'
-                            : 'bg-slate-800 text-amber-300 border border-slate-600 group-hover:bg-amber-500 group-hover:text-slate-950 group-hover:border-amber-300'
-                        }`}
+                    return (
+                      <button
+                        key={choice.id}
+                        id={`choice-${choice.id}`}
+                        onClick={() => handleChoiceClick(choice)}
+                        disabled={feedbackStatus !== 'idle'}
+                        className={`w-full text-left px-2.5 py-2 rounded-lg font-pixel text-[9px] sm:text-[10px] transition-all duration-200 ease-out flex items-start gap-2 cursor-pointer active:scale-[0.98] group disabled:cursor-not-allowed ${btnStyle}`}
                       >
-                        {index + 1}
-                      </span>
-                      <span className="flex-1 leading-relaxed">
-                        {formatName(choice.text)}
-                      </span>
-                    </button>
-                  );
-                })}
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[9px] font-pixel shrink-0 transition-colors ${
+                            isSelected && feedbackStatus === 'wrong'
+                              ? 'bg-red-500 text-white border border-red-300'
+                              : isSelected && feedbackStatus === 'correct'
+                              ? 'bg-emerald-400 text-slate-950 border border-emerald-200'
+                              : 'bg-slate-800 text-amber-300 border border-slate-600 group-hover:bg-amber-500 group-hover:text-slate-950 group-hover:border-amber-300'
+                          }`}
+                        >
+                          {index + 1}
+                        </span>
+                        <span className="flex-1 leading-relaxed">
+                          {formatName(choice.text)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+                <div className="flex items-center gap-1.5 text-slate-400 font-pixel text-[8px] sm:text-[9px]">
+                  <MessageCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  <span>
+                    {isTyping
+                      ? 'Dengarkan & baca ucapan karakter terlebih dahulu...'
+                      : 'Sudah membaca teks? Tekan tombol untuk memilih respon tanggapanmu.'}
+                  </span>
+                </div>
+                <button
+                  id="dialogue-show-choices-btn"
+                  onClick={() => {
+                    if (isTyping) {
+                      setDisplayedText(processedFullText);
+                      setIsTyping(false);
+                    } else {
+                      sound.playMenuSelect();
+                      setShowChoices(true);
+                    }
+                  }}
+                  className="w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[9px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_16px_rgba(245,158,11,0.5)] hover:shadow-[0_0_24px_rgba(245,158,11,0.75)] flex items-center justify-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+                >
+                  <span>{isTyping ? 'SELESAIKAN BACAAN [SPASI]' : 'PILIH RESPON [SPASI]'}</span>
+                  <span className="text-xs">{isTyping ? '⚡' : '💬 ▶'}</span>
+                </button>
+              </div>
+            )
           ) : (
             <div className="flex justify-end items-center gap-2">
               {isRegulationTrigger && !isTyping && onSkipRegulation && (

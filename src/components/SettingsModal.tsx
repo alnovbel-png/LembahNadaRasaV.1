@@ -151,7 +151,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       <div className="bg-slate-900 border-2 border-amber-400/80 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl text-slate-100 overflow-hidden modal-glow-frame animate-fade-in-slide-up">
         {/* Header */}
         <div className="px-5 py-3.5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <Sliders className="w-5 h-5 text-amber-400" />
             <h2
               style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
@@ -159,6 +159,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             >
               Pengaturan Game & Petualangan
             </h2>
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300 text-[9px] sm:text-[10px] font-pixel shadow-sm animate-pulse">
+              <span>⏸️</span>
+              <span>GAME DI-PAUSE</span>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {onCaptureMoment && (
