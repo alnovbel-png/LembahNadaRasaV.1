@@ -71,48 +71,97 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
     case 'player_girl':
       return (
         <div
-          className={`${sizeClasses} bg-[#24132b] rounded-xl flex items-center justify-center border-2 border-[#ec4899] shadow-[0_0_12px_rgba(236,72,153,0.4)] overflow-hidden relative ${className}`}
+          className={`${sizeClasses} bg-[#0e2230] rounded-xl flex items-center justify-center border-2 border-[#22d3ee] shadow-[0_0_14px_rgba(34,211,238,0.5)] overflow-hidden relative ${className}`}
         >
           <svg viewBox="0 0 32 32" className="w-full h-full p-0.5" style={svgStyle}>
-            {/* Soft Oval Shadow */}
-            <ellipse cx="16" cy="29" rx="10" ry="3.5" fill="rgba(0,0,0,0.4)" />
-            {/* Dark Charcoal Navy Skirt / Legs */}
-            <rect x="10" y="26" width="4" height="5" fill="#242c3d" />
-            <rect x="18" y="26" width="4" height="5" fill="#242c3d" />
-            {/* Emerald Adventurer Tunic */}
-            <rect x="8" y="15" width="16" height="11" fill="#1ea282" />
-            <rect x="8" y="15" width="2" height="11" fill="#168c70" />
-            <rect x="22" y="15" width="2" height="11" fill="#168c70" />
-            {/* Golden Waist Buckle / Compass */}
-            <rect x="14" y="22" width="4" height="4" fill="#f5b822" />
-            <rect x="14" y="22" width="2" height="2" fill="#fef08a" />
-            {/* Ruby Scarf / Collar */}
-            <rect x="8" y="13" width="16" height="3" fill="#e11d48" />
-            <rect x="8" y="13" width="16" height="1" fill="#fb7185" />
+            {/* Soft Ground Shadow */}
+            <ellipse cx="16" cy="30" rx="10" ry="2.5" fill="rgba(0,0,0,0.45)" />
+
+            {/* Explorer Leather Backpack peeking behind shoulders & sides */}
+            <rect x="5" y="11" width="22" height="13" rx="1" fill="#451a03" />
+            <rect x="6" y="12" width="20" height="11" fill="#78350f" />
+            {/* Rolled Sleeping Mat / Bedroll underneath backpack */}
+            <rect x="5" y="23" width="22" height="3" rx="1" fill="#b8b894" />
+            <rect x="5" y="25" width="22" height="1" fill="#8c8c66" />
+            <rect x="10" y="23" width="1.5" height="3" fill="#451a03" />
+            <rect x="20" y="23" width="1.5" height="3" fill="#451a03" />
+            {/* Water Canteen Bottle peeking on right */}
+            <rect x="25" y="15" width="3" height="5" rx="1" fill="#93c5fd" />
+            <rect x="25" y="14" width="2" height="1" fill="#e2e8f0" />
+
+            {/* Dark Charcoal Traveler Pants */}
+            <rect x="10" y="24" width="5" height="4" fill="#1e293b" />
+            <rect x="17" y="24" width="5" height="4" fill="#1e293b" />
+            {/* Explorer Laced Hiking Boots */}
+            <rect x="9" y="27" width="6" height="4" rx="1" fill="#3d2817" />
+            <rect x="17" y="27" width="6" height="4" rx="1" fill="#3d2817" />
+            <rect x="11" y="28" width="2" height="1" fill="#78350f" />
+            <rect x="19" y="28" width="2" height="1" fill="#78350f" />
+
+            {/* Vibrant Bright-Colored Tunic (Baju Cerah: Radiant Cyan / Turquoise) */}
+            <rect x="8" y="15" width="16" height="9" fill="#06b6d4" />
+            <rect x="9" y="15" width="14" height="2" fill="#67e8f9" />
+            <rect x="8" y="22" width="16" height="2" fill="#0891b2" />
+            {/* Bright Tunic Sleeves */}
+            <rect x="6" y="16" width="3" height="5" fill="#06b6d4" />
+            <rect x="23" y="16" width="3" height="5" fill="#06b6d4" />
+            <rect x="6" y="16" width="3" height="1" fill="#67e8f9" />
+            <rect x="23" y="16" width="3" height="1" fill="#67e8f9" />
+            {/* Peach Hands */}
+            <rect x="6" y="21" width="3" height="3" fill="#fcd7b0" />
+            <rect x="23" y="21" width="3" height="3" fill="#fcd7b0" />
+
+            {/* Brown Leather Belt & Golden Buckle */}
+            <rect x="8" y="21" width="16" height="2" fill="#78350f" />
+            <rect x="13" y="20" width="6" height="4" rx="0.5" fill="#f59e0b" />
+            <rect x="15" y="21" width="2" height="2" fill="#78350f" />
+            <rect x="14" y="20" width="1" height="1" fill="#fef08a" />
+
+            {/* Backpack Leather Straps across chest */}
+            <rect x="10" y="15" width="2" height="6" fill="#451a03" />
+            <rect x="20" y="15" width="2" height="6" fill="#451a03" />
+
+            {/* Cozy Crimson Red Scarf (Wrapped snugly around collar) */}
+            <rect x="7" y="12" width="18" height="4" rx="1" fill="#dc2626" />
+            <rect x="8" y="12" width="16" height="2" fill="#ef4444" />
+            <rect x="8" y="12" width="16" height="1" fill="#f87171" />
+            <rect x="7" y="15" width="18" height="1" fill="#b91c1c" />
+
             {/* Face Skin Tone */}
-            <rect x="8" y="7" width="16" height="7" fill="#fcd7b0" />
-            {/* Cute Rosy Blushing Cheeks */}
-            <rect x="9" y="11" width="3" height="2" fill="#fda4af" />
-            <rect x="20" y="11" width="3" height="2" fill="#fda4af" />
-            {/* Long Rich Warm Auburn Hair with Side Locks & Twin Pigtails */}
-            <rect x="8" y="3" width="16" height="5" fill="#713f12" />
-            <rect x="9" y="4" width="14" height="2" fill="#854d0e" />
-            {/* Flowing Side Locks framing face */}
-            <rect x="7" y="7" width="3" height="8" fill="#713f12" />
-            <rect x="22" y="7" width="3" height="8" fill="#713f12" />
-            {/* Cute Twin Ribbon Hairclips (Rose Pink / Ruby) */}
-            <rect x="5" y="6" width="3" height="3" fill="#f43f5e" />
-            <rect x="6" y="7" width="1" height="1" fill="#ffe4e6" />
-            <rect x="24" y="6" width="3" height="3" fill="#f43f5e" />
-            <rect x="25" y="7" width="1" height="1" fill="#ffe4e6" />
-            {/* Cute Twin Ponytail Bobs */}
-            <rect x="4" y="8" width="3" height="6" fill="#854d0e" />
-            <rect x="25" y="8" width="3" height="6" fill="#854d0e" />
-            {/* Expressive Bright Eyes with subtle highlight */}
-            <rect x="11" y="8" width="2" height="3" fill="#1e1b4b" />
+            <rect x="8" y="6" width="16" height="7" fill="#fcd7b0" />
+            {/* Sweet Smiling Mouth */}
+            <rect x="14" y="11" width="4" height="1" fill="#b45309" />
+            {/* Rosy Blushing Cheeks */}
+            <rect x="9" y="10" width="3" height="2" rx="0.5" fill="#fda4af" />
+            <rect x="20" y="10" width="3" height="2" rx="0.5" fill="#fda4af" />
+            {/* Expressive Dark Eyes with Catchlight */}
+            <rect x="11" y="8" width="2" height="3" fill="#172033" />
             <rect x="11" y="8" width="1" height="1" fill="#ffffff" />
-            <rect x="19" y="8" width="2" height="3" fill="#1e1b4b" />
+            <rect x="19" y="8" width="2" height="3" fill="#172033" />
             <rect x="19" y="8" width="1" height="1" fill="#ffffff" />
+
+            {/* Warm Chestnut Brown Hair with Bangs */}
+            <rect x="7" y="2" width="18" height="5" fill="#8d5524" />
+            <rect x="8" y="3" width="16" height="2" fill="#b45309" />
+            {/* Neatly styled bangs */}
+            <rect x="7" y="5" width="4" height="3" fill="#8d5524" />
+            <rect x="21" y="5" width="4" height="3" fill="#8d5524" />
+            <rect x="13" y="5" width="2" height="2" fill="#8d5524" />
+            <rect x="17" y="5" width="2" height="2" fill="#8d5524" />
+            <rect x="7" y="6" width="2" height="5" fill="#713f12" />
+            <rect x="23" y="6" width="2" height="5" fill="#713f12" />
+
+            {/* Twin Side Pigtails (Kuncir Dua) */}
+            <rect x="3" y="6" width="4" height="7" rx="1" fill="#8d5524" />
+            <rect x="3" y="10" width="4" height="3" fill="#713f12" />
+            <rect x="25" y="6" width="4" height="7" rx="1" fill="#8d5524" />
+            <rect x="25" y="10" width="4" height="3" fill="#713f12" />
+
+            {/* Bright Pink Bows / Ribbons (Pita Kuncir Merah Muda) */}
+            <rect x="4" y="5" width="4" height="3" rx="0.5" fill="#f43f5e" />
+            <rect x="5" y="6" width="2" height="2" fill="#ffe4e6" />
+            <rect x="24" y="5" width="4" height="3" rx="0.5" fill="#f43f5e" />
+            <rect x="25" y="6" width="2" height="2" fill="#ffe4e6" />
           </svg>
         </div>
       );

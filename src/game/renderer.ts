@@ -128,23 +128,27 @@ export class GameRenderer {
   private fogRibbonParallaxX: number[] = [0, 0, 0];
   private fogRibbonParallaxY: number[] = [0, 0, 0];
 
-  // Dynamic Day & Night cycle engine state with silky-smooth interpolation
+  // Fixed Daytime Atmosphere (Day/Night cycle removed in both fog and free roam modes)
   private targetTimeOfDay: 'day' | 'night' = 'day';
-  private timeOfDayProgress: number = 0.0; // 0.0 = Daytime (Siang), 1.0 = Nighttime (Malam)
+  private timeOfDayProgress: number = 0.0;
 
-  public setTimeOfDay(time: 'day' | 'night', instant: boolean = false) {
-    this.targetTimeOfDay = time;
-    if (instant) {
-      this.timeOfDayProgress = time === 'night' ? 1.0 : 0.0;
-    }
+  public setTimeOfDay(_time: 'day' | 'night', _instant: boolean = false) {
+    this.targetTimeOfDay = 'day';
+    this.timeOfDayProgress = 0.0;
+  }
+
+  public toggleDayNightCycle(): 'day' | 'night' {
+    this.targetTimeOfDay = 'day';
+    this.timeOfDayProgress = 0.0;
+    return 'day';
   }
 
   public getTimeOfDay(): 'day' | 'night' {
-    return this.targetTimeOfDay;
+    return 'day';
   }
 
   public getTimeOfDayProgress(): number {
-    return this.timeOfDayProgress;
+    return 0.0;
   }
 
   // Active sequential quest tracking for eye-catching visual guidance
@@ -542,31 +546,18 @@ export class GameRenderer {
         zoneColorStatus.forest &&
         zoneColorStatus.tower);
 
-    // Synchronize target time of day if supplied
-    if (timeOfDay && timeOfDay !== this.targetTimeOfDay) {
-      this.targetTimeOfDay = timeOfDay;
-    }
-
-    // Silky-smooth cinematic transition between Day (0.0) and Night (1.0)
-    // Rate of 0.016 gives a gorgeous ~1 second crossfade
-    const targetProgress = this.targetTimeOfDay === 'night' ? 1.0 : 0.0;
-    const transitionRate = 0.016;
-    if (this.timeOfDayProgress < targetProgress) {
-      this.timeOfDayProgress = Math.min(targetProgress, this.timeOfDayProgress + transitionRate);
-    } else if (this.timeOfDayProgress > targetProgress) {
-      this.timeOfDayProgress = Math.max(targetProgress, this.timeOfDayProgress - transitionRate);
-    }
+    // Permanent bright daytime in both Fog Mode and Free Roam Mode (Day/Night cycle removed)
+    this.targetTimeOfDay = 'day';
+    this.timeOfDayProgress = 0.0;
 
     const ctx = this.ctx;
     ctx.save();
     ctx.imageSmoothingEnabled = false;
 
-    // Clear background with natural terrain base color, shifting smoothly between daytime lush emerald and night slate
+    // Clear background with natural terrain base color
     const isPlazaRestored = this.isAllMissionsCompleted || zoneColorStatus.plaza;
     const dayTerrain = isPlazaRestored ? '#386641' : '#334155';
-    const nightTerrain = isPlazaRestored ? '#14251b' : '#111827';
-    const ambientTerrain = this.timeOfDayProgress > 0.5 ? nightTerrain : dayTerrain;
-    ctx.fillStyle = ambientTerrain;
+    ctx.fillStyle = dayTerrain;
     ctx.fillRect(0, 0, viewportW, viewportH);
 
     // Apply zoom transformation to focus closely on player exploration
@@ -611,7 +602,7 @@ export class GameRenderer {
     const undercoatY = Math.max(0, startRow * TILE_SIZE - groundPad);
     const undercoatW = (endCol - startCol + 1) * TILE_SIZE + groundPad * 2;
     const undercoatH = (endRow - startRow + 1) * TILE_SIZE + groundPad * 2;
-    ctx.fillStyle = ambientTerrain;
+    ctx.fillStyle = dayTerrain;
     ctx.fillRect(undercoatX, undercoatY, undercoatW, undercoatH);
 
     // 1. Draw Map Base & Floor Tiles
@@ -753,30 +744,17 @@ export class GameRenderer {
       player
     );
 
-    // 9. If all missions completed / in Free Roam: Dynamic Living World Atmosphere (Sunbeams in Day, Moonbeams/Stars/Fireflies at Night)
+    // 9. If all missions completed / in Free Roam: Dynamic Living World Atmosphere (Sunbeams & Golden Spores in Day)
     if (this.isAllMissionsCompleted) {
       // Natural crossfade: atmosphere emerges gracefully as the cold fog mist fades out
       const atmosphereCrossfade = Math.max(0.0, Math.min(1.0, 1.0 - this.currentFogIntensity));
       if (atmosphereCrossfade > 0.01) {
         ctx.save();
         ctx.globalAlpha = atmosphereCrossfade;
-        freeRoamWorld.renderAtmosphere(ctx, this.tickCount, this.timeOfDayProgress);
+        freeRoamWorld.renderAtmosphere(ctx, this.tickCount, 0.0);
         ctx.restore();
       }
     }
-
-    // 10. Unified Day / Night Dynamic Lighting Pass (Works in BOTH Fog Mode and Free Roam Mode)
-    // Applies sunset twilight blush, nocturnal ambient shadow, radiant streetlamps, and player warm lantern
-    this.renderDayNightLightingPass(
-      ctx,
-      effectiveCamX,
-      effectiveCamY,
-      worldW,
-      worldH,
-      player,
-      map,
-      zoneColorStatus
-    );
 
     ctx.restore();
 
@@ -3264,7 +3242,7 @@ export class GameRenderer {
         ctx.fillRect(x + 9, y + 4, 14, 16);
 
         // 4. Window glass panes (4-pane window)
-        const isLampLit = !isColored || !this.isAllMissionsCompleted;
+        const isLampLit = !isColored || !this.isAllMissionsCompleted || this.timeOfDayProgress > 0.1;
         if (isLampLit) {
           // Warm glowing golden lantern light from behind window
           const pulse = Math.sin(this.tickCount * 0.08 + x * 0.1) * 0.05;
@@ -4468,23 +4446,32 @@ export class GameRenderer {
     ctx.ellipse(px + 16, py + 29, 11, 4.5, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // Color Palette matching the exact reference image (karakter ezzel.jpg)
-    const HAIR_COLOR = '#8e4a23';       // Warm medium brown hair
-    const HAIR_DARK = '#723816';        // Hair shadow/outline
-    const SKIN_COLOR = '#fcd0a1';       // Warm peach skin tone
-    const EYE_COLOR = '#172033';        // Dark navy/charcoal eye blocks
-    const SCARF_COLOR = '#ef4444';      // Vibrant warm red scarf
-    const SCARF_SHADOW = '#dc2626';     // Scarf fold shade
-    const TUNIC_COLOR = '#259d88';      // Vibrant emerald teal tunic
-    const TUNIC_SHADOW = '#1b7d6c';     // Tunic shadow
-    const BUCKLE_COLOR = '#f4b728';     // Golden yellow belt buckle
-    const BUCKLE_SHADOW = '#d99b16';    // Buckle shade
-    const BELT_COLOR = '#1f483f';       // Dark teal/charcoal belt band
-    const PANTS_COLOR = '#232d3f';      // Dark blue-gray pants
-    const BACKPACK_COLOR = '#532924';   // Rich warm leather brown backpack
-    const BACKPACK_SHADOW = '#3c1c18';  // Backpack shadow/straps
-    const BACKPACK_STRAP = '#3e201b';   // Dark leather strap
-    const BACKPACK_HIGHLIGHT = '#6a3630'; // Backpack highlight
+    const isGirl = this.playerAvatar === 'girl';
+
+    // Color Palette matching the reference image (karakter ezzel & ezzy)
+    // For Girl Avatar (Ezzy): vibrant bright-colored tunic ("baju yang berwarna cerah")
+    const HAIR_COLOR = isGirl ? '#8d5524' : '#8e4a23';       // Warm chestnut brown hair
+    const HAIR_DARK = isGirl ? '#6b3713' : '#723816';        // Hair shadow/outline
+    const SKIN_COLOR = '#fcd0a1';                            // Warm peach skin tone
+    const EYE_COLOR = '#172033';                             // Dark navy/charcoal eye blocks
+    const SCARF_COLOR = '#ef4444';                           // Vibrant warm red scarf
+    const SCARF_SHADOW = '#dc2626';                          // Scarf fold shade
+    const TUNIC_COLOR = isGirl ? '#06b6d4' : '#259d88';       // Bright radiant cyan for Ezzy ("baju cerah")
+    const TUNIC_SHADOW = isGirl ? '#0891b2' : '#1b7d6c';      // Tunic shadow
+    const TUNIC_HIGHLIGHT = isGirl ? '#67e8f9' : '#34d399';   // Bright tunic highlight
+    const BUCKLE_COLOR = '#f4b728';                          // Golden yellow belt buckle
+    const BUCKLE_SHADOW = '#d99b16';                         // Buckle shade
+    const BELT_COLOR = isGirl ? '#78350f' : '#1f483f';        // Brown leather belt for Ezzy
+    const PANTS_COLOR = '#232d3f';                           // Dark blue-gray pants
+    const BACKPACK_COLOR = '#532924';                        // Rich warm leather brown backpack
+    const BACKPACK_SHADOW = '#3c1c18';                       // Backpack shadow/straps
+    const BACKPACK_STRAP = '#3e201b';                        // Dark leather strap
+    const BACKPACK_HIGHLIGHT = '#6a3630';                    // Backpack highlight
+    const MAT_COLOR = '#b8b894';                             // Rolled sleeping mat / bedroll
+    const MAT_SHADOW = '#8c8c66';                            // Sleeping mat shadow
+    const CANTEEN_COLOR = '#93c5fd';                          // Water canteen bottle
+    const CANTEEN_SHADOW = '#60a5fa';                         // Water canteen shadow
+    const RIBBON_COLOR = '#f43f5e';                           // Bright pink ribbons
 
     // Compass anchor position based on orientation
     let compassX = px + 16;
@@ -4501,6 +4488,17 @@ export class GameRenderer {
       ctx.fillStyle = BACKPACK_COLOR;
       ctx.fillRect(px + 7, py + 13 + backpackBob, 18, 12);
 
+      // Rolled sleeping mat and canteen peeking behind shoulders (for Ezzy)
+      if (isGirl) {
+        ctx.fillStyle = MAT_SHADOW;
+        ctx.fillRect(px + 6, py + 23 + backpackBob, 20, 2);
+        ctx.fillStyle = MAT_COLOR;
+        ctx.fillRect(px + 7, py + 23 + backpackBob, 18, 2);
+        // Water canteen peeking on right side
+        ctx.fillStyle = CANTEEN_COLOR;
+        ctx.fillRect(px + 25, py + 16 + backpackBob, 2, 4);
+      }
+
       // Pants / Legs (Dark charcoal/navy)
       ctx.fillStyle = PANTS_COLOR;
       if (player.isMoving) {
@@ -4511,11 +4509,17 @@ export class GameRenderer {
         ctx.fillRect(px + 17, py + 24, 5, 6);
       }
 
-      // Torso / Tunic (Teal #259d88)
+      // Torso / Tunic (Baju Cerah for Ezzy)
       ctx.fillStyle = TUNIC_COLOR;
       ctx.fillRect(px + 8, py + 15 + bob, 16, 10);
+      if (isGirl) {
+        ctx.fillStyle = TUNIC_HIGHLIGHT;
+        ctx.fillRect(px + 9, py + 15 + bob, 14, 2);
+      }
 
-      // Yellow Belt Buckle centered at bottom hem
+      // Belt Line & Buckle
+      ctx.fillStyle = BELT_COLOR;
+      ctx.fillRect(px + 8, py + 22 + bob, 16, 2);
       ctx.fillStyle = BUCKLE_COLOR;
       ctx.fillRect(px + 14, py + 21 + bob, 4, 4);
       ctx.fillStyle = BUCKLE_SHADOW;
@@ -4530,6 +4534,11 @@ export class GameRenderer {
       ctx.fillStyle = TUNIC_COLOR;
       ctx.fillRect(px + 6, py + 16 + bob, 2, 5);
       ctx.fillRect(px + 24, py + 16 + bob, 2, 5);
+      if (isGirl) {
+        ctx.fillStyle = TUNIC_HIGHLIGHT;
+        ctx.fillRect(px + 6, py + 16 + bob, 2, 1);
+        ctx.fillRect(px + 24, py + 16 + bob, 2, 1);
+      }
       ctx.fillStyle = SKIN_COLOR;
       ctx.fillRect(px + 6, py + 21 + bob, 4, 3);
       ctx.fillRect(px + 22, py + 21 + bob, 4, 3);
@@ -4557,23 +4566,38 @@ export class GameRenderer {
       ctx.fillStyle = EYE_COLOR;
       ctx.fillRect(px + 10, py + 8 + bob, 3, 3);
       ctx.fillRect(px + 19, py + 8 + bob, 3, 3);
+      // Eye Catchlights
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(px + 10, py + 8 + bob, 1, 1);
+      ctx.fillRect(px + 19, py + 8 + bob, 1, 1);
 
-      // Girl Avatar features (Twin ribbons, ponytail bobs, and rosy cheeks)
-      if (this.playerAvatar === 'girl') {
+      // Girl Avatar features (Twin ribbons, ponytail bobs, bangs and rosy cheeks)
+      if (isGirl) {
+        // Forehead bangs dip
+        ctx.fillStyle = HAIR_COLOR;
+        ctx.fillRect(px + 13, py + 7 + bob, 2, 1);
+        ctx.fillRect(px + 17, py + 7 + bob, 2, 1);
+
         // Rosy Cheeks
         ctx.fillStyle = '#fda4af';
-        ctx.fillRect(px + 9, py + 11 + bob, 2, 1);
-        ctx.fillRect(px + 21, py + 11 + bob, 2, 1);
+        ctx.fillRect(px + 9, py + 11 + bob, 3, 1);
+        ctx.fillRect(px + 20, py + 11 + bob, 3, 1);
 
-        // Twin Hairclips / Ribbons
-        ctx.fillStyle = '#f43f5e';
-        ctx.fillRect(px + 5, py + 6 + bob, 2, 2);
-        ctx.fillRect(px + 25, py + 6 + bob, 2, 2);
+        // Twin Hairclips / Pink Bows
+        ctx.fillStyle = RIBBON_COLOR;
+        ctx.fillRect(px + 4, py + 5 + bob, 3, 3);
+        ctx.fillRect(px + 25, py + 5 + bob, 3, 3);
+        ctx.fillStyle = '#ffe4e6';
+        ctx.fillRect(px + 5, py + 6 + bob, 1, 1);
+        ctx.fillRect(px + 26, py + 6 + bob, 1, 1);
 
         // Twin Ponytails
-        ctx.fillStyle = '#854d0e';
-        ctx.fillRect(px + 4, py + 8 + bob, 2, 5);
-        ctx.fillRect(px + 26, py + 8 + bob, 2, 5);
+        ctx.fillStyle = HAIR_COLOR;
+        ctx.fillRect(px + 3, py + 7 + bob, 3, 6);
+        ctx.fillRect(px + 26, py + 7 + bob, 3, 6);
+        ctx.fillStyle = HAIR_DARK;
+        ctx.fillRect(px + 3, py + 11 + bob, 3, 2);
+        ctx.fillRect(px + 26, py + 11 + bob, 3, 2);
       }
 
       compassX = px + 16;
@@ -4600,6 +4624,11 @@ export class GameRenderer {
       ctx.fillStyle = TUNIC_COLOR;
       ctx.fillRect(px + 6, py + 16 + bob, 2, 5);
       ctx.fillRect(px + 24, py + 16 + bob, 2, 5);
+      if (isGirl) {
+        ctx.fillStyle = TUNIC_HIGHLIGHT;
+        ctx.fillRect(px + 6, py + 16 + bob, 2, 1);
+        ctx.fillRect(px + 24, py + 16 + bob, 2, 1);
+      }
       ctx.fillStyle = SKIN_COLOR;
       ctx.fillRect(px + 6, py + 21 + bob, 4, 3);
       ctx.fillRect(px + 22, py + 21 + bob, 4, 3);
@@ -4620,33 +4649,60 @@ export class GameRenderer {
       ctx.fillRect(px + 22, py + 12 + bob, 2, 2);
 
       // Girl Avatar features (Back view: Twin ribbons and ponytail bobs)
-      if (this.playerAvatar === 'girl') {
-        ctx.fillStyle = '#f43f5e';
-        ctx.fillRect(px + 5, py + 6 + bob, 2, 2);
-        ctx.fillRect(px + 25, py + 6 + bob, 2, 2);
+      if (isGirl) {
+        ctx.fillStyle = RIBBON_COLOR;
+        ctx.fillRect(px + 4, py + 5 + bob, 3, 3);
+        ctx.fillRect(px + 25, py + 5 + bob, 3, 3);
+        ctx.fillStyle = '#ffe4e6';
+        ctx.fillRect(px + 5, py + 6 + bob, 1, 1);
+        ctx.fillRect(px + 26, py + 6 + bob, 1, 1);
 
-        ctx.fillStyle = '#854d0e';
-        ctx.fillRect(px + 4, py + 8 + bob, 2, 6);
-        ctx.fillRect(px + 26, py + 8 + bob, 2, 6);
+        ctx.fillStyle = HAIR_COLOR;
+        ctx.fillRect(px + 3, py + 7 + bob, 3, 7);
+        ctx.fillRect(px + 26, py + 7 + bob, 3, 7);
+        ctx.fillStyle = HAIR_DARK;
+        ctx.fillRect(px + 3, py + 12 + bob, 3, 2);
+        ctx.fillRect(px + 26, py + 12 + bob, 3, 2);
       }
 
       // ===== PROMINENT BROWN BACKPACK ON THE BACK (Inertia bobbing synced to walk cycle) =====
       // Matches Panel 2 of reference image:
       // Dark brown rounded box with outline and darker horizontal flap/buckle straps
       ctx.fillStyle = BACKPACK_SHADOW;
-      // Outline/shadow of backpack
       ctx.fillRect(px + 9, py + 14 + backpackBob, 14, 13);
       ctx.fillRect(px + 8, py + 15 + backpackBob, 16, 11);
-      // Main backpack body (Rich brown #532924)
+      // Main backpack body (Rich brown)
       ctx.fillStyle = BACKPACK_COLOR;
       ctx.fillRect(px + 9, py + 15 + backpackBob, 14, 11);
       ctx.fillStyle = BACKPACK_HIGHLIGHT;
       ctx.fillRect(px + 10, py + 15 + backpackBob, 12, 2);
-      // Backpack flap detail & buckle straps (dark cross-strap pattern as in reference)
+      // Backpack flap detail & buckle straps
       ctx.fillStyle = BACKPACK_STRAP;
       ctx.fillRect(px + 10, py + 18 + backpackBob, 12, 2); // Horizontal flap strap
-      ctx.fillRect(px + 12, py + 17 + backpackBob, 2, 4); // Left vertical buckle tab
-      ctx.fillRect(px + 18, py + 17 + backpackBob, 2, 4); // Right vertical buckle tab
+      ctx.fillRect(px + 12, py + 17 + backpackBob, 2, 4);  // Left vertical buckle tab
+      ctx.fillRect(px + 18, py + 17 + backpackBob, 2, 4);  // Right vertical buckle tab
+
+      // Equipment for Ezzy (Back view matching reference):
+      if (isGirl) {
+        // Water Canteen on right side of backpack
+        ctx.fillStyle = CANTEEN_SHADOW;
+        ctx.fillRect(px + 24, py + 16 + backpackBob, 3, 6);
+        ctx.fillStyle = CANTEEN_COLOR;
+        ctx.fillRect(px + 24, py + 17 + backpackBob, 2, 4);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(px + 24, py + 16 + backpackBob, 1, 2);
+        ctx.fillStyle = BACKPACK_STRAP;
+        ctx.fillRect(px + 23, py + 19 + backpackBob, 3, 1);
+
+        // Rolled Sleeping Mat / Bedroll underneath the backpack
+        ctx.fillStyle = MAT_SHADOW;
+        ctx.fillRect(px + 7, py + 25 + backpackBob, 18, 4);
+        ctx.fillStyle = MAT_COLOR;
+        ctx.fillRect(px + 8, py + 25 + backpackBob, 16, 3);
+        ctx.fillStyle = BACKPACK_STRAP;
+        ctx.fillRect(px + 11, py + 25 + backpackBob, 2, 4);
+        ctx.fillRect(px + 19, py + 25 + backpackBob, 2, 4);
+      }
 
       compassX = px + 16;
       compassY = py + 24 + bob;
@@ -4672,9 +4728,29 @@ export class GameRenderer {
       ctx.fillStyle = BACKPACK_HIGHLIGHT;
       ctx.fillRect(px + 7, py + 14 + backpackBob, 2, 4);
 
-      // Torso / Teal Tunic
+      // Accessories for Ezzy on backpack (Right facing view)
+      if (isGirl) {
+        // Water canteen on backpack side
+        ctx.fillStyle = CANTEEN_SHADOW;
+        ctx.fillRect(px + 3, py + 16 + backpackBob, 3, 5);
+        ctx.fillStyle = CANTEEN_COLOR;
+        ctx.fillRect(px + 4, py + 17 + backpackBob, 2, 3);
+        // Rolled sleeping mat underneath
+        ctx.fillStyle = MAT_SHADOW;
+        ctx.fillRect(px + 4, py + 25 + backpackBob, 8, 4);
+        ctx.fillStyle = MAT_COLOR;
+        ctx.fillRect(px + 5, py + 25 + backpackBob, 6, 3);
+        ctx.fillStyle = BACKPACK_STRAP;
+        ctx.fillRect(px + 7, py + 25 + backpackBob, 1, 4);
+      }
+
+      // Torso / Bright Tunic
       ctx.fillStyle = TUNIC_COLOR;
       ctx.fillRect(px + 10, py + 15 + bob, 11, 10);
+      if (isGirl) {
+        ctx.fillStyle = TUNIC_HIGHLIGHT;
+        ctx.fillRect(px + 11, py + 15 + bob, 9, 2);
+      }
 
       // Dark Belt Line
       ctx.fillStyle = BELT_COLOR;
@@ -4716,15 +4792,26 @@ export class GameRenderer {
       // One Dark Square Eye on the right profile
       ctx.fillStyle = EYE_COLOR;
       ctx.fillRect(px + 17, py + 8 + bob, 2, 3);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(px + 17, py + 8 + bob, 1, 1);
 
-      // Girl Avatar details (Right view: ribbon, ponytail, blush)
-      if (this.playerAvatar === 'girl') {
+      // Girl Avatar details (Right view: ribbon, ponytail, side bangs, blush)
+      if (isGirl) {
         ctx.fillStyle = '#fda4af';
         ctx.fillRect(px + 18, py + 11 + bob, 2, 1); // Rosy cheek
-        ctx.fillStyle = '#f43f5e';
-        ctx.fillRect(px + 9, py + 6 + bob, 2, 2);  // Ribbon
-        ctx.fillStyle = '#854d0e';
-        ctx.fillRect(px + 7, py + 7 + bob, 2, 5);  // Ponytail bob
+        // Ribbon
+        ctx.fillStyle = RIBBON_COLOR;
+        ctx.fillRect(px + 7, py + 5 + bob, 3, 3);
+        ctx.fillStyle = '#ffe4e6';
+        ctx.fillRect(px + 8, py + 6 + bob, 1, 1);
+        // Ponytail bob
+        ctx.fillStyle = HAIR_COLOR;
+        ctx.fillRect(px + 6, py + 7 + bob, 3, 6);
+        ctx.fillStyle = HAIR_DARK;
+        ctx.fillRect(px + 6, py + 11 + bob, 3, 2);
+        // Side bangs
+        ctx.fillStyle = HAIR_COLOR;
+        ctx.fillRect(px + 15, py + 6 + bob, 2, 4);
       }
 
       compassX = px + 21;
@@ -4751,9 +4838,24 @@ export class GameRenderer {
       ctx.fillStyle = BACKPACK_HIGHLIGHT;
       ctx.fillRect(px + 21, py + 14 + backpackBob, 2, 4);
 
-      // Torso / Teal Tunic
+      // Accessories for Ezzy on backpack (Left facing view)
+      if (isGirl) {
+        // Rolled sleeping mat underneath
+        ctx.fillStyle = MAT_SHADOW;
+        ctx.fillRect(px + 20, py + 25 + backpackBob, 8, 4);
+        ctx.fillStyle = MAT_COLOR;
+        ctx.fillRect(px + 21, py + 25 + backpackBob, 6, 3);
+        ctx.fillStyle = BACKPACK_STRAP;
+        ctx.fillRect(px + 24, py + 25 + backpackBob, 1, 4);
+      }
+
+      // Torso / Bright Tunic
       ctx.fillStyle = TUNIC_COLOR;
       ctx.fillRect(px + 9, py + 15 + bob, 11, 10);
+      if (isGirl) {
+        ctx.fillStyle = TUNIC_HIGHLIGHT;
+        ctx.fillRect(px + 10, py + 15 + bob, 9, 2);
+      }
 
       // Dark Belt Line
       ctx.fillStyle = BELT_COLOR;
@@ -4795,15 +4897,26 @@ export class GameRenderer {
       // One Dark Square Eye on the left profile
       ctx.fillStyle = EYE_COLOR;
       ctx.fillRect(px + 11, py + 8 + bob, 2, 3);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(px + 12, py + 8 + bob, 1, 1);
 
-      // Girl Avatar details (Left view: ribbon, ponytail, blush)
-      if (this.playerAvatar === 'girl') {
+      // Girl Avatar details (Left view: ribbon, ponytail, side bangs, blush)
+      if (isGirl) {
         ctx.fillStyle = '#fda4af';
         ctx.fillRect(px + 10, py + 11 + bob, 2, 1); // Rosy cheek
-        ctx.fillStyle = '#f43f5e';
-        ctx.fillRect(px + 21, py + 6 + bob, 2, 2);  // Ribbon
-        ctx.fillStyle = '#854d0e';
-        ctx.fillRect(px + 23, py + 7 + bob, 2, 5);  // Ponytail bob
+        // Ribbon
+        ctx.fillStyle = RIBBON_COLOR;
+        ctx.fillRect(px + 22, py + 5 + bob, 3, 3);
+        ctx.fillStyle = '#ffe4e6';
+        ctx.fillRect(px + 23, py + 6 + bob, 1, 1);
+        // Ponytail bob
+        ctx.fillStyle = HAIR_COLOR;
+        ctx.fillRect(px + 23, py + 7 + bob, 3, 6);
+        ctx.fillStyle = HAIR_DARK;
+        ctx.fillRect(px + 23, py + 11 + bob, 3, 2);
+        // Side bangs
+        ctx.fillStyle = HAIR_COLOR;
+        ctx.fillRect(px + 15, py + 6 + bob, 2, 4);
       }
 
       compassX = px + 11;
@@ -7724,42 +7837,262 @@ export class GameRenderer {
       ctx.arc(lanternX, lanternY, 20, 0, Math.PI * 2);
       ctx.fill();
 
-      // 4. Street Lamps & Special Light Sources in viewport
-      const startCol = Math.max(0, Math.floor(camX / TILE_SIZE) - 2);
-      const endCol = Math.min(map[0]?.length ?? 0, Math.ceil((camX + w) / TILE_SIZE) + 2);
-      const startRow = Math.max(0, Math.floor(camY / TILE_SIZE) - 2);
-      const endRow = Math.min(map.length, Math.ceil((camY + h) / TILE_SIZE) + 2);
+      // 4. Street Lamps, Village Houses, Grand Clock Tower, and Special Light Sources in viewport
+      const startCol = Math.max(0, Math.floor(camX / TILE_SIZE) - 3);
+      const endCol = Math.min(map[0]?.length ?? 0, Math.ceil((camX + w) / TILE_SIZE) + 3);
+      const startRow = Math.max(0, Math.floor(camY / TILE_SIZE) - 3);
+      const endRow = Math.min(map.length, Math.ceil((camY + h) / TILE_SIZE) + 3);
 
       for (let r = startRow; r < endRow; r++) {
         const row = map[r];
         if (!row) continue;
         for (let c = startCol; c < endCol; c++) {
           const tile = row[c];
+
+          // --- A. LAMPU JALAN & ALUN-ALUN (STREET LAMPS) ---
+          // Menyinari jalan setapak desa, rerumputan, dan pagar kayu dengan cahaya hangat keemasan
           if (tile === TILE.LAMP_POST) {
             const lx = c * TILE_SIZE + 16;
             const ly = r * TILE_SIZE + 6;
-            const flicker = Math.sin(this.tickCount * 0.08 + (c + r) * 1.5) * 3;
-            const rad = 76 + flicker;
-            const lampLight = ctx.createRadialGradient(lx, ly, 3, lx, ly, rad);
-            lampLight.addColorStop(0, `rgba(254, 240, 138, ${0.6 * progress})`);
-            lampLight.addColorStop(0.35, `rgba(245, 158, 11, ${0.3 * progress})`);
-            lampLight.addColorStop(0.7, `rgba(217, 119, 6, ${0.08 * progress})`);
-            lampLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
+            const flicker = Math.sin(this.tickCount * 0.08 + (c * 7 + r * 13)) * 3;
+            const rad = 110 + flicker;
 
+            // Pendaran cahaya tanah yang luas menyinari desa
+            const lampLight = ctx.createRadialGradient(lx, ly + 8, 3, lx, ly + 8, rad);
+            lampLight.addColorStop(0, `rgba(255, 250, 220, ${0.85 * progress})`);
+            lampLight.addColorStop(0.25, `rgba(254, 240, 138, ${0.62 * progress})`);
+            lampLight.addColorStop(0.55, `rgba(245, 158, 11, ${0.30 * progress})`);
+            lampLight.addColorStop(0.85, `rgba(217, 119, 6, ${0.10 * progress})`);
+            lampLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
             ctx.fillStyle = lampLight;
             ctx.beginPath();
-            ctx.arc(lx, ly, rad, 0, Math.PI * 2);
+            ctx.arc(lx, ly + 8, rad, 0, Math.PI * 2);
             ctx.fill();
-          } else if (tile === TILE.STONE_LANTERN || tile === TILE.FOUNTAIN) {
-            const ax = c * TILE_SIZE + 16;
-            const ay = r * TILE_SIZE + 16;
-            const altarGlow = ctx.createRadialGradient(ax, ay, 4, ax, ay, 70);
-            altarGlow.addColorStop(0, `rgba(167, 139, 250, ${0.45 * progress})`);
-            altarGlow.addColorStop(0.5, `rgba(99, 102, 241, ${0.2 * progress})`);
-            altarGlow.addColorStop(1, 'rgba(99, 102, 241, 0)');
-            ctx.fillStyle = altarGlow;
+
+            // Inti lentera kaca yang menyala terang benderang
+            const bulbGlow = ctx.createRadialGradient(lx, ly, 1, lx, ly, 14);
+            bulbGlow.addColorStop(0, `rgba(255, 255, 255, ${0.98 * progress})`);
+            bulbGlow.addColorStop(0.4, `rgba(254, 240, 138, ${0.82 * progress})`);
+            bulbGlow.addColorStop(1, 'rgba(254, 240, 138, 0)');
+            ctx.fillStyle = bulbGlow;
             ctx.beginPath();
-            ctx.arc(ax, ay, 70, 0, Math.PI * 2);
+            ctx.arc(lx, ly, 14, 0, Math.PI * 2);
+            ctx.fill();
+
+          // --- B. RUMAH WARGA (HOUSE WINDOWS & DOORS) ---
+          // Jendela rumah warga bersinar hangat dari dalam dan memancarkan cahaya ke pekarangan/jalan
+          } else if (tile === TILE.HOUSE_WINDOW) {
+            const wx = c * TILE_SIZE + 16;
+            const wy = r * TILE_SIZE + 12;
+            const pulse = Math.sin(this.tickCount * 0.07 + c * 3 + r * 5) * 0.05;
+
+            // Sorot cahaya hangat yang memancar keluar ke pekarangan rumah & jalan desa
+            const windowLight = ctx.createRadialGradient(wx, wy + 4, 3, wx, wy + 16, 75);
+            windowLight.addColorStop(0, `rgba(254, 240, 138, ${(0.82 + pulse) * progress})`);
+            windowLight.addColorStop(0.35, `rgba(245, 158, 11, ${(0.48 + pulse) * progress})`);
+            windowLight.addColorStop(0.7, `rgba(217, 119, 6, ${0.16 * progress})`);
+            windowLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
+            ctx.fillStyle = windowLight;
+            ctx.beginPath();
+            ctx.arc(wx, wy + 16, 75, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Kaca jendela langsung berpendar keemasan menembus kegelapan malam
+            ctx.fillStyle = `rgba(254, 240, 138, ${(0.92 + pulse) * progress})`;
+            ctx.fillRect(c * TILE_SIZE + 10, r * TILE_SIZE + 5, 5, 6);
+            ctx.fillRect(c * TILE_SIZE + 17, r * TILE_SIZE + 5, 5, 6);
+            ctx.fillRect(c * TILE_SIZE + 10, r * TILE_SIZE + 13, 5, 6);
+            ctx.fillRect(c * TILE_SIZE + 17, r * TILE_SIZE + 13, 5, 6);
+
+            // Titik nyala api lentera dalam rumah
+            ctx.fillStyle = `rgba(255, 255, 255, ${(0.78 + pulse) * progress})`;
+            ctx.fillRect(c * TILE_SIZE + 11, r * TILE_SIZE + 6, 3, 4);
+            ctx.fillRect(c * TILE_SIZE + 18, r * TILE_SIZE + 6, 3, 4);
+
+          } else if (tile === TILE.HOUSE_DOOR) {
+            const dx = c * TILE_SIZE + 16;
+            const dy = r * TILE_SIZE + 26;
+            // Cahaya hangat ambang pintu rumah
+            const doorLight = ctx.createRadialGradient(dx, dy, 2, dx, dy + 6, 52);
+            doorLight.addColorStop(0, `rgba(254, 240, 138, ${0.70 * progress})`);
+            doorLight.addColorStop(0.4, `rgba(245, 158, 11, ${0.36 * progress})`);
+            doorLight.addColorStop(1, 'rgba(245, 158, 11, 0)');
+            ctx.fillStyle = doorLight;
+            ctx.beginPath();
+            ctx.arc(dx, dy + 6, 52, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Celah cahaya di bawah daun pintu
+            ctx.fillStyle = `rgba(254, 240, 138, ${0.85 * progress})`;
+            ctx.fillRect(c * TILE_SIZE + 8, r * TILE_SIZE + 27, 16, 3);
+
+          } else if (tile === TILE.HOUSE_WALL) {
+            // Nuansa hangat lembut pada dinding rumah berpenghuni
+            const cx = c * TILE_SIZE + 16;
+            const cy = r * TILE_SIZE + 16;
+            const wallLight = ctx.createRadialGradient(cx, cy, 2, cx, cy, 38);
+            wallLight.addColorStop(0, `rgba(254, 240, 138, ${0.18 * progress})`);
+            wallLight.addColorStop(1, 'rgba(254, 240, 138, 0)');
+            ctx.fillStyle = wallLight;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 38, 0, Math.PI * 2);
+            ctx.fill();
+
+          // --- C. PONDOK HUTAN PAK TEGUH (FOREST CABIN) ---
+          } else if (tile === TILE.FOREST_CABIN_WINDOW || tile === TILE.FOREST_CABIN_DOOR) {
+            const fx = c * TILE_SIZE + 16;
+            const fy = r * TILE_SIZE + 14;
+            const fPulse = Math.sin(this.tickCount * 0.1 + c) * 0.08;
+            const cabinLight = ctx.createRadialGradient(fx, fy, 4, fx, fy + 12, 70);
+            cabinLight.addColorStop(0, `rgba(254, 215, 170, ${(0.85 + fPulse) * progress})`);
+            cabinLight.addColorStop(0.35, `rgba(249, 115, 22, ${(0.50 + fPulse) * progress})`);
+            cabinLight.addColorStop(0.7, `rgba(194, 65, 12, ${0.18 * progress})`);
+            cabinLight.addColorStop(1, 'rgba(194, 65, 12, 0)');
+            ctx.fillStyle = cabinLight;
+            ctx.beginPath();
+            ctx.arc(fx, fy + 12, 70, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (tile === TILE.FOREST_CABIN_WINDOW) {
+              ctx.fillStyle = `rgba(254, 240, 138, ${(0.90 + fPulse) * progress})`;
+              ctx.fillRect(c * TILE_SIZE + 10, r * TILE_SIZE + 7, 12, 10);
+              ctx.fillStyle = `rgba(255, 255, 255, ${0.75 * progress})`;
+              ctx.fillRect(c * TILE_SIZE + 12, r * TILE_SIZE + 9, 8, 6);
+            }
+
+          // --- D. PONDOK KAKEK DAMAI (ZEN MINDFUL TEA HOUSE) ---
+          } else if (tile === TILE.ZEN_WINDOW || tile === TILE.ZEN_DOOR) {
+            const zx = c * TILE_SIZE + 16;
+            const zy = r * TILE_SIZE + 14;
+            const zenLight = ctx.createRadialGradient(zx, zy, 3, zx, zy + 10, 65);
+            zenLight.addColorStop(0, `rgba(254, 243, 199, ${0.80 * progress})`);
+            zenLight.addColorStop(0.4, `rgba(245, 158, 11, ${0.40 * progress})`);
+            zenLight.addColorStop(0.75, `rgba(217, 119, 6, ${0.14 * progress})`);
+            zenLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
+            ctx.fillStyle = zenLight;
+            ctx.beginPath();
+            ctx.arc(zx, zy + 10, 65, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (tile === TILE.ZEN_WINDOW) {
+              ctx.fillStyle = `rgba(254, 240, 138, ${0.85 * progress})`;
+              ctx.fillRect(c * TILE_SIZE + 9, r * TILE_SIZE + 6, 14, 12);
+            }
+
+          // --- E. MENARA JAM DESA (THE GRAND CLOCK TOWER) ---
+          // Jam Harmoni raksasa bersinar megah menerangi puncak menara dan seluruh pelataran alun-alun
+          } else if (tile === TILE.TOWER_CLOCK) {
+            const tx = c * TILE_SIZE + 16;
+            const ty = r * TILE_SIZE + 16;
+            const pulse = Math.sin(this.tickCount * 0.06) * 6;
+            const clockRad = 140 + pulse;
+
+            // Halo cahaya megah keemasan menara jam
+            const clockHalo = ctx.createRadialGradient(tx, ty, 6, tx, ty, clockRad);
+            clockHalo.addColorStop(0, `rgba(255, 255, 250, ${0.98 * progress})`);
+            clockHalo.addColorStop(0.15, `rgba(254, 240, 138, ${0.88 * progress})`);
+            clockHalo.addColorStop(0.4, `rgba(245, 158, 11, ${0.55 * progress})`);
+            clockHalo.addColorStop(0.7, `rgba(217, 119, 6, ${0.22 * progress})`);
+            clockHalo.addColorStop(1, 'rgba(217, 119, 6, 0)');
+            ctx.fillStyle = clockHalo;
+            ctx.beginPath();
+            ctx.arc(tx, ty, clockRad, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Piringan jam bersinar bercahaya
+            ctx.fillStyle = `rgba(254, 252, 232, ${0.95 * progress})`;
+            ctx.beginPath();
+            ctx.arc(tx, ty, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sinar salib keemasan penunjuk waktu astronomi
+            const rayLen = 32 + Math.sin(this.tickCount * 0.08) * 4;
+            ctx.strokeStyle = `rgba(254, 240, 138, ${0.65 * progress})`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(tx - rayLen, ty); ctx.lineTo(tx + rayLen, ty);
+            ctx.moveTo(tx, ty - rayLen); ctx.lineTo(tx, ty + rayLen);
+            ctx.stroke();
+
+          } else if (tile === TILE.TOWER_WINDOW) {
+            // Jendela gotik kaca patri menara bersinar keemasan & safir
+            const twx = c * TILE_SIZE + 16;
+            const twy = r * TILE_SIZE + 16;
+            const twLight = ctx.createRadialGradient(twx, twy, 3, twx, twy + 12, 75);
+            twLight.addColorStop(0, `rgba(254, 240, 138, ${0.85 * progress})`);
+            twLight.addColorStop(0.35, `rgba(245, 158, 11, ${0.45 * progress})`);
+            twLight.addColorStop(0.65, `rgba(147, 197, 253, ${0.20 * progress})`);
+            twLight.addColorStop(1, 'rgba(147, 197, 253, 0)');
+            ctx.fillStyle = twLight;
+            ctx.beginPath();
+            ctx.arc(twx, twy + 12, 75, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = `rgba(254, 240, 138, ${0.90 * progress})`;
+            ctx.fillRect(c * TILE_SIZE + 10, r * TILE_SIZE + 8, 12, 16);
+
+          } else if (tile === TILE.TOWER_DOOR) {
+            // Obor gerbang utama menara jam
+            const tdx = c * TILE_SIZE + 16;
+            const tdy = r * TILE_SIZE + 24;
+            const tdLight = ctx.createRadialGradient(tdx, tdy, 3, tdx, tdy + 8, 70);
+            tdLight.addColorStop(0, `rgba(254, 240, 138, ${0.80 * progress})`);
+            tdLight.addColorStop(0.35, `rgba(245, 158, 11, ${0.42 * progress})`);
+            tdLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
+            ctx.fillStyle = tdLight;
+            ctx.beginPath();
+            ctx.arc(tdx, tdy + 8, 70, 0, Math.PI * 2);
+            ctx.fill();
+
+          } else if (tile === TILE.TOWER_WALL) {
+            // Pencahayaan aksen arsitektural batu menara
+            const tcx = c * TILE_SIZE + 16;
+            const tcy = r * TILE_SIZE + 16;
+            const twallLight = ctx.createRadialGradient(tcx, tcy, 2, tcx, tcy, 42);
+            twallLight.addColorStop(0, `rgba(254, 240, 138, ${0.20 * progress})`);
+            twallLight.addColorStop(1, 'rgba(254, 240, 138, 0)');
+            ctx.fillStyle = twallLight;
+            ctx.beginPath();
+            ctx.arc(tcx, tcy, 42, 0, Math.PI * 2);
+            ctx.fill();
+
+          // --- F. LENTERA BATU, AIR MANCUR & SUMUR (SPECIAL LIGHT SOURCES) ---
+          } else if (tile === TILE.STONE_LANTERN) {
+            const sx = c * TILE_SIZE + 16;
+            const sy = r * TILE_SIZE + 16;
+            const sLight = ctx.createRadialGradient(sx, sy, 2, sx, sy, 75);
+            sLight.addColorStop(0, `rgba(254, 240, 138, ${0.85 * progress})`);
+            sLight.addColorStop(0.3, `rgba(245, 158, 11, ${0.50 * progress})`);
+            sLight.addColorStop(0.6, `rgba(167, 139, 250, ${0.25 * progress})`);
+            sLight.addColorStop(1, 'rgba(167, 139, 250, 0)');
+            ctx.fillStyle = sLight;
+            ctx.beginPath();
+            ctx.arc(sx, sy, 75, 0, Math.PI * 2);
+            ctx.fill();
+
+          } else if (tile === TILE.FOUNTAIN) {
+            const fx = c * TILE_SIZE + 16;
+            const fy = r * TILE_SIZE + 16;
+            const fLight = ctx.createRadialGradient(fx, fy, 4, fx, fy, 85);
+            fLight.addColorStop(0, `rgba(165, 243, 252, ${0.65 * progress})`);
+            fLight.addColorStop(0.4, `rgba(56, 189, 248, ${0.35 * progress})`);
+            fLight.addColorStop(0.75, `rgba(99, 102, 241, ${0.15 * progress})`);
+            fLight.addColorStop(1, 'rgba(99, 102, 241, 0)');
+            ctx.fillStyle = fLight;
+            ctx.beginPath();
+            ctx.arc(fx, fy, 85, 0, Math.PI * 2);
+            ctx.fill();
+
+          } else if (tile === TILE.WATER_WELL) {
+            const wx = c * TILE_SIZE + 16;
+            const wy = r * TILE_SIZE + 16;
+            const wLight = ctx.createRadialGradient(wx, wy, 2, wx, wy, 58);
+            wLight.addColorStop(0, `rgba(254, 240, 138, ${0.70 * progress})`);
+            wLight.addColorStop(0.4, `rgba(245, 158, 11, ${0.32 * progress})`);
+            wLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
+            ctx.fillStyle = wLight;
+            ctx.beginPath();
+            ctx.arc(wx, wy, 58, 0, Math.PI * 2);
             ctx.fill();
           }
         }

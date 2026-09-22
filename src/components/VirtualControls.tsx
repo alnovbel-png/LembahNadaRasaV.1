@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X, Home, Sparkles, Sun, Moon } from 'lucide-react';
+import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X, Home, Sparkles } from 'lucide-react';
 import { useIsMobileOrTablet } from '../utils/device';
 
 interface VirtualControlsProps {
@@ -18,8 +18,6 @@ interface VirtualControlsProps {
   isGameCompleted?: boolean;
   onOpenRegulation?: () => void;
   onOpenStartMenu?: () => void;
-  timeOfDay?: 'day' | 'night';
-  onToggleTimeOfDay?: () => void;
 }
 
 export const VirtualControls: React.FC<VirtualControlsProps> = ({
@@ -38,8 +36,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   isGameCompleted = false,
   onOpenRegulation,
   onOpenStartMenu,
-  timeOfDay = 'day',
-  onToggleTimeOfDay,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobileOrTablet = useIsMobileOrTablet();
@@ -253,28 +249,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto shrink-0">
           {/* SINGLE UNIFIED BUTTON FOR MOBILE (Vertical & Horizontal mode) */}
           <div className="flex items-center gap-1.5 lg:hidden">
-            {onToggleTimeOfDay && (
-              <button
-                id="mobile-timeofday-btn"
-                onClick={onToggleTimeOfDay}
-                title={timeOfDay === 'night' ? 'Beralih ke Mode Siang ☀️' : 'Beralih ke Mode Malam 🌙'}
-                className={`p-1.5 sm:px-2 rounded-xl border flex items-center gap-1 text-[10px] font-bold cursor-pointer transition-all duration-300 shadow-md active:scale-95 ${
-                  timeOfDay === 'night'
-                    ? 'bg-indigo-950/90 border-indigo-400/80 text-indigo-200'
-                    : 'bg-amber-950/90 border-amber-400/80 text-amber-200'
-                }`}
-              >
-                {timeOfDay === 'night' ? (
-                  <Moon className="w-3.5 h-3.5 text-indigo-300 animate-pulse" />
-                ) : (
-                  <Sun className="w-3.5 h-3.5 text-amber-400" />
-                )}
-                <span className="font-pixel text-[8px] sm:text-[9px]">
-                  {timeOfDay === 'night' ? 'MALAM' : 'SIANG'}
-                </span>
-              </button>
-            )}
-
             <button
               id="top-unified-menu-btn"
               onClick={() => setIsMenuOpen(true)}
@@ -288,29 +262,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
 
           {/* Desktop Toolbar (lg+ screens) */}
           <div className="hidden lg:flex items-center gap-1.5 sm:gap-2">
-            {onToggleTimeOfDay && (
-              <button
-                id="top-timeofday-btn"
-                onClick={onToggleTimeOfDay}
-                title={timeOfDay === 'night' ? 'Beralih ke Mode Siang ☀️ [N]' : 'Beralih ke Mode Malam 🌙 [N]'}
-                className={`px-2.5 py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95 flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
-                  timeOfDay === 'night'
-                    ? 'bg-indigo-950/90 border-indigo-400/70 hover:border-indigo-300 hover:shadow-[0_0_16px_rgba(99,102,241,0.5)] text-indigo-200'
-                    : 'bg-amber-950/80 border-amber-400/70 hover:border-amber-300 hover:shadow-[0_0_16px_rgba(245,158,11,0.5)] text-amber-200'
-                }`}
-              >
-                {timeOfDay === 'night' ? (
-                  <Moon className="w-4 h-4 text-indigo-300 animate-pulse" />
-                ) : (
-                  <Sun className="w-4 h-4 text-amber-400" />
-                )}
-                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>
-                  {timeOfDay === 'night' ? 'Malam' : 'Siang'}
-                </span>
-                <span className="text-[10px] opacity-75 font-mono">[N]</span>
-              </button>
-            )}
-
             {onToggleMiniMap && (
               <button
                 id="top-map-toggle-btn"
@@ -417,61 +368,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
 
             {/* Menu Action Cards */}
             <div className="p-3.5 space-y-2 overflow-y-auto">
-              {/* Option: Waktu Siang / Malam */}
-              {onToggleTimeOfDay && (
-                <button
-                  id="menu-toggle-timeofday-btn"
-                  onClick={() => {
-                    onToggleTimeOfDay();
-                  }}
-                  className={`w-full p-2.5 rounded-xl border flex items-center justify-between text-left transition-all duration-200 cursor-pointer hover:scale-[1.02] ${
-                    timeOfDay === 'night'
-                      ? 'bg-indigo-950/70 border-indigo-500/60 hover:border-indigo-400 hover:shadow-[0_0_16px_rgba(99,102,241,0.4)]'
-                      : 'bg-amber-950/60 border-amber-500/60 hover:border-amber-400 hover:shadow-[0_0_16px_rgba(245,158,11,0.4)]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-9 h-9 rounded-lg border flex items-center justify-center ${
-                        timeOfDay === 'night'
-                          ? 'bg-indigo-500/30 border-indigo-400/50 text-indigo-300'
-                          : 'bg-amber-500/30 border-amber-400/50 text-amber-300'
-                      }`}
-                    >
-                      {timeOfDay === 'night' ? (
-                        <Moon className="w-5 h-5 text-indigo-300 animate-pulse" />
-                      ) : (
-                        <Sun className="w-5 h-5 text-amber-400" />
-                      )}
-                    </div>
-                    <div>
-                      <div className="font-semibold text-xs flex items-center gap-1.5">
-                        <span className={timeOfDay === 'night' ? 'text-indigo-200' : 'text-amber-200'}>
-                          Suasana Alam: Mode {timeOfDay === 'night' ? 'Malam' : 'Siang'}
-                        </span>
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded font-bold shadow ${
-                            timeOfDay === 'night'
-                              ? 'bg-indigo-500 text-white shadow-[0_0_8px_rgba(99,102,241,0.5)]'
-                              : 'bg-amber-500 text-slate-950 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
-                          }`}
-                        >
-                          {timeOfDay === 'night' ? '🌙 MALAM' : '☀️ SIANG'}
-                        </span>
-                      </div>
-                      <div className="text-[10.5px] text-slate-400">
-                        {timeOfDay === 'night'
-                          ? 'Cahaya lentera, rembulan, kunang-kunang & bintang malam'
-                          : 'Sinar mentari keemasan, kabut pagi & kupu-kupu riang'}
-                      </div>
-                    </div>
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
-                    [N]
-                  </span>
-                </button>
-              )}
-
               {/* Option 1: Peta Mini Lembah */}
               {onToggleMiniMap && (
                 <button

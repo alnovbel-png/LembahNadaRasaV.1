@@ -247,21 +247,21 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   }}
                   className={`p-2 sm:p-2.5 rounded-2xl border-2 transition-all flex flex-col items-center gap-1.5 cursor-pointer text-center relative ${
                     playerAvatar === 'girl'
-                      ? 'bg-rose-950/60 border-pink-400 shadow-[0_0_15px_rgba(244,114,182,0.35)] scale-[1.01]'
+                      ? 'bg-cyan-950/50 border-cyan-400 shadow-[0_0_16px_rgba(34,211,238,0.4)] scale-[1.01]'
                       : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 opacity-70 hover:opacity-100'
                   }`}
                 >
                   {playerAvatar === 'girl' && (
-                    <div className="absolute top-1.5 right-1.5 bg-pink-400 text-slate-950 rounded-full p-0.5">
+                    <div className="absolute top-1.5 right-1.5 bg-cyan-400 text-slate-950 rounded-full p-0.5 shadow-sm">
                       <Check className="w-2.5 h-2.5 stroke-[3]" />
                     </div>
                   )}
                   <CharacterPortrait sprite="player_girl" size="dialogue" />
                   <div className="flex flex-col items-center mt-0.5">
-                    <span className="font-pixel text-[11px] font-bold text-pink-300">
+                    <span className="font-pixel text-[11px] font-bold text-cyan-300">
                       Petualang Perempuan
                     </span>
-                    <span className="font-pixel text-[9px] text-slate-400">
+                    <span className="font-pixel text-[9px] text-pink-300">
                       Avatar: Ezzy
                     </span>
                   </div>
