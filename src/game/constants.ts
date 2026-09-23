@@ -150,8 +150,30 @@ export function generateMapLayout(): number[][] {
         continue;
       }
 
+      // --- KEBUN BUAH RINDANG IBU SARI (East North-Forest: c: 13..14, r: 6..8) ---
+      // Ibu Sari berada di c=13, r=7; pohon buah diletakkan di c=14 agar jalur c=13 bebas hambatan
+      if (r === 7 && c === 14) {
+        row.push(TILE.ORCHARD_APPLE);
+        continue;
+      }
+      if (r === 8 && c === 14) {
+        row.push(TILE.ORCHARD_ORANGE);
+        continue;
+      }
+      if (r === 7 && c === 13) {
+        row.push(TILE.GRASS_FLOWERS);
+        continue;
+      }
+
       // Forest zone (north-west: dense trees & pines)
-      if (r < 9 && c < 15 && !(r === 4 && c === 4) && !(r === 7 && c === 8)) {
+      if (
+        r < 9 &&
+        c < 15 &&
+        !(r === 4 && c === 4) &&
+        !(r === 7 && c === 8) &&
+        !(c === 13 && (r === 5 || r === 6 || r === 7)) &&
+        !(c === 14 && (r === 5 || r === 6 || r === 7 || r === 8))
+      ) {
         if ((r === 1 && c === 4) || (r === 2 && c === 12) || (r === 6 && c === 2) || (r === 8 && c === 6)) {
           row.push(TILE.FOREST_PINE);
           continue;
@@ -495,6 +517,37 @@ export function isTileSolid(tile: number): boolean {
     tile === TILE.GRAND_OAK ||
     tile === TILE.FLOWERING_BUSH
   );
+}
+
+// Check whether an obstacle is a decorative/nature element that can be dynamically bypassed for mission NPCs
+export function isDecorativeTile(tile: number): boolean {
+  return (
+    tile === TILE.TREE_TRUNK ||
+    tile === TILE.TREE_TOP ||
+    tile === TILE.FOREST_PINE ||
+    tile === TILE.SECRET_TREE ||
+    tile === TILE.ORCHARD_APPLE ||
+    tile === TILE.ORCHARD_ORANGE ||
+    tile === TILE.GRAND_OAK ||
+    tile === TILE.FLOWERING_BUSH ||
+    tile === TILE.FLOWER_BED ||
+    tile === TILE.MUSHROOM_PATCH ||
+    tile === TILE.FLOWER_CART ||
+    tile === TILE.PLAZA_PLANTER ||
+    tile === TILE.BENCH ||
+    tile === TILE.LAMP_POST ||
+    tile === TILE.SIGNPOST ||
+    tile === TILE.SCARECROW ||
+    tile === TILE.HAY_BALE ||
+    tile === TILE.LOG_STACK ||
+    tile === TILE.STONE_LANTERN ||
+    tile === TILE.FENCE
+  );
+}
+
+// Hard structural obstacles that can never be walked through (cliffs, water, building walls, doors, windows, wells)
+export function isHardStructuralSolid(tile: number): boolean {
+  return isTileSolid(tile) && !isDecorativeTile(tile);
 }
 
 // Initial NPCs configuration

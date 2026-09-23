@@ -3,6 +3,8 @@ import { GameRenderer, Player } from './game/renderer';
 import {
   generateMapLayout,
   isTileSolid,
+  isDecorativeTile,
+  isHardStructuralSolid,
   TILE_SIZE,
   MAP_COLS,
   MAP_ROWS,
@@ -37,6 +39,7 @@ import { CaptureMomentModal } from './components/CaptureMomentModal';
 import { VirtualControls } from './components/VirtualControls';
 import { MiniMap } from './components/MiniMap';
 import { StartMenuModal } from './components/StartMenuModal';
+import { PauseMenuModal } from './components/PauseMenuModal';
 import { MissionNotificationModal, MissionStepData } from './components/MissionNotificationModal';
 import { Sparkles, Compass } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
@@ -191,11 +194,14 @@ export default function App() {
   const [showStartMenu, setShowStartMenu] = useState<boolean>(true);
   const [playerName, setPlayerName] = useState<string>(() => {
     const saved = localStorage.getItem('lembah_player_name');
-    if (saved === 'Ezsela') return 'Ezzy';
+    if (saved === 'Ezsela' || saved === 'Kayla') return 'Ezzy';
+    if (saved === 'Aris') return 'Ezzel';
     return saved || 'Ezzel';
   });
   const [playerAvatar, setPlayerAvatar] = useState<'boy' | 'girl'>(() => {
-    return (localStorage.getItem('lembah_player_avatar') as 'boy' | 'girl') || 'boy';
+    const saved = localStorage.getItem('lembah_player_avatar');
+    if (saved === 'girl') return 'girl';
+    return 'boy';
   });
   const [isCompassActive, setIsCompassActive] = useState<boolean>(false);
   const [currentDialogue, setCurrentDialogue] = useState<DialogueNode | null>(null);
@@ -205,6 +211,8 @@ export default function App() {
   const [showJournal, setShowJournal] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [settingsTab, setSettingsTab] = useState<SettingsModalTab>('quest');
+  const [showPauseMenu, setShowPauseMenu] = useState<boolean>(false);
+  const showPauseMenuRef = useRef<boolean>(false);
   const [showEnding, setShowEnding] = useState<boolean>(false);
   const [showAllBadgesCelebration, setShowAllBadgesCelebration] = useState<boolean>(false);
   const hasSeenAllBadgesCelebrationRef = useRef<boolean>(false);
@@ -705,18 +713,20 @@ export default function App() {
   }, []);
 
   // Check collision against map tiles & bridge obstacle
+  // ignoreDecorative: if true, allows passing through decorative elements (trees, plants, benches)
+  // while strictly enforcing hard structural boundaries (cliffs, deep water, building walls/doors, locked gates)
   const checkCollision = useCallback(
-    (x: number, y: number): boolean => {
-      const pW = 20;
-      const pH = 12;
-      const feetX = x + 6;
-      const feetY = y + 20;
+    (x: number, y: number, ignoreDecorative: boolean = false): boolean => {
+      const pW = 16;
+      const pH = 8;
+      const feetX = x + 8;
+      const feetY = y + 22;
 
       const corners = [
         { x: feetX, y: feetY },
-        { x: feetX + pW, y: feetY },
-        { x: feetX, y: feetY + pH },
-        { x: feetX + pW, y: feetY + pH },
+        { x: feetX + pW - 1, y: feetY },
+        { x: feetX, y: feetY + pH - 1 },
+        { x: feetX + pW - 1, y: feetY + pH - 1 },
       ];
 
       for (const pt of corners) {
@@ -726,9 +736,10 @@ export default function App() {
         if (r < 0 || r >= MAP_ROWS || c < 0 || c >= MAP_COLS) return true;
 
         const tile = mapLayout[r][c];
-        if (isTileSolid(tile)) {
-          // Special exception: if the tile is a bridge and bridge zone is not unlocked, it is solid
-          return true;
+        if (ignoreDecorative) {
+          if (isHardStructuralSolid(tile)) return true;
+        } else {
+          if (isTileSolid(tile)) return true;
         }
 
         // Bridge gate check: if bridge not yet restored, prevent crossing beyond x = 20*TILE_SIZE
@@ -772,7 +783,23 @@ export default function App() {
     [mapLayout, zoneStatus.bridge, isFreeRoamActive, zoneStatus.plaza, zoneStatus.forest, zoneStatus.tower]
   );
 
-  // Calculate safe, walkable talk position near an NPC without colliding with any obstacles/assets
+  // Identify decorative/nature tiles that can be dynamically bypassed for mission NPC pathfinding
+  const isTileDecorativeAt = useCallback(
+    (c: number, r: number): boolean => {
+      if (r < 0 || r >= MAP_ROWS || c < 0 || c >= MAP_COLS) return false;
+      // Never bypass the locked bridge gate
+      if (!zoneStatus.bridge && c >= 21 && c <= 24 && r >= 14 && r <= 16) {
+        return false;
+      }
+      const tile = mapLayout[r]?.[c];
+      if (tile === undefined) return false;
+      return isDecorativeTile(tile);
+    },
+    [mapLayout, zoneStatus.bridge]
+  );
+
+  // Calculate safe, walkable talk position near an NPC without colliding with any obstacles/assets.
+  // Dynamically relaxes decorative obstacles (trees, bushes) if the NPC is in dense terrain.
   const getSafeNPCTalkPosition = useCallback(
     (npc: NPC, playerCenterX: number, playerCenterY: number): { x: number; y: number } => {
       const nx = npc.x * TILE_SIZE + 16;
@@ -784,45 +811,71 @@ export default function App() {
       const directX = nx + Math.cos(directAngle) * idealDist;
       const directY = ny + Math.sin(directAngle) * idealDist;
 
-      // If the direct approach spot is completely walkable and collision-free, use it!
-      if (!checkCollision(directX - 16, directY - 16)) {
+      // If the direct approach spot is completely open and collision-free, use it!
+      if (!checkCollision(directX - 16, directY - 16, false)) {
         return { x: directX, y: directY };
       }
 
-      // 2. Otherwise, check candidate standing positions around the NPC (cardinals & diagonals at distances 32-42px)
-      const candidateDistances = [34, 38, 30, 42];
-      const validSpots: Array<{ x: number; y: number; distToPlayer: number }> = [];
+      // Candidate offsets in 8 directions (cardinals & diagonals)
+      const candidateDistances = [34, 38, 30, 42, 28, 46];
+      const angleOffsets = [
+        { dx: 0, dy: 1 },        // South (in front/below)
+        { dx: -1, dy: 0 },       // West (left)
+        { dx: 1, dy: 0 },        // East (right)
+        { dx: 0, dy: -1 },       // North (above)
+        { dx: -0.707, dy: 0.707 },
+        { dx: 0.707, dy: 0.707 },
+        { dx: -0.707, dy: -0.707 },
+        { dx: 0.707, dy: -0.707 },
+      ];
 
+      // Pass 1: Strict open-ground search (zero collisions with any tile)
+      const pureSpots: Array<{ x: number; y: number; distToPlayer: number }> = [];
       for (const d of candidateDistances) {
-        const offsets = [
-          { dx: 0, dy: d },        // South (in front/below)
-          { dx: -d, dy: 0 },       // West (left)
-          { dx: d, dy: 0 },        // East (right)
-          { dx: 0, dy: -d },       // North (above)
-          { dx: -d * 0.707, dy: d * 0.707 },
-          { dx: d * 0.707, dy: d * 0.707 },
-          { dx: -d * 0.707, dy: -d * 0.707 },
-          { dx: d * 0.707, dy: -d * 0.707 },
-        ];
-
-        for (const offset of offsets) {
-          const cx = nx + offset.dx;
-          const cy = ny + offset.dy;
-          if (!checkCollision(cx - 16, cy - 16)) {
+        for (const off of angleOffsets) {
+          const cx = nx + off.dx * d;
+          const cy = ny + off.dy * d;
+          if (!checkCollision(cx - 16, cy - 16, false)) {
             const dist = Math.hypot(cx - playerCenterX, cy - playerCenterY);
-            validSpots.push({ x: cx, y: cy, distToPlayer: dist });
+            pureSpots.push({ x: cx, y: cy, distToPlayer: dist });
           }
         }
-        if (validSpots.length > 0) break;
+        if (pureSpots.length > 0) break;
       }
 
-      if (validSpots.length > 0) {
+      if (pureSpots.length > 0) {
         // Pick the safe spot closest to the player's current location
-        validSpots.sort((a, b) => a.distToPlayer - b.distToPlayer);
-        return { x: validSpots[0].x, y: validSpots[0].y };
+        pureSpots.sort((a, b) => a.distToPlayer - b.distToPlayer);
+        return { x: pureSpots[0].x, y: pureSpots[0].y };
       }
 
-      // Fallback in case all angles are tight: south offset
+      // Pass 2: Dynamic decorative bypass
+      // If NPC is surrounded by dense trees or decorative flora (e.g. in the forest or orchard),
+      // allow spots overlapping decorative elements while strictly preventing immersion in cliffs, water, or building walls!
+      const bypassSpots: Array<{ x: number; y: number; distToPlayer: number }> = [];
+      for (const d of candidateDistances) {
+        for (const off of angleOffsets) {
+          const cx = nx + off.dx * d;
+          const cy = ny + off.dy * d;
+          if (!checkCollision(cx - 16, cy - 16, true)) {
+            const dist = Math.hypot(cx - playerCenterX, cy - playerCenterY);
+            bypassSpots.push({ x: cx, y: cy, distToPlayer: dist });
+          }
+        }
+        if (bypassSpots.length > 0) break;
+      }
+
+      if (bypassSpots.length > 0) {
+        bypassSpots.sort((a, b) => a.distToPlayer - b.distToPlayer);
+        return { x: bypassSpots[0].x, y: bypassSpots[0].y };
+      }
+
+      // Fallback: direct approach angle safe from hard walls
+      if (!checkCollision(directX - 16, directY - 16, true)) {
+        return { x: directX, y: directY };
+      }
+
+      // Safe south offset
       return { x: nx, y: ny + 32 };
     },
     [checkCollision]
@@ -1272,7 +1325,7 @@ export default function App() {
   // Click / Tap on Floor or NPC/Props to walk there automatically
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (currentDialogue || showSettings || showStartMenu) return; // In active dialogue, paused settings or start menu, don't walk
+      if (currentDialogue || showSettings || showStartMenu || showPauseMenu) return; // In active dialogue, paused settings or start menu, don't walk
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -1732,18 +1785,38 @@ export default function App() {
           targetPosRef.current = null;
           rendererRef.current?.clearDestination();
         } else {
-          // Walk towards NPC using safe non-colliding coordinates
+          // Walk towards NPC using safe non-colliding coordinates and dynamic decorative bypass waypoints
           const safeSpot = getSafeNPCTalkPosition(clickedNPC, px, py);
+          const startCol = Math.floor(px / TILE_SIZE);
+          const startRow = Math.floor(py / TILE_SIZE);
+          const waypoints = findTilePath(startCol, startRow, clickedNPC.x, clickedNPC.y, isTilePassable, {
+            isDecorative: isTileDecorativeAt,
+            allowDecorativeBypass: true,
+          });
+
+          if (waypoints && waypoints.length > 0) {
+            waypoints[waypoints.length - 1] = {
+              x: safeSpot.x,
+              y: safeSpot.y,
+              col: Math.floor(safeSpot.x / TILE_SIZE),
+              row: Math.floor(safeSpot.y / TILE_SIZE),
+            };
+          }
+
+          const finalTarget = waypoints && waypoints.length > 0 ? waypoints[waypoints.length - 1] : safeSpot;
 
           targetPosRef.current = {
-            x: safeSpot.x,
-            y: safeSpot.y,
+            x: finalTarget.x,
+            y: finalTarget.y,
             targetNPC: clickedNPC,
-            minDistSoFar: Math.hypot(safeSpot.x - px, safeSpot.y - py),
+            targetType: 'interact',
+            minDistSoFar: Math.hypot(finalTarget.x - px, finalTarget.y - py),
             stuckFrames: 0,
+            waypoints: waypoints && waypoints.length > 0 ? waypoints : undefined,
+            waypointIndex: 0,
           };
-          rendererRef.current?.setDestination(safeSpot.x, safeSpot.y, 'interact');
-          rendererRef.current?.addSparkle(safeSpot.x, safeSpot.y, '#f59e0b', 6);
+          rendererRef.current?.setDestination(finalTarget.x, finalTarget.y, 'interact');
+          rendererRef.current?.addSparkle(finalTarget.x, finalTarget.y, '#f59e0b', 6);
         }
         return;
       }
@@ -1784,7 +1857,18 @@ export default function App() {
       rendererRef.current?.setDestination(clampedX, clampedY, 'walk');
       rendererRef.current?.addSparkle(clampedX, clampedY, '#38bdf8', 5);
     },
-    [currentDialogue, npcs, zoneStatus, getSafeNPCTalkPosition, mapLayout, checkCollision, sound, getNPCDialogueNode]
+    [
+      currentDialogue,
+      npcs,
+      zoneStatus,
+      getSafeNPCTalkPosition,
+      mapLayout,
+      checkCollision,
+      sound,
+      getNPCDialogueNode,
+      isTilePassable,
+      isTileDecorativeAt,
+    ]
   );
 
   // Mouse move handler for interactive object hover hints and cursor styling
@@ -2251,8 +2335,11 @@ export default function App() {
       const startCol = Math.floor(px / TILE_SIZE);
       const startRow = Math.floor(py / TILE_SIZE);
 
-      // Find path using A* pathfinder
-      const waypoints = findTilePath(startCol, startRow, tileX, tileY, isTilePassable);
+      // Find path using A* pathfinder with dynamic decorative bypass
+      const waypoints = findTilePath(startCol, startRow, tileX, tileY, isTilePassable, {
+        isDecorative: isTileDecorativeAt,
+        allowDecorativeBypass: true,
+      });
 
       if (!waypoints || waypoints.length === 0) {
         // If already at or directly adjacent to target tile
@@ -2303,7 +2390,7 @@ export default function App() {
       rendererRef.current?.addSparkle(finalTarget.x, finalTarget.y, isGuided ? '#fbbf24' : '#38bdf8', 8);
       sound.playMenuSelect();
     },
-    [currentDialogue, isTilePassable, getSafeNPCTalkPosition, getNPCDialogueNode, processDialogueTriggers]
+    [currentDialogue, isTilePassable, isTileDecorativeAt, getSafeNPCTalkPosition, getNPCDialogueNode, processDialogueTriggers]
   );
 
   // Kid-friendly guided mode: navigates straight to current mission target with zero obstacle collisions
@@ -2475,6 +2562,17 @@ export default function App() {
   }, [showSettings]);
 
   useEffect(() => {
+    showPauseMenuRef.current = showPauseMenu;
+    if (showPauseMenu) {
+      keysPressed.current = {};
+      joystickVectorRef.current = null;
+      targetPosRef.current = null;
+      rendererRef.current?.clearDestination();
+      playerRef.current.isMoving = false;
+    }
+  }, [showPauseMenu]);
+
+  useEffect(() => {
     showStartMenuRef.current = showStartMenu;
     if (showStartMenu) {
       keysPressed.current = {};
@@ -2486,8 +2584,8 @@ export default function App() {
   }, [showStartMenu]);
 
   const handleJoystickMove = useCallback((vec: { x: number; y: number } | null) => {
-    // Cannot interact with controls if settings is open (game paused) or in start menu
-    if (showSettingsRef.current || showStartMenuRef.current) return;
+    // Cannot interact with controls if settings/pause is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current) return;
 
     joystickVectorRef.current = vec;
     if (vec && (Math.abs(vec.x) > 0.05 || Math.abs(vec.y) > 0.05)) {
@@ -2504,8 +2602,8 @@ export default function App() {
     dir: 'up' | 'down' | 'left' | 'right',
     pressed: boolean
   ) => {
-    // Cannot interact with controls if settings is open (game paused) or in start menu
-    if (showSettingsRef.current || showStartMenuRef.current) return;
+    // Cannot interact with controls if settings/pause is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current) return;
 
     const keyMap = {
       up: 'ArrowUp',
@@ -2541,7 +2639,17 @@ export default function App() {
         return;
       }
 
-      // 2. Tampilan menu pengaturan:
+      // 2. Tampilan Pause Menu:
+      if (showPauseMenu) {
+        keysPressed.current = {};
+        if (e.key === 'Escape') {
+          sound.playMenuSelect();
+          setShowPauseMenu(false);
+        }
+        return;
+      }
+
+      // 3. Tampilan menu pengaturan:
       // Game berada dalam status PAUSE dan tidak bisa berinteraksi dengan tombol kontrol apapun.
       // Game baru bisa dilanjutkan ketika keluar dari menu pengaturan.
       if (showSettings) {
@@ -2551,6 +2659,16 @@ export default function App() {
           setShowSettings(false);
         }
         return;
+      }
+
+      // Tombol Escape saat bermain: Buka Pause Menu
+      if (e.key === 'Escape') {
+        if (!currentDialogue && !showSettings && !showJournal && !showStartMenu && !showEnding && !showBreathingMiniGame) {
+          e.preventDefault();
+          sound.playMenuSelect();
+          setShowPauseMenu(true);
+          return;
+        }
       }
 
       keysPressed.current[e.key] = true;
@@ -2627,7 +2745,7 @@ export default function App() {
         target?.tagName === 'TEXTAREA' ||
         Boolean(target?.isContentEditable);
 
-      if (showStartMenu || isTypingInInput || showSettings) {
+      if (showStartMenu || isTypingInInput || showSettings || showPauseMenu) {
         keysPressed.current = {};
         return;
       }
@@ -2652,7 +2770,7 @@ export default function App() {
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, [showStartMenu, showSettings, currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleCaptureMoment]);
+  }, [showStartMenu, showSettings, showPauseMenu, currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleCaptureMoment, showJournal, showEnding, showBreathingMiniGame]);
 
   // Main 60 FPS Game Loop
   useEffect(() => {
@@ -2661,10 +2779,10 @@ export default function App() {
     const gameLoop = () => {
       const p = playerRef.current;
 
-      // 0. GAME DALAM STATUS PAUSE SAAT MENU PENGATURAN TERBUKA:
+      // 0. GAME DALAM STATUS PAUSE SAAT MENU PENGATURAN ATAU PAUSE MENU TERBUKA:
       // Seluruh simulasi dunia berhenti (pergerakan player, NPC, waypoint, suara langkah).
-      // Render frame statis tetap dijalankan agar kanvas tetap tampil stabil di balik dialog pengaturan.
-      if (showSettingsRef.current) {
+      // Render frame statis tetap dijalankan agar kanvas tetap tampil stabil di balik dialog jeda.
+      if (showSettingsRef.current || showPauseMenuRef.current) {
         p.isMoving = false;
         keysPressed.current = {};
         if (rendererRef.current) {
@@ -2869,7 +2987,10 @@ export default function App() {
           const wpIdx = target.waypointIndex ?? 0;
           const isLastWp = wpIdx >= target.waypoints.length - 1;
 
-          if (!isLastWp && (dist <= 10 || (reachedNPC && npcDist <= 46))) {
+          const advanceDist = target.isGuidedMode ? 16 : 12;
+          const shouldAdvanceStuck = target.isGuidedMode && (target.stuckFrames ?? 0) > 12;
+
+          if (!isLastWp && (dist <= advanceDist || (reachedNPC && npcDist <= 46) || shouldAdvanceStuck)) {
             target.waypointIndex = wpIdx + 1;
             target.minDistSoFar = undefined;
             target.stuckFrames = 0;
@@ -2882,7 +3003,7 @@ export default function App() {
         const isLastWaypoint =
           !hasWaypoints || (target.waypoints && (target.waypointIndex ?? 0) >= target.waypoints.length - 1);
         const isCloseEnough = (isLastWaypoint && dist <= 8) || (reachedNPC && npcDist <= 46);
-        const isStuck = (target.stuckFrames ?? 0) > 30;
+        const isStuck = (target.stuckFrames ?? 0) > (target.isGuidedMode ? 60 : 30);
 
         if (isCloseEnough || isStuck) {
           targetPosRef.current = null;
@@ -2990,16 +3111,16 @@ export default function App() {
           }
 
           let moved = false;
-          // 1. Try moving directly along angle
-          if (!checkCollision(p.x + stepX, p.y + stepY)) {
+          // 1. Try moving directly along angle (standard collision check)
+          if (!checkCollision(p.x + stepX, p.y + stepY, false)) {
             p.x += stepX;
             p.y += stepY;
             moved = true;
-          } else if (Math.abs(stepX) > 0.1 && !checkCollision(p.x + stepX, p.y)) {
+          } else if (Math.abs(stepX) > 0.1 && !checkCollision(p.x + stepX, p.y, false)) {
             // 2. Try sliding horizontally
             p.x += stepX;
             moved = true;
-          } else if (Math.abs(stepY) > 0.1 && !checkCollision(p.x, p.y + stepY)) {
+          } else if (Math.abs(stepY) > 0.1 && !checkCollision(p.x, p.y + stepY, false)) {
             // 3. Try sliding vertically
             p.y += stepY;
             moved = true;
@@ -3008,7 +3129,7 @@ export default function App() {
             if (Math.abs(distX) >= Math.abs(distY)) {
               if (Math.abs(distY) > 1.5) {
                 const altY = Math.sign(distY) * moveStep;
-                if (!checkCollision(p.x, p.y + altY)) {
+                if (!checkCollision(p.x, p.y + altY, false)) {
                   p.y += altY;
                   moved = true;
                 }
@@ -3016,11 +3137,28 @@ export default function App() {
             } else {
               if (Math.abs(distX) > 1.5) {
                 const altX = Math.sign(distX) * moveStep;
-                if (!checkCollision(p.x + altX, p.y)) {
+                if (!checkCollision(p.x + altX, p.y, false)) {
                   p.x += altX;
                   moved = true;
                 }
               }
+            }
+          }
+
+          // 5. Dynamic decorative bypass: If moving towards an NPC or in guided mission mode,
+          // and movement is obstructed by decorative obstacles (trees, pines, bushes, flowerbeds, fences, benches),
+          // allow dynamically stepping through decorative obstacles while strictly enforcing hard boundaries (cliff, water, building walls)!
+          if (!moved && (target.targetNPC || target.isGuidedMode)) {
+            if (!checkCollision(p.x + stepX, p.y + stepY, true)) {
+              p.x += stepX;
+              p.y += stepY;
+              moved = true;
+            } else if (Math.abs(stepX) > 0.1 && !checkCollision(p.x + stepX, p.y, true)) {
+              p.x += stepX;
+              moved = true;
+            } else if (Math.abs(stepY) > 0.1 && !checkCollision(p.x, p.y + stepY, true)) {
+              p.y += stepY;
+              moved = true;
             }
           }
 
@@ -3888,6 +4026,11 @@ export default function App() {
           }
           onOpenRegulation={() => handleOpenRegulation('Pemain', 'breathing')}
           onOpenStartMenu={() => setShowStartMenu(true)}
+          onOpenPauseMenu={() => {
+            sound.playMenuSelect();
+            setShowPauseMenu(true);
+          }}
+          isPauseOpen={showPauseMenu}
         />
       )}
 
@@ -4058,9 +4201,29 @@ export default function App() {
         onStartGame={handleStartGame}
         onOpenControls={() => handleOpenSettings('controls')}
         onOpenAudioSettings={() => handleOpenSettings('audio')}
+        onOpenSettings={() => handleOpenSettings('quest')}
         isSettingsOpen={showSettings}
         initialPlayerName={playerName}
         initialPlayerAvatar={playerAvatar}
+      />
+
+      {/* Pause Menu Modal (Resume, Pengaturan, Main Menu, Quit Game) */}
+      <PauseMenuModal
+        isOpen={showPauseMenu}
+        onResume={() => {
+          sound.playMenuSelect();
+          setShowPauseMenu(false);
+        }}
+        onOpenSettings={() => {
+          sound.playMenuSelect();
+          setShowPauseMenu(false);
+          handleOpenSettings('audio');
+        }}
+        onOpenMainMenu={() => {
+          sound.playMenuSelect();
+          setShowPauseMenu(false);
+          setShowStartMenu(true);
+        }}
       />
 
       {/* Prominent Sequential Mission Guidance Pop-Up for Kids */}

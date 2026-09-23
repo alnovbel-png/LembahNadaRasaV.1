@@ -34,6 +34,7 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
     // =========================================================================
     case 'player':
     case 'player_boy':
+    case 'aris':
       return (
         <div
           className={`${sizeClasses} bg-[#112b29] rounded-xl flex items-center justify-center border-2 border-[#2ca88e] shadow-[0_0_12px_rgba(44,168,142,0.35)] overflow-hidden relative ${className}`}
@@ -69,6 +70,7 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
       );
 
     case 'player_girl':
+    case 'kayla':
       return (
         <div
           className={`${sizeClasses} bg-[#0e2230] rounded-xl flex items-center justify-center border-2 border-[#22d3ee] shadow-[0_0_14px_rgba(34,211,238,0.5)] overflow-hidden relative ${className}`}
@@ -173,6 +175,7 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
     // 1. KIKI - TUPAI POS CILIK (POSTAL SQUIRREL)
     case 'squirrel':
     case 'kiki':
+    case 'kiko':
       return (
         <div
           className={`${sizeClasses} bg-[#2c1808] rounded-xl flex items-center justify-center border-2 border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.3)] overflow-hidden relative ${className}`}

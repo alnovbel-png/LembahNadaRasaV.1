@@ -12,7 +12,7 @@ interface DialogueBoxProps {
   onClose?: () => void;
   isCompassActive: boolean;
   playerName?: string;
-  playerAvatar?: 'boy' | 'girl';
+  playerAvatar?: 'boy' | 'girl' | 'kiko';
 }
 
 export const DialogueBox: React.FC<DialogueBoxProps> = ({
@@ -34,10 +34,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   // Helper to replace generic protagonist names with user's nickname
   const formatName = (str: string) => {
     if (!str) return str;
-    const name = (playerName && playerName.trim()) || 'Ezzel';
+    const name = (playerName && playerName.trim()) || (playerAvatar === 'girl' ? 'Ezzy' : 'Ezzel');
     return str
       .replace(/\bEzzel\b/g, name)
       .replace(/\bEzsel\b/g, name)
+      .replace(/\bEzzy\b/g, name)
+      .replace(/\bAris\b/g, name)
+      .replace(/\bKayla\b/g, name)
       .replace(/\bezzel\b/g, name.toLowerCase())
       .replace(/\bezsel\b/g, name.toLowerCase());
   };
@@ -172,9 +175,17 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     switch (type) {
       case 'player':
       case 'ezzel':
+      case 'aris':
+      case 'kayla':
         return (
           <CharacterPortrait
-            sprite={playerAvatar === 'girl' ? 'player_girl' : 'player'}
+            sprite={
+              playerAvatar === 'kiko'
+                ? 'kiki'
+                : playerAvatar === 'girl'
+                ? 'player_girl'
+                : 'player_boy'
+            }
             size="dialogue"
           />
         );

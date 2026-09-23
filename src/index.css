@@ -5,6 +5,10 @@
     font-family: 'Press Start 2P', monospace;
   }
 
+  .font-pixelify {
+    font-family: 'Pixelify Sans', cursive, sans-serif;
+  }
+
   /* Sleek custom scrollbars so they never overlap content */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;

@@ -11,8 +11,10 @@ export type BgmPhase = 'fog' | 'restoring' | 'restored';
 class SoundSystem {
   private ctx: AudioContext | null = null;
   public isMuted: boolean = false;
-  public bgmVolume: number = 0.65; // 0.0 to 1.0 (ambient music)
-  public sfxVolume: number = 0.8;  // 0.0 to 1.0 (sound effects)
+  public masterVolume: number = 0.85; // 0.0 to 1.0 (overall game volume)
+  public bgmVolume: number = 0.65;    // 0.0 to 1.0 (ambient music)
+  public sfxVolume: number = 0.8;     // 0.0 to 1.0 (sound effects)
+  public voiceVolume: number = 0.85;  // 0.0 to 1.0 (narration & dialogue voice)
 
   // BGM Engine Nodes & State
   public bgmPhase: BgmPhase = 'fog';
@@ -21,8 +23,10 @@ class SoundSystem {
   private hasInteracted: boolean = false;
   private listeners: Set<() => void> = new Set();
 
+  private masterGain: GainNode | null = null;
   private masterBgmGain: GainNode | null = null;
   private masterSfxGain: GainNode | null = null;
+  private masterVoiceGain: GainNode | null = null;
   private bgmFilterNode: BiquadFilterNode | null = null;
 
   // Ambient Wind Synth (for Masa Kabut Kelabu)
@@ -40,6 +44,12 @@ class SoundSystem {
     // Restore saved audio settings from localStorage
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
+        const savedMaster = localStorage.getItem('sosem_master_vol');
+        if (savedMaster !== null) {
+          const parsed = parseFloat(savedMaster);
+          if (!isNaN(parsed)) this.masterVolume = Math.max(0, Math.min(1, parsed));
+        }
+
         const savedBgm = localStorage.getItem('sosem_bgm_vol');
         if (savedBgm !== null) {
           const parsed = parseFloat(savedBgm);
@@ -50,6 +60,12 @@ class SoundSystem {
         if (savedSfx !== null) {
           const parsed = parseFloat(savedSfx);
           if (!isNaN(parsed)) this.sfxVolume = Math.max(0, Math.min(1, parsed));
+        }
+
+        const savedVoice = localStorage.getItem('sosem_voice_vol');
+        if (savedVoice !== null) {
+          const parsed = parseFloat(savedVoice);
+          if (!isNaN(parsed)) this.voiceVolume = Math.max(0, Math.min(1, parsed));
         }
 
         const savedMuted = localStorage.getItem('sosem_muted');
@@ -129,18 +145,32 @@ class SoundSystem {
         this.ctx.resume().catch(() => {});
       }
 
+      // Initialize Master Output Gain (Master Volume)
+      if (!this.masterGain) {
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.gain.setValueAtTime(this.isMuted ? 0 : this.masterVolume, this.ctx.currentTime);
+        this.masterGain.connect(this.ctx.destination);
+      }
+
       // Initialize Master SFX Gain
       if (!this.masterSfxGain) {
         this.masterSfxGain = this.ctx.createGain();
-        this.masterSfxGain.gain.setValueAtTime(this.isMuted ? 0 : this.sfxVolume, this.ctx.currentTime);
-        this.masterSfxGain.connect(this.ctx.destination);
+        this.masterSfxGain.gain.setValueAtTime(this.sfxVolume, this.ctx.currentTime);
+        this.masterSfxGain.connect(this.masterGain);
+      }
+
+      // Initialize Master Voice / Narration Gain
+      if (!this.masterVoiceGain) {
+        this.masterVoiceGain = this.ctx.createGain();
+        this.masterVoiceGain.gain.setValueAtTime(this.voiceVolume, this.ctx.currentTime);
+        this.masterVoiceGain.connect(this.masterGain);
       }
 
       // Initialize Master BGM Gain & Dynamic Atmosphere Filter
       if (!this.masterBgmGain) {
         this.masterBgmGain = this.ctx.createGain();
-        this.masterBgmGain.gain.setValueAtTime(this.isMuted ? 0 : this.bgmVolume, this.ctx.currentTime);
-        this.masterBgmGain.connect(this.ctx.destination);
+        this.masterBgmGain.gain.setValueAtTime(this.bgmVolume, this.ctx.currentTime);
+        this.masterBgmGain.connect(this.masterGain);
       }
 
       if (!this.bgmFilterNode) {
@@ -213,17 +243,38 @@ class SoundSystem {
   private updateNodeGains() {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
+    if (this.masterGain) {
+      this.masterGain.gain.setTargetAtTime(this.isMuted ? 0 : this.masterVolume, t, 0.05);
+    }
     if (this.masterBgmGain) {
-      this.masterBgmGain.gain.setTargetAtTime(this.isMuted ? 0 : this.bgmVolume, t, 0.05);
+      this.masterBgmGain.gain.setTargetAtTime(this.bgmVolume, t, 0.05);
     }
     if (this.masterSfxGain) {
-      this.masterSfxGain.gain.setTargetAtTime(this.isMuted ? 0 : this.sfxVolume, t, 0.05);
+      this.masterSfxGain.gain.setTargetAtTime(this.sfxVolume, t, 0.05);
+    }
+    if (this.masterVoiceGain) {
+      this.masterVoiceGain.gain.setTargetAtTime(this.voiceVolume, t, 0.05);
     }
     if (this.windGainNode) {
       const windTarget =
         !this.isMuted && this.bgmPhase === 'fog' && this.isBgmPlaying ? 0.016 : 0.00001;
       this.windGainNode.gain.setTargetAtTime(windTarget, t, 0.6);
     }
+  }
+
+  // Set overall master game volume
+  public setMasterVolume(val: number) {
+    const clamped = Math.max(0, Math.min(1, val));
+    this.masterVolume = clamped;
+    try {
+      localStorage.setItem('sosem_master_vol', clamped.toFixed(2));
+    } catch {}
+
+    this.updateNodeGains();
+    if (clamped > 0.01 && !this.isBgmPlaying && !this.isMuted && this.bgmVolume > 0.01 && this.hasInteracted) {
+      this.startBGM();
+    }
+    this.notify();
   }
 
   // Set ambient background music volume
@@ -247,6 +298,18 @@ class SoundSystem {
     this.sfxVolume = clamped;
     try {
       localStorage.setItem('sosem_sfx_vol', clamped.toFixed(2));
+    } catch {}
+
+    this.updateNodeGains();
+    this.notify();
+  }
+
+  // Set narration / dialogue voice volume
+  public setVoiceVolume(val: number) {
+    const clamped = Math.max(0, Math.min(1, val));
+    this.voiceVolume = clamped;
+    try {
+      localStorage.setItem('sosem_voice_vol', clamped.toFixed(2));
     } catch {}
 
     this.updateNodeGains();
@@ -832,9 +895,34 @@ class SoundSystem {
 
   // Blip when characters talk
   public playVoiceBlip(highPitch: boolean = false) {
-    const baseFreq = highPitch ? 520 : 340;
-    const jitter = (Math.random() - 0.5) * 60;
-    this.playTone(baseFreq + jitter, 'triangle', 0.05, 0.04, 0, false);
+    if (this.isMuted || this.voiceVolume <= 0.001) return;
+    this.initCtx();
+    if (!this.ctx) return;
+    try {
+      const baseFreq = highPitch ? 520 : 340;
+      const jitter = (Math.random() - 0.5) * 60;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(baseFreq + jitter, this.ctx.currentTime);
+
+      const peak = Math.max(0.00001, 0.06 * this.voiceVolume);
+      gain.gain.setValueAtTime(peak, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.00001, this.ctx.currentTime + 0.05);
+
+      osc.connect(gain);
+      if (this.masterVoiceGain) {
+        gain.connect(this.masterVoiceGain);
+      } else if (this.masterGain) {
+        gain.connect(this.masterGain);
+      } else {
+        gain.connect(this.ctx.destination);
+      }
+
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.05);
+    } catch {}
   }
 
   // UI selection blip
@@ -1310,12 +1398,29 @@ class SoundSystem {
   }
 
   // Test triggers for settings sliders & testing specific phases
+  public playTestMaster() {
+    this.initCtx();
+    this.playCompassChime();
+  }
+
   public playTestSfx() {
     this.initCtx();
     this.playTone(659.25, 'sine', 0.18, 0.08, 0, false);
     setTimeout(() => {
       this.playTone(880, 'sine', 0.25, 0.08, 0, false);
     }, 120);
+  }
+
+  public playTestVoice() {
+    this.initCtx();
+    // Warm, friendly speaking syllable triplet
+    this.playVoiceBlip(false);
+    setTimeout(() => {
+      this.playVoiceBlip(true);
+    }, 110);
+    setTimeout(() => {
+      this.playVoiceBlip(false);
+    }, 220);
   }
 
   public playTestBgmNote() {
@@ -1361,41 +1466,53 @@ if (typeof window !== 'undefined') {
 
 // Reactive hook for components to read and update volume & BGM phase in real-time
 export function useAudioSettings() {
+  const [masterVolume, setMaster] = useState(() => sound.masterVolume);
   const [bgmVolume, setBgm] = useState(() => sound.bgmVolume);
   const [sfxVolume, setSfx] = useState(() => sound.sfxVolume);
+  const [voiceVolume, setVoice] = useState(() => sound.voiceVolume);
   const [isMuted, setIsMuted] = useState(() => sound.isMuted);
   const [bgmPhase, setPhase] = useState<BgmPhase>(() => sound.bgmPhase);
 
   useEffect(() => {
     const unsub = sound.subscribe(() => {
+      setMaster(sound.masterVolume);
       setBgm(sound.bgmVolume);
       setSfx(sound.sfxVolume);
+      setVoice(sound.voiceVolume);
       setIsMuted(sound.isMuted);
       setPhase(sound.bgmPhase);
     });
     return unsub;
   }, []);
 
+  const updateMaster = useCallback((v: number) => sound.setMasterVolume(v), []);
   const updateBgm = useCallback((v: number) => sound.setBgmVolume(v), []);
   const updateSfx = useCallback((v: number) => sound.setSfxVolume(v), []);
+  const updateVoice = useCallback((v: number) => sound.setVoiceVolume(v), []);
   const toggleMute = useCallback(() => sound.toggleMute(), []);
   const setMuted = useCallback((m: boolean) => sound.setMuted(m), []);
   const setBgmPhase = useCallback((p: BgmPhase) => sound.setBgmPhase(p, true), []);
   const triggerRestoring = useCallback(() => sound.triggerColorRestorationTransition(), []);
 
   return {
+    masterVolume,
     bgmVolume,
     sfxVolume,
+    voiceVolume,
     isMuted,
     bgmPhase,
+    setMasterVolume: updateMaster,
     setBgmVolume: updateBgm,
     setSfxVolume: updateSfx,
+    setVoiceVolume: updateVoice,
     toggleMute,
     setMuted,
     setBgmPhase,
     triggerRestoring,
+    playTestMaster: () => sound.playTestMaster(),
     playTestSfx: () => sound.playTestSfx(),
     playTestBgm: () => sound.playTestBgmNote(),
+    playTestVoice: () => sound.playTestVoice(),
     playTestBgmPhase: (p: BgmPhase) => sound.playTestBgmPhase(p),
   };
 }

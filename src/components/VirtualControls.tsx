@@ -18,6 +18,8 @@ interface VirtualControlsProps {
   isGameCompleted?: boolean;
   onOpenRegulation?: () => void;
   onOpenStartMenu?: () => void;
+  onOpenPauseMenu?: () => void;
+  isPauseOpen?: boolean;
 }
 
 export const VirtualControls: React.FC<VirtualControlsProps> = ({
@@ -36,6 +38,8 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   isGameCompleted = false,
   onOpenRegulation,
   onOpenStartMenu,
+  onOpenPauseMenu,
+  isPauseOpen = false,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobileOrTablet = useIsMobileOrTablet();
@@ -204,10 +208,30 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
     <>
       {/* Top Bar Controls - Fits neatly on all screen sizes and mobile orientations */}
       <header className={`fixed top-2 sm:top-3 left-2 sm:left-4 right-2 sm:right-4 flex items-center justify-between z-30 pointer-events-none gap-1.5 sm:gap-2 transition-opacity duration-200 ${isSettingsOpen ? 'opacity-20 pointer-events-none select-none' : ''}`}>
-        {/* Left: Brand / Title Badge */}
-        <div className={`bg-slate-950/95 border border-slate-800 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl backdrop-blur-md flex items-center gap-1.5 shrink-0 ${isSettingsOpen ? 'pointer-events-none' : 'pointer-events-auto'}`}>
-          <span className="text-xs sm:text-sm">🧭</span>
-          <span className="font-pixel text-[8.5px] sm:text-[10px] text-amber-400 font-bold tracking-tight whitespace-nowrap">
+        {/* Left: Brand / Title Badge - Interactive Pause Menu Button */}
+        <div
+          id="header-brand-pause-button"
+          role="button"
+          tabIndex={0}
+          onClick={() => {
+            if (!isSettingsOpen) {
+              onOpenPauseMenu?.();
+            }
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (!isSettingsOpen) onOpenPauseMenu?.();
+            }
+          }}
+          title="Buka Pause Menu [Esc]"
+          aria-label="Pause Menu Lembah Nada Rasa"
+          className={`group bg-slate-950/95 hover:bg-slate-900 border border-slate-800 hover:border-amber-400/80 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl hover:shadow-[0_0_20px_rgba(245,158,11,0.25)] backdrop-blur-md flex items-center gap-1.5 shrink-0 transition-all duration-150 cursor-pointer select-none active:scale-95 ${
+            isSettingsOpen ? 'pointer-events-none opacity-40' : 'pointer-events-auto'
+          }`}
+        >
+          <span className="text-xs sm:text-sm transition-transform duration-200 group-hover:rotate-12">🧭</span>
+          <span className="font-pixel text-[8.5px] sm:text-[10px] text-amber-400 group-hover:text-amber-300 font-bold tracking-tight whitespace-nowrap">
             Lembah Nada Rasa
           </span>
         </div>

@@ -14,11 +14,11 @@ import {
   Clock,
   Sparkles,
   Heart,
-  MapPin,
   Trophy,
   Camera,
   BookOpen,
   Users,
+  MessageSquare,
   ArrowRight,
   Terminal,
   KeyRound,
@@ -76,18 +76,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [devPinError, setDevPinError] = useState<string | null>(null);
 
   const {
+    masterVolume,
     bgmVolume,
     sfxVolume,
+    voiceVolume,
     isMuted,
-    bgmPhase,
+    setMasterVolume,
     setBgmVolume,
     setSfxVolume,
+    setVoiceVolume,
     toggleMute,
     setMuted,
-    setBgmPhase,
+    playTestMaster,
     playTestSfx,
     playTestBgm,
-    playTestBgmPhase,
+    playTestVoice,
   } = useAudioSettings();
 
   useEffect(() => {
@@ -140,8 +143,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     tower: false,
   };
 
-  const bgmPercent = Math.round((bgmVolume ?? 0.3) * 100);
-  const sfxPercent = Math.round((sfxVolume ?? 0.65) * 100);
+  const masterPercent = Math.round((masterVolume ?? 0.85) * 100);
+  const bgmPercent = Math.round((bgmVolume ?? 0.65) * 100);
+  const sfxPercent = Math.round((sfxVolume ?? 0.8) * 100);
+  const voicePercent = Math.round((voiceVolume ?? 0.85) * 100);
   const unlockedCount = effectiveBadges.length;
   const totalBadges = PSE_ACHIEVEMENTS.length;
   const badgeProgressPercent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
@@ -302,32 +307,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               )}
 
-              {/* Status Wilayah Lembah */}
-              <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
-                <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-2.5 flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-amber-400" />
-                  Status Pemulihan Warna Lembah
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${effectiveZoneStatus.plaza ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
-                    <span className="font-bold">Alun-Alun</span>
-                    <span className="text-[10px] mt-1">{effectiveZoneStatus.plaza ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
-                  </div>
-                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${effectiveZoneStatus.bridge ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
-                    <span className="font-bold">Jembatan Kayu</span>
-                    <span className="text-[10px] mt-1">{effectiveZoneStatus.bridge ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
-                  </div>
-                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${effectiveZoneStatus.forest ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
-                    <span className="font-bold">Hutan Sunyi</span>
-                    <span className="text-[10px] mt-1">{effectiveZoneStatus.forest ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
-                  </div>
-                  <div className={`p-2.5 rounded-lg border flex flex-col items-center text-center ${effectiveZoneStatus.tower ? 'bg-emerald-950/50 border-emerald-500/60 text-emerald-300' : 'bg-slate-900/80 border-slate-800 text-slate-400'}`}>
-                    <span className="font-bold">Menara Jam</span>
-                    <span className="text-[10px] mt-1">{effectiveZoneStatus.tower ? '✨ Berwarna' : '🌫️ Kelabu'}</span>
-                  </div>
-                </div>
-              </div>
-
               {/* Daftar Misi Utama Berurutan */}
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -468,61 +447,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           Buku Panduan Karakter & Kompas Emosi Warga
                         </div>
                         <div className="text-[11px] text-slate-400">
-                          Klik warga mana pun di bawah untuk membuka pop-up dialog profil, dinamika emosi, wawasan PSE, dan tips berdialog.
+                          Buka panduan warga untuk melihat profil lengkap, dinamika emosi, wawasan PSE, dan tips berdialog dengan warga.
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-                    {effectiveNpcs.map((npc) => (
-                      <button
-                        key={npc.id}
-                        id={`btn-open-villager-profile-${npc.id}`}
-                        onClick={() => {
-                          sound.playMenuSelect();
-                          setSelectedVillagerForGuide(npc.id);
-                          setShowPeopleGuide(true);
-                        }}
-                        className={`p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer flex items-center justify-between gap-2.5 group select-none hover:shadow-md ${
-                          npc.isResolved
-                            ? 'bg-emerald-950/20 border-emerald-500/40 hover:border-emerald-400 hover:bg-emerald-950/40'
-                            : 'bg-slate-950/50 border-slate-800 hover:border-amber-400/80 hover:bg-slate-900'
-                        }`}
-                        title={`Klik untuk membuka pop-up dialog profil ${npc.name}`}
-                      >
-                        <div className="min-w-0 flex-1">
-                          <div className="font-bold text-slate-200 flex items-center gap-1.5 group-hover:text-amber-300 transition">
-                            <span>{npc.isResolved ? '✨' : '💬'}</span>
-                            <span className="truncate">{npc.name}</span>
-                            <span className="text-[10px] text-slate-400 font-normal shrink-0">({npc.role})</span>
-                          </div>
-                          <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                            {npc.isResolved ? (
-                              <span className="text-emerald-400">✅ Hati terbuka & harmonis</span>
-                            ) : (
-                              <span className="text-amber-300/90 truncate">
-                                Perlu didengar: Emosi "{npc.emotionProfile?.surfaceEmotion || 'resah'}"
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span
-                            className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
-                              npc.isResolved
-                                ? 'bg-emerald-900/60 text-emerald-300'
-                                : 'bg-slate-800 text-slate-400'
-                            }`}
-                          >
-                            {npc.isResolved ? 'Selesai' : 'Profil'}
-                          </span>
-                          <span className="text-slate-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition">
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                      </button>
-                    ))}
                   </div>
                 </div>
               )}
@@ -557,7 +485,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* All Badges Unlocked Special Banner & Action */}
-              {unlockedCount === totalBadges ? (
+              {unlockedCount === totalBadges && (
                 <div className="bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-slate-950 border-2 border-amber-400 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
                   <div className="flex items-center gap-3">
                     <div className="text-3xl p-1.5 bg-amber-500/20 rounded-xl border border-amber-400/50">
@@ -586,24 +514,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                   )}
                 </div>
-              ) : (
-                onUnlockAllBadges && (
-                  <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
-                    <div className="text-slate-300 text-center sm:text-left">
-                      💡 <span className="font-semibold text-amber-300">Uji Coba Pengembang / Guru:</span> Ingin melihat dialog apresiasi dan piagam 10 lencana langsung?
-                    </div>
-                    <button
-                      id="unlock-all-badges-test-btn"
-                      onClick={() => {
-                        onUnlockAllBadges();
-                      }}
-                      className="px-3.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 font-bold text-xs shrink-0 transition cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      <span>Kumpulkan Semua (10/10)</span>
-                    </button>
-                  </div>
-                )
               )}
 
               {/* Grid of PSE Badges */}
@@ -696,7 +606,56 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </button>
               </div>
 
-              {/* BGM Volume Slider */}
+              {/* 1. Volume Utama */}
+              <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sliders className="w-4 h-4 text-purple-400" />
+                    <span
+                      style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
+                      className="font-bold text-sm text-slate-200"
+                    >
+                      Volume Utama
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-purple-300">
+                    {masterPercent}%
+                  </span>
+                </div>
+
+                <input
+                  id="settings-master-slider"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={masterVolume}
+                  onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
+                  className="w-full accent-purple-400 h-2 bg-slate-800 rounded-lg cursor-pointer"
+                />
+
+                <div className="flex justify-between items-center pt-1">
+                  <span
+                    style={{ fontSize: '13px' }}
+                    className="text-slate-500 font-mono"
+                  >
+                    0% (Senyap) - 100% (Maksimal)
+                  </span>
+                  <button
+                    id="settings-test-master-btn"
+                    onClick={() => {
+                      if (isMuted) setMuted(false);
+                      playTestMaster();
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer"
+                  >
+                    <Play className="w-3.5 h-3.5 text-purple-400" />
+                    <span>Uji Suara Utama</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Volume Musik Latar */}
               <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -705,7 +664,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
                       className="font-bold text-sm text-slate-200"
                     >
-                      Volume Musik Latar (BGM)
+                      Volume Musik Latar
                     </span>
                   </div>
                   <span className="text-xs font-mono font-bold text-amber-300">
@@ -729,7 +688,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     style={{ fontSize: '13px' }}
                     className="text-slate-500 font-mono"
                   >
-                    0% (Senyap) - 100% (Maks)
+                    0% (Senyap) - 100% (Maksimal)
                   </span>
                   <button
                     id="settings-test-bgm-btn"
@@ -745,7 +704,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              {/* SFX Volume Slider */}
+              {/* 3. Volume Efek Suara (SFX) */}
               <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -778,7 +737,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     style={{ fontSize: '14px' }}
                     className="text-slate-500 font-mono"
                   >
-                    0% (Bisu) - 100% (Maks)
+                    0% (Bisu) - 100% (Maksimal)
                   </span>
                   <button
                     id="settings-test-sfx-btn"
@@ -794,145 +753,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
-              {/* 3 Fase Musik Latar Adaptif (Background Music) */}
-              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-3">
+              {/* 4. Volume Narasi */}
+              <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Music className="w-4 h-4 text-amber-400" />
+                    <MessageSquare className="w-4 h-4 text-emerald-400" />
                     <span
                       style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
                       className="font-bold text-sm text-slate-200"
                     >
-                      3 Fase Musik Latar Adaptif (BGM)
+                      Volume Narasi
                     </span>
                   </div>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full font-bold bg-amber-950/80 text-amber-300 border border-amber-800/80">
-                    {bgmPhase === 'fog'
-                      ? '🌫️ Fase 1: Kabut Kelabu'
-                      : bgmPhase === 'restoring'
-                      ? '✨ Fase 2: Warna Kembali'
-                      : '🌸 Fase 3: Lingkungan Pulih'}
+                  <span className="text-xs font-mono font-bold text-emerald-300">
+                    {voicePercent}%
                   </span>
                 </div>
 
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  Musik latar berubah secara dinamis dan prosedural mengikuti kondisi emosi dan pemulihan warna di Lembah Nada Rasa:
-                </p>
+                <input
+                  id="settings-voice-slider"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={voiceVolume}
+                  onChange={(e) => setVoiceVolume(parseFloat(e.target.value))}
+                  className="w-full accent-emerald-400 h-2 bg-slate-800 rounded-lg cursor-pointer"
+                />
 
-                <div className="grid grid-cols-1 gap-2.5 pt-1">
-                  {/* Phase 1: Saat Masa Kabut Kelabu */}
-                  <div
-                    className={`p-3 rounded-xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
-                      bgmPhase === 'fog'
-                        ? 'bg-slate-900/90 border-cyan-500/50 shadow-sm shadow-cyan-500/10'
-                        : 'bg-slate-950/40 border-slate-800/80'
-                    }`}
+                <div className="flex justify-between items-center pt-1">
+                  <span
+                    style={{ fontSize: '13px' }}
+                    className="text-slate-500 font-mono"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">🌫️</span>
-                        <h4 className="text-xs font-bold text-slate-200">
-                          Saat Masa Kabut Kelabu
-                        </h4>
-                        {bgmPhase === 'fog' && (
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-cyan-950 text-cyan-400 border border-cyan-800 font-semibold">
-                            Sedang Berjalan
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-slate-400 leading-normal">
-                        Terasa hampa, misterius, dan sepi. Nada piano lambat yang bergema dan diredam lembut, hembusan angin pelan, dan dentingan pelan keheningan tanpa perkusi.
-                      </p>
-                    </div>
-
-                    <button
-                      id="test-bgm-phase-fog-btn"
-                      onClick={() => {
-                        if (isMuted) setMuted(false);
-                        playTestBgmPhase('fog');
-                      }}
-                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 hover:text-cyan-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
-                    >
-                      <Play className="w-3 h-3 text-cyan-400" />
-                      <span>Uji Fase Kabut</span>
-                    </button>
-                  </div>
-
-                  {/* Phase 2: Momen Warna Kembali */}
-                  <div
-                    className={`p-3 rounded-xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
-                      bgmPhase === 'restoring'
-                        ? 'bg-slate-900/90 border-amber-500/50 shadow-sm shadow-amber-500/10'
-                        : 'bg-slate-950/40 border-slate-800/80'
-                    }`}
+                    0% (Senyap) - 100% (Maksimal)
+                  </span>
+                  <button
+                    id="settings-test-voice-btn"
+                    onClick={() => {
+                      if (isMuted) setMuted(false);
+                      playTestVoice();
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition cursor-pointer"
                   >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">✨</span>
-                        <h4 className="text-xs font-bold text-slate-200">
-                          Momen Warna Kembali
-                        </h4>
-                        {bgmPhase === 'restoring' && (
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-400 border border-amber-800 font-semibold animate-pulse">
-                            Transisi Bersemi
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-slate-400 leading-normal">
-                        Jembatan emosional saat misi selesai. Tempo naik bertahap, petikan gitar tunggal dan dentingan lonceng angin bersemi memulihkan desa.
-                      </p>
-                    </div>
-
-                    <button
-                      id="test-bgm-phase-restoring-btn"
-                      onClick={() => {
-                        if (isMuted) setMuted(false);
-                        playTestBgmPhase('restoring');
-                      }}
-                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 hover:text-amber-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
-                    >
-                      <Play className="w-3 h-3 text-amber-400" />
-                      <span>Uji Transisi Warna</span>
-                    </button>
-                  </div>
-
-                  {/* Phase 3: Setelah Lingkungan Pulih */}
-                  <div
-                    className={`p-3 rounded-xl border transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
-                      bgmPhase === 'restored'
-                        ? 'bg-slate-900/90 border-emerald-500/50 shadow-sm shadow-emerald-500/10'
-                        : 'bg-slate-950/40 border-slate-800/80'
-                    }`}
-                  >
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-base">🌸</span>
-                        <h4 className="text-xs font-bold text-slate-200">
-                          Setelah Lingkungan Pulih
-                        </h4>
-                        {bgmPhase === 'restored' && (
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-semibold">
-                            Mekar Harmonis
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-[11px] text-slate-400 leading-normal">
-                        Mekar penuh kehangatan, harapan, dan rasa syukur. Petikan gitar akustik yang ringan, tiupan seruling merdu gembira, dan melodi yang membangkitkan semangat.
-                      </p>
-                    </div>
-
-                    <button
-                      id="test-bgm-phase-restored-btn"
-                      onClick={() => {
-                        if (isMuted) setMuted(false);
-                        playTestBgmPhase('restored');
-                      }}
-                      className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 hover:text-emerald-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
-                    >
-                      <Play className="w-3 h-3 text-emerald-400" />
-                      <span>Uji Melodi Pulih</span>
-                    </button>
-                  </div>
+                    <Play className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Uji Suara Narasi</span>
+                  </button>
                 </div>
               </div>
 
@@ -950,8 +816,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     id="settings-reset-audio-btn"
                     onClick={() => {
-                      setBgmVolume(0.3);
-                      setSfxVolume(0.65);
+                      setMasterVolume(0.85);
+                      setBgmVolume(0.65);
+                      setSfxVolume(0.8);
+                      setVoiceVolume(0.85);
                       setMuted(false);
                     }}
                     className="flex items-center gap-1 text-[11px] text-amber-400 hover:text-amber-300 transition cursor-pointer"
@@ -965,34 +833,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     id="preset-balanced-btn"
                     onClick={() => {
                       setMuted(false);
+                      setMasterVolume(0.85);
                       setBgmVolume(0.65);
                       setSfxVolume(0.8);
+                      setVoiceVolume(0.85);
                       playTestSfx();
                     }}
                     className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer"
                   >
                     <span className="font-bold text-amber-300 block">🎮 Seimbang</span>
-                    <span className="text-[10px] text-slate-400">BGM 65% / SFX 80%</span>
+                    <span className="text-[10px] text-slate-400">Utama 85% / BGM 65% / SFX 80% / Narasi 85%</span>
                   </button>
                   <button
                     id="preset-story-btn"
                     onClick={() => {
                       setMuted(false);
+                      setMasterVolume(0.9);
                       setBgmVolume(0.3);
-                      setSfxVolume(0.9);
-                      playTestSfx();
+                      setSfxVolume(0.7);
+                      setVoiceVolume(1.0);
+                      playTestVoice();
                     }}
                     className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer"
                   >
                     <span className="font-bold text-cyan-300 block">🎧 Dialog Cerita</span>
-                    <span className="text-[10px] text-slate-400">BGM 30% / SFX 90%</span>
+                    <span className="text-[10px] text-slate-400">BGM 30% / Narasi 100%</span>
                   </button>
                   <button
                     id="preset-ambient-btn"
                     onClick={() => {
                       setMuted(false);
+                      setMasterVolume(0.85);
                       setBgmVolume(0.85);
                       setSfxVolume(0.35);
+                      setVoiceVolume(0.75);
                       playTestBgm();
                     }}
                     className="p-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-left transition cursor-pointer"

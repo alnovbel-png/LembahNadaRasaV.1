@@ -172,15 +172,15 @@ export class GameRenderer {
     this.activeQuestTarget = target;
   }
 
-  // Player custom avatar representation (boy or girl)
-  public playerAvatar: 'boy' | 'girl' = 'boy';
+  // Player custom avatar representation (boy, girl, or kiko)
+  public playerAvatar: 'boy' | 'girl' | 'kiko' = 'boy';
 
-  public setPlayerAvatar(avatar: 'boy' | 'girl') {
+  public setPlayerAvatar(avatar: 'boy' | 'girl' | 'kiko') {
     this.playerAvatar = avatar;
   }
 
   // Player custom nickname
-  public playerName: string = 'Ezzel';
+  public playerName: string = 'Aris';
 
   public setPlayerName(name: string) {
     if (name && name.trim()) {
@@ -4446,6 +4446,11 @@ export class GameRenderer {
     ctx.ellipse(px + 16, py + 29, 11, 4.5, 0, 0, Math.PI * 2);
     ctx.fill();
 
+    if (this.playerAvatar === 'kiko') {
+      this.drawPlayerKiko(player, px, py, bob, walkTick, isCompassActive);
+      return;
+    }
+
     const isGirl = this.playerAvatar === 'girl';
 
     // Color Palette matching the reference image (karakter ezzel & ezzy)
@@ -5017,6 +5022,167 @@ export class GameRenderer {
 
     // Minty cyan glowing letters matching reference image
     ctx.fillStyle = '#9ef4dc';
+    ctx.fillText(displayName, textCenterX, textCenterY);
+    ctx.restore();
+  }
+
+  // Draw player when Kiko (companion fox) is selected
+  private drawPlayerKiko(
+    player: Player,
+    px: number,
+    py: number,
+    bob: number,
+    walkTick: number,
+    isCompassActive: boolean
+  ) {
+    const ctx = this.ctx;
+    const isMoving = player.isMoving;
+    const stride = isMoving ? Math.round(Math.sin(walkTick) * 3) : 0;
+    const tailSway = isMoving ? Math.sin(walkTick * 1.5) * 3 : Math.sin(this.tickCount * 0.08) * 1.5;
+
+    let tailX = px + 6;
+    if (player.facing === 'right') tailX = px + 4;
+    else if (player.facing === 'left') tailX = px + 22;
+    else if (player.facing === 'up') tailX = px + 16;
+
+    // 1. Lush multi-toned fluffy S-curve tail
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.arc(tailX, py + 12 + bob + tailSway, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#d97706';
+    ctx.beginPath();
+    ctx.arc(tailX + 1, py + 11 + bob + tailSway, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fef3c7';
+    ctx.fillRect(tailX - 1, py + 5 + bob + tailSway, 4, 4);
+
+    // 2. Fox feet
+    ctx.fillStyle = '#92400e';
+    if (player.facing === 'left' || player.facing === 'right') {
+      ctx.fillRect(px + 12 + stride, py + 26, 4, 3);
+      ctx.fillRect(px + 16 - stride, py + 26, 4, 3);
+    } else {
+      ctx.fillRect(px + 10 + stride, py + 26, 4, 3);
+      ctx.fillRect(px + 18 - stride, py + 26, 4, 3);
+    }
+
+    // 3. Body with shading
+    ctx.fillStyle = '#d97706';
+    ctx.fillRect(px + 10, py + 13 + bob, 12, 13);
+    ctx.fillStyle = '#b45309';
+    ctx.fillRect(px + 10, py + 13 + bob, 2, 13);
+    ctx.fillRect(px + 20, py + 13 + bob, 2, 13);
+
+    // 4. Cream tummy (facing down/left/right)
+    if (player.facing !== 'up') {
+      ctx.fillStyle = '#fef3c7';
+      const tummyX = player.facing === 'left' ? px + 10 : player.facing === 'right' ? px + 15 : px + 13;
+      ctx.fillRect(tummyX, py + 15 + bob, 6, 8);
+    }
+
+    // 5. Courier satchel strap & bag with gold buckle
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(px + 11, py + 14 + bob, 2, 3);
+    ctx.fillRect(px + 13, py + 17 + bob, 2, 3);
+    ctx.fillRect(px + 15, py + 20 + bob, 2, 3);
+    ctx.fillRect(px + 17, py + 19 + bob, 6, 6);
+    ctx.fillStyle = '#facc15';
+    ctx.fillRect(px + 19, py + 21 + bob, 2, 2);
+
+    // 6. Fox Head
+    ctx.fillStyle = '#ea580c';
+    const headX = player.facing === 'left' ? px + 7 : player.facing === 'right' ? px + 11 : px + 9;
+    ctx.fillRect(headX, py + 7 + bob, 14, 8);
+
+    // 7. Ears
+    ctx.fillStyle = '#c2410c';
+    ctx.fillRect(headX, py + 3 + bob, 4, 5);
+    ctx.fillRect(headX + 10, py + 3 + bob, 4, 5);
+    ctx.fillStyle = '#fda4af';
+    ctx.fillRect(headX + 1, py + 4 + bob, 2, 3);
+    ctx.fillRect(headX + 11, py + 4 + bob, 2, 3);
+
+    // 8. Royal Blue Courier Cap with Postal Visor & Brass Emblem
+    ctx.fillStyle = '#1e3a8a';
+    ctx.fillRect(headX + 2, py + 3 + bob, 10, 4);
+    ctx.fillStyle = '#1d4ed8';
+    ctx.fillRect(headX + 1, py + 6 + bob, 12, 2);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(headX + 1, py + 7 + bob, 13, 1);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillRect(headX + 6, py + 4 + bob, 2, 2);
+
+    // 9. Eyes & snout (if not facing up)
+    if (player.facing !== 'up') {
+      ctx.fillStyle = '#0f172a';
+      if (player.facing === 'right') {
+        ctx.fillRect(headX + 9, py + 10 + bob, 3, 3);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(headX + 10, py + 10 + bob, 1, 1);
+      } else if (player.facing === 'left') {
+        ctx.fillRect(headX + 2, py + 10 + bob, 3, 3);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(headX + 2, py + 10 + bob, 1, 1);
+      } else {
+        ctx.fillRect(headX + 2, py + 10 + bob, 3, 3);
+        ctx.fillRect(headX + 9, py + 10 + bob, 3, 3);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(headX + 2, py + 10 + bob, 1, 1);
+        ctx.fillRect(headX + 9, py + 10 + bob, 1, 1);
+      }
+
+      ctx.fillStyle = '#fef3c7';
+      const snoutX = player.facing === 'left' ? headX : player.facing === 'right' ? headX + 9 : headX + 5;
+      ctx.fillRect(snoutX, py + 12 + bob, 4, 3);
+      ctx.fillStyle = '#18181b';
+      ctx.fillRect(snoutX + 1, py + 12 + bob, 2, 1);
+    }
+
+    // Compass Resonance Aura if active
+    if (isCompassActive) {
+      const pulse = (Math.sin(this.tickCount * 0.18) + 1) * 0.5;
+      ctx.save();
+      const compX = px + 16;
+      const compY = py + 22 + bob;
+      const auraGrad = ctx.createRadialGradient(compX, compY, 2, compX, compY, 20 + pulse * 6);
+      auraGrad.addColorStop(0, 'rgba(251, 191, 36, 0.95)');
+      auraGrad.addColorStop(0.45, 'rgba(245, 158, 11, 0.55)');
+      auraGrad.addColorStop(1, 'rgba(217, 119, 6, 0)');
+      ctx.fillStyle = auraGrad;
+      ctx.beginPath();
+      ctx.arc(compX, compY, 20 + pulse * 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Protagonist Name Banner
+    ctx.save();
+    const displayName = this.playerName || 'Kiko';
+    ctx.font = '8px "Press Start 2P", monospace';
+    const textWidth = ctx.measureText(displayName).width;
+    const tagW = Math.max(50, Math.round(textWidth + 14));
+    const tagH = 15;
+    const tagX = px + 16 - tagW / 2;
+    const tagY = py - 14 + Math.round(bob * 0.5);
+
+    ctx.fillStyle = '#0a1d1b';
+    ctx.fillRect(tagX - 1, tagY - 1, tagW + 2, tagH + 2);
+    ctx.fillStyle = '#112b29';
+    ctx.fillRect(tagX, tagY, tagW, tagH);
+    ctx.fillStyle = '#2ca88e';
+    ctx.fillRect(tagX, tagY, tagW, 1);
+    ctx.fillRect(tagX, tagY + tagH - 1, tagW, 1);
+    ctx.fillRect(tagX, tagY, 1, tagH);
+    ctx.fillRect(tagX + tagW - 1, tagY, 1, tagH);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const textCenterX = Math.round(tagX + tagW / 2);
+    const textCenterY = Math.round(tagY + tagH / 2) + 1;
+    ctx.fillStyle = '#1c6858';
+    ctx.fillText(displayName, textCenterX + 1, textCenterY + 1);
+    ctx.fillStyle = '#fde047';
     ctx.fillText(displayName, textCenterX, textCenterY);
     ctx.restore();
   }
