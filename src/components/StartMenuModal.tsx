@@ -51,6 +51,15 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
     setPlayerAvatar(initialPlayerAvatar === 'girl' ? 'girl' : 'boy');
   }, [initialPlayerName, initialPlayerAvatar]);
 
+  // Whenever StartMenuModal is opened or re-opened (e.g. from Pause Menu), ALWAYS show the Main Menu view first
+  useEffect(() => {
+    if (isOpen) {
+      setMenuView('main');
+      setSelectedMainMenuIndex(0);
+      setShowExitModal(false);
+    }
+  }, [isOpen]);
+
   const getDefaultNameForAvatar = (avatar: 'boy' | 'girl') => {
     return avatar === 'girl' ? 'Ezzy' : 'Ezzel';
   };

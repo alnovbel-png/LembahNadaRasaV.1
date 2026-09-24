@@ -320,7 +320,7 @@ export function downloadOfflineGameHtml() {
         nextBtn.style.display = 'none';
         let b1 = document.createElement('button');
         b1.className = 'choice-btn';
-        b1.innerText = 'Pilihan A: Validasi Rasa (Kakek pasti lelah... kami sangat berterima kasih atas jasamu).';
+        b1.innerText = 'Kakek pasti lelah merawat jembatan sendirian... kami sangat berterima kasih atas jasamu.';
         b1.onclick = () => {
           npc.resolved = true;
           zoneRestored.bridge = true;
@@ -331,15 +331,15 @@ export function downloadOfflineGameHtml() {
         };
         choicesContainer.appendChild(b1);
       } else if (npc.id === 'bimo') {
-        document.getElementById('dia-text').innerText = 'Aku anak terburuk... Roda gigi jam jatuh gara-gara aku...';
+        document.getElementById('dia-text').innerText = 'Kakek Ranu membentakku tadi pagi... Beliau pasti membenciku. Jam desa mati karena salah paham ini...';
         nextBtn.style.display = 'none';
         let b1 = document.createElement('button');
         b1.className = 'choice-btn';
-        b1.innerText = 'Bimo, satu kesalahan tidak membuatmu jadi anak buruk. Kita belajar bersama!';
+        b1.innerText = 'Kakek Ranu tidak membencimu, Bimo! Beliau menyayangimu dan itu hanya salah paham. Ayo kita perbaiki bersama!';
         b1.onclick = () => {
           npc.resolved = true;
           zoneRestored.forest = true;
-          document.getElementById('dia-text').innerText = 'Bimo tersenyum: "Terima kasih! Ini Roda Gigi Emas untuk menara jam!"';
+          document.getElementById('dia-text').innerText = 'Bimo tersenyum lega: "Kakek Ranu tidak membenciku?! Syukurlah! Ini Roda Gigi Emas untuk Menara Jam!"';
           choicesContainer.innerHTML = '';
           nextBtn.style.display = 'block';
           playTone(659, 0.4, 'sine');

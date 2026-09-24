@@ -168,18 +168,18 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
     personality: 'Cerdas, teliti, pemalu, dan sangat keras menghukum diri sendiri ketika berbuat kekeliruan.',
     favoriteQuote: '"Kesalahan bukanlah tanda kita bodoh, melainkan bukti kita sedang berani mencoba."',
     sprite: 'boy_glasses',
-    bio: 'Bimo adalah anak cerdas berkacamata yang dipercaya memegang roda gigi emas jam desa. Ketika roda gigi itu terlepas dari genggamannya dan menggelinding ke hutan, Bimo lari menyendiri karena takut dicap ceroboh.',
+    bio: 'Bimo adalah murid cilik pembuat jam yang tekun belajar pada Kakek Ranu. Karena salah paham setelah dibentak saat kakek sedang kelelahan, Bimo mengira dirinya dibenci dan lari bersembunyi ke hutan sambil mendekap erat Roda Gigi Menara Jam.',
     surfaceEmotion: {
       type: 'sedih',
       label: 'Kesedihan Mendalam & Menarik Diri',
-      description: 'Menundukkan kepala, memeluk lututnya, dan menolak bicara dengan orang lain.',
+      description: 'Menundukkan kepala, memeluk lututnya di balik pohon pinus, dan menolak bicara dengan orang lain.',
     },
     deepEmotion: {
       type: 'cemas',
-      label: 'Kecemasan Takut Dinilai Buruk (Harga Diri)',
-      description: 'Menyamakan "kesalahan tindakan" dengan "identitas diri": merasa dirinya tidak berharga.',
+      label: 'Kecemasan Takut Ditolak & Merasa Bersalah',
+      description: 'Takut Kakek Ranu membencinya dan merasa dirinya adalah penyebab rusaknya menara jam desa.',
     },
-    storyReason: 'Roda gigi utama jam desa terjatuh saat ia membawanya, membuatnya diliputi rasa malu dan takut dimarahi.',
+    storyReason: 'Salah paham mengira Kakek Ranu membencinya setelah bentakan tadi pagi, sehingga ia kabur membawa Roda Gigi Menara karena malu dan takut.',
     selConcept: {
       pillar: 'Kesadaran Diri (Self-Awareness)',
       title: 'Reframing Kognitif: Memisahkan Diri dari Kesalahan',
@@ -190,9 +190,9 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
       icon: '🌱',
       summary: 'Mengubah kalimat celaan diri menjadi afirmasi belajar yang sehat.',
       steps: [
-        'Ganti ucapan "Aku payah dan ceroboh" menjadi "Aku melakukan kekeliruan, dan aku bisa memperbaikinya."',
-        'Ingat bahwa jam desa berhenti bukan karena niat jahat, melainkan kecelakaan yang bisa diselesaikan.',
-        'Bangkit bersama sahabat untuk mencari roda gigi dengan kepala tegak.',
+        'Ganti ucapan "Kakek membenciku karena aku ceroboh" menjadi "Kakek membentak karena lelah, bukan karena membenciku."',
+        'Pahami bahwa membuat kekeliruan saat belajar adalah wajar dan bisa diperbaiki bersama.',
+        'Bangkit bersama sahabat untuk menyerahkan roda gigi jam dengan kepala tegak.',
       ],
     },
     dialogueTips: {

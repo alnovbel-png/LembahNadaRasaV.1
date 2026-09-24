@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { DialogueNode, ChoiceOption } from '../types/game';
 import { sound } from '../utils/audio';
 import { Eye, MessageCircle, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
@@ -50,17 +50,62 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   const processedFullText = formatName(dialogue.text);
   const processedThought = dialogue.thoughtBubble ? formatName(dialogue.thoughtBubble) : undefined;
 
-  // Typewriter effect
+  // Track wrong answers for the current dialogue session to highlight them
+  const wrongChoiceIdsRef = useRef<Record<string, string[]>>({});
+  const typewriterIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const typingFinishedTimeRef = useRef<number>(0);
+
+  const isWrongFeedback = Boolean(
+    dialogue.isWrongFeedback ||
+    dialogue.id.includes('wrong') ||
+    dialogue.id.includes('dismiss') ||
+    dialogue.id.includes('rebuke') ||
+    dialogue.id.includes('shame') ||
+    dialogue.id.includes('fixed_feedback') ||
+    (dialogue.nextId && (
+      dialogue.nextId.includes('_intro') ||
+      dialogue.nextId.includes('_question') ||
+      dialogue.nextId.includes('_practice')
+    ) && (
+      dialogue.id.includes('wrong') ||
+      dialogue.id.includes('rebuke') ||
+      dialogue.id.includes('shame') ||
+      dialogue.id.includes('dismiss') ||
+      dialogue.id.includes('fixed')
+    ))
+  );
+
+  const hasChoices = Boolean(dialogue.choices && dialogue.choices.length > 0);
+
+  // Instantly finish typewriter effect to allow player to read full text before choosing response
+  const finishTypingInstantly = useCallback(() => {
+    if (typewriterIntervalRef.current) {
+      clearInterval(typewriterIntervalRef.current);
+      typewriterIntervalRef.current = null;
+    }
+    setDisplayedText(processedFullText);
+    setIsTyping(false);
+    typingFinishedTimeRef.current = Date.now();
+  }, [processedFullText]);
+
+  // Typewriter effect (teks bergulir) - scrolls text first, player then clicks Pilih Respon
   useEffect(() => {
+    if (typewriterIntervalRef.current) {
+      clearInterval(typewriterIntervalRef.current);
+      typewriterIntervalRef.current = null;
+    }
+
     setDisplayedText('');
     setIsTyping(true);
     setShowChoices(false);
     setFeedbackStatus('idle');
     setSelectedChoiceId(null);
+    typingFinishedTimeRef.current = 0;
+
     let index = 0;
     const fullText = processedFullText;
 
-    const interval = setInterval(() => {
+    typewriterIntervalRef.current = setInterval(() => {
       if (index < fullText.length) {
         setDisplayedText(fullText.slice(0, index + 1));
         if (index % 3 === 0) {
@@ -69,18 +114,28 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         index++;
       } else {
         setIsTyping(false);
-        clearInterval(interval);
+        typingFinishedTimeRef.current = Date.now();
+        if (typewriterIntervalRef.current) {
+          clearInterval(typewriterIntervalRef.current);
+          typewriterIntervalRef.current = null;
+        }
       }
     }, 18);
 
-    return () => clearInterval(interval);
-  }, [dialogue, processedFullText]);
+    return () => {
+      if (typewriterIntervalRef.current) {
+        clearInterval(typewriterIntervalRef.current);
+        typewriterIntervalRef.current = null;
+      }
+    };
+  }, [dialogue.id, processedFullText]);
 
   // Handle immediate text skip or exit
   const handleExitOrSkip = () => {
-    if (isTyping) {
-      setDisplayedText(processedFullText);
-      setIsTyping(false);
+    if (isWrongFeedback) {
+      onNext();
+    } else if (isTyping) {
+      finishTypingInstantly();
     } else if (onClose) {
       onClose();
     } else {
@@ -96,23 +151,30 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     const isWrong = choice.impactScore <= 0 || choice.resultDialogueId.includes('wrong');
 
     if (isWrong) {
-      // 1. Incorrect response: Red dialog box, error buzzer, device vibration
+      // Incorrect response: Record wrong answer ID to highlight on retry
+      if (!wrongChoiceIdsRef.current[dialogue.id]) {
+        wrongChoiceIdsRef.current[dialogue.id] = [];
+      }
+      if (!wrongChoiceIdsRef.current[dialogue.id].includes(choice.id)) {
+        wrongChoiceIdsRef.current[dialogue.id].push(choice.id);
+      }
+
       setFeedbackStatus('wrong');
       sound.playQuizWrong();
       setTimeout(() => {
         onChoiceSelect(choice);
         setFeedbackStatus('idle');
         setSelectedChoiceId(null);
-      }, 1200);
+      }, 1000);
     } else {
-      // 2. Correct response: Green dialog box, cheerful applause fanfare, device vibration & floating stars
+      // Correct response: Green dialog box, cheerful applause fanfare
       setFeedbackStatus('correct');
       sound.playApplause();
       setTimeout(() => {
         onChoiceSelect(choice);
         setFeedbackStatus('idle');
         setSelectedChoiceId(null);
-      }, 1500);
+      }, 1400);
     }
   };
 
@@ -144,21 +206,23 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           if (e.code === 'Space' || e.key === 'Enter') {
             e.preventDefault();
             if (isTyping) {
-              setDisplayedText(processedFullText);
-              setIsTyping(false);
+              finishTypingInstantly();
             } else {
-              sound.playMenuSelect();
-              setShowChoices(true);
+              // Only open choices if at least 300ms passed after typing ended to avoid accidental double-space
+              if (Date.now() - typingFinishedTimeRef.current > 300) {
+                sound.playMenuSelect();
+                setShowChoices(true);
+              }
             }
           }
         }
       } else {
         if (e.code === 'Space' || e.key === 'Enter') {
           e.preventDefault();
-          if (isTyping) {
-            // Finish typing immediately
-            setDisplayedText(processedFullText);
-            setIsTyping(false);
+          if (isWrongFeedback) {
+            onNext();
+          } else if (isTyping) {
+            finishTypingInstantly();
           } else {
             onNext();
           }
@@ -168,7 +232,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogue, isTyping, showChoices, processedFullText, onNext, onClose, feedbackStatus]);
+  }, [dialogue, isTyping, showChoices, finishTypingInstantly, onNext, onClose, feedbackStatus, isWrongFeedback]);
 
   // Character portraits rendering
   const renderPortrait = (type: string) => {
@@ -267,26 +331,6 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
   const isRegulationTrigger = Boolean(
     dialogue.triggerRegulationMode || dialogue.triggerBreathing
-  );
-
-  const isWrongFeedback = Boolean(
-    dialogue.isWrongFeedback ||
-    dialogue.id.includes('wrong') ||
-    dialogue.id.includes('dismiss') ||
-    dialogue.id.includes('rebuke') ||
-    dialogue.id.includes('shame') ||
-    dialogue.id.includes('fixed_feedback') ||
-    (dialogue.nextId && (
-      dialogue.nextId.includes('_intro') ||
-      dialogue.nextId.includes('_question') ||
-      dialogue.nextId.includes('_practice')
-    ) && (
-      dialogue.id.includes('wrong') ||
-      dialogue.id.includes('rebuke') ||
-      dialogue.id.includes('shame') ||
-      dialogue.id.includes('dismiss') ||
-      dialogue.id.includes('fixed')
-    ))
   );
 
   const isMissionNotice = Boolean(
@@ -441,10 +485,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             {isTyping && (
               <button
                 id="dialogue-fast-forward-btn"
-                onClick={() => {
-                  setDisplayedText(processedFullText);
-                  setIsTyping(false);
-                }}
+                onClick={finishTypingInstantly}
                 className="self-end text-[8px] font-pixel text-amber-400 hover:text-amber-200 bg-slate-900/80 hover:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/30 hover:border-amber-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all duration-200 flex items-center gap-1 cursor-pointer"
               >
                 <span>⚡ Tampilkan Semua Teks [Spasi]</span>
@@ -469,7 +510,9 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     }`}
                   >
                     <MessageCircle className="w-3 h-3" />
-                    Pilih Responmu (1-{dialogue.choices.length} atau klik):
+                    {(wrongChoiceIdsRef.current[dialogue.id]?.length ?? 0) > 0
+                      ? `Coba pilih respon lain yang lebih bijak (1-${dialogue.choices.length} atau klik):`
+                      : `Pilih Responmu (1-${dialogue.choices.length} atau klik):`}
                   </span>
                   <button
                     onClick={() => setShowChoices(false)}
@@ -482,6 +525,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 <div className="grid grid-cols-1 gap-1.5">
                   {dialogue.choices.map((choice, index) => {
                     const isSelected = selectedChoiceId === choice.id;
+                    const isPreviouslyWrong = (wrongChoiceIdsRef.current[dialogue.id] || []).includes(choice.id);
                     let btnStyle =
                       'bg-slate-900/90 hover:bg-amber-950/70 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-100';
 
@@ -491,6 +535,9 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     } else if (isSelected && feedbackStatus === 'correct') {
                       btnStyle =
                         'bg-emerald-900/80 border-2 border-emerald-400 text-white shadow-[0_0_16px_rgba(16,185,129,0.7)] scale-[1.02]';
+                    } else if (isPreviouslyWrong) {
+                      btnStyle =
+                        'bg-slate-950/70 border border-red-900/60 text-slate-400 hover:text-rose-200 hover:border-red-500/50';
                     }
 
                     return (
@@ -499,7 +546,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         id={`choice-${choice.id}`}
                         onClick={() => handleChoiceClick(choice)}
                         disabled={feedbackStatus !== 'idle'}
-                        className={`w-full text-left px-2.5 py-2 rounded-lg font-pixel text-[9px] sm:text-[10px] transition-all duration-200 ease-out flex items-start gap-2 cursor-pointer active:scale-[0.98] group disabled:cursor-not-allowed ${btnStyle}`}
+                        className={`w-full text-left px-2.5 py-2 rounded-lg font-pixel text-[9px] sm:text-[10px] transition-all duration-200 ease-out flex items-center gap-2 cursor-pointer active:scale-[0.98] group disabled:cursor-not-allowed ${btnStyle}`}
                       >
                         <span
                           className={`rounded px-1.5 py-0.5 text-[9px] font-pixel shrink-0 transition-colors ${
@@ -507,6 +554,8 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                               ? 'bg-red-500 text-white border border-red-300'
                               : isSelected && feedbackStatus === 'correct'
                               ? 'bg-emerald-400 text-slate-950 border border-emerald-200'
+                              : isPreviouslyWrong
+                              ? 'bg-red-950/90 text-rose-300 border border-red-800'
                               : 'bg-slate-800 text-amber-300 border border-slate-600 group-hover:bg-amber-500 group-hover:text-slate-950 group-hover:border-amber-300'
                           }`}
                         >
@@ -515,38 +564,50 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         <span className="flex-1 leading-relaxed">
                           {formatName(choice.text)}
                         </span>
+                        {isPreviouslyWrong && (
+                          <span className="text-[8px] bg-red-950/90 text-rose-300 border border-red-600/60 px-1.5 py-0.5 rounded font-bold shrink-0 ml-1">
+                            Kurang Tepat ❌
+                          </span>
+                        )}
                       </button>
                     );
                   })}
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-                <div className="flex items-center gap-1.5 text-slate-400 font-pixel text-[8px] sm:text-[9px]">
-                  <MessageCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                  <span>
-                    {isTyping
-                      ? 'Dengarkan & baca ucapan karakter terlebih dahulu...'
-                      : 'Sudah membaca teks? Tekan tombol untuk memilih respon tanggapanmu.'}
-                  </span>
+              isTyping ? (
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+                  <div className="flex items-center gap-1.5 text-slate-400 font-pixel text-[8px] sm:text-[9px]">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
+                    <span>Mendengarkan ucapan karakter...</span>
+                  </div>
+                  <button
+                    id="dialogue-finish-typing-btn"
+                    onClick={finishTypingInstantly}
+                    className="w-full sm:w-auto px-3 py-1.5 rounded-lg font-pixel text-[9px] bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
+                  >
+                    <span>⚡ Lewati Animasi Teks [Spasi]</span>
+                  </button>
                 </div>
-                <button
-                  id="dialogue-show-choices-btn"
-                  onClick={() => {
-                    if (isTyping) {
-                      setDisplayedText(processedFullText);
-                      setIsTyping(false);
-                    } else {
+              ) : (
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-amber-950/30 border border-amber-500/40 rounded-xl p-2 sm:p-2.5 animate-fade-in">
+                  <div className="flex items-center gap-1.5 text-amber-200 font-pixel text-[8px] sm:text-[9px]">
+                    <MessageCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-bounce" />
+                    <span>Teks selesai dibaca. Klik tombol untuk memilih respon tanggapanmu:</span>
+                  </div>
+                  <button
+                    id="dialogue-show-choices-btn"
+                    onClick={() => {
                       sound.playMenuSelect();
                       setShowChoices(true);
-                    }
-                  }}
-                  className="w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[9px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_16px_rgba(245,158,11,0.5)] hover:shadow-[0_0_24px_rgba(245,158,11,0.75)] flex items-center justify-center gap-1.5 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
-                >
-                  <span>{isTyping ? 'SELESAIKAN BACAAN [SPASI]' : 'PILIH RESPON [SPASI]'}</span>
-                  <span className="text-xs">{isTyping ? '⚡' : '💬 ▶'}</span>
-                </button>
-              </div>
+                    }}
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[9px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.6)] hover:shadow-[0_0_26px_rgba(245,158,11,0.85)] flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 animate-pulse"
+                  >
+                    <span>KLIK PILIH RESPON [SPASI]</span>
+                    <span className="text-xs">💬 ▶</span>
+                  </button>
+                </div>
+              )
             )
           ) : (
             <div className="flex justify-end items-center gap-2">
@@ -563,9 +624,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               <button
                 id="dialogue-next-btn"
                 onClick={() => {
-                  if (isTyping) {
-                    setDisplayedText(processedFullText);
-                    setIsTyping(false);
+                  if (isWrongFeedback) {
+                    onNext();
+                  } else if (isTyping) {
+                    finishTypingInstantly();
                   } else {
                     onNext();
                   }
@@ -575,20 +637,20 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.55)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
                     : isRegulationTrigger && !isTyping
                     ? 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 border border-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.55)] hover:shadow-[0_0_30px_rgba(6,182,212,0.85)]'
-                    : isWrongFeedback && !isTyping
+                    : isWrongFeedback
                     ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.65)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
                     : 'bg-amber-400 hover:bg-amber-300 text-slate-950 hover:shadow-[0_0_20px_rgba(245,158,11,0.65)]'
                 }`}
               >
                 <span>
-                  {isTyping
+                  {isWrongFeedback
+                    ? 'COBA PILIH LAGI [SPASI]'
+                    : isTyping
                     ? 'LEWATI EFEK'
                     : isEndingDialogue
                     ? 'SELESAIKAN & LIHAT SERTIFIKAT [SPASI]'
                     : isRegulationTrigger
                     ? 'MULAI LATIHAN BERSAMA KIKI [SPASI]'
-                    : isWrongFeedback
-                    ? 'KEMBALI KE DIALOG AWAL [SPASI]'
                     : 'LANJUT [SPASI]'}
                 </span>
                 <span className="text-xs">
@@ -596,7 +658,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     ? '🏆'
                     : isRegulationTrigger && !isTyping
                     ? '🧘'
-                    : isWrongFeedback && !isTyping
+                    : isWrongFeedback
                     ? '↩'
                     : '▶'}
                 </span>

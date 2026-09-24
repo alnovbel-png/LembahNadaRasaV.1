@@ -284,6 +284,38 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
     speakerRole: 'Little Mail Squirrel',
     text: 'You... you are not angry at me? But my chest is still beating so fast... it feels like it is about to burst.',
   },
+  kiki_validate_options: {
+    speaker: 'Kiki',
+    speakerRole: 'Little Mail Squirrel',
+    text: 'I am so relieved that you want to help collect the letters together! But my body is still trembling with panic. Can you teach me how to calm down first, Ezzel?',
+    thoughtBubble: 'Once I am calm, we can surely collect all the letters together...',
+    choices: [
+      {
+        id: 'c_kiki_reg_breathing_v',
+        text: '🌬️ Balloon Breathing Technique (4-4-4): Inhale slowly through your nose, hold, then gently exhale.',
+        impactScore: 20,
+        resultDialogueId: 'kiki_prep_breathing',
+      },
+      {
+        id: 'c_kiki_reg_grounding_v',
+        text: '👁️ 5-4-3-2-1 Sensory Grounding: Observe our surroundings to bring your focus back to the present.',
+        impactScore: 20,
+        resultDialogueId: 'kiki_prep_grounding',
+      },
+      {
+        id: 'c_kiki_reg_stop_v',
+        text: '🛑 S.T.O.P Reset Method: Stop for a moment, Take a breath, Observe sensations, then Proceed calmly.',
+        impactScore: 20,
+        resultDialogueId: 'kiki_prep_stop',
+      },
+      {
+        id: 'c_kiki_reg_shakeout_v',
+        text: '⚡ Body Shake-Out: Shake your paws, feet, and tail to release tension and stress hormones.',
+        impactScore: 20,
+        resultDialogueId: 'kiki_prep_shakeout',
+      },
+    ],
+  },
   kiki_calm_options: {
     speaker: 'Kiki',
     speakerRole: 'Little Mail Squirrel',
@@ -433,14 +465,14 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
   ranu_remind_bimo: {
     speaker: 'Grandpa Ranu',
     speakerRole: 'Carpenter & Bridge Keeper',
-    text: 'The wooden bridge is wide open for you now! Cross over and find young Bimo hiding in the Silent Forest (to the northwest) in Mission 3!',
-    thoughtBubble: 'Bimo is a good boy at heart, help him forgive himself...',
+    text: 'The wooden bridge is wide open for you now! Cross over and find young Bimo in the Silent Forest (to the northwest) in Mission 3. Please let him know that I am not angry at all, it was just a misunderstanding because I was tired!',
+    thoughtBubble: 'Bimo is a kind, talented apprentice. My yelling earlier must have terrified him...',
   },
   bimo_remind_tower: {
     speaker: 'Bimo',
-    speakerRole: 'Clockmaker Apprentice',
-    text: 'You have the Golden Gear of Harmony! Now take it to the top of the Clock Tower in the northeast (Mission 4) to restore harmony across the entire valley!',
-    thoughtBubble: 'The Clock Tower will tick happily again thanks to our courage!',
+    speakerRole: 'Clockmaker Apprentice (Grade 4)',
+    text: 'You have the Golden Gear of Harmony! Now take it to the top of the Clock Tower in the northeast (Mission 4). Grandma Wilis and the whole valley are waiting for the chime of harmony to return!',
+    thoughtBubble: 'The Clock Tower will tick happily again thanks to our courage in clearing the misunderstanding!',
   },
 
   // --- GRANDPA RANU & BRIDGE ---
@@ -452,14 +484,14 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
     choices: [
       {
         id: 'ranu_c1',
-        text: 'Option A: Validate His Loneliness (You must be exhausted working all alone, Grandpa... We deeply appreciate everything you built for us).',
+        text: 'You must be exhausted maintaining the bridge all alone, Grandpa. We deeply appreciate your hard work.',
         impactScore: 20,
         resultDialogueId: 'ranu_path_empathy',
         branchTag: 'empathy_first',
       },
       {
         id: 'ranu_c2',
-        text: 'Option B: Honest & Logical Solution (Grandpa, Bimo lost the gear for the town clock. Please open the bridge so we can solve this together).',
+        text: 'We do not mean to cause trouble, Grandpa. We want to cross to help fellow villagers trapped by the grey fog.',
         impactScore: 15,
         resultDialogueId: 'ranu_path_logic',
         branchTag: 'logic_first',
@@ -490,12 +522,12 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
   ranu_path_logic: {
     speaker: 'Grandpa Ranu',
     speakerRole: 'Village Carpenter',
-    text: 'Hmm... So that little boy Bimo is carrying that heavy burden all alone in the forest? (Grandpa Ranu sighs softly). Hiding mistakes only makes things worse.',
+    text: 'Hmm... So you are not here to ruin my bridge? You genuinely wish to help the villagers struggling with the grey mist?',
   },
   ranu_path_logic_2: {
     speaker: 'Grandpa Ranu',
     speakerRole: 'Village Carpenter',
-    text: 'You speak with honesty and responsibility. I will lower the bridge planks. Take this Bridge Pass so Bimo knows I am not angry at him!',
+    text: 'Very well! Your honesty and goodwill deserve respect. I will lower the bridge planks. Take this Bridge Pass and stay safe in the forest ahead!',
   },
   ranu_resolved: {
     speaker: 'Grandpa Ranu',
@@ -506,48 +538,54 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
   // --- BIMO & THE SILENT FOREST ---
   bimo_intro: {
     speaker: 'Bimo',
-    speakerRole: 'Clockmaker Apprentice',
-    text: 'Go away! Don\'t look at me! I... I ruined everything! I was trying to polish the golden clock gear and dropped it in the mud! Now the whole valley has lost its colors because of my clumsy hands!',
-    thoughtBubble: 'I am so ashamed... Everyone will think I am useless. I just want to hide forever!',
+    speakerRole: 'Clockmaker Apprentice (Grade 4)',
+    text: '(Sobbing while clutching the Golden Gear tightly behind the tree)... Huwaaa! Ezzel, don\'t come near me! Grandpa Ranu yelled so loudly at me earlier when we inspected the clock tower... He must hate me! I panicked and fled to the forest with this Tower Gear... The village clock stopped and the grey fog came because of this misunderstanding! I feel so guilty and terrified of being scolded...',
+    thoughtBubble: 'Grandpa Ranu must be furious with me... I am so afraid of being labelled a failure...',
     choices: [
       {
         id: 'bimo_c1',
-        text: 'Mistakes happen to everyone, Bimo. Making a mistake doesn\'t make YOU a failure. Let\'s clean the gear together!',
+        text: 'Grandpa Ranu does not hate you, Bimo. He sent his warm regards and admitted he only snapped because he was tired.',
         impactScore: 20,
-        resultDialogueId: 'bimo_empathy',
+        resultDialogueId: 'bimo_ranu_praise',
       },
       {
         id: 'bimo_c2',
-        text: 'Why were you so careless, Bimo? You made Grandpa Ranu and everyone worry!',
+        text: 'Making mistakes while learning is natural, Bimo. One mistake doesn\'t make you a bad kid. Let\'s fix this together!',
+        impactScore: 20,
+        resultDialogueId: 'bimo_growth_mindset',
+      },
+      {
+        id: 'bimo_c3',
+        text: 'Then why did you run off with the clock gear? You made everyone panic!',
         impactScore: -10,
-        resultDialogueId: 'bimo_scold',
+        resultDialogueId: 'bimo_shame',
       },
     ],
   },
-  bimo_scold: {
+  bimo_shame: {
     speaker: 'Bimo',
-    speakerRole: 'Clockmaker Apprentice',
-    text: 'I knew it... you hate me too! Leave me alone, I never want to come out of this dark forest!',
+    speakerRole: 'Clockmaker Apprentice (Grade 4)',
+    text: 'See? I knew it... everyone blames me and thinks I\'m a wrecker! I don\'t want to speak anymore!',
   },
-  bimo_empathy: {
+  bimo_ranu_praise: {
     speaker: 'Bimo',
-    speakerRole: 'Clockmaker Apprentice',
-    text: 'You... you really don\'t think I am a failure? (Bimo looks up with teary glasses). I was so terrified of being yelled at that I ran away and hid...',
+    speakerRole: 'Clockmaker Apprentice (Grade 4)',
+    text: 'R-really? Grandpa Ranu said that? (Bimo wipes his tears behind his glasses). So Grandpa doesn\'t hate me? He yelled so loud earlier that my knees shook... I thought he never wanted to see me again. It was all a misunderstanding because Grandpa was exhausted...',
   },
-  bimo_empathy_2: {
+  bimo_growth_mindset: {
     speaker: 'Bimo',
-    speakerRole: 'Clockmaker Apprentice',
-    text: 'Thank you, Ezzel. Hearing you say that gave me the courage to face my mistake. Here is the Golden Gear of Harmony! Let\'s restore the forest and take it to the Clock Tower!',
+    speakerRole: 'Clockmaker Apprentice (Grade 4)',
+    text: 'Ezzel... your words warm my heart. Grandpa Ranu and my teacher always remind us of the Growth Mindset: mistakes aren\'t proof that we\'re foolish, but proof that we are bravely trying and learning!',
   },
-  bimo_restore_forest: {
+  bimo_growth_mindset_2: {
     speaker: 'Bimo',
-    speakerRole: 'Clockmaker Apprentice',
-    text: 'Look! The ancient pine trees are glowing green with life, and colorful mushrooms are sprouting! Take the Golden Gear to the Clock Tower at the northeastern cliff!',
+    speakerRole: 'Clockmaker Apprentice (Grade 4)',
+    text: 'I will not hide from fear anymore! Here is the sacred Golden Gear of Harmony that I kept safe. Take it to the Clock Tower in the northeast for Grandma Wilis. Let\'s bring back the chime of time and colors to our village!',
   },
   bimo_resolved: {
     speaker: 'Bimo',
-    speakerRole: 'Clockmaker Apprentice',
-    text: 'I have forgiven myself, Ezzel! Making a mistake is just an opportunity to learn and grow. I can\'t wait to hear the bell of the clock tower chime again!',
+    speakerRole: 'Clockmaker Apprentice (Grade 4)',
+    text: 'Hello Ezzel! I am not afraid anymore. My misunderstanding with Grandpa Ranu is resolved, and I learned to forgive myself. Thank you for your heartfelt help!',
   },
 
   // --- CLOCK TOWER & ENDINGS ---

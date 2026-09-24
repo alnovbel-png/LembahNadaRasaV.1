@@ -1332,6 +1332,28 @@ class SoundSystem {
     this.playTone(f, 'triangle', 0.12, 0.06, 0, false);
   }
 
+  // Crisp vine snap sound when alternating shakeout breaks a tendril
+  public playVineSnap() {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    this.playTone(600, 'square', 0.08, 0.09, 0, false);
+    setTimeout(() => {
+      this.playTone(880, 'triangle', 0.15, 0.07, 0, false);
+    }, 40);
+  }
+
+  // Time freeze crystalline ice glass effect for STOP mechanic
+  public playFreezeGlass() {
+    if (this.isMuted || this.sfxVolume <= 0.001) return;
+    this.initCtx();
+    const freqs = [1046.5, 1318.5, 1567.98, 2093];
+    freqs.forEach((f, i) => {
+      setTimeout(() => {
+        this.playTone(f, 'sine', 0.6, 0.06, 0, false);
+      }, i * 50);
+    });
+  }
+
   // Deep emergency stop brake tone
   public playStopBrake() {
     if (this.isMuted || this.sfxVolume <= 0.001) return;

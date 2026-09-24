@@ -198,12 +198,12 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
               {mission.hint}
             </p>
             <div className="text-[8px] sm:text-[9px] text-amber-800 bg-amber-50 rounded-lg p-1 sm:p-1.5 border border-amber-200 flex items-center gap-1 mt-0.5">
-              <span className="text-amber-700 font-bold shrink-0">Tips:</span>
+              <span className="text-amber-700 font-bold shrink-0">Petunjuk:</span>
               <span className="text-[8px] sm:text-[9px] leading-snug">
                 {mission.step <= 4 ? (
-                  <>Ikuti panah emas <strong>[MISI {mission.step}]</strong> di tepi layar menuju {targetCharacter.name}</>
+                  <>Ikuti panah kuning menuju {targetCharacter.name}.</>
                 ) : (
-                  <>Seluruh Lembah telah pulih! Nikmati desa dan sapa warga.</>
+                  <>Desa sudah pulih! Ayo sapa semua temanmu.</>
                 )}
               </span>
             </div>
@@ -220,7 +220,7 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
             }}
             className="w-full py-2.5 px-3 sm:px-4 min-h-[42px] sm:min-h-[44px] rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-600 hover:from-emerald-500 hover:to-green-500 active:scale-[0.98] text-white font-bold border-2 border-emerald-300 shadow-[0_4px_16px_rgba(16,185,129,0.35)] flex items-center justify-center cursor-pointer transition-all text-center"
           >
-            <span className="text-[11px] sm:text-xs tracking-wide">Tuntun Langkah Saya</span>
+            <span className="text-[11px] sm:text-xs tracking-wide">Tuntun Karakter</span>
           </button>
 
           <button
@@ -228,7 +228,7 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
             onClick={onClose}
             className="w-full py-2.5 px-3 sm:px-4 min-h-[42px] sm:min-h-[44px] rounded-xl sm:rounded-2xl bg-slate-950 hover:bg-slate-900 active:scale-[0.98] text-amber-300 font-bold border-2 border-amber-400 shadow-md flex items-center justify-center cursor-pointer transition-all text-center"
           >
-            <span className="text-[11px] sm:text-xs tracking-wide">Saya Siap Cari Sendiri</span>
+            <span className="text-[11px] sm:text-xs tracking-wide">Saya Cari Sendiri</span>
           </button>
         </div>
       </div>

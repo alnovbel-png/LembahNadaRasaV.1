@@ -2218,7 +2218,7 @@ export default function App() {
       } else if (zoneKey === 'bridge') {
         resolveNPC('kakek_ranu', { surfaceEmotion: 'tenang', deepEmotion: 'haru', reason: 'Merasa dihargai dan diperhatikan warga desa, jembatan kembali kokoh terbuka.' }, 'ranu_resolved');
       } else if (zoneKey === 'forest') {
-        resolveNPC('bimo', { surfaceEmotion: 'gembira', deepEmotion: 'tenang', reason: 'Memaafkan diri sendiri, berani memperbaiki roda gigi emas jam desa.' }, 'bimo_resolved');
+        resolveNPC('bimo', { surfaceEmotion: 'gembira', deepEmotion: 'tenang', reason: 'Meluruskan salah paham dengan Kakek Ranu, memaafkan diri sendiri, dan bangga membawa Roda Gigi Harmoni.' }, 'bimo_resolved');
       } else if (zoneKey === 'tower') {
         resolveNPC('penjaga_kabut', { surfaceEmotion: 'tenang', deepEmotion: 'haru', reason: 'Kabut prasangka musnah, menara jam berdenting merdu dan damai.' }, 'tower_resolved');
       }
@@ -2237,7 +2237,7 @@ export default function App() {
     } else if (node.id === 'ranu_path_empathy_2' || node.id === 'ranu_path_logic_2') {
       resolveNPC('kakek_ranu', { surfaceEmotion: 'tenang', deepEmotion: 'haru', reason: 'Merasa dihargai dan tidak lagi kesepian di tepi jembatan.' }, 'ranu_resolved');
     } else if (node.id === 'bimo_restore_forest') {
-      resolveNPC('bimo', { surfaceEmotion: 'gembira', deepEmotion: 'tenang', reason: 'Memaafkan diri sendiri dan bangga memperbaiki jam desa.' }, 'bimo_resolved');
+      resolveNPC('bimo', { surfaceEmotion: 'gembira', deepEmotion: 'tenang', reason: 'Meluruskan salah paham dengan Kakek Ranu dan bangga membawa Roda Gigi Harmoni.' }, 'bimo_resolved');
     }
 
     // 2. Breathing / Emotional Regulation mini-game target & initial mode preparation
@@ -3812,7 +3812,7 @@ export default function App() {
         title: 'Semua Misi Selesai!',
         speaker: 'Ezsel & Warga Desa',
         portrait: 'player',
-        hint: '🌿 Seluruh Lembah Nada Rasa telah pulih dan berseri! Nikmati keindahan desa dan sapa warga.',
+        hint: '🌿 Desa sudah ceria kembali! Ayo sapa teman-teman dan rayakan bersama.',
         locationName: 'Lembah Nada Rasa',
         targetCoords: { x: 11, y: 15 },
         isCompleted: true,
@@ -3827,8 +3827,8 @@ export default function App() {
         speaker: 'Kiki Si Tupai',
         portrait: 'squirrel',
         hint: isCompassActive
-          ? 'Dekati Kiki si tupai di barat air mancur alun-alun, lalu ajak ia berbicara [Spasi / Tombol Bicara].'
-          : 'Dekati Kiki di barat air mancur alun-alun. Aktifkan Kompas Hati [Tekan C / Tombol Hati] untuk membaca perasaannya!',
+          ? 'Ayo dekati Kiki di dekat air mancur. Ajak Kiki bicara [Tekan Spasi / Tombol Bicara].'
+          : 'Ayo dekati Kiki di dekat air mancur. Buka Kompas Hati [Tekan C] untuk tahu perasaannya!',
         locationName: 'Alun-Alun & Air Mancur',
         targetCoords: { x: 8, y: 14 },
         isCompleted: false,
@@ -3842,7 +3842,7 @@ export default function App() {
         title: 'Misi 2: Temui Kakek Ranu',
         speaker: 'Kakek Ranu',
         portrait: 'old_man',
-        hint: 'Pergi ke arah timur menuju Jembatan Kayu. Dengarkan kekhawatiran Kakek Ranu dan bantu perbaiki jembatan.',
+        hint: 'Jalan ke jembatan di sebelah timur. Temui Kakek Ranu dan bantu perbaiki jembatan.',
         locationName: 'Jembatan Kayu (Arah Timur)',
         targetCoords: { x: 20, y: 15 },
         isCompleted: false,
@@ -3856,7 +3856,7 @@ export default function App() {
         title: 'Misi 3: Tolong Bimo di Hutan',
         speaker: 'Bimo',
         portrait: 'boy_glasses',
-        hint: 'Pergi ke arah barat laut memasuki Hutan Sunyi. Temukan Bimo yang bersembunyi karena merasa malu.',
+        hint: 'Jalan ke Hutan Sunyi di barat laut. Temukan Bimo yang sedang sembunyi.',
         locationName: 'Hutan Sunyi (Barat Laut)',
         targetCoords: { x: 7, y: 6 },
         isCompleted: false,
@@ -3870,7 +3870,7 @@ export default function App() {
         title: 'Misi 4: Aktifkan Menara Jam',
         speaker: 'Sosok Kabut',
         portrait: 'spirit_elder',
-        hint: 'Bawa Roda Gigi Emas ke Menara Jam di timur laut. Pasang roda gigi untuk membunyikan lonceng harmoni!',
+        hint: 'Bawa Roda Gigi Emas ke Menara Jam. Pasang roda gigi agar lonceng berbunyi indah!',
         locationName: 'Menara Jam Harmoni (Timur Laut)',
         targetCoords: { x: 29, y: 8 },
         isCompleted: false,
@@ -3883,7 +3883,7 @@ export default function App() {
       title: 'Lembah Pulih Sepenuhnya!',
       speaker: 'Ezsel & Warga Desa',
       portrait: 'player',
-      hint: 'Harmoni Lembah Pulih Sepenuhnya! Bicaralah pada warga untuk merayakan keberhasilanmu!',
+      hint: '🌿 Desa sudah ceria kembali! Ayo sapa semua temanmu dan rayakan bersama.',
       locationName: 'Seluruh Desa',
       targetCoords: { x: 11, y: 15 },
       isCompleted: true,
@@ -4025,7 +4025,14 @@ export default function App() {
             (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)
           }
           onOpenRegulation={() => handleOpenRegulation('Pemain', 'breathing')}
-          onOpenStartMenu={() => setShowStartMenu(true)}
+          onOpenStartMenu={() => {
+            sound.playMenuSelect();
+            setShowPauseMenu(false);
+            setShowSettings(false);
+            setShowJournal(false);
+            setCurrentDialogue(null);
+            handleRestart();
+          }}
           onOpenPauseMenu={() => {
             sound.playMenuSelect();
             setShowPauseMenu(true);
@@ -4222,7 +4229,10 @@ export default function App() {
         onOpenMainMenu={() => {
           sound.playMenuSelect();
           setShowPauseMenu(false);
-          setShowStartMenu(true);
+          setShowSettings(false);
+          setShowJournal(false);
+          setCurrentDialogue(null);
+          handleRestart();
         }}
       />
 
