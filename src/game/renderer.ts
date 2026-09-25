@@ -534,7 +534,7 @@ export class GameRenderer {
     cameraY: number,
     viewportW: number,
     viewportH: number,
-    zoom: number = 1.35,
+    zoom: number = 1.65,
     isMissionCompleted?: boolean,
     timeOfDay?: 'day' | 'night'
   ) {

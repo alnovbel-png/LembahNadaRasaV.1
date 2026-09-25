@@ -45,13 +45,34 @@ import { Sparkles, Compass } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
 import { PSE_ACHIEVEMENTS } from './game/constants';
 
-const GAME_ZOOM = 1.35; // Focused zoom on main character for rich exploration feel
+// Calculate camera zoom to guarantee the protagonist and world are framed at the exact
+// comfortable, focused scale shown in reference image.png across all screen sizes and resolutions.
+// Target horizontal framing: ~23.5 tiles in widescreen (16:9) and ~13.2 tiles in portrait (9:16).
+export function getGameZoom(viewportWidth: number, viewportHeight: number): number {
+  const isVertical = viewportHeight > viewportWidth;
+  // World width in pixels that should be visible across the canvas:
+  // In landscape: 23.5 tiles * 32 = 752px.
+  // In portrait: 13.2 tiles * 32 = 422.4px.
+  const targetWorldVisibleWidth = isVertical ? 13.2 * TILE_SIZE : 23.5 * TILE_SIZE;
+  const calculatedZoom = viewportWidth / targetWorldVisibleWidth;
+
+  // Clamp zoom between 1.60 (to keep character crisp & prominent even on compact preview panes)
+  // and 2.85 (for ultra-wide / 4K monitors)
+  return Math.max(1.60, Math.min(2.85, Number(calculatedZoom.toFixed(2))));
+}
+
+export const GAME_ZOOM = 1.65; // Baseline fallback constant
 
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
   const isPortrait = useIsPortrait();
   const isMobile = useIsMobileOrTablet();
+
+  // Dynamic zoom ref for responsive rendering & precise click translation
+  const [gameZoom, setGameZoom] = useState<number>(() => getGameZoom(800, 600));
+  const gameZoomRef = useRef<number>(1.65);
+  gameZoomRef.current = gameZoom;
 
   // Game World State
   const [mapLayout] = useState<number[][]>(() => generateMapLayout());
@@ -648,6 +669,9 @@ export default function App() {
       canvas.height = renderH;
 
       setViewportSize({ width: renderW, height: renderH });
+      const currentZoom = getGameZoom(renderW, renderH);
+      setGameZoom(currentZoom);
+      gameZoomRef.current = currentZoom;
     };
 
     updateDimensions();
@@ -1339,8 +1363,8 @@ export default function App() {
       const canvasX = screenX * scaleX;
       const canvasY = screenY * scaleY;
 
-      const worldX = canvasX / GAME_ZOOM + cameraRef.current.x;
-      const worldY = canvasY / GAME_ZOOM + cameraRef.current.y;
+      const worldX = canvasX / gameZoomRef.current + cameraRef.current.x;
+      const worldY = canvasY / gameZoomRef.current + cameraRef.current.y;
 
       const p = playerRef.current;
       const px = p.x + 16;
@@ -1891,8 +1915,8 @@ export default function App() {
       const canvasX = screenX * scaleX;
       const canvasY = screenY * scaleY;
 
-      const worldX = canvasX / GAME_ZOOM + cameraRef.current.x;
-      const worldY = canvasY / GAME_ZOOM + cameraRef.current.y;
+      const worldX = canvasX / gameZoomRef.current + cameraRef.current.x;
+      const worldY = canvasY / gameZoomRef.current + cameraRef.current.y;
 
       // 1. Check hover on NPCs
       for (const npc of npcs) {
@@ -2788,8 +2812,9 @@ export default function App() {
         if (rendererRef.current) {
           const mapTotalW = MAP_COLS * TILE_SIZE;
           const mapTotalH = MAP_ROWS * TILE_SIZE;
-          const visibleW = viewportSize.width / GAME_ZOOM;
-          const visibleH = viewportSize.height / GAME_ZOOM;
+          const currentZoom = gameZoomRef.current;
+          const visibleW = viewportSize.width / currentZoom;
+          const visibleH = viewportSize.height / currentZoom;
           const camX =
             visibleW >= mapTotalW
               ? -(visibleW - mapTotalW) / 2
@@ -2814,7 +2839,7 @@ export default function App() {
             camY,
             viewportSize.width,
             viewportSize.height,
-            GAME_ZOOM,
+            currentZoom,
             isMissionCompleted
           );
         }
@@ -3462,11 +3487,12 @@ export default function App() {
         }
       }
 
-      // Camera positioning (centers on player with clamping, accounting for GAME_ZOOM)
+      // Camera positioning (centers on player with clamping, accounting for dynamic gameZoom)
       const mapTotalW = MAP_COLS * TILE_SIZE;
       const mapTotalH = MAP_ROWS * TILE_SIZE;
-      const visibleW = viewportSize.width / GAME_ZOOM;
-      const visibleH = viewportSize.height / GAME_ZOOM;
+      const currentZoom = gameZoomRef.current;
+      const visibleW = viewportSize.width / currentZoom;
+      const visibleH = viewportSize.height / currentZoom;
 
       let camX: number;
       if (visibleW >= mapTotalW) {
@@ -3554,7 +3580,7 @@ export default function App() {
           camY,
           viewportSize.width,
           viewportSize.height,
-          GAME_ZOOM,
+          currentZoom,
           isMissionCompleted
         );
       }
