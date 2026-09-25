@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { sound } from '../../utils/audio';
-import { Wind, Heart, Sparkles, RotateCcw, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { Wind, RotateCcw, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface RhythmicBreathingGameProps {
   targetName: string;
@@ -20,19 +20,28 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
   const [missReason, setMissReason] = useState<string>('');
   const [isHoldingButton, setIsHoldingButton] = useState(false);
 
-  // Sweet spot for Phase 2: Hold (Zone hijau bergetar)
+  // Sweet spot for Phase 2: Hold (Zone hijau bergetar lembut)
   const [greenZonePos, setGreenZonePos] = useState(50); // % along track
   const [cursorPos, setCursorPos] = useState(50);
   const [isInGreenZone, setIsInGreenZone] = useState(true);
 
-  // Time & Animation refs
+  // Synchronized refs for game loop & event handlers
+  const phaseRef = useRef<Phase>('ready');
+  phaseRef.current = phase;
+
+  const cursorPosRef = useRef<number>(50);
+  cursorPosRef.current = cursorPos;
+
   const holdStartTimeRef = useRef<number | null>(null);
   const animFrameRef = useRef<number | null>(null);
   const trackContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Reset to ready
   const resetGame = useCallback(() => {
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
     setPhase('ready');
     setInhaleProgress(0);
     setHoldStabilityProgress(0);
@@ -43,7 +52,10 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
 
   // Handle Miss / Fail with quick deflation
   const triggerMiss = useCallback((reason: string) => {
-    if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
     sound.playQuizWrong();
     setMissReason(reason);
     setPhase('miss');
@@ -51,112 +63,13 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
     holdStartTimeRef.current = null;
   }, []);
 
-  // PHASE 1: INHALE (Hold for exactly 4 seconds)
-  const handleInhaleStart = () => {
-    if (phase !== 'ready' && phase !== 'miss') return;
-    setPhase('inhale');
-    setIsHoldingButton(true);
-    setInhaleProgress(0);
-    sound.playBreatheIn();
-    const start = performance.now();
-    holdStartTimeRef.current = start;
-
-    const tick = (now: number) => {
-      const elapsed = (now - start) / 1000; // in seconds
-      const progress = Math.min(100, (elapsed / 4.0) * 100);
-      setInhaleProgress(progress);
-
-      if (elapsed >= 4.0) {
-        // Inhale success! Auto transition to HOLD
-        sound.playSensoryChime(659.25);
-        setInhaleProgress(100);
-        setPhase('hold');
-        setHoldStabilityProgress(0);
-        startHoldPhase();
-        return;
-      }
-
-      animFrameRef.current = requestAnimationFrame(tick);
-    };
-
-    animFrameRef.current = requestAnimationFrame(tick);
-  };
-
-  const handleInhaleRelease = () => {
-    if (phase === 'inhale') {
-      const elapsed = holdStartTimeRef.current ? (performance.now() - holdStartTimeRef.current) / 1000 : 0;
-      setIsHoldingButton(false);
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-
-      if (elapsed < 3.5) {
-        triggerMiss('Tombol dilepas terlalu cepat! Tahan balon sampai mengembang penuh 4 detik.');
-      } else {
-        // Close enough to 4 seconds, proceed to hold
-        sound.playSensoryChime(659.25);
-        setInhaleProgress(100);
-        setPhase('hold');
-        setHoldStabilityProgress(0);
-        startHoldPhase();
-      }
+  // PHASE 3: EXHALE (Smooth deflation over 4 seconds)
+  const startExhalePhase = useCallback(() => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
     }
-  };
 
-  // PHASE 2: HOLD (Keep cursor inside oscillating vibrating green zone for 4s)
-  const startHoldPhase = () => {
-    const startTime = performance.now();
-    let accumulatedStable = 0;
-    let lastTime = startTime;
-
-    const tick = (now: number) => {
-      const dt = (now - lastTime) / 1000;
-      lastTime = now;
-
-      // Jitter/oscillate the green zone
-      const osc = Math.sin(now * 0.003) * 30 + Math.sin(now * 0.007) * 15;
-      const targetCenter = Math.max(22, Math.min(78, 50 + osc));
-      setGreenZonePos(targetCenter);
-
-      // Check if player cursor is within green zone (± 14%)
-      setCursorPos((prev) => {
-        const inside = Math.abs(prev - targetCenter) <= 14;
-        setIsInGreenZone(inside);
-
-        if (inside) {
-          accumulatedStable += dt;
-          sound.playBreatheIn();
-        } else {
-          // If out of zone, small penalty or no gain
-          accumulatedStable = Math.max(0, accumulatedStable - dt * 0.3);
-        }
-
-        const pct = Math.min(100, (accumulatedStable / 4.0) * 100);
-        setHoldStabilityProgress(pct);
-
-        if (pct >= 100) {
-          // Hold phase passed!
-          sound.playSensoryChime(783.99);
-          setPhase('exhale');
-          startExhalePhase();
-          return prev;
-        }
-
-        // Check timeout (if player fails to keep stable after 9s)
-        const totalElapsed = (now - startTime) / 1000;
-        if (totalElapsed > 9.0 && pct < 80) {
-          triggerMiss('Keseimbangan napas goyah! Jaga kursor tetap di dalam zona hijau.');
-          return prev;
-        }
-
-        animFrameRef.current = requestAnimationFrame(tick);
-        return prev;
-      });
-    };
-
-    animFrameRef.current = requestAnimationFrame(tick);
-  };
-
-  // PHASE 3: EXHALE (Release smoothly following visual deflation ring over 4s)
-  const startExhalePhase = () => {
     sound.playBreatheOut();
     const startTime = performance.now();
 
@@ -165,7 +78,7 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
       const progress = Math.min(100, (elapsed / 4.0) * 100);
       setExhaleProgress(progress);
 
-      if (progress >= 100) {
+      if (progress >= 100 || elapsed >= 4.0) {
         sound.playSuccessFanfare();
         setPhase('success');
         return;
@@ -175,15 +88,146 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
     };
 
     animFrameRef.current = requestAnimationFrame(tick);
-  };
+  }, []);
 
-  // Keyboard Spacebar integration
+  // PHASE 2: HOLD (Keep cursor inside oscillating green zone for 4s of stability)
+  const startHoldPhase = useCallback(() => {
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+
+    const startTime = performance.now();
+    let accumulatedStable = 0;
+    let lastTime = startTime;
+
+    const tick = (now: number) => {
+      const dt = Math.min(0.1, (now - lastTime) / 1000);
+      lastTime = now;
+
+      // Gentle, calm oscillation of green zone (between 26% and 74%)
+      const osc = Math.sin(now * 0.0016) * 24;
+      const targetCenter = 50 + osc;
+      setGreenZonePos(targetCenter);
+
+      // Check if player cursor is within green zone (± 16%)
+      const curPos = cursorPosRef.current;
+      const inside = Math.abs(curPos - targetCenter) <= 16;
+      setIsInGreenZone(inside);
+
+      if (inside) {
+        accumulatedStable += dt;
+      } else {
+        // Gentle decay if player deviates outside, never drops below 0
+        accumulatedStable = Math.max(0, accumulatedStable - dt * 0.25);
+      }
+
+      const pct = Math.min(100, (accumulatedStable / 4.0) * 100);
+      setHoldStabilityProgress(pct);
+
+      if (pct >= 100) {
+        sound.playSensoryChime(783.99);
+        setPhase('exhale');
+        setExhaleProgress(0);
+        startExhalePhase();
+        return;
+      }
+
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+
+    animFrameRef.current = requestAnimationFrame(tick);
+  }, [startExhalePhase]);
+
+  // PHASE 1: INHALE (Hold for 4 seconds)
+  const handleInhaleStart = useCallback(() => {
+    if (phaseRef.current !== 'ready' && phaseRef.current !== 'miss') return;
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+
+    setPhase('inhale');
+    setIsHoldingButton(true);
+    setInhaleProgress(0);
+    sound.playBreatheIn();
+
+    const start = performance.now();
+    holdStartTimeRef.current = start;
+
+    const tick = (now: number) => {
+      const elapsed = (now - start) / 1000;
+      const progress = Math.min(100, (elapsed / 4.0) * 100);
+      setInhaleProgress(progress);
+
+      if (progress >= 100 || elapsed >= 4.0) {
+        // Inhale success! Auto transition to HOLD
+        sound.playSensoryChime(659.25);
+        setInhaleProgress(100);
+        setIsHoldingButton(false);
+        setPhase('hold');
+        setHoldStabilityProgress(0);
+        startHoldPhase();
+        return;
+      }
+
+      animFrameRef.current = requestAnimationFrame(tick);
+    };
+
+    animFrameRef.current = requestAnimationFrame(tick);
+  }, [startHoldPhase]);
+
+  const handleInhaleRelease = useCallback(() => {
+    if (phaseRef.current !== 'inhale') return;
+    setIsHoldingButton(false);
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+
+    const elapsed = holdStartTimeRef.current ? (performance.now() - holdStartTimeRef.current) / 1000 : 0;
+    if (elapsed < 3.2) {
+      triggerMiss('Tombol dilepas terlalu cepat! Tahan balon sampai mengembang penuh 4 detik.');
+    } else {
+      sound.playSensoryChime(659.25);
+      setInhaleProgress(100);
+      setPhase('hold');
+      setHoldStabilityProgress(0);
+      startHoldPhase();
+    }
+  }, [triggerMiss, startHoldPhase]);
+
+  // Stable callbacks for window keyboard listeners
+  const startInhaleRef = useRef(handleInhaleStart);
+  startInhaleRef.current = handleInhaleStart;
+  const releaseInhaleRef = useRef(handleInhaleRelease);
+  releaseInhaleRef.current = handleInhaleRelease;
+
+  // Keyboard integration: Attached once on mount so it NEVER cancels animation frames on phase change!
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         e.preventDefault();
-        if (phase === 'ready' || phase === 'miss') {
-          handleInhaleStart();
+        if (phaseRef.current === 'ready' || phaseRef.current === 'miss') {
+          startInhaleRef.current();
+        }
+      } else if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+        if (phaseRef.current === 'hold') {
+          e.preventDefault();
+          setCursorPos((prev) => {
+            const next = Math.max(5, prev - 4);
+            cursorPosRef.current = next;
+            return next;
+          });
+        }
+      } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+        if (phaseRef.current === 'hold') {
+          e.preventDefault();
+          setCursorPos((prev) => {
+            const next = Math.min(95, prev + 4);
+            cursorPosRef.current = next;
+            return next;
+          });
         }
       }
     };
@@ -191,28 +235,33 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
     const handleKeyUp = (e: KeyboardEvent) => {
       if (e.code === 'Space') {
         e.preventDefault();
-        if (phase === 'inhale') {
-          handleInhaleRelease();
+        if (phaseRef.current === 'inhale') {
+          releaseInhaleRef.current();
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = null;
+      }
     };
-  }, [phase, handleInhaleRelease]);
+  }, []);
 
   // Track cursor movement on stabilization bar
   const handleTrackMove = (clientX: number) => {
     if (!trackContainerRef.current) return;
     const rect = trackContainerRef.current.getBoundingClientRect();
     const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
-    const pct = (x / rect.width) * 100;
+    const pct = Math.max(5, Math.min(95, (x / rect.width) * 100));
     setCursorPos(pct);
+    cursorPosRef.current = pct;
   };
 
   // Balloon scale calculation
@@ -287,7 +336,7 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
                 </span>
                 <span className="block font-pixel text-[9px] text-slate-950 font-bold uppercase tracking-wider mt-1 drop-shadow-xs">
                   {phase === 'inhale'
-                    ? `${(4 - (inhaleProgress / 100) * 4).toFixed(1)}s`
+                    ? `${Math.round(inhaleProgress)}%`
                     : phase === 'hold'
                     ? `${Math.round(holdStabilityProgress)}%`
                     : phase === 'exhale'
@@ -335,10 +384,10 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
             <div className="space-y-1 animate-fade-in w-full max-w-xs mx-auto">
               <span className="font-pixel text-xs text-amber-300 font-bold block flex items-center justify-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
-                LANGKAH 2: TAHAN NAPAS (Jaga di Zona Hijau!)
+                LANGKAH 2: TAHAN NAPAS ({Math.round(holdStabilityProgress)}%)
               </span>
               <p className="font-pixel text-[9px] text-slate-300">
-                Gerakkan jari/mouse untuk menjaga kursor tetap di dalam zona hijau yang bergetar!
+                Gerakkan jari/mouse atau tekan [←/→] agar kursor tetap di dalam zona hijau!
               </p>
 
               {/* Stabilization Balance Track */}
@@ -348,16 +397,16 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
                 onTouchMove={(e) => {
                   if (e.touches[0]) handleTrackMove(e.touches[0].clientX);
                 }}
-                className="relative w-full h-8 bg-slate-900 border-2 border-slate-700 rounded-full overflow-hidden mt-2 cursor-pointer shadow-inner"
+                className="relative w-full h-8 bg-slate-900 border-2 border-slate-700 rounded-full overflow-hidden mt-2 cursor-pointer shadow-inner touch-none"
               >
                 {/* Vibrating Green Zone */}
                 <div
                   style={{
-                    left: `${greenZonePos - 14}%`,
-                    width: '28%',
+                    left: `${greenZonePos - 16}%`,
+                    width: '32%',
                   }}
                   className={`absolute top-0 bottom-0 bg-emerald-500/40 border-x-2 border-emerald-300 flex items-center justify-center transition-all duration-75 ${
-                    isInGreenZone ? 'shadow-[0_0_15px_rgba(16,185,129,0.8)] bg-emerald-500/60' : ''
+                    isInGreenZone ? 'shadow-[0_0_20px_rgba(16,185,129,0.85)] bg-emerald-500/60' : ''
                   }`}
                 >
                   <span className="text-[7.5px] font-pixel text-emerald-200 uppercase font-bold tracking-tight">
@@ -368,16 +417,16 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
                 {/* Player Cursor Indicator */}
                 <div
                   style={{ left: `${cursorPos}%` }}
-                  className={`absolute top-0 bottom-0 w-3 -ml-1.5 rounded-full transition-all duration-75 shadow-md ${
-                    isInGreenZone ? 'bg-amber-400 border border-white' : 'bg-rose-500 border border-white'
+                  className={`absolute top-0 bottom-0 w-3.5 -ml-1.5 rounded-full transition-all duration-75 shadow-md ${
+                    isInGreenZone ? 'bg-amber-300 border-2 border-white' : 'bg-rose-500 border-2 border-white'
                   }`}
                 />
               </div>
 
               {/* Hold Progress Bar */}
-              <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1.5 border border-slate-700">
+              <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden mt-1.5 border border-slate-700 relative">
                 <div
-                  className="bg-emerald-400 h-full transition-all duration-100"
+                  className="bg-emerald-400 h-full transition-all duration-75"
                   style={{ width: `${holdStabilityProgress}%` }}
                 />
               </div>
@@ -428,30 +477,61 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
 
       {/* Action Controls */}
       <div className="pt-2 flex flex-col items-center gap-2">
-        {phase === 'ready' || phase === 'miss' ? (
-          <button
-            id="btn-rhythmic-inhale-hold"
-            onMouseDown={handleInhaleStart}
-            onMouseUp={handleInhaleRelease}
-            onTouchStart={handleInhaleStart}
-            onTouchEnd={handleInhaleRelease}
-            className="w-full sm:w-80 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-cyan-500 via-sky-400 to-amber-400 hover:from-cyan-400 hover:to-amber-300 active:scale-95 text-slate-950 font-pixel font-bold text-xs sm:text-sm shadow-[0_0_25px_rgba(6,182,212,0.6)] hover:shadow-[0_0_35px_rgba(6,182,212,0.85)] flex items-center justify-center gap-2 transition-all cursor-pointer"
-          >
-            <Wind className="w-4 h-4 text-slate-950" />
-            <span>TEKAN & TAHAN UNTUK TARIK NAPAS (4s) [SPASI]</span>
-          </button>
-        ) : phase === 'inhale' ? (
-          <button
-            onMouseUp={handleInhaleRelease}
-            onTouchEnd={handleInhaleRelease}
-            className="w-full sm:w-80 py-3.5 px-6 rounded-2xl bg-amber-400 text-slate-950 font-pixel font-bold text-xs sm:text-sm shadow-[0_0_30px_rgba(245,158,11,0.8)] scale-105 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>TAHAN TERUS... ({Math.round(inhaleProgress)}%)</span>
-          </button>
+        {phase === 'ready' || phase === 'miss' || phase === 'inhale' ? (
+          <div className="w-full flex flex-col items-center gap-2">
+            <button
+              id="btn-rhythmic-inhale-hold"
+              onPointerDown={(e) => {
+                try {
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                } catch {}
+                handleInhaleStart();
+              }}
+              onPointerUp={(e) => {
+                try {
+                  e.currentTarget.releasePointerCapture(e.pointerId);
+                } catch {}
+                handleInhaleRelease();
+              }}
+              onPointerCancel={() => {
+                handleInhaleRelease();
+              }}
+              className={`w-full sm:w-84 py-3.5 px-6 rounded-2xl font-pixel font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer select-none touch-none ${
+                phase === 'inhale'
+                  ? 'bg-amber-400 text-slate-950 scale-105 shadow-[0_0_35px_rgba(245,158,11,0.9)] ring-2 ring-amber-300'
+                  : 'bg-gradient-to-r from-cyan-500 via-sky-400 to-amber-400 hover:from-cyan-400 hover:to-amber-300 active:scale-95 text-slate-950 shadow-[0_0_25px_rgba(6,182,212,0.6)] hover:shadow-[0_0_35px_rgba(6,182,212,0.85)]'
+              }`}
+            >
+              <Wind className={`w-4 h-4 text-slate-950 ${phase === 'inhale' ? 'animate-spin' : ''}`} />
+              {phase === 'inhale' ? (
+                <span>TAHAN TERUS... ({Math.round(inhaleProgress)}%)</span>
+              ) : (
+                <span>TEKAN & TAHAN UNTUK TARIK NAPAS (4s) [SPASI]</span>
+              )}
+            </button>
+
+            {/* Inhale Progress Bar */}
+            {phase === 'inhale' && (
+              <div className="w-full sm:w-84 bg-slate-800 h-2 rounded-full overflow-hidden border border-slate-700">
+                <div
+                  className="bg-amber-400 h-full transition-all duration-75"
+                  style={{ width: `${inhaleProgress}%` }}
+                />
+              </div>
+            )}
+          </div>
         ) : phase === 'hold' ? (
-          <div className="text-[10px] font-pixel text-slate-400 flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>Gerakkan mouse/sentuhan di atas bilah agar kursor tetap di dalam zona hijau</span>
+          <div className="w-full max-w-sm flex flex-col items-center gap-1.5">
+            <div className="text-[11px] font-pixel text-slate-200 flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-700">
+              <span className={`w-2.5 h-2.5 rounded-full ${isInGreenZone ? 'bg-emerald-400 animate-ping' : 'bg-rose-500 animate-pulse'}`} />
+              <span className={isInGreenZone ? 'text-emerald-300 font-bold' : 'text-amber-300'}>
+                {isInGreenZone ? 'Napas Stabil di Zona Tenang!' : 'Arahkan kursor ke Zona Hijau!'}
+              </span>
+              <span className="font-bold text-white ml-auto">({Math.round(holdStabilityProgress)}%)</span>
+            </div>
+            <span className="text-[9px] font-pixel text-slate-400">
+              Tips: Gerakkan mouse / sentuh bilah atau gunakan tombol [← / →] atau [A / D]
+            </span>
           </div>
         ) : phase === 'success' ? (
           <button

@@ -278,7 +278,9 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-3 border-t border-slate-800/80 text-[10px] font-pixel text-slate-400 relative z-10">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Menyelesaikan mini-game memberikan +25 Skor Empati dan Penguasaan Teknik Ketenangan.</span>
+            <span style={{ fontFamily: "'Geist Pixel'" }}>
+              Menyelesaikan mini-game memberikan +25 Skor Empati dan Penguasaan Teknik Ketenangan.
+            </span>
           </div>
 
           <button
