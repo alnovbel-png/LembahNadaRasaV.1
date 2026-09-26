@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { PlayerStats, ZoneColorStatus } from '../types/game';
 import { sound } from '../utils/audio';
+import { useLanguage } from '../game/localization';
 
 export type FrameTheme = 'postcard' | 'polaroid' | 'golden_plaque';
 
@@ -32,12 +33,20 @@ interface CaptureMomentModalProps {
   onRetake?: () => void;
 }
 
-const DEFAULT_QUOTES = [
+const DEFAULT_QUOTES_ID = [
   '“Mendengarkan dengan hati, merangkul setiap rasa, dan bertumbuh bersama.”',
   '“Ketenangan sejati bermula dari lingkaran kendali batin kita sendiri.”',
   '“Tidak ada emosi yang salah; kenali dan peluk setiap rasanya.”',
   '“Senyuman tulus dan rasa syukur melipatgandakan kebahagiaan.”',
   '“Belajar dari kegagalan adalah benih terindah menuju keberhasilan.”',
+];
+
+const DEFAULT_QUOTES_EN = [
+  '“Listening with heart, embracing every feeling, and growing together.”',
+  '“True peace begins from our own inner circle of control.”',
+  '“There is no wrong emotion; recognize and embrace every sensation.”',
+  '“A sincere smile and grateful heart multiply genuine joy.”',
+  '“Learning through mistakes is the finest seed of wisdom.”',
 ];
 
 export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
@@ -49,8 +58,10 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
   zoneStatus,
   onRetake,
 }) => {
+  const { lang, ui } = useLanguage();
+  const defaultQuotes = lang === 'en' ? DEFAULT_QUOTES_EN : DEFAULT_QUOTES_ID;
   const [frameTheme, setFrameTheme] = useState<FrameTheme>('postcard');
-  const [caption, setCaption] = useState(DEFAULT_QUOTES[0]);
+  const [caption, setCaption] = useState(defaultQuotes[0]);
   const [authorName, setAuthorName] = useState('Ezzel');
   const [showStats, setShowStats] = useState(true);
   const [showStickers, setShowStickers] = useState(true);
@@ -66,8 +77,21 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
     }
   }, [isOpen]);
 
+  // Sync default quote if lang changes and user hasn't heavily customized
+  useEffect(() => {
+    if (lang === 'en') {
+      if (DEFAULT_QUOTES_ID.includes(caption)) {
+        setCaption(DEFAULT_QUOTES_EN[0]);
+      }
+    } else {
+      if (DEFAULT_QUOTES_EN.includes(caption)) {
+        setCaption(DEFAULT_QUOTES_ID[0]);
+      }
+    }
+  }, [lang]);
+
   // Current formatted timestamp
-  const captureDateStr = new Date().toLocaleDateString('id-ID', {
+  const captureDateStr = new Date().toLocaleDateString(lang === 'en' ? 'en-US' : 'id-ID', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -187,7 +211,13 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
         ctx.fillStyle = '#f59e0b';
         ctx.font = 'bold 13px sans-serif';
         ctx.textAlign = 'left';
-        ctx.fillText('🌸 LEMBAH NADA RASA • EKSPEDISI KOMPAS HATI', frameSide + 4, 30);
+        ctx.fillText(
+          lang === 'en'
+            ? '🌸 VALLEY OF HARMONY • EXPEDITION OF THE HEART'
+            : '🌸 LEMBAH NADA RASA • EKSPEDISI KOMPAS HATI',
+          frameSide + 4,
+          30
+        );
 
         // Vintage postmark circle
         ctx.strokeStyle = '#b45309';
@@ -206,7 +236,13 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
         ctx.fillStyle = '#fbbf24';
         ctx.font = 'bold 15px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('👑 KENANGAN PETUALANGAN LEMBAH NADA RASA', outW / 2, 36);
+        ctx.fillText(
+          lang === 'en'
+            ? '👑 VALLEY OF HARMONY ADVENTURE MEMORY'
+            : '👑 KENANGAN PETUALANGAN LEMBAH NADA RASA',
+          outW / 2,
+          36
+        );
         ctx.restore();
       } else {
         // Polaroid top pin
@@ -237,7 +273,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
 
       // 5. Watermark / Compass Badge (bottom-right inside photo)
       ctx.save();
-      const compText = `🧭 Harmoni Desa: ${harmonyPercent}%`;
+      const compText = lang === 'en' ? `🧭 Village Harmony: ${harmonyPercent}%` : `🧭 Harmoni Desa: ${harmonyPercent}%`;
       ctx.font = 'bold 11px sans-serif';
       const compWidth = ctx.measureText(compText).width;
       ctx.fillStyle = 'rgba(15, 23, 42, 0.82)';
@@ -277,7 +313,9 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
       ctx.fillText(caption, outW / 2, bottomY);
 
       // Author and Date
-      const subInfo = `Penjelajah: ${authorName} • Tanggal: ${captureDateStr}`;
+      const subInfo = lang === 'en'
+        ? `Explorer: ${authorName} • Date: ${captureDateStr}`
+        : `Penjelajah: ${authorName} • Tanggal: ${captureDateStr}`;
       ctx.font = '11px sans-serif';
       if (frameTheme === 'golden_plaque') {
         ctx.fillStyle = '#94a3b8';
@@ -290,7 +328,9 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
 
       // Stats Ribbon
       if (showStats) {
-        const statsStr = `💖 ${stats.empathyScore} Poin Empati   •   🏆 ${badgesCount}/10 Lencana PSE Terkumpul   •   🌈 Lembah Pulih`;
+        const statsStr = lang === 'en'
+          ? `💖 ${stats.empathyScore} Empathy Points   •   🏆 ${badgesCount}/10 SEL Badges Collected   •   🌈 Village Restored`
+          : `💖 ${stats.empathyScore} Poin Empati   •   🏆 ${badgesCount}/10 Lencana PSE Terkumpul   •   🌈 Lembah Pulih`;
         ctx.font = 'bold 11px sans-serif';
         if (frameTheme === 'golden_plaque') {
           ctx.fillStyle = '#f59e0b';
@@ -401,10 +441,12 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                 style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
                 className="font-bold text-base sm:text-lg text-amber-300 tracking-wide"
               >
-                Abadikan Momen Lembah Nada Rasa
+                {lang === 'en' ? 'Capture Valley Moments' : 'Abadikan Momen Lembah Nada Rasa'}
               </h2>
               <p className="text-[11px] text-slate-400">
-                Screenshot area game dengan bingkai dekoratif & kenangan PSE
+                {lang === 'en'
+                  ? 'Capture in-game scene with decorative frames & SEL memories'
+                  : 'Screenshot area game dengan bingkai dekoratif & kenangan PSE'}
               </p>
             </div>
           </div>
@@ -418,10 +460,10 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                   onRetake();
                 }}
                 className="px-2.5 py-1.5 rounded-lg bg-slate-700/80 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
-                title="Ambil foto ulang"
+                title={lang === 'en' ? 'Retake photo' : 'Ambil foto ulang'}
               >
                 <RefreshCw className="w-3.5 h-3.5 text-cyan-300" />
-                <span className="hidden sm:inline">Foto Ulang</span>
+                <span className="hidden sm:inline">{lang === 'en' ? 'Retake' : 'Foto Ulang'}</span>
               </button>
             )}
 
@@ -429,7 +471,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
               id="close-capture-moment-btn"
               onClick={onClose}
               className="text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-slate-700/60 transition cursor-pointer"
-              title="Tutup"
+              title={lang === 'en' ? 'Close' : 'Tutup'}
             >
               <X className="w-5 h-5" />
             </button>
@@ -444,12 +486,14 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
               {isGenerating || !compositeUrl ? (
                 <div className="flex flex-col items-center justify-center p-8 text-amber-300 gap-2">
                   <Sparkles className="w-6 h-6 animate-spin" />
-                  <span className="text-xs font-medium">Merajut bingkai dekoratif...</span>
+                  <span className="text-xs font-medium">
+                    {lang === 'en' ? 'Weaving decorative frame...' : 'Merajut bingkai dekoratif...'}
+                  </span>
                 </div>
               ) : (
                 <img
                   src={compositeUrl}
-                  alt="Momen Lembah Nada Rasa"
+                  alt={lang === 'en' ? 'Valley of Harmony Moment' : 'Momen Lembah Nada Rasa'}
                   className="max-h-[50vh] sm:max-h-[58vh] w-auto max-w-full object-contain rounded-lg shadow-md"
                 />
               )}
@@ -474,7 +518,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
             <div className="bg-slate-950/70 border border-slate-800 p-3.5 rounded-xl space-y-2.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
                 <Palette className="w-4 h-4 text-amber-400" />
-                <span>Pilih Gaya Bingkai Dekoratif:</span>
+                <span>{lang === 'en' ? 'Choose Frame Style:' : 'Pilih Gaya Bingkai Dekoratif:'}</span>
               </div>
 
               <div className="grid grid-cols-3 gap-1.5">
@@ -491,7 +535,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                   }`}
                 >
                   <div className="text-base mb-0.5">🌸</div>
-                  <span>Kartu Pos</span>
+                  <span>{lang === 'en' ? 'Postcard' : 'Kartu Pos'}</span>
                 </button>
 
                 <button
@@ -523,7 +567,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                   }`}
                 >
                   <div className="text-base mb-0.5">👑</div>
-                  <span>Piagam Emas</span>
+                  <span>{lang === 'en' ? 'Gold Plaque' : 'Piagam Emas'}</span>
                 </button>
               </div>
             </div>
@@ -532,7 +576,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
             <div className="bg-slate-950/70 border border-slate-800 p-3.5 rounded-xl space-y-2.5 text-xs">
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">
-                  Nama Penjelajah:
+                  {lang === 'en' ? 'Explorer Name:' : 'Nama Penjelajah:'}
                 </label>
                 <input
                   type="text"
@@ -540,14 +584,14 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                   value={authorName}
                   onChange={(e) => setAuthorName(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-100 font-bold focus:outline-none focus:border-amber-400"
-                  placeholder="Ketik namamu..."
+                  placeholder={lang === 'en' ? 'Type your name...' : 'Ketik namamu...'}
                   maxLength={30}
                 />
               </div>
 
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">
-                  Pesan / Catatan Kebijaksanaan PSE:
+                  {lang === 'en' ? 'Message / SEL Wisdom Note:' : 'Pesan / Catatan Kebijaksanaan PSE:'}
                 </label>
                 <textarea
                   id="photo-caption-input"
@@ -555,16 +599,18 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                   onChange={(e) => setCaption(e.target.value)}
                   rows={2}
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-200 text-xs focus:outline-none focus:border-amber-400 resize-none leading-relaxed"
-                  placeholder="Tulis pesan atau pilih kutipan di bawah..."
+                  placeholder={lang === 'en' ? 'Write a message or pick a quote below...' : 'Tulis pesan atau pilih kutipan di bawah...'}
                   maxLength={120}
                 />
               </div>
 
               {/* Quick Quotes Picker */}
               <div className="space-y-1">
-                <span className="text-[10px] text-slate-400 font-medium">Kutipan Rekomendasi:</span>
+                <span className="text-[10px] text-slate-400 font-medium">
+                  {lang === 'en' ? 'Recommended Quotes:' : 'Kutipan Rekomendasi:'}
+                </span>
                 <div className="flex flex-wrap gap-1">
-                  {DEFAULT_QUOTES.slice(0, 3).map((q, idx) => (
+                  {defaultQuotes.slice(0, 3).map((q, idx) => (
                     <button
                       key={idx}
                       onClick={() => {
@@ -588,7 +634,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                     onChange={(e) => setShowStats(e.target.checked)}
                     className="rounded text-amber-500 focus:ring-0 cursor-pointer"
                   />
-                  <span>Tampilkan Skor & Lencana</span>
+                  <span>{lang === 'en' ? 'Show Score & Badges' : 'Tampilkan Skor & Lencana'}</span>
                 </label>
 
                 <label className="flex items-center gap-1.5 cursor-pointer text-slate-300">
@@ -598,7 +644,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                     onChange={(e) => setShowStickers(e.target.checked)}
                     className="rounded text-amber-500 focus:ring-0 cursor-pointer"
                   />
-                  <span>Stiker Dekorasi</span>
+                  <span>{lang === 'en' ? 'Decorative Stickers' : 'Stiker Dekorasi'}</span>
                 </label>
               </div>
             </div>
@@ -612,7 +658,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                 className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-amber-950/40 transition cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                <span>Unduh Foto (PNG Resolusi Penuh)</span>
+                <span>{lang === 'en' ? 'Download Photo (Full Res PNG)' : 'Unduh Foto (PNG Resolusi Penuh)'}</span>
               </button>
 
               <div className="grid grid-cols-2 gap-2">
@@ -625,12 +671,12 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                   {copied ? (
                     <>
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-emerald-400">Tersalin!</span>
+                      <span className="text-emerald-400">{lang === 'en' ? 'Copied!' : 'Tersalin!'}</span>
                     </>
                   ) : (
                     <>
                       <Copy className="w-3.5 h-3.5" />
-                      <span>Salin Gambar</span>
+                      <span>{lang === 'en' ? 'Copy Image' : 'Salin Gambar'}</span>
                     </>
                   )}
                 </button>
@@ -642,7 +688,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
                   className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer"
                 >
                   <Printer className="w-3.5 h-3.5 text-cyan-400" />
-                  <span>Cetak Foto</span>
+                  <span>{lang === 'en' ? 'Print Photo' : 'Cetak Foto'}</span>
                 </button>
               </div>
             </div>
@@ -653,14 +699,18 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
         <div className="px-5 py-2.5 bg-slate-950/90 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400 shrink-0">
           <span className="flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-            <span>Foto tersimpan lengkap dengan bingkai dekoratif Lembah Nada Rasa</span>
+            <span>
+              {lang === 'en'
+                ? 'Photo saved with beautiful Valley of Harmony decorative frame'
+                : 'Foto tersimpan lengkap dengan bingkai dekoratif Lembah Nada Rasa'}
+            </span>
           </span>
 
           <button
             onClick={onClose}
             className="text-slate-300 hover:text-white font-semibold text-xs px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 transition cursor-pointer"
           >
-            Selesai / Kembali
+            {lang === 'en' ? 'Done / Back' : 'Selesai / Kembali'}
           </button>
         </div>
       </div>

@@ -11,10 +11,12 @@ export interface CertificateData {
   decisionPath?: string;
   dateStr?: string;
   isAllBadges?: boolean;
+  lang?: 'id' | 'en';
 }
 
 export function generateCertificateDataUrl(data: CertificateData): Promise<string> {
   return new Promise((resolve) => {
+    const isEn = data.lang === 'en';
     const width = 1200;
     const height = 850;
     const canvas = document.createElement('canvas');
@@ -103,12 +105,24 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
     ctx.font = 'bold 15px "Pixelify Sans", "Trebuchet MS", sans-serif';
     ctx.fillStyle = '#92400e';
     ctx.letterSpacing = '3px';
-    ctx.fillText('LEMBAH NADA RASA • PENDIDIKAN SOSIAL EMOSIONAL (PSE)', width / 2, 122);
+    ctx.fillText(
+      isEn
+        ? 'VALLEY OF HARMONY • SOCIAL EMOTIONAL LEARNING (SEL)'
+        : 'LEMBAH NADA RASA • PENDIDIKAN SOSIAL EMOSIONAL (PSE)',
+      width / 2,
+      122
+    );
 
     // Certificate Title
-    ctx.font = '900 38px "Pixelify Sans", "Georgia", serif';
+    ctx.font = '900 36px "Pixelify Sans", "Georgia", serif';
     ctx.fillStyle = '#78350f';
-    ctx.fillText('PIAGAM PENGHARGAAN DUTA EMPATI KELAS 4 SD', width / 2, 172);
+    ctx.fillText(
+      isEn
+        ? 'CERTIFICATE OF EXCELLENCE: EMPATHY AMBASSADOR'
+        : 'PIAGAM PENGHARGAAN DUTA EMPATI KELAS 4 SD',
+      width / 2,
+      172
+    );
 
     // Decorative underline banner
     ctx.strokeStyle = '#d97706';
@@ -130,7 +144,13 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
     // Presentation text
     ctx.font = 'italic 20px "Georgia", serif';
     ctx.fillStyle = '#57534e';
-    ctx.fillText('Dengan bangga dan penuh apresiasi dianugerahkan kepada:', width / 2, 235);
+    ctx.fillText(
+      isEn
+        ? 'Proudly and with heartfelt appreciation presented to:'
+        : 'Dengan bangga dan penuh apresiasi dianugerahkan kepada:',
+      width / 2,
+      235
+    );
 
     // 4. Recipient Name Box
     const studentName = (data.recipientName || 'Ezzel').trim();
@@ -150,12 +170,16 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
     ctx.font = '17px "Trebuchet MS", "Segoe UI", sans-serif';
     ctx.fillStyle = '#334155';
     ctx.fillText(
-      'Atas dedikasi, keberanian, dan kematangan emosi dalam meredakan perselisihan,',
+      isEn
+        ? 'For dedication, courage, and emotional maturity in resolving misunderstandings,'
+        : 'Atas dedikasi, keberanian, dan kematangan emosi dalam meredakan perselisihan,',
       width / 2,
       352
     );
     ctx.fillText(
-      'memulihkan warna harmoni desa dari kabut prasangka, serta menjadi sahabat pendengar yang penuh empati.',
+      isEn
+        ? 'restoring harmony to the village from the mist of prejudice, and being an empathetic, listening friend.'
+        : 'memulihkan warna harmoni desa dari kabut prasangka, serta menjadi sahabat pendengar yang penuh empati.',
       width / 2,
       380
     );
@@ -173,15 +197,29 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
 
     ctx.font = 'bold 15px "Trebuchet MS", sans-serif';
     ctx.fillStyle = '#92400e';
-    ctx.fillText('✨ 5 PILAR KOMPETENSI SOSIAL EMOSIONAL YANG DIKUASAI ✨', width / 2, boxY + 30);
+    ctx.fillText(
+      isEn
+        ? '✨ 5 CORE SOCIAL-EMOTIONAL COMPETENCY PILLARS MASTERED ✨'
+        : '✨ 5 PILAR KOMPETENSI SOSIAL EMOSIONAL YANG DIKUASAI ✨',
+      width / 2,
+      boxY + 30
+    );
 
-    const pillars = [
-      '1. Kesadaran Diri (Self-Awareness & 4 Zona Emosi)',
-      '2. Manajemen Regulasi Diri (Teknik Napas Balon & S.T.O.P)',
-      '3. Kesadaran Sosial & Empati Aktif (Mendengar Hati)',
-      '4. Keterampilan Relasi (Komunikasi Positif & Validasi)',
-      '5. Keputusan Bertanggung Jawab (Lingkaran Kendali)',
-    ];
+    const pillars = isEn
+      ? [
+          '1. Self-Awareness (Emotion Zones & Reflection)',
+          '2. Self-Management (Balloon Breathing & S.T.O.P)',
+          '3. Social Awareness & Empathy (Listening with Heart)',
+          '4. Relationship Skills (Validation & Positive Talk)',
+          '5. Responsible Decisions (Circle of Control)',
+        ]
+      : [
+          '1. Kesadaran Diri (Self-Awareness & 4 Zona Emosi)',
+          '2. Manajemen Regulasi Diri (Teknik Napas Balon & S.T.O.P)',
+          '3. Kesadaran Sosial & Empati Aktif (Mendengar Hati)',
+          '4. Keterampilan Relasi (Komunikasi Positif & Validasi)',
+          '5. Keputusan Bertanggung Jawab (Lingkaran Kendali)',
+        ];
 
     ctx.textAlign = 'left';
     ctx.font = 'bold 14px "Trebuchet MS", sans-serif';
@@ -199,7 +237,9 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
     // Score badge in box
     ctx.fillStyle = '#047857';
     ctx.fillText(
-      `🏆 Nilai Resonansi Empati: ${data.empathyScore} Poin (Predikat Sempurna)`,
+      isEn
+        ? `🏆 Empathy Resonance Score: ${data.empathyScore} Points (Distinction)`
+        : `🏆 Nilai Resonansi Empati: ${data.empathyScore} Poin (Predikat Sempurna)`,
       640,
       boxY + 136
     );
@@ -209,7 +249,7 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
     ctx.textAlign = 'center';
     ctx.font = 'italic 20px "Brush Script MT", "Caveat", cursive, sans-serif';
     ctx.fillStyle = '#1e293b';
-    ctx.fillText('Nenek Wilis', 280, 680);
+    ctx.fillText(isEn ? 'Elder Wilis' : 'Nenek Wilis', 280, 680);
     ctx.strokeStyle = '#64748b';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -218,10 +258,10 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
     ctx.stroke();
     ctx.font = 'bold 13px "Trebuchet MS", sans-serif';
     ctx.fillStyle = '#475569';
-    ctx.fillText('Nenek Wilis', 280, 712);
+    ctx.fillText(isEn ? 'Elder Wilis' : 'Nenek Wilis', 280, 712);
     ctx.font = '12px "Trebuchet MS", sans-serif';
     ctx.fillStyle = '#64748b';
-    ctx.fillText('Pustakawan Sepuh Lembah', 280, 730);
+    ctx.fillText(isEn ? 'Senior Village Keeper' : 'Pustakawan Sepuh Lembah', 280, 730);
 
     // Center Gold Seal (Embossed Medallion)
     const sealX = width / 2;
@@ -251,19 +291,19 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
     ctx.font = 'bold 10px "Pixelify Sans", sans-serif';
     ctx.fillStyle = '#78350f';
     ctx.textAlign = 'center';
-    ctx.fillText('RESMI PSE', 0, -10);
+    ctx.fillText(isEn ? 'OFFICIAL SEL' : 'RESMI PSE', 0, -10);
     ctx.font = 'bold 14px "Pixelify Sans", sans-serif';
     ctx.fillStyle = '#451a03';
     ctx.fillText('★ 2026 ★', 0, 6);
     ctx.font = 'bold 9px "Pixelify Sans", sans-serif';
     ctx.fillStyle = '#78350f';
-    ctx.fillText('LEMBAH NADA', 0, 20);
+    ctx.fillText(isEn ? 'HARMONY' : 'LEMBAH NADA', 0, 20);
     ctx.restore();
 
     // Right Signature
     ctx.font = 'italic 20px "Brush Script MT", "Caveat", cursive, sans-serif';
     ctx.fillStyle = '#1e293b';
-    ctx.fillText('Kak Citra', width - 280, 680);
+    ctx.fillText(isEn ? 'Counselor Citra' : 'Kak Citra', width - 280, 680);
     ctx.strokeStyle = '#64748b';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -272,23 +312,25 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
     ctx.stroke();
     ctx.font = 'bold 13px "Trebuchet MS", sans-serif';
     ctx.fillStyle = '#475569';
-    ctx.fillText('Kak Citra, S.Psi', width - 280, 712);
+    ctx.fillText(isEn ? 'Citra, M.Psi' : 'Kak Citra, S.Psi', width - 280, 712);
     ctx.font = '12px "Trebuchet MS", sans-serif';
     ctx.fillStyle = '#64748b';
-    ctx.fillText('Konselor Ramah Anak', width - 280, 730);
+    ctx.fillText(isEn ? 'Youth Counselor' : 'Konselor Ramah Anak', width - 280, 730);
 
     // Bottom Footer Watermark
     ctx.font = '11px "Trebuchet MS", sans-serif';
     ctx.fillStyle = '#94a3b8';
     const dateText =
       data.dateStr ||
-      new Date().toLocaleDateString('id-ID', {
+      new Date().toLocaleDateString(isEn ? 'en-US' : 'id-ID', {
         day: 'numeric',
         month: 'long',
         year: 'numeric',
       });
     ctx.fillText(
-      `Diterbitkan pada: ${dateText} • Verifikasi Keaslian Permainan Lembah Nada Rasa`,
+      isEn
+        ? `Issued on: ${dateText} • Official Verification of Lembah Harmoni PSE`
+        : `Diterbitkan pada: ${dateText} • Verifikasi Keaslian Permainan Lembah Nada Rasa`,
       width / 2,
       790
     );

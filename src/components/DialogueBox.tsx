@@ -3,6 +3,7 @@ import { DialogueNode, ChoiceOption } from '../types/game';
 import { sound } from '../utils/audio';
 import { Eye, MessageCircle, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { CharacterPortrait } from './CharacterPortrait';
+import { useLanguage } from '../game/localization';
 
 interface DialogueBoxProps {
   dialogue: DialogueNode;
@@ -25,6 +26,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   playerName = 'Ezzel',
   playerAvatar = 'boy',
 }) => {
+  const { lang, ui } = useLanguage();
   const [displayedText, setDisplayedText] = useState('');
   const [isTyping, setIsTyping] = useState(true);
   const [showChoices, setShowChoices] = useState(false);
@@ -379,10 +381,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           <div className="bg-red-600 text-white px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-bold flex items-center justify-between shadow-lg border border-red-300 animate-pulse">
             <div className="flex items-center gap-1.5">
               <AlertTriangle className="w-4 h-4 text-yellow-300 shrink-0" />
-              <span>JAWABAN KURANG TEPAT — MARI COBA PIKIRKAN LAGI</span>
+              <span>{lang === 'en' ? 'RESPONSE NEEDS MORE CARE — LET US RETHINK' : 'JAWABAN KURANG TEPAT — MARI COBA PIKIRKAN LAGI'}</span>
             </div>
             <span className="text-[8px] bg-red-950 text-rose-200 px-2 py-0.5 rounded font-bold">
-              Perhatikan Perasaannya
+              {lang === 'en' ? 'Notice Their Feelings' : 'Perhatikan Perasaannya'}
             </span>
           </div>
         )}
@@ -392,10 +394,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           <div className="bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 text-slate-950 px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-lg border border-emerald-200">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-slate-950 shrink-0 animate-bounce" />
-              <span>HEBAT SEKALI! JAWABAN BIJAK & PENUH EMPATI! 🎉</span>
+              <span>{lang === 'en' ? 'WONDERFUL! WISE & EMPATHETIC RESPONSE! 🎉' : 'HEBAT SEKALI! JAWABAN BIJAK & PENUH EMPATI! 🎉'}</span>
             </div>
             <span className="text-[8px] bg-emerald-950 text-emerald-200 px-2 py-0.5 rounded font-bold">
-              +Poin Empati 👏
+              {lang === 'en' ? '+Empathy Points 👏' : '+Poin Empati 👏'}
             </span>
           </div>
         )}
@@ -405,10 +407,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           <div className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-slate-950 px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-md border border-amber-500">
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-slate-950 animate-bounce" />
-              <span>PANDUAN ALUR MISI BERURUTAN</span>
+              <span>{ui.missionGuidanceHeader}</span>
             </div>
             <span className="text-[8px] bg-slate-950 text-amber-300 px-2 py-0.5 rounded font-bold">
-              Wajib Selesaikan 1 per 1
+              {ui.missionGuidanceSub}
             </span>
           </div>
         )}
@@ -448,7 +450,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               className="px-2 py-0.5 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-500/50 text-[8px] sm:text-[9px] font-pixel transition-all duration-200 hover:scale-105 hover:shadow-[0_0_12px_rgba(244,63,94,0.45)] active:scale-95 flex items-center gap-1 cursor-pointer disabled:opacity-40"
               title="Tutup / Lewati Dialog (ESC)"
             >
-              <span>{isTyping ? 'LEWATI' : 'TUTUP [ESC]'}</span>
+              <span>{isTyping ? ui.skip : ui.closeEsc}</span>
               <span className="font-bold">✕</span>
             </button>
           </div>
@@ -467,7 +469,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 <Eye className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <span className="font-pixel text-[8px] sm:text-[9px] text-indigo-300 block uppercase tracking-wider">
-                    Suara Hati Terdalam (Kompas):
+                    {ui.innerHeartVoice}
                   </span>
                   <p className="font-pixel text-[9px] sm:text-[10px] leading-relaxed italic text-indigo-100">
                     "{processedThought}"
@@ -488,7 +490,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 onClick={finishTypingInstantly}
                 className="self-end text-[8px] font-pixel text-amber-400 hover:text-amber-200 bg-slate-900/80 hover:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/30 hover:border-amber-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all duration-200 flex items-center gap-1 cursor-pointer"
               >
-                <span>⚡ Tampilkan Semua Teks [Spasi]</span>
+                <span>{ui.showAllText}</span>
               </button>
             )}
           </div>
@@ -511,15 +513,19 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   >
                     <MessageCircle className="w-3 h-3" />
                     {(wrongChoiceIdsRef.current[dialogue.id]?.length ?? 0) > 0
-                      ? `Coba pilih respon lain yang lebih bijak (1-${dialogue.choices.length} atau klik):`
-                      : `Pilih Responmu (1-${dialogue.choices.length} atau klik):`}
+                      ? (lang === 'en'
+                          ? `Try choosing a wiser response (1-${dialogue.choices.length} or click):`
+                          : `Coba pilih respon lain yang lebih bijak (1-${dialogue.choices.length} atau klik):`)
+                      : (lang === 'en'
+                          ? `Choose Your Response (1-${dialogue.choices.length} or click):`
+                          : `Pilih Responmu (1-${dialogue.choices.length} atau klik):`)}
                   </span>
                   <button
                     onClick={() => setShowChoices(false)}
                     className="text-[8px] sm:text-[9px] font-pixel text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
                     title="Kembali membaca ucapan karakter"
                   >
-                    ← Baca Ulang Teks
+                    {ui.reReadText}
                   </button>
                 </div>
                 <div className="grid grid-cols-1 gap-1.5">
@@ -566,7 +572,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         </span>
                         {isPreviouslyWrong && (
                           <span className="text-[8px] bg-red-950/90 text-rose-300 border border-red-600/60 px-1.5 py-0.5 rounded font-bold shrink-0 ml-1">
-                            Kurang Tepat ❌
+                            {lang === 'en' ? 'Incorrect ❌' : 'Kurang Tepat ❌'}
                           </span>
                         )}
                       </button>
@@ -579,21 +585,21 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
                   <div className="flex items-center gap-1.5 text-slate-400 font-pixel text-[8px] sm:text-[9px]">
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
-                    <span>Mendengarkan ucapan karakter...</span>
+                    <span>{lang === 'en' ? 'Listening to character speaking...' : 'Mendengarkan ucapan karakter...'}</span>
                   </div>
                   <button
                     id="dialogue-finish-typing-btn"
                     onClick={finishTypingInstantly}
                     className="w-full sm:w-auto px-3 py-1.5 rounded-lg font-pixel text-[9px] bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
                   >
-                    <span>⚡ Lewati Animasi Teks [Spasi]</span>
+                    <span>{lang === 'en' ? '⚡ Skip Text Animation [Space]' : '⚡ Lewati Animasi Teks [Spasi]'}</span>
                   </button>
                 </div>
               ) : (
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-amber-950/30 border border-amber-500/40 rounded-xl p-2 sm:p-2.5 animate-fade-in">
                   <div className="flex items-center gap-1.5 text-amber-200 font-pixel text-[8px] sm:text-[9px]">
                     <MessageCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-bounce" />
-                    <span>Teks selesai dibaca. Klik tombol untuk memilih respon tanggapanmu:</span>
+                    <span>{lang === 'en' ? 'Finished reading. Click button to choose your response:' : 'Teks selesai dibaca. Klik tombol untuk memilih respon tanggapanmu:'}</span>
                   </div>
                   <button
                     id="dialogue-show-choices-btn"
@@ -603,7 +609,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     }}
                     className="w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[9px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.6)] hover:shadow-[0_0_26px_rgba(245,158,11,0.85)] flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 animate-pulse"
                   >
-                    <span>KLIK PILIH RESPON [SPASI]</span>
+                    <span>{lang === 'en' ? 'CHOOSE RESPONSE [SPACE]' : 'KLIK PILIH RESPON [SPASI]'}</span>
                     <span className="text-xs">💬 ▶</span>
                   </button>
                 </div>
@@ -615,10 +621,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 <button
                   id="dialogue-skip-regulation-btn"
                   onClick={onSkipRegulation}
-                  className="px-2.5 py-1.5 rounded-lg font-pixel text-[8px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-850 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-all duration-200 border border-slate-700 cursor-pointer active:scale-95"
-                  title="Lewati latihan dan langsung lanjut ke percakapan berikutnya"
+                  className="px-2.5 py-1.5 rounded-lg font-pixel text-[8px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-855 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-all duration-200 border border-slate-700 cursor-pointer active:scale-95"
+                  title={lang === 'en' ? 'Skip exercise and continue to next conversation' : 'Lewati latihan dan langsung lanjut ke percakapan berikutnya'}
                 >
-                  Lewati Latihan ▶
+                  {lang === 'en' ? 'Skip Exercise ▶' : 'Lewati Latihan ▶'}
                 </button>
               )}
               <button
@@ -644,14 +650,14 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               >
                 <span>
                   {isWrongFeedback
-                    ? 'COBA PILIH LAGI [SPASI]'
+                    ? (lang === 'en' ? 'TRY CHOOSING AGAIN [SPACE]' : 'COBA PILIH LAGI [SPASI]')
                     : isTyping
-                    ? 'LEWATI EFEK'
+                    ? (lang === 'en' ? 'SKIP EFFECT' : 'LEWATI EFEK')
                     : isEndingDialogue
-                    ? 'SELESAIKAN & LIHAT SERTIFIKAT [SPASI]'
+                    ? (lang === 'en' ? 'FINISH & VIEW CERTIFICATE [SPACE]' : 'SELESAIKAN & LIHAT SERTIFIKAT [SPASI]')
                     : isRegulationTrigger
-                    ? 'MULAI LATIHAN BERSAMA KIKI [SPASI]'
-                    : 'LANJUT [SPASI]'}
+                    ? (lang === 'en' ? 'START EXERCISE WITH KIKI [SPACE]' : 'MULAI LATIHAN BERSAMA KIKI [SPASI]')
+                    : (lang === 'en' ? 'CONTINUE [SPACE]' : 'LANJUT [SPASI]')}
                 </span>
                 <span className="text-xs">
                   {isEndingDialogue && !isTyping

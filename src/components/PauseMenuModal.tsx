@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { sound } from '../utils/audio';
+import { useLanguage } from '../game/localization';
 
 interface PauseMenuModalProps {
   isOpen: boolean;
@@ -14,15 +15,16 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
   onOpenSettings,
   onOpenMainMenu,
 }) => {
+  const { lang, ui } = useLanguage();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [showExitConfirm, setShowExitConfirm] = useState<boolean>(false);
 
   // Menu items list
   const menuItems = [
     { id: 'resume', label: 'Resume', action: onResume },
-    { id: 'settings', label: 'Pengaturan', action: onOpenSettings },
-    { id: 'main-menu', label: 'Main Menu', action: onOpenMainMenu },
-    { id: 'quit', label: 'Quit Game', action: () => setShowExitConfirm(true) },
+    { id: 'settings', label: lang === 'en' ? 'Settings' : 'Pengaturan', action: onOpenSettings },
+    { id: 'main-menu', label: lang === 'en' ? 'Main Menu' : 'Menu Utama', action: onOpenMainMenu },
+    { id: 'quit', label: lang === 'en' ? 'Quit Game' : 'Tutup Game', action: () => setShowExitConfirm(true) },
   ];
 
   const handleSelect = useCallback(
@@ -151,7 +153,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                     : 'text-stone-300 hover:text-white'
                 }`}
               >
-                Pengaturan
+                {lang === 'en' ? 'Settings' : 'Pengaturan'}
               </button>
 
               {/* Aesthetic Gap */}
@@ -175,7 +177,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                     : 'text-stone-300 hover:text-white'
                 }`}
               >
-                Main Menu
+                {lang === 'en' ? 'Main Menu' : 'Menu Utama'}
               </button>
 
               {/* 4. Quit Game */}
@@ -196,7 +198,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                     : 'text-stone-400 hover:text-rose-300'
                 }`}
               >
-                Quit Game
+                {lang === 'en' ? 'Quit Game' : 'Tutup Game'}
               </button>
             </div>
 
@@ -211,10 +213,12 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
           /* Quit Game Confirmation Screen */
           <div className="py-2 animate-fade-in space-y-4">
             <h2 className="font-pixel text-sm sm:text-base text-rose-400 font-bold tracking-wider">
-              TUTUP PERMAINAN?
+              {lang === 'en' ? 'QUIT GAME?' : 'TUTUP PERMAINAN?'}
             </h2>
             <p className="text-xs text-stone-300 leading-relaxed font-sans px-2">
-              Progres petualangan Ezzel tersimpan secara otomatis. Kamu dapat kembali ke Menu Utama atau menutup peramban ini kapan saja.
+              {lang === 'en'
+                ? "Ezzel's adventure progress is saved automatically. You can return to the Main Menu or close the browser tab at any time."
+                : 'Progres petualangan Ezzel tersimpan secara otomatis. Kamu dapat kembali ke Menu Utama atau menutup peramban ini kapan saja.'}
             </p>
 
             <div className="flex flex-col gap-2.5 pt-2">
@@ -227,7 +231,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                 }}
                 className="w-full py-2.5 px-4 rounded-xl border border-amber-500/80 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 font-pixel text-[11px] cursor-pointer transition active:scale-95 shadow-md"
               >
-                KEMBALI KE MAIN MENU
+                {lang === 'en' ? 'RETURN TO MAIN MENU' : 'KEMBALI KE MAIN MENU'}
               </button>
 
               <button
@@ -242,7 +246,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                 }}
                 className="w-full py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-pixel text-[11px] cursor-pointer shadow-md transition active:scale-95"
               >
-                KELUAR PERMAINAN
+                {lang === 'en' ? 'QUIT GAME' : 'KELUAR PERMAINAN'}
               </button>
 
               <button
@@ -254,7 +258,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                 }}
                 className="w-full py-2 px-4 rounded-xl border border-stone-700 bg-stone-900/60 hover:bg-stone-800 text-stone-300 text-xs font-semibold cursor-pointer transition active:scale-95"
               >
-                Batal / Lanjutkan Main
+                {lang === 'en' ? 'Cancel / Resume Playing' : 'Batal / Lanjutkan Main'}
               </button>
             </div>
           </div>

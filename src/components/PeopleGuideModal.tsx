@@ -22,6 +22,7 @@ import { NPC, EmotionType } from '../types/game';
 import { VILLAGER_GUIDE_DATA, VillagerGuideProfile } from '../game/villagerGuideData';
 import { sound } from '../utils/audio';
 import { CharacterPortrait } from './CharacterPortrait';
+import { useLanguage } from '../game/localization';
 
 export interface PeopleGuideModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
   initialSelectedNpcId = null,
   onNavigateToTile,
 }) => {
+  const { lang, ui } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'main' | 'educator' | 'secret'>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<'all' | 'resolved' | 'unresolved'>('all');
@@ -141,22 +143,22 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
   const getEmotionBadge = (emotion: EmotionType) => {
     switch (emotion) {
       case 'marah':
-        return { text: 'Marah', bg: 'bg-red-950/80 text-red-300 border-red-700/70', dot: 'bg-red-400' };
+        return { text: lang === 'en' ? 'Angry' : 'Marah', bg: 'bg-red-950/80 text-red-300 border-red-700/70', dot: 'bg-red-400' };
       case 'cemas':
-        return { text: 'Cemas', bg: 'bg-amber-950/80 text-amber-300 border-amber-700/70', dot: 'bg-amber-400' };
+        return { text: lang === 'en' ? 'Anxious' : 'Cemas', bg: 'bg-amber-950/80 text-amber-300 border-amber-700/70', dot: 'bg-amber-400' };
       case 'sedih':
-        return { text: 'Sedih', bg: 'bg-blue-950/80 text-blue-300 border-blue-700/70', dot: 'bg-blue-400' };
+        return { text: lang === 'en' ? 'Sad' : 'Sedih', bg: 'bg-blue-950/80 text-blue-300 border-blue-700/70', dot: 'bg-blue-400' };
       case 'takut':
-        return { text: 'Takut', bg: 'bg-purple-950/80 text-purple-300 border-purple-700/70', dot: 'bg-purple-400' };
+        return { text: lang === 'en' ? 'Fearful' : 'Takut', bg: 'bg-purple-950/80 text-purple-300 border-purple-700/70', dot: 'bg-purple-400' };
       case 'kecewa':
-        return { text: 'Kecewa', bg: 'bg-indigo-950/80 text-indigo-300 border-indigo-700/70', dot: 'bg-indigo-400' };
+        return { text: lang === 'en' ? 'Disappointed' : 'Kecewa', bg: 'bg-indigo-950/80 text-indigo-300 border-indigo-700/70', dot: 'bg-indigo-400' };
       case 'gembira':
-        return { text: 'Gembira', bg: 'bg-yellow-950/80 text-yellow-300 border-yellow-700/70', dot: 'bg-yellow-400' };
+        return { text: lang === 'en' ? 'Joyful' : 'Gembira', bg: 'bg-yellow-950/80 text-yellow-300 border-yellow-700/70', dot: 'bg-yellow-400' };
       case 'haru':
-        return { text: 'Haru', bg: 'bg-pink-950/80 text-pink-300 border-pink-700/70', dot: 'bg-pink-400' };
+        return { text: lang === 'en' ? 'Touched' : 'Haru', bg: 'bg-pink-950/80 text-pink-300 border-pink-700/70', dot: 'bg-pink-400' };
       case 'tenang':
       default:
-        return { text: 'Tenang', bg: 'bg-emerald-950/80 text-emerald-300 border-emerald-700/70', dot: 'bg-emerald-400' };
+        return { text: lang === 'en' ? 'Calm' : 'Tenang', bg: 'bg-emerald-950/80 text-emerald-300 border-emerald-700/70', dot: 'bg-emerald-400' };
     }
   };
 
@@ -195,14 +197,16 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                   style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
                   className="font-bold text-base sm:text-lg text-amber-300 tracking-wide"
                 >
-                  Panduan Warga Desa (People Guide)
+                  {lang === 'en' ? 'Village People Guide' : 'Panduan Warga Desa (People Guide)'}
                 </h2>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-950/80 text-amber-300 border border-amber-700/60">
-                  Lembah Nada Rasa
+                  {lang === 'en' ? 'Valley of Harmony' : 'Lembah Nada Rasa'}
                 </span>
               </div>
               <p className="text-xs text-slate-300 mt-0.5 hidden sm:block">
-                Buku catatan pengelana: Kenali profil warga, dinamika emosi, wawasan PSE, dan tips berdialog.
+                {lang === 'en'
+                  ? 'Explorer notes: Learn villager profiles, emotion dynamics, SEL insights, and dialogue tips.'
+                  : 'Buku catatan pengelana: Kenali profil warga, dinamika emosi, wawasan PSE, dan tips berdialog.'}
               </p>
             </div>
           </div>
@@ -230,9 +234,9 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex justify-between text-xs font-semibold mb-1">
-                  <span className="text-slate-300 truncate">Status Harmoni Warga Lembah:</span>
+                  <span className="text-slate-300 truncate">{lang === 'en' ? 'Valley Harmony Status:' : 'Status Harmoni Warga Lembah:'}</span>
                   <span className="text-amber-300 font-bold ml-2">
-                    {resolvedCount} / {totalCount} Terbantu ({progressPercent}%)
+                    {resolvedCount} / {totalCount} {lang === 'en' ? 'Helped' : 'Terbantu'} ({progressPercent}%)
                   </span>
                 </div>
                 <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -252,7 +256,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari nama, profesi, atau lokasi warga..."
+                placeholder={lang === 'en' ? 'Search name, role, or location...' : 'Cari nama, profesi, atau lokasi warga...'}
                 className="w-full pl-9 pr-8 py-2 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-100 placeholder-slate-400 focus:outline-none focus:border-amber-400 transition"
               />
               {searchQuery && (
@@ -271,7 +275,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-2 mt-3 pt-2.5 border-t border-slate-800/80">
             {/* Category Tabs */}
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-[11px] font-bold text-slate-400 mr-1 hidden sm:inline">Kategori:</span>
+              <span className="text-[11px] font-bold text-slate-400 mr-1 hidden sm:inline">{lang === 'en' ? 'Category:' : 'Kategori:'}</span>
               <button
                 id="btn-filter-category-all"
                 onClick={() => {
@@ -284,7 +288,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                     : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800'
                 }`}
               >
-                Semua ({totalCount})
+                {lang === 'en' ? `All (${totalCount})` : `Semua (${totalCount})`}
               </button>
               <button
                 id="btn-filter-category-main"
@@ -298,7 +302,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                     : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800'
                 }`}
               >
-                Kisah Utama (4)
+                {lang === 'en' ? 'Main Quests (4)' : 'Kisah Utama (4)'}
               </button>
               <button
                 id="btn-filter-category-educator"
@@ -312,7 +316,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                     : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800'
                 }`}
               >
-                Pembimbing PSE (8)
+                {lang === 'en' ? 'SEL Mentors (8)' : 'Pembimbing PSE (8)'}
               </button>
               <button
                 id="btn-filter-category-secret"
@@ -326,13 +330,13 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                     : 'bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800'
                 }`}
               >
-                Rahasia Unik (1)
+                {lang === 'en' ? 'Secrets (1)' : 'Rahasia Unik (1)'}
               </button>
             </div>
 
             {/* Status Filter */}
             <div className="flex items-center gap-1.5 ml-auto">
-              <span className="text-[11px] font-bold text-slate-400 mr-1 hidden sm:inline">Status:</span>
+              <span className="text-[11px] font-bold text-slate-400 mr-1 hidden sm:inline">{lang === 'en' ? 'Status:' : 'Status:'}</span>
               <button
                 id="btn-filter-status-all"
                 onClick={() => {
@@ -345,7 +349,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                Semua
+                {lang === 'en' ? 'All' : 'Semua'}
               </button>
               <button
                 id="btn-filter-status-resolved"
@@ -360,7 +364,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                 }`}
               >
                 <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                <span>Harmonis ({resolvedCount})</span>
+                <span>{lang === 'en' ? `Harmonious (${resolvedCount})` : `Harmonis (${resolvedCount})`}</span>
               </button>
               <button
                 id="btn-filter-status-unresolved"
@@ -375,7 +379,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                 }`}
               >
                 <AlertCircle className="w-3 h-3 text-amber-400" />
-                <span>Perlu Didengar ({totalCount - resolvedCount})</span>
+                <span>{lang === 'en' ? `Needs Listening (${totalCount - resolvedCount})` : `Perlu Didengar (${totalCount - resolvedCount})`}</span>
               </button>
             </div>
           </div>
@@ -388,9 +392,9 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
               <div className="w-12 h-12 rounded-full bg-slate-800/80 flex items-center justify-center mx-auto text-slate-400 mb-3">
                 <Search className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-200">Tidak ada warga yang cocok</h3>
+              <h3 className="text-sm font-bold text-slate-200">{lang === 'en' ? 'No matching villagers found' : 'Tidak ada warga yang cocok'}</h3>
               <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                Coba gunakan kata kunci pencarian lain atau setel ulang filter kategori dan status di atas.
+                {lang === 'en' ? 'Try another search keyword or reset the category and status filters above.' : 'Coba gunakan kata kunci pencarian lain atau setel ulang filter kategori dan status di atas.'}
               </p>
               <button
                 id="btn-reset-filters"
@@ -403,7 +407,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                 className="mt-4 px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl text-xs font-bold transition cursor-pointer inline-flex items-center gap-1.5"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset Filter</span>
+                <span>{lang === 'en' ? 'Reset Filters' : 'Reset Filter'}</span>
               </button>
             </div>
           ) : (
@@ -445,11 +449,11 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                                 {profile.name}
                               </h3>
                               {isResolved ? (
-                                <span title="Telah Harmonis">
+                                <span title={lang === 'en' ? 'Harmonious' : 'Telah Harmonis'}>
                                   <CheckCircle2 className="w-4 h-4 text-emerald-400 fill-emerald-950 shrink-0" />
                                 </span>
                               ) : (
-                                <span title="Sedang Mengalami Pergolakan Emosi">
+                                <span title={lang === 'en' ? 'Experiencing Emotional Turmoil' : 'Sedang Mengalami Pergolakan Emosi'}>
                                   <AlertCircle className="w-4 h-4 text-amber-400 fill-amber-950 shrink-0 animate-pulse" />
                                 </span>
                               )}
@@ -485,12 +489,12 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${emotionBadge.bg}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${emotionBadge.dot}`} />
-                          <span>{isResolved ? 'Harmonis' : emotionBadge.text}</span>
+                          <span>{isResolved ? (lang === 'en' ? 'Harmonious' : 'Harmonis') : emotionBadge.text}</span>
                         </span>
                       </div>
 
                       <div className="flex items-center gap-1 text-xs font-bold text-amber-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition">
-                        <span>Lihat Profil</span>
+                        <span>{lang === 'en' ? 'View Profile' : 'Lihat Profil'}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </div>
                     </div>
@@ -505,7 +509,11 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
         <div className="px-5 py-3 bg-slate-950 border-t border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2 text-center sm:text-left">
             <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
-            <span>Klik profil warga mana pun untuk membuka pop-up dialog detail karakter, wawasan PSE, dan panduan dialog empati.</span>
+            <span>
+              {lang === 'en'
+                ? 'Click on any villager profile to view character details, SEL insights, and empathetic dialogue tips.'
+                : 'Klik profil warga mana pun untuk membuka pop-up dialog detail karakter, wawasan PSE, dan panduan dialog empati.'}
+            </span>
           </div>
           <button
             id="btn-footer-close-people-guide"
@@ -515,7 +523,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
             }}
             className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition cursor-pointer shrink-0"
           >
-            Tutup Panduan
+            {lang === 'en' ? 'Close Guide' : 'Tutup Panduan'}
           </button>
         </div>
 
@@ -531,7 +539,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
             <div className="px-5 py-3.5 bg-slate-900 border-b border-slate-700 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2 text-xs text-amber-300 font-bold">
                 <BookOpen className="w-4 h-4 text-amber-400" />
-                <span>Pop-Up Dialog Profil Warga Desa</span>
+                <span>{lang === 'en' ? 'Villager Profile Dialog' : 'Pop-Up Dialog Profil Warga Desa'}</span>
                 <span className="text-slate-500">•</span>
                 <span className="text-slate-300">{activeProfile.name}</span>
               </div>
@@ -542,12 +550,12 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                   className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1 transition cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Daftar Warga</span>
+                  <span>{lang === 'en' ? 'Villagers List' : 'Daftar Warga'}</span>
                 </button>
                 <button
                   id="btn-dialog-close-x"
                   onClick={handleCloseVillagerProfile}
-                  aria-label="Tutup dialog profil warga"
+                  aria-label={lang === 'en' ? 'Close villager profile dialog' : 'Tutup dialog profil warga'}
                   className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-700/60 transition cursor-pointer"
                 >
                   <X className="w-5 h-5" />
@@ -575,12 +583,12 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                       {activeLiveNpc?.isResolved ? (
                         <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600 flex items-center gap-1">
                           <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                          <span>✨ Harmonis & Hati Terbuka</span>
+                          <span>{lang === 'en' ? '✨ Harmonious & Open Heart' : '✨ Harmonis & Hati Terbuka'}</span>
                         </span>
                       ) : (
                         <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-600 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 text-amber-400" />
-                          <span>💬 Perlu Pendampingan Empatik</span>
+                          <span>{lang === 'en' ? '💬 Needs Empathetic Support' : '💬 Perlu Pendampingan Empatik'}</span>
                         </span>
                       )}
                     </div>
@@ -592,7 +600,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                       <span>{activeProfile.zoneName}</span>
                       <span>•</span>
                       <span className="font-mono text-[11px] text-amber-300/80">
-                        Ubin (X: {activeProfile.locationCoordinates.x}, Y: {activeProfile.locationCoordinates.y})
+                        {lang === 'en' ? 'Tile' : 'Ubin'} (X: {activeProfile.locationCoordinates.x}, Y: {activeProfile.locationCoordinates.y})
                       </span>
                     </div>
                   </div>
@@ -604,10 +612,10 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                     id="btn-dialog-autowalk-villager"
                     onClick={() => handleAutoWalkToVillager(activeProfile)}
                     className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-md active:scale-95 transition cursor-pointer flex items-center justify-center gap-2 shrink-0 border border-emerald-400/60"
-                    title="Arahkan langkah karakter berjalan otomatis menuju koordinat warga ini di peta desa"
+                    title={lang === 'en' ? 'Direct player character to auto-walk towards this villager on the village map' : 'Arahkan langkah karakter berjalan otomatis menuju koordinat warga ini di peta desa'}
                   >
                     <Footprints className="w-4 h-4 text-emerald-200" />
-                    <span>Jalan Menuju Warga Ini (Auto-Walk)</span>
+                    <span>{lang === 'en' ? 'Walk to Villager (Auto-Walk)' : 'Jalan Menuju Warga Ini (Auto-Walk)'}</span>
                   </button>
                 )}
               </div>
@@ -624,13 +632,13 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                 <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4">
                   <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                     <BookOpen className="w-4 h-4 text-amber-400" />
-                    Kisah Hidup & Karakter
+                    {lang === 'en' ? 'Life Story & Character' : 'Kisah Hidup & Karakter'}
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     {activeProfile.bio}
                   </p>
                   <div className="mt-3 pt-3 border-t border-slate-800/80 text-xs text-slate-400">
-                    <span className="font-semibold text-slate-300">Kepribadian Khas: </span>
+                    <span className="font-semibold text-slate-300">{lang === 'en' ? 'Personality Traits: ' : 'Kepribadian Khas: '}</span>
                     {activeProfile.personality}
                   </div>
                 </div>
@@ -639,17 +647,21 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                 <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4">
                   <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                     <Compass className="w-4 h-4 text-amber-400" />
-                    Lokasi & Rute Perjalanan
+                    {lang === 'en' ? 'Location & Route Navigation' : 'Lokasi & Rute Perjalanan'}
                   </h4>
                   <div className="text-xs text-slate-300 leading-relaxed space-y-2">
                     <p>
-                      <strong>Wilayah:</strong> {activeProfile.zoneName}
+                      <strong>{lang === 'en' ? 'Zone:' : 'Wilayah:'}</strong> {activeProfile.zoneName}
                     </p>
                     <p>
-                      <strong>Petunjuk Rute:</strong> {activeProfile.locationHint}
+                      <strong>{lang === 'en' ? 'Route Clue:' : 'Petunjuk Rute:'}</strong> {activeProfile.locationHint}
                     </p>
                     <div className="p-2.5 bg-slate-900 rounded-lg border border-slate-800 text-[11px] text-amber-200/90">
-                      💡 <em>Tips Petualang:</em> Kamu juga dapat membuka Peta Mini (tombol <strong>M</strong>) dan mengklik ubin wilayah mereka untuk bernavigasi cepat.
+                      {lang === 'en' ? (
+                        <>💡 <em>Traveler Tip:</em> You can also open the Mini Map (key <strong>M</strong>) and click their zone tile to navigate directly.</>
+                      ) : (
+                        <>💡 <em>Tips Petualang:</em> Kamu juga dapat membuka Peta Mini (tombol <strong>M</strong>) dan mengklik ubin wilayah mereka untuk bernavigasi cepat.</>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -659,7 +671,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
               <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 sm:p-5">
                 <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <Heart className="w-4 h-4 text-rose-400" />
-                  Dinamika Emosi: Lapisan Luar & Lubuk Hati Terdalam
+                  {lang === 'en' ? 'Emotion Dynamics: Surface Expression & Deep Inner State' : 'Dinamika Emosi: Lapisan Luar & Lubuk Hati Terdalam'}
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-3.5">
@@ -667,7 +679,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                   <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        1. Emosi Permukaan (Tampak Luar)
+                        {lang === 'en' ? '1. Surface Emotion (Outward Expression)' : '1. Emosi Permukaan (Tampak Luar)'}
                       </span>
                       {(() => {
                         const b = getEmotionBadge(activeProfile.surfaceEmotion.type);
@@ -690,7 +702,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                   <div className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800">
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        2. Emosi Mendalam (Lubuk Hati)
+                        {lang === 'en' ? '2. Deep Emotion (Inner Heart)' : '2. Emosi Mendalam (Lubuk Hati)'}
                       </span>
                       {(() => {
                         const b = getEmotionBadge(activeProfile.deepEmotion.type);
@@ -712,7 +724,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
 
                 {/* Story Reason Root Cause */}
                 <div className="p-3 bg-amber-950/30 border border-amber-500/30 rounded-xl text-xs text-slate-200">
-                  <span className="font-bold text-amber-300">Akar Persoalan: </span>
+                  <span className="font-bold text-amber-300">{lang === 'en' ? 'Root Cause: ' : 'Akar Persoalan: '}</span>
                   <span>{activeProfile.storyReason}</span>
                 </div>
               </div>
@@ -725,7 +737,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
                         <Brain className="w-4 h-4 text-sky-400" />
-                        Wawasan Pembelajaran Sosial-Emosional (PSE)
+                        {lang === 'en' ? 'Social Emotional Learning (SEL) Insights' : 'Wawasan Pembelajaran Sosial-Emosional (PSE)'}
                       </h4>
                     </div>
                     <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-700/80 mb-2">
@@ -744,7 +756,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                 <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4">
                   <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-2 flex items-center gap-2">
                     <Smile className="w-4 h-4 text-emerald-400" />
-                    Teknik Regulasi Emosi yang Dianjurkan
+                    {lang === 'en' ? 'Recommended Emotion Regulation Technique' : 'Teknik Regulasi Emosi yang Dianjurkan'}
                   </h4>
                   <div className="flex items-center gap-2 font-bold text-xs sm:text-sm text-emerald-300 mb-1">
                     <span className="text-lg">{activeProfile.calmTechnique.icon}</span>
@@ -770,7 +782,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
               <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4">
                 <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-3 flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-teal-400" />
-                  Tips Dialog & Pendekatan Berempati
+                  {lang === 'en' ? 'Dialogue Tips & Empathetic Approaches' : 'Tips Dialog & Pendekatan Berempati'}
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -778,7 +790,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                   <div className="p-3 bg-emerald-950/20 border border-emerald-600/30 rounded-xl space-y-1.5">
                     <div className="font-bold text-emerald-400 flex items-center gap-1.5 mb-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Sikap yang Dianjurkan (Do's)</span>
+                      <span>{lang === 'en' ? "Recommended Approach (Do's)" : "Sikap yang Dianjurkan (Do's)"}</span>
                     </div>
                     {activeProfile.dialogueTips.dos.map((item, i) => (
                       <div key={i} className="flex items-start gap-1.5 text-slate-300">
@@ -792,7 +804,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                   <div className="p-3 bg-rose-950/20 border border-rose-600/30 rounded-xl space-y-1.5">
                     <div className="font-bold text-rose-400 flex items-center gap-1.5 mb-1">
                       <X className="w-3.5 h-3.5" />
-                      <span>Hal yang Perlu Dihindari (Don'ts)</span>
+                      <span>{lang === 'en' ? "Pitfalls to Avoid (Don'ts)" : "Hal yang Perlu Dihindari (Don'ts)"}</span>
                     </div>
                     {activeProfile.dialogueTips.donts.map((item, i) => (
                       <div key={i} className="flex items-start gap-1.5 text-slate-300">
@@ -813,7 +825,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                 className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition cursor-pointer flex items-center gap-1.5"
               >
                 <ArrowRight className="w-3.5 h-3.5 rotate-180" />
-                <span>Kembali ke Panduan Warga</span>
+                <span>{lang === 'en' ? 'Back to People Guide' : 'Kembali ke Panduan Warga'}</span>
               </button>
 
               <div className="flex items-center gap-2">
@@ -824,7 +836,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                     className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition cursor-pointer flex items-center gap-1.5 shadow"
                   >
                     <Footprints className="w-3.5 h-3.5" />
-                    <span>Berjalan ke Lokasi Warga</span>
+                    <span>{lang === 'en' ? 'Walk to Villager Location' : 'Berjalan ke Lokasi Warga'}</span>
                   </button>
                 )}
                 <button
@@ -832,7 +844,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                   onClick={handleCloseVillagerProfile}
                   className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition cursor-pointer"
                 >
-                  Tutup Profil
+                  {lang === 'en' ? 'Close Profile' : 'Tutup Profil'}
                 </button>
               </div>
             </div>

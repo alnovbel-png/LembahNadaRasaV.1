@@ -102,6 +102,7 @@ export interface HoverTarget {
 }
 
 export class GameRenderer {
+  public lang: 'id' | 'en' = 'id';
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private tickCount: number = 0;
@@ -814,7 +815,8 @@ export class GameRenderer {
     ctx.fill();
 
     // Mission direction pill
-    const indicatorText = `➔ MISI ${stepNumber}: ${label}`;
+    const missionWord = this.lang === 'en' ? 'MISSION' : 'MISI';
+    const indicatorText = `➔ ${missionWord} ${stepNumber}: ${label}`;
     ctx.font = 'bold 9px "Pixelify Sans", "Press Start 2P", monospace';
     const textW = ctx.measureText(indicatorText).width;
 
@@ -4981,7 +4983,7 @@ export class GameRenderer {
       const badgeY = py - 20 + Math.round(bob * 0.5);
       const pulseAlpha = 0.8 + Math.sin(this.tickCount * 0.2) * 0.2;
       ctx.fillStyle = `rgba(254, 240, 138, ${pulseAlpha})`;
-      ctx.fillText('✨ RESONANSI ✨', px + 16, badgeY);
+      ctx.fillText(this.lang === 'en' ? '✨ RESONANCE ✨' : '✨ RESONANSI ✨', px + 16, badgeY);
       ctx.restore();
     }
 
@@ -7192,7 +7194,7 @@ export class GameRenderer {
           // Mini title badge
           ctx.font = '7px "Press Start 2P", monospace';
           ctx.fillStyle = '#fef08a';
-          ctx.fillText('✨ HATI TERBUKA ✨', nx, tagY + 9);
+          ctx.fillText(this.lang === 'en' ? '✨ OPEN HEART ✨' : '✨ HATI TERBUKA ✨', nx, tagY + 9);
 
           ctx.font = '8px "Plus Jakarta Sans", sans-serif';
           ctx.fillStyle = '#4ade80';
@@ -8379,7 +8381,7 @@ export class GameRenderer {
       ctx.font = '7px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#fef08a';
-      ctx.fillText('💬 BICARA', x, bubbleY - 3);
+      ctx.fillText(this.lang === 'en' ? '💬 TALK' : '💬 BICARA', x, bubbleY - 3);
 
     } else if (type === 'examine') {
       // --- EXAMINE (Fountain, Signpost, Tree): Emerald Inspection Halo & Magnifier ---
@@ -8417,7 +8419,7 @@ export class GameRenderer {
       ctx.font = '7px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#6ee7b7';
-      ctx.fillText('🔍 PERIKSA', x, bubbleY - 3);
+      ctx.fillText(this.lang === 'en' ? '🔍 EXAMINE' : '🔍 PERIKSA', x, bubbleY - 3);
     }
 
     ctx.restore();

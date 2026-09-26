@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { sound } from '../../utils/audio';
+import { useLanguage } from '../../game/localization';
 import {
   Wind,
   Eye,
@@ -36,6 +37,7 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
   onClose,
   onComplete,
 }) => {
+  const { lang, ui } = useLanguage();
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
 
@@ -64,43 +66,51 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
   const modeMeta = {
     breathing: {
       number: 1,
-      title: 'Irama Balon Tenang (4-4-4)',
-      subtitle: 'Mekanik Ritme Pernapasan & Keseimbangan',
+      title: lang === 'en' ? 'Calm Balloon Rhythm (4-4-4)' : 'Irama Balon Tenang (4-4-4)',
+      subtitle: lang === 'en' ? 'Breathing Rhythm & Balance Mechanics' : 'Mekanik Ritme Pernapasan & Keseimbangan',
       icon: <Wind className="w-5 h-5 text-cyan-300" />,
       themeColor: 'cyan',
       themeBorder: 'border-cyan-500/40',
       successMessage:
-        'Detak jantung melambat, ritme pernapasan 4-4-4 berhasil menstabilkan sistem saraf dan mengembalikan kejernihan berpikir.',
+        lang === 'en'
+          ? 'Heart rate slows, 4-4-4 breathing rhythm stabilizes the nervous system and restores clarity.'
+          : 'Detak jantung melambat, ritme pernapasan 4-4-4 berhasil menstabilkan sistem saraf dan mengembalikan kejernihan berpikir.',
     },
     grounding: {
       number: 2,
-      title: 'Kaca Pembesar Panca Indera (5-4-3-2-1)',
-      subtitle: 'Mekanik Dynamic Hidden Object Search',
+      title: lang === 'en' ? 'Sensory Magnifying Glass (5-4-3-2-1)' : 'Kaca Pembesar Panca Indera (5-4-3-2-1)',
+      subtitle: lang === 'en' ? 'Dynamic Hidden Object Search Mechanics' : 'Mekanik Dynamic Hidden Object Search',
       icon: <Eye className="w-5 h-5 text-emerald-300" />,
       themeColor: 'emerald',
       themeBorder: 'border-emerald-500/40',
       successMessage:
-        'Kelima objek panca indera berhasil ditangkap menembus kabut! Pikiran kembali fokus pada saat ini dan bebas dari cemas berlebih.',
+        lang === 'en'
+          ? 'All 5 sensory objects captured through the mist! Mind re-centers on the present moment and dispels anxiety.'
+          : 'Kelima objek panca indera berhasil ditangkap menembus kabut! Pikiran kembali fokus pada saat ini dan bebas dari cemas berlebih.',
     },
     stop: {
       number: 3,
-      title: 'Rem Reaksi & Tracing S-T-O-P',
-      subtitle: 'Mekanik Quick Time Event & Time Freeze',
+      title: lang === 'en' ? 'S-T-O-P Reaction Brake & Tracing' : 'Rem Reaksi & Tracing S-T-O-P',
+      subtitle: lang === 'en' ? 'Quick Time Event & Time Freeze Mechanics' : 'Mekanik Quick Time Event & Time Freeze',
       icon: <ShieldAlert className="w-5 h-5 text-rose-300" />,
       themeColor: 'rose',
       themeBorder: 'border-rose-500/40',
       successMessage:
-        'Rem STOP berhasil diinjak tepat waktu! Pembekuan waktu dan tracing S-T-O-P berhasil meredam reaksi impulsif sebelum menyakiti orang lain.',
+        lang === 'en'
+          ? 'STOP brake pressed just in time! Time freeze and S-T-O-P tracing diffused impulsive reactions.'
+          : 'Rem STOP berhasil diinjak tepat waktu! Pembekuan waktu dan tracing S-T-O-P berhasil meredam reaksi impulsif sebelum menyakiti orang lain.',
     },
     shakeout: {
       number: 4,
-      title: 'Pembebas Sulur Ketegangan',
-      subtitle: 'Mekanik Alternating Button Mash (L & R)',
+      title: lang === 'en' ? 'Tension Vine Release' : 'Pembebas Sulur Ketegangan',
+      subtitle: lang === 'en' ? 'Alternating Button Mash Mechanics (L & R)' : 'Mekanik Alternating Button Mash (L & R)',
       icon: <Zap className="w-5 h-5 text-purple-300" />,
       themeColor: 'purple',
       themeBorder: 'border-purple-500/40',
       successMessage:
-        'Semua 5 sulur ketegangan otot berhasil diputus! Hormon stres terbuang dan tubuh Kiki kembali rileks bebas dari kaku.',
+        lang === 'en'
+          ? 'All 5 muscle tension vines broken! Stress hormones discharged and muscles are relaxed.'
+          : 'Semua 5 sulur ketegangan otot berhasil diputus! Hormon stres terbuang dan tubuh Kiki kembali rileks bebas dari kaku.',
     },
   }[mode];
 
@@ -113,10 +123,10 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
             id="fullscreen-back-to-menu-btn"
             onClick={onBackToMenu}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 hover:text-amber-300 text-slate-300 font-pixel text-[10px] sm:text-xs border border-slate-700 transition-all cursor-pointer active:scale-95 shadow"
-            title="Kembali ke Menu Pilihan Mini-Game"
+            title={lang === 'en' ? 'Back to Mini-Games Menu' : 'Kembali ke Menu Pilihan Mini-Game'}
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Kembali ke Menu Mini-Game</span>
+            <span className="hidden sm:inline">{lang === 'en' ? 'Back to Mini-Games' : 'Kembali ke Menu Mini-Game'}</span>
             <span className="sm:hidden">Menu</span>
           </button>
 
@@ -148,7 +158,7 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
           <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/90 border border-slate-700 text-[10px] font-pixel text-slate-300">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>
-              {isSelfPractice ? 'Latihan Mandiri (Pemain)' : `Membantu: ${targetName}`}
+              {isSelfPractice ? (lang === 'en' ? 'Solo Practice (Player)' : 'Latihan Mandiri (Pemain)') : (lang === 'en' ? `Helping: ${targetName}` : `Membantu: ${targetName}`)}
             </span>
           </div>
 
@@ -156,9 +166,9 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
             id="fullscreen-close-game-btn"
             onClick={onClose}
             className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-slate-800 hover:bg-rose-950 hover:border-rose-500/50 hover:text-rose-200 text-slate-400 border border-slate-700 font-pixel text-[10px] transition-all cursor-pointer flex items-center gap-1 active:scale-95"
-            title="Keluar ke Petualangan [Esc]"
+            title={lang === 'en' ? 'Exit to Adventure [Esc]' : 'Keluar ke Petualangan [Esc]'}
           >
-            <span className="hidden sm:inline">Keluar</span>
+            <span className="hidden sm:inline">{lang === 'en' ? 'Exit' : 'Keluar'}</span>
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -205,11 +215,11 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
             </div>
 
             <div className="text-[10px] font-pixel text-emerald-300 uppercase font-bold tracking-widest mb-1">
-              MINI-GAME SELESAI DENGAN PARIPURNA! 🎉
+              {lang === 'en' ? 'MINI-GAME COMPLETED MASTERFULLY! 🎉' : 'MINI-GAME SELESAI DENGAN PARIPURNA! 🎉'}
             </div>
 
             <h2 className="text-lg sm:text-xl font-pixel font-black text-white mb-2">
-              Ketenangan Berhasil Dipulihkan!
+              {lang === 'en' ? 'Calmness Successfully Restored!' : 'Ketenangan Berhasil Dipulihkan!'}
             </h2>
 
             <p className="text-[11px] font-pixel text-slate-300 leading-relaxed mb-4 px-2">
@@ -221,15 +231,15 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
               <div className="flex items-center gap-2">
                 <span className="text-xl">💖</span>
                 <div>
-                  <span className="text-[9px] text-slate-400 block">Skor Empati</span>
-                  <span className="text-xs font-bold text-emerald-300">+25 Poin</span>
+                  <span className="text-[9px] text-slate-400 block">{lang === 'en' ? 'Empathy Score' : 'Skor Empati'}</span>
+                  <span className="text-xs font-bold text-emerald-300">+25 {lang === 'en' ? 'Pts' : 'Poin'}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-xl">🧘</span>
                 <div>
-                  <span className="text-[9px] text-slate-400 block">Kecakapan</span>
-                  <span className="text-xs font-bold text-amber-300">+1 Teknik Dikuasai</span>
+                  <span className="text-[9px] text-slate-400 block">{lang === 'en' ? 'Skill Mastery' : 'Kecakapan'}</span>
+                  <span className="text-xs font-bold text-amber-300">{lang === 'en' ? '+1 Technique Mastered' : '+1 Teknik Dikuasai'}</span>
                 </div>
               </div>
             </div>
@@ -242,7 +252,7 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
                 className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 hover:from-emerald-300 hover:to-teal-200 text-slate-950 font-bold text-xs sm:text-sm shadow-[0_0_25px_rgba(16,185,129,0.7)] flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95"
               >
                 <Sparkles className="w-4 h-4 text-slate-950" />
-                <span>LANJUTKAN PETUALANGAN DESA ▶</span>
+                <span>{lang === 'en' ? 'CONTINUE VILLAGE ADVENTURE ▶' : 'LANJUTKAN PETUALANGAN DESA ▶'}</span>
               </button>
 
               <div className="grid grid-cols-2 gap-2 mt-1">
@@ -252,7 +262,7 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
                   className="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-pixel text-[10px] border border-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Mainkan Lagi</span>
+                  <span>{lang === 'en' ? 'Play Again' : 'Mainkan Lagi'}</span>
                 </button>
 
                 <button
@@ -264,7 +274,7 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
                   className="py-2 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-pixel text-[10px] border border-slate-700 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
                   <ListOrdered className="w-3.5 h-3.5" />
-                  <span>Pilih Teknik Lain</span>
+                  <span>{lang === 'en' ? 'Choose Other Technique' : 'Pilih Teknik Lain'}</span>
                 </button>
               </div>
             </div>

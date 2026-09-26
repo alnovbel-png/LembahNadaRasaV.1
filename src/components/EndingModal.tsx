@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Award, RotateCcw, Sparkles, Heart, CheckCircle, Download, Compass, X, Image as ImageIcon } from 'lucide-react';
 import { PlayerStats } from '../types/game';
 import { downloadCertificateAsJpg } from '../utils/certificateGenerator';
+import { useLanguage } from '../game/localization';
 
 interface EndingModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
   endingType,
   playerName = 'Ezzel',
 }) => {
+  const { lang, ui } = useLanguage();
   const [studentName, setStudentName] = useState(playerName);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);
@@ -38,6 +40,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
       recipientName: studentName || playerName || 'Ezzel',
       empathyScore: stats.empathyScore,
       decisionPath: branchTag,
+      lang,
     });
     setIsDownloading(false);
     if (success) {
@@ -57,7 +60,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
         <button
           id="close-ending-modal-btn"
           onClick={onFreeRoam}
-          title="Tutup & Masuk Mode Jelajah Bebas"
+          title={lang === 'en' ? 'Close & Enter Free Roam Mode' : 'Tutup & Masuk Mode Jelajah Bebas'}
           className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-400 hover:text-slate-100 border border-slate-700 transition"
         >
           <X className="w-4 h-4" />
@@ -68,19 +71,27 @@ export const EndingModal: React.FC<EndingModalProps> = ({
 
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold mb-3 uppercase tracking-wider">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Misi Selesai: Harmoni Lembah Pulih 100%!</span>
+          <span>
+            {lang === 'en'
+              ? 'Mission Completed: Valley Harmony 100% Restored!'
+              : 'Misi Selesai: Harmoni Lembah Pulih 100%!'}
+          </span>
         </div>
 
         <h2 className="text-xl sm:text-2xl font-black text-amber-300 mb-2">
           {isPerfect
-            ? '🏆 Akhir Kisah: Harmoni Sejati Lembah Nada Rasa'
-            : '🌟 Akhir Kisah: Langkah Awal Saling Memahami'}
+            ? (lang === 'en' ? '🏆 Final Story: True Harmony of Melody Valley' : '🏆 Akhir Kisah: Harmoni Sejati Lembah Nada Rasa')
+            : (lang === 'en' ? '🌟 Final Story: The First Step of Mutual Understanding' : '🌟 Akhir Kisah: Langkah Awal Saling Memahami')}
         </h2>
 
         <p className="text-xs sm:text-sm text-slate-300 mb-5 leading-relaxed max-w-lg mx-auto">
           {isPerfect
-            ? 'Kabut abu-abu lenyap total! Air mancur kembali memancar jernih, bunga bermekaran, dan lonceng jam kuno berdenting hangat mempersatukan warga desa.'
-            : 'Warga desa mulai meletakkan prasangka mereka dan berani berbicara dengan jujur. Lembah kembali hidup dalam kedamaian!'}
+            ? (lang === 'en'
+                ? 'The gray mist has dissolved completely! The fountain flows crystal clear, wildflowers bloom in radiant color, and the ancient clock bells chime warmly to unite the village.'
+                : 'Kabut abu-abu lenyap total! Air mancur kembali memancar jernih, bunga bermekaran, dan lonceng jam kuno berdenting hangat mempersatukan warga desa.')
+            : (lang === 'en'
+                ? 'Villagers have begun setting aside prejudice and speaking with honesty and warmth. The valley is alive with renewed peace!'
+                : 'Warga desa mulai meletakkan prasangka mereka dan berani berbicara dengan jujur. Lembah kembali hidup dalam kedamaian!')}
         </p>
 
         {/* Certificate Card */}
@@ -90,17 +101,17 @@ export const EndingModal: React.FC<EndingModalProps> = ({
         >
           <div className="text-center border-b border-amber-400/30 pb-3 mb-3">
             <span className="text-[10px] uppercase font-bold tracking-widest text-amber-400/90 block">
-              Kementerian Kebijaksanaan Lembah Nada Rasa
+              {lang === 'en' ? 'Ministry of Wisdom • Valley of Harmony' : 'Kementerian Kebijaksanaan Lembah Nada Rasa'}
             </span>
             <h3 className="text-lg font-bold text-amber-300">
-              SERTIFIKAT KELULUSAN DUTA EMPATI KELAS 4 SD
+              {lang === 'en' ? 'EMPATHY AMBASSADOR CERTIFICATE OF COMPLETION' : 'SERTIFIKAT KELULUSAN DUTA EMPATI KELAS 4 SD'}
             </h3>
           </div>
 
           <div className="space-y-2 text-xs text-slate-200">
             <div>
               <label className="block text-[11px] text-slate-400 mb-1 font-semibold">
-                Diberikan dengan bangga kepada:
+                {lang === 'en' ? 'Proudly presented to:' : 'Diberikan dengan bangga kepada:'}
               </label>
               <input
                 type="text"
@@ -108,43 +119,45 @@ export const EndingModal: React.FC<EndingModalProps> = ({
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
                 className="w-full bg-slate-900/80 border border-amber-400/60 rounded px-3 py-1.5 text-sm font-bold text-amber-200 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                placeholder="Ezzel (atau ketik namamu)..."
+                placeholder={lang === 'en' ? 'Ezzel (or type your name)...' : 'Ezzel (atau ketik namamu)...'}
               />
             </div>
 
             <div className="pt-2 text-[11px] text-slate-300 leading-relaxed">
-              Telah berhasil menguasai 5 Pilar Pembelajaran Sosial Emosional (PSE):
+              {lang === 'en'
+                ? 'Has successfully demonstrated mastery of the 5 SEL Core Competencies:'
+                : 'Telah berhasil menguasai 5 Pilar Pembelajaran Sosial Emosional (PSE):'}
               <ul className="grid grid-cols-2 gap-1.5 mt-2 font-semibold text-amber-200/90">
                 <li className="flex items-center gap-1">
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                  Kesadaran Diri (Self-Awareness)
+                  {lang === 'en' ? 'Self-Awareness' : 'Kesadaran Diri (Self-Awareness)'}
                 </li>
                 <li className="flex items-center gap-1">
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                  Pengelolaan Diri (Napas 4-4-4)
+                  {lang === 'en' ? 'Self-Management (Breathing)' : 'Pengelolaan Diri (Napas 4-4-4)'}
                 </li>
                 <li className="flex items-center gap-1">
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                  Kesadaran Sosial & Empati
+                  {lang === 'en' ? 'Social Awareness & Empathy' : 'Kesadaran Sosial & Empati'}
                 </li>
                 <li className="flex items-center gap-1">
                   <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
-                  Keputusan Bertanggung Jawab
+                  {lang === 'en' ? 'Responsible Decision-Making' : 'Keputusan Bertanggung Jawab'}
                 </li>
               </ul>
             </div>
 
             <div className="flex justify-between items-center pt-3 border-t border-slate-700/60 text-[11px]">
               <div>
-                <span className="text-slate-400 block">Total Poin Empati:</span>
-                <span className="font-bold text-amber-400 text-sm">{stats.empathyScore} Poin</span>
+                <span className="text-slate-400 block">{lang === 'en' ? 'Total Empathy Points:' : 'Total Poin Empati:'}</span>
+                <span className="font-bold text-amber-400 text-sm">{stats.empathyScore} {lang === 'en' ? 'Pts' : 'Poin'}</span>
               </div>
               <div>
-                <span className="text-slate-400 block">Jalur Keputusan:</span>
+                <span className="text-slate-400 block">{lang === 'en' ? 'Decision Path:' : 'Jalur Keputusan:'}</span>
                 <span className="font-semibold text-cyan-300">
                   {branchTag === 'empathy_first'
-                    ? 'Validasi Hati Kakek Ranu'
-                    : 'Solusi Logis & Kerjasama'}
+                    ? (lang === 'en' ? "Grandpa Ranu's Validation" : 'Validasi Hati Kakek Ranu')
+                    : (lang === 'en' ? 'Logical Solution & Teamwork' : 'Solusi Logis & Kerjasama')}
                 </span>
               </div>
             </div>
@@ -160,7 +173,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
             className="px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg shadow-emerald-950/60 transition border border-emerald-400/40 hover:scale-105 active:scale-95"
           >
             <Compass className="w-4 h-4 text-emerald-200" />
-            <span>Mode Jelajah Bebas (Free Roam)</span>
+            <span>{lang === 'en' ? 'Free Roam Mode' : 'Mode Jelajah Bebas (Free Roam)'}</span>
           </button>
 
           {/* Restart / Mainkan Lagi */}
@@ -170,7 +183,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
             className="px-4 sm:px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm flex items-center gap-2 shadow transition hover:scale-105 active:scale-95"
           >
             <RotateCcw className="w-4 h-4" />
-            <span>Coba Bermain Lagi</span>
+            <span>{lang === 'en' ? 'Play Again' : 'Coba Bermain Lagi'}</span>
           </button>
 
           {/* Simpan Gambar Sertifikat JPG */}
@@ -179,21 +192,24 @@ export const EndingModal: React.FC<EndingModalProps> = ({
             onClick={handleDownloadJpg}
             disabled={isDownloading}
             className="px-4 sm:px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold text-xs sm:text-sm flex items-center gap-2 shadow-md transition hover:scale-105 active:scale-95 cursor-pointer disabled:opacity-60"
-            title="Unduh sertifikat sebagai file foto JPG yang mudah dibuka anak-anak"
+            title={lang === 'en' ? 'Download certificate as a high-resolution JPG image' : 'Unduh sertifikat sebagai file foto JPG yang mudah dibuka anak-anak'}
           >
             <Download className="w-4 h-4 text-slate-950" />
             <span>
               {isDownloading
-                ? 'Menyiapkan Gambar...'
+                ? (lang === 'en' ? 'Preparing Image...' : 'Menyiapkan Gambar...')
                 : downloadSuccess
-                ? '✓ Berhasil Disimpan!'
-                : 'Simpan Gambar Sertifikat (JPG)'}
+                ? (lang === 'en' ? '✓ Saved Successfully!' : '✓ Berhasil Disimpan!')
+                : (lang === 'en' ? 'Save Certificate (JPG)' : 'Simpan Gambar Sertifikat (JPG)')}
             </span>
           </button>
         </div>
 
         <p className="mt-4 text-[11px] text-slate-400">
-          💡 <span className="text-emerald-300 font-medium">Mode Jelajah Bebas</span> memungkinkanmu mengelilingi seluruh penjuru desa, bertegur sapa dengan warga, dan menikmati keindahan lembah yang telah pulih.
+          💡 <span className="text-emerald-300 font-medium">{lang === 'en' ? 'Free Roam Mode' : 'Mode Jelajah Bebas'}</span>{' '}
+          {lang === 'en'
+            ? 'allows you to explore every corner of the village, chat with friends, and enjoy the restored harmony of the valley.'
+            : 'memungkinkanmu mengelilingi seluruh penjuru desa, bertegur sapa dengan warga, dan menikmati keindahan lembah yang telah pulih.'}
         </p>
       </div>
     </div>

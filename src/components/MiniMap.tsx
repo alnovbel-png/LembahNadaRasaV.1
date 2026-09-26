@@ -28,6 +28,7 @@ import {
 } from '../game/miniMapTextures';
 import { sound } from '../utils/audio';
 import { useIsMobileOrTablet, useIsPortrait, useHideMinimapExtraControls } from '../utils/device';
+import { useLanguage } from '../game/localization';
 
 interface MiniMapProps {
   isOpen: boolean;
@@ -62,6 +63,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   onNavigateToTile,
   isCompassActive = false,
 }) => {
+  const { lang } = useLanguage();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const staticMapCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [currentZoneName, setCurrentZoneName] = useState<string>('Alun-Alun Nada');
@@ -750,21 +752,21 @@ export const MiniMap: React.FC<MiniMapProps> = ({
 
       // Calculate current zone name dynamically for player
       if (tileCol >= 26 && tileRow <= 10) {
-        setCurrentZoneName('Menara Jam Harmoni');
+        setCurrentZoneName(lang === 'en' ? 'Clock Tower of Harmony' : 'Menara Jam Harmoni');
       } else if (tileCol < 15 && tileRow < 10) {
-        setCurrentZoneName('Hutan Sunyi Refleksi');
+        setCurrentZoneName(lang === 'en' ? 'Silent Forest of Reflection' : 'Hutan Sunyi Refleksi');
       } else if (tileCol >= 19 && tileCol <= 25 && tileRow >= 12 && tileRow <= 18) {
-        setCurrentZoneName('Jembatan Kayu Ranu');
+        setCurrentZoneName(lang === 'en' ? "Grandpa Ranu's Wooden Bridge" : 'Jembatan Kayu Ranu');
       } else if (tileCol <= 14 && tileRow >= 19) {
-        setCurrentZoneName('Kebun Harapan & Pertanian');
+        setCurrentZoneName(lang === 'en' ? 'Hope Garden & Farmland' : 'Kebun Harapan & Pertanian');
       } else if (tileCol >= 20 && tileRow >= 19) {
-        setCurrentZoneName('Perkebunan Buah Segar');
+        setCurrentZoneName(lang === 'en' ? 'Fresh Fruit Orchard' : 'Perkebunan Buah Segar');
       } else if (tileCol >= 4 && tileCol <= 18 && tileRow >= 10 && tileRow <= 21) {
-        setCurrentZoneName('Alun-Alun Nada Rasa');
+        setCurrentZoneName(lang === 'en' ? 'Melody Plaza' : 'Alun-Alun Nada Rasa');
       } else if (tileCol >= 21 && tileCol <= 25) {
-        setCurrentZoneName('Tepi Sungai Gemericik');
+        setCurrentZoneName(lang === 'en' ? 'Babbling Riverbank' : 'Tepi Sungai Gemericik');
       } else {
-        setCurrentZoneName('Lembah Nada Rasa');
+        setCurrentZoneName(lang === 'en' ? 'Valley of Harmony' : 'Lembah Nada Rasa');
       }
 
       animId = requestAnimationFrame(renderMiniMap);
@@ -869,21 +871,21 @@ export const MiniMap: React.FC<MiniMapProps> = ({
         const isQuestTarget = Boolean(activeQuest && npc.id === activeQuest.targetNPC);
         const facingText =
           npc.facing === 'up'
-            ? 'Utara ⬆️'
+            ? (lang === 'en' ? 'North ⬆️' : 'Utara ⬆️')
             : npc.facing === 'down'
-            ? 'Selatan ⬇️'
+            ? (lang === 'en' ? 'South ⬇️' : 'Selatan ⬇️')
             : npc.facing === 'left'
-            ? 'Barat ⬅️'
-            : 'Timur ➡️';
+            ? (lang === 'en' ? 'West ⬅️' : 'Barat ⬅️')
+            : (lang === 'en' ? 'East ➡️' : 'Timur ➡️');
         setHoveredInfo({
           name: npc.name,
           role: npc.role,
           facing: facingText,
           status: isQuestTarget
-            ? 'Target Misi Aktif!'
+            ? (lang === 'en' ? 'Active Quest Target!' : 'Target Misi Aktif!')
             : npc.isResolved
-            ? 'Harmoni Pulih ✨'
-            : 'Belum Selesai 🌫️',
+            ? (lang === 'en' ? 'Harmony Restored ✨' : 'Harmoni Pulih ✨')
+            : (lang === 'en' ? 'Not Completed 🌫️' : 'Belum Selesai 🌫️'),
           isQuestTarget,
         });
         return;
@@ -895,37 +897,37 @@ export const MiniMap: React.FC<MiniMapProps> = ({
     const tileRow = worldY / MINI_TILE_PX;
     if (tileCol >= 4 && tileCol <= 19 && tileRow >= 10 && tileRow <= 21) {
       setHoveredInfo({
-        name: 'Alun-Alun Nada Rasa',
-        status: zoneStatus.plaza ? 'Harmoni Pulih ✨' : 'Belum Pulih 🌫️',
+        name: lang === 'en' ? 'Melody Plaza' : 'Alun-Alun Nada Rasa',
+        status: zoneStatus.plaza ? (lang === 'en' ? 'Harmony Restored ✨' : 'Harmoni Pulih ✨') : (lang === 'en' ? 'Unrestored 🌫️' : 'Belum Pulih 🌫️'),
         isUnrecoveredZone: !zoneStatus.plaza,
-        zoneHint: zoneStatus.plaza ? undefined : 'Selesaikan Misi Kiki untuk memulihkan warna!',
+        zoneHint: zoneStatus.plaza ? undefined : (lang === 'en' ? "Complete Kiki's Quest to restore colors!" : 'Selesaikan Misi Kiki untuk memulihkan warna!'),
       });
       return;
     }
     if (tileCol >= 1 && tileCol <= 15 && tileRow >= 1 && tileRow <= 9) {
       setHoveredInfo({
-        name: 'Hutan Sunyi Refleksi',
-        status: zoneStatus.forest ? 'Harmoni Pulih ✨' : 'Belum Pulih 🌫️',
+        name: lang === 'en' ? 'Silent Forest of Reflection' : 'Hutan Sunyi Refleksi',
+        status: zoneStatus.forest ? (lang === 'en' ? 'Harmony Restored ✨' : 'Harmoni Pulih ✨') : (lang === 'en' ? 'Unrestored 🌫️' : 'Belum Pulih 🌫️'),
         isUnrecoveredZone: !zoneStatus.forest,
-        zoneHint: zoneStatus.forest ? undefined : 'Bantu Bimo mengatasi rasa bersalah!',
+        zoneHint: zoneStatus.forest ? undefined : (lang === 'en' ? 'Help Bimo overcome guilt!' : 'Bantu Bimo mengatasi rasa bersalah!'),
       });
       return;
     }
     if (tileCol >= 20 && tileCol <= 25 && tileRow >= 12 && tileRow <= 18) {
       setHoveredInfo({
-        name: 'Jembatan Kayu Ranu',
-        status: zoneStatus.bridge ? 'Harmoni Pulih ✨' : 'Belum Pulih 🌫️',
+        name: lang === 'en' ? "Grandpa Ranu's Wooden Bridge" : 'Jembatan Kayu Ranu',
+        status: zoneStatus.bridge ? (lang === 'en' ? 'Harmony Restored ✨' : 'Harmoni Pulih ✨') : (lang === 'en' ? 'Unrestored 🌫️' : 'Belum Pulih 🌫️'),
         isUnrecoveredZone: !zoneStatus.bridge,
-        zoneHint: zoneStatus.bridge ? undefined : 'Temui Kakek Ranu dengan respon empatik!',
+        zoneHint: zoneStatus.bridge ? undefined : (lang === 'en' ? 'Meet Grandpa Ranu with empathy!' : 'Temui Kakek Ranu dengan respon empatik!'),
       });
       return;
     }
     if (tileCol >= 26 && tileCol <= 34 && tileRow >= 1 && tileRow <= 9) {
       setHoveredInfo({
-        name: 'Menara Jam Harmoni',
-        status: zoneStatus.tower ? 'Harmoni Pulih ✨' : 'Belum Pulih 🌫️',
+        name: lang === 'en' ? 'Clock Tower of Harmony' : 'Menara Jam Harmoni',
+        status: zoneStatus.tower ? (lang === 'en' ? 'Harmony Restored ✨' : 'Harmoni Pulih ✨') : (lang === 'en' ? 'Unrestored 🌫️' : 'Belum Pulih 🌫️'),
         isUnrecoveredZone: !zoneStatus.tower,
-        zoneHint: zoneStatus.tower ? undefined : 'Bawa Roda Gigi Jam ke puncak menara!',
+        zoneHint: zoneStatus.tower ? undefined : (lang === 'en' ? 'Bring the Clockwork Gear to the tower peak!' : 'Bawa Roda Gigi Jam ke puncak menara!'),
       });
       return;
     }
@@ -1075,11 +1077,11 @@ export const MiniMap: React.FC<MiniMapProps> = ({
             sound.playMenuSelect();
             onToggle();
           }}
-          title="Buka Peta Mini [M]"
+          title={lang === 'en' ? 'Open Mini Map [M]' : 'Buka Peta Mini [M]'}
           className={`fixed ${containerPosition} z-30 pointer-events-auto bg-slate-950/95 border-2 border-amber-500/70 hover:bg-slate-900 active:bg-amber-500/20 text-amber-300 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-2xl backdrop-blur-md flex items-center gap-1.5 sm:gap-2 transition active:scale-95 group`}
         >
           <MapIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-          <span className="font-pixel text-[8.5px] sm:text-[9px] font-bold">PETA</span>
+          <span className="font-pixel text-[8.5px] sm:text-[9px] font-bold">{lang === 'en' ? 'MAP' : 'PETA'}</span>
           {activeQuest && (
             <span className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-amber-400 text-slate-950 text-[7.5px] sm:text-[8px] font-bold animate-pulse">
               !
@@ -1108,13 +1110,13 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                   }`}
                 />
                 <span className="font-pixel text-[8px] text-amber-300 font-bold tracking-tight">
-                  PETA
+                  {lang === 'en' ? 'MAP' : 'PETA'}
                 </span>
 
                 {/* 4 Micro Harmonic Energy Vials */}
                 <div
                   className="flex items-center gap-0.5 bg-slate-900/90 border border-slate-700/80 rounded px-1 py-0.5 ml-1"
-                  title={`Zona Pulih: ${restoredCount}/4 (A: Alun-Alun, J: Jembatan, H: Hutan, M: Menara)`}
+                  title={lang === 'en' ? `Restored Zones: ${restoredCount}/4` : `Zona Pulih: ${restoredCount}/4 (A: Alun-Alun, J: Jembatan, H: Hutan, M: Menara)`}
                 >
                   <span
                     className={`w-1.5 h-2 rounded-xs transition-colors ${
@@ -1150,7 +1152,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                       sound.playMenuSelect();
                       setIsTranslucent((prev) => !prev);
                     }}
-                    title={isTranslucent ? 'Tampilan Padat' : 'Tampilan Transparan'}
+                    title={isTranslucent ? (lang === 'en' ? 'Solid View' : 'Tampilan Padat') : (lang === 'en' ? 'Transparent View' : 'Tampilan Transparan')}
                     className="hidden md:inline-flex p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
                   >
                     {isTranslucent ? <Eye className="w-3 h-3 text-amber-400" /> : <EyeOff className="w-3 h-3" />}
@@ -1164,7 +1166,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                       sound.playMenuSelect();
                       setIsCompact(false);
                     }}
-                    title="Perbesar Peta (Tampilan Lengkap)"
+                    title={lang === 'en' ? 'Expand Map (Full View)' : 'Perbesar Peta (Tampilan Lengkap)'}
                     className="hidden md:inline-flex p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
                   >
                     <Maximize2 className="w-3 h-3 text-amber-400" />
@@ -1178,7 +1180,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                     sound.playMenuSelect();
                     onToggle();
                   }}
-                  title="Tutup Peta [M]"
+                  title={lang === 'en' ? 'Close Map [M]' : 'Tutup Peta [M]'}
                   className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-400 transition"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -1196,7 +1198,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                   }`}
                 />
                 <span className="font-pixel text-[8.5px] text-amber-300 font-bold tracking-tight">
-                  PETA DUNIA
+                  {lang === 'en' ? 'WORLD MAP' : 'PETA DUNIA'}
                 </span>
               </div>
 
@@ -1204,12 +1206,12 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                 {/* 4-Vial Harmonic Energy Reservoir (Visual Progress Indicator) */}
                 <div
                   className="flex items-center gap-1 bg-slate-900/90 border border-slate-700/80 rounded-lg px-1.5 py-0.5 shadow-inner"
-                  title={`Progres Harmoni Zona: ${restoredCount}/4 Pulih (A: Alun-Alun, J: Jembatan, H: Hutan, M: Menara)`}
+                  title={lang === 'en' ? `Zone Harmony Progress: ${restoredCount}/4 Restored` : `Progres Harmoni Zona: ${restoredCount}/4 Pulih (A: Alun-Alun, J: Jembatan, H: Hutan, M: Menara)`}
                 >
                   {/* Plaza Vial (Amber) */}
                   <div
                     className="flex flex-col items-center"
-                    title={`Alun-Alun: ${zoneStatus.plaza ? 'Harmoni Pulih ✨' : 'Belum Pulih 🌫️'}`}
+                    title={`${lang === 'en' ? 'Melody Plaza' : 'Alun-Alun'}: ${zoneStatus.plaza ? (lang === 'en' ? 'Harmony Restored ✨' : 'Harmoni Pulih ✨') : (lang === 'en' ? 'Unrestored 🌫️' : 'Belum Pulih 🌫️')}`}
                   >
                     <div
                       className={`w-2.5 h-3.5 rounded-xs border flex items-end p-0.5 transition-all ${
@@ -1347,7 +1349,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                       sound.playMenuSelect();
                       setIsCompact(true);
                     }}
-                    title="Mode Ringkas (Hemat Layar)"
+                    title={lang === 'en' ? 'Compact Mode (Save Screen)' : 'Mode Ringkas (Hemat Layar)'}
                     className="hidden md:inline-flex p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-amber-300 transition"
                   >
                     <Minimize2 className="w-3.5 h-3.5 text-amber-400" />
@@ -1360,7 +1362,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                     sound.playMenuSelect();
                     onToggle();
                   }}
-                  title="Tutup Peta [M]"
+                  title={lang === 'en' ? 'Close Map [M]' : 'Tutup Peta [M]'}
                   className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -1374,7 +1376,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
             {/* Cardinal Direction Indicators on Bezel Margins */}
             <div className="absolute top-0 inset-x-0 flex justify-center pointer-events-none z-10">
               <span className={`font-pixel ${isEffectiveCompact ? 'text-[5.5px] px-1 py-0' : 'text-[6.5px] px-1.5 py-0.5'} font-bold bg-slate-950/90 text-rose-400 rounded-b border-x border-b border-rose-900/60 shadow-md`}>
-                U
+                {lang === 'en' ? 'N' : 'U'}
               </span>
             </div>
             <div className="absolute bottom-0 inset-x-0 flex justify-center pointer-events-none z-10">
@@ -1384,12 +1386,12 @@ export const MiniMap: React.FC<MiniMapProps> = ({
             </div>
             <div className="absolute left-0 inset-y-0 flex items-center pointer-events-none z-10">
               <span className={`font-pixel ${isEffectiveCompact ? 'text-[5.5px] px-0.5 py-0.5' : 'text-[6.5px] px-1 py-0.5'} font-bold bg-slate-950/90 text-slate-300 rounded-r border-y border-r border-slate-700/60 shadow-md`}>
-                B
+                {lang === 'en' ? 'W' : 'B'}
               </span>
             </div>
             <div className="absolute right-0 inset-y-0 flex items-center pointer-events-none z-10">
-              <span className={`font-pixel ${isEffectiveCompact ? 'text-[5.5px] px-0.5 py-0.5' : 'text-[6.5px] px-1 py-0.5'} font-bold bg-slate-950/90 text-amber-300 rounded-l border-y border-l border-amber-700/60 shadow-md`}>
-                T
+              <span className={`font-pixel ${isEffectiveCompact ? 'text-[5.5px] px-0.5 py-0.5' : 'text-[6.5px] px-1.5 py-0.5'} font-bold bg-slate-950/90 text-amber-300 rounded-l border-y border-l border-amber-700/60 shadow-md`}>
+                {lang === 'en' ? 'E' : 'T'}
               </span>
             </div>
 
@@ -1400,7 +1402,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                 id="btn-minimap-zoom-in"
                 onClick={handleZoomIn}
                 disabled={zoom >= 3.0}
-                title="Perbesar Peta [+] / Scroll Atas"
+                title={lang === 'en' ? 'Zoom In [+] / Scroll Up' : 'Perbesar Peta [+] / Scroll Atas'}
                 className={`${isEffectiveCompact ? 'p-0.5' : 'p-1'} rounded hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent text-amber-300 hover:text-amber-100 transition active:scale-95 cursor-pointer`}
               >
                 <ZoomIn className={isEffectiveCompact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
@@ -1410,7 +1412,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
               <button
                 id="btn-minimap-zoom-level"
                 onClick={handleCycleZoom}
-                title="Klik untuk ubah zoom (1.0x - 3.0x)"
+                title={lang === 'en' ? 'Click to cycle zoom (1.0x - 3.0x)' : 'Klik untuk ubah zoom (1.0x - 3.0x)'}
                 className={`${isEffectiveCompact ? 'px-1 py-0.2 text-[6.5px] min-w-[24px]' : 'px-1 py-0.5 text-[7.5px] min-w-[30px]'} font-pixel font-bold text-amber-300 hover:text-amber-200 bg-amber-950/70 rounded border border-amber-800/70 cursor-pointer text-center`}
               >
                 {zoom.toFixed(1)}x
@@ -1421,7 +1423,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                 id="btn-minimap-zoom-out"
                 onClick={handleZoomOut}
                 disabled={zoom <= 1.0}
-                title="Perkecil Peta [-] / Scroll Bawah"
+                title={lang === 'en' ? 'Zoom Out [-] / Scroll Down' : 'Perkecil Peta [-] / Scroll Bawah'}
                 className={`${isEffectiveCompact ? 'p-0.5' : 'p-1'} rounded hover:bg-slate-800 disabled:opacity-30 disabled:hover:bg-transparent text-amber-300 hover:text-amber-100 transition active:scale-95 cursor-pointer`}
               >
                 <ZoomOut className={isEffectiveCompact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
@@ -1432,7 +1434,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                 <button
                   id="btn-minimap-center-player"
                   onClick={handleCenterOnPlayer}
-                  title={isFollowingPlayer ? "Sedang Mengikuti Pemain [C]" : "Pusatkan ke Posisi Pemain [C]"}
+                  title={isFollowingPlayer ? (lang === 'en' ? 'Following Player [C]' : 'Sedang Mengikuti Pemain [C]') : (lang === 'en' ? 'Center on Player [C]' : 'Pusatkan ke Posisi Pemain [C]')}
                   className={`${isEffectiveCompact ? 'p-0.5' : 'p-1'} rounded transition active:scale-95 flex items-center gap-0.5 cursor-pointer border ${
                     isFollowingPlayer
                       ? 'bg-emerald-950/90 border-emerald-500/80 text-emerald-300 shadow-[0_0_6px_rgba(52,211,153,0.3)]'
@@ -1442,7 +1444,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                   <LocateFixed className={`${isEffectiveCompact ? 'w-2.5 h-2.5' : 'w-3 h-3'} ${isFollowingPlayer ? 'animate-pulse text-emerald-400' : ''}`} />
                   {!isEffectiveCompact && (
                     <span className="text-[6.5px] font-pixel font-bold hidden sm:inline">
-                      {isFollowingPlayer ? 'IKUTI' : 'PUSAT'}
+                      {isFollowingPlayer ? (lang === 'en' ? 'FOLLOW' : 'IKUTI') : (lang === 'en' ? 'CENTER' : 'PUSAT')}
                     </span>
                   )}
                 </button>
@@ -1458,12 +1460,12 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                   ? 'border-amber-400 shadow-[0_0_14px_rgba(251,191,36,0.8)] ring-2 ring-amber-300/60'
                   : 'border-slate-700 shadow-md'
               } backdrop-blur-xs flex items-center justify-center pointer-events-none transition-all`}
-              title="Kompas Orientasi Peta: U = Utara, S = Selatan, T = Timur, B = Barat"
+              title={lang === 'en' ? 'Map Compass: N = North, S = South, E = East, W = West' : 'Kompas Orientasi Peta: U = Utara, S = Selatan, T = Timur, B = Barat'}
             >
-              <span className={`absolute top-0 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-rose-400 leading-none`}>U</span>
+              <span className={`absolute top-0 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-rose-400 leading-none`}>{lang === 'en' ? 'N' : 'U'}</span>
               <span className={`absolute bottom-0 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-slate-400 leading-none`}>S</span>
-              <span className={`absolute right-0.5 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-amber-300 leading-none`}>T</span>
-              <span className={`absolute left-0.5 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-slate-400 leading-none`}>B</span>
+              <span className={`absolute right-0.5 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-amber-300 leading-none`}>{lang === 'en' ? 'E' : 'T'}</span>
+              <span className={`absolute left-0.5 ${isEffectiveCompact ? 'text-[4px]' : 'text-[5px]'} font-pixel font-bold text-slate-400 leading-none`}>{lang === 'en' ? 'W' : 'B'}</span>
               <div
                 className={`relative ${isEffectiveCompact ? 'w-1 h-3' : 'w-1.5 h-4'} flex flex-col items-center justify-center ${
                   isCompassActive ? 'animate-pulse' : ''
@@ -1496,14 +1498,14 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                   ? 'cursor-grab active:cursor-grabbing'
                   : 'cursor-crosshair'
               }`}
-              title="Klik untuk jalan otomatis • Scroll atau tombol +/- untuk zoom • Geser untuk menggeser peta saat zoom"
+              title={lang === 'en' ? 'Click to auto-walk • Scroll or +/- to zoom • Drag to pan map' : 'Klik untuk jalan otomatis • Scroll atau tombol +/- untuk zoom • Geser untuk menggeser peta saat zoom'}
             />
 
             {/* Quick click-to-move overlay hint on hover */}
             <div className="absolute inset-x-0 bottom-0 py-0.5 bg-slate-950/85 text-[8px] text-amber-200 text-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity font-mono">
               {zoom > 1.0
-                ? 'Geser untuk mengitari peta • Klik untuk jalan'
-                : 'Klik peta untuk jalan • [+] [-] Zoom'}
+                ? (lang === 'en' ? 'Drag to pan • Click to walk' : 'Geser untuk mengitari peta • Klik untuk jalan')
+                : (lang === 'en' ? 'Click map to walk • [+] [-] Zoom' : 'Klik peta untuk jalan • [+] [-] Zoom')}
             </div>
           </div>
 
@@ -1530,7 +1532,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                       onNavigateToTile(Math.round(activeTargetNpc.x), Math.round(activeTargetNpc.y));
                     }
                   }}
-                  title="Klik untuk auto-walk otomatis menuju target misi aktif!"
+                  title={lang === 'en' ? 'Click to auto-walk to active mission target!' : 'Klik untuk auto-walk otomatis menuju target misi aktif!'}
                   className="w-full text-left bg-gradient-to-r from-amber-950/90 via-slate-900 to-amber-950/90 hover:from-amber-900/95 hover:to-amber-900/95 border border-amber-400 rounded-lg px-2 py-1 flex items-center justify-between cursor-pointer transition active:scale-95 shadow-xs group/quest"
                 >
                   <div className="flex items-center gap-1.5 min-w-0">
@@ -1542,7 +1544,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                     </span>
                   </div>
                   <span className="text-[6.5px] font-pixel text-amber-300 flex items-center gap-0.5 shrink-0 font-bold group-hover/quest:underline">
-                    JALAN <ArrowRight className="w-2.5 h-2.5" />
+                    {lang === 'en' ? 'WALK' : 'JALAN'} <ArrowRight className="w-2.5 h-2.5" />
                   </span>
                 </button>
               ) : (
@@ -1552,7 +1554,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                     <span className="truncate font-bold text-slate-100 text-[8px]">{currentZoneName}</span>
                   </div>
                   <span className="text-[6px] font-pixel text-amber-300 font-bold">
-                    {isCompassActive ? 'RESONANSI' : 'LEMBAH'}
+                    {isCompassActive ? (lang === 'en' ? 'RESONANCE' : 'RESONANSI') : (lang === 'en' ? 'VALLEY' : 'LEMBAH')}
                   </span>
                 </div>
               )}
@@ -1561,13 +1563,13 @@ export const MiniMap: React.FC<MiniMapProps> = ({
               <div className="flex items-center justify-between text-[6.5px] text-slate-400 pt-0.5 border-t border-slate-800/70 font-pixel">
                 <div className="flex items-center gap-1.5">
                   <span className="text-emerald-400 flex items-center gap-0.5">
-                    <span className="w-1.5 h-1.5 rounded-xs bg-emerald-500 inline-block" /> Kamu
+                    <span className="w-1.5 h-1.5 rounded-xs bg-emerald-500 inline-block" /> {lang === 'en' ? 'You' : 'Kamu'}
                   </span>
                   <span className="text-amber-300 flex items-center gap-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" /> Warga
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" /> {lang === 'en' ? 'Villagers' : 'Warga'}
                   </span>
                   <span className="text-amber-400 flex items-center gap-0.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 text-slate-950 font-bold inline-flex items-center justify-center text-[5px]">!</span> Misi
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 text-slate-950 font-bold inline-flex items-center justify-center text-[5px]">!</span> {lang === 'en' ? 'Quest' : 'Misi'}
                   </span>
                 </div>
                 {!isMobileMode && (
@@ -1575,7 +1577,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                     onClick={() => setShowMobileLegend((prev) => !prev)}
                     className="hidden md:inline text-slate-400 hover:text-amber-300 underline cursor-pointer"
                   >
-                    {showMobileLegend ? 'Tutup' : 'Bantuan'}
+                    {showMobileLegend ? (lang === 'en' ? 'Close' : 'Tutup') : (lang === 'en' ? 'Help' : 'Bantuan')}
                   </button>
                 )}
               </div>
@@ -1583,10 +1585,10 @@ export const MiniMap: React.FC<MiniMapProps> = ({
               {/* Expandable Mini Help */}
               {showMobileLegend && !isMobileMode && (
                 <div className="hidden md:flex bg-slate-900/95 border border-slate-700/80 rounded-lg p-1.5 text-[6.5px] text-slate-300 font-pixel flex-col gap-0.5 animate-in fade-in duration-100 shadow-lg">
-                  <div className="text-amber-300 font-bold">Panduan Peta:</div>
-                  <div>• Tap peta untuk jalan otomatis (auto-walk).</div>
-                  <div>• Gunakan [+] [-] atau cubit untuk zoom.</div>
-                  <div>• Geser peta dengan jari saat diperbesar.</div>
+                  <div className="text-amber-300 font-bold">{lang === 'en' ? 'Map Guide:' : 'Panduan Peta:'}</div>
+                  <div>{lang === 'en' ? '• Tap map to auto-walk.' : '• Tap peta untuk jalan otomatis (auto-walk).'}</div>
+                  <div>{lang === 'en' ? '• Use [+] [-] or pinch to zoom.' : '• Gunakan [+] [-] atau cubit untuk zoom.'}</div>
+                  <div>{lang === 'en' ? '• Drag map when zoomed in.' : '• Geser peta dengan jari saat diperbesar.'}</div>
                 </div>
               )}
             </>
@@ -1629,7 +1631,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                         : 'text-slate-400 bg-slate-800/70 border-slate-700/70'
                     }`}
                   >
-                    {isCompassActive ? 'RESONANSI' : 'KOMPAS'}
+                    {isCompassActive ? (lang === 'en' ? 'RESONANCE' : 'RESONANSI') : (lang === 'en' ? 'COMPASS' : 'KOMPAS')}
                   </span>
                 </div>
               )}
@@ -1644,7 +1646,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                       onNavigateToTile(Math.round(activeTargetNpc.x), Math.round(activeTargetNpc.y));
                     }
                   }}
-                  title="Klik untuk auto-walk otomatis menuju target misi aktif!"
+                  title={lang === 'en' ? 'Click to auto-walk to active mission target!' : 'Klik untuk auto-walk otomatis menuju target misi aktif!'}
                   className="w-full text-left bg-gradient-to-r from-amber-950/90 via-slate-900 to-amber-950/90 hover:from-amber-900/95 hover:to-amber-900/95 border-2 border-amber-400 hover:border-amber-300 rounded-xl p-2 flex items-center justify-between cursor-pointer transition active:scale-[0.98] group/quest shadow-[0_4px_14px_rgba(0,0,0,0.6)]"
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -1662,10 +1664,10 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                         </span>
                       </div>
                       <div className="text-[8px] text-slate-300 flex items-center gap-1 truncate mt-0.5">
-                        <span>{activeQuestZoneInfo ? activeQuestZoneInfo.name : 'Lembah'}</span>
+                        <span>{activeQuestZoneInfo ? activeQuestZoneInfo.name : (lang === 'en' ? 'Valley' : 'Lembah')}</span>
                         <span className="text-slate-500">•</span>
                         <span className="text-amber-300 font-pixel text-[7px] group-hover/quest:underline">
-                          KLIK JALAN OTOMATIS ➔
+                          {lang === 'en' ? 'CLICK FOR AUTO-WALK ➔' : 'KLIK JALAN OTOMATIS ➔'}
                         </span>
                       </div>
                     </div>
@@ -1676,7 +1678,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                 <div className="bg-emerald-950/40 border-2 border-emerald-500/50 rounded-xl p-2 flex items-center gap-2 shadow-md">
                   <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 animate-pulse" />
                   <div className="text-[8.5px] text-emerald-300 font-pixel font-bold">
-                    SEMUA MISI UTAMA SELESAI ✨
+                    {lang === 'en' ? 'ALL MAIN MISSIONS COMPLETED ✨' : 'SEMUA MISI UTAMA SELESAI ✨'}
                   </div>
                 </div>
               )}
@@ -1688,24 +1690,24 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                     <span className="w-2.5 h-2.5 rounded-xs bg-emerald-500 border border-emerald-300 inline-flex items-center justify-center text-[5.5px] text-slate-950 font-bold">
                       웃
                     </span>
-                    Kamu
+                    {lang === 'en' ? 'You' : 'Kamu'}
                   </span>
                   <span className="flex items-center gap-1 text-amber-300 font-medium">
                     <span className="w-2 h-2 rounded-full bg-amber-400 border border-amber-600 inline-block" />
-                    Warga ➔
+                    {lang === 'en' ? 'Villagers ➔' : 'Warga ➔'}
                   </span>
                   <span className="flex items-center gap-1 text-amber-400 font-medium">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-400 border border-slate-950 text-slate-950 text-[6.5px] font-pixel font-bold inline-flex items-center justify-center shadow-xs">
                       !
                     </span>
-                    Misi
+                    {lang === 'en' ? 'Quest' : 'Misi'}
                   </span>
                   <span className="flex items-center gap-1 text-slate-400">
                     <span className="w-2 h-2 rounded-xs bg-slate-700 border border-slate-600 inline-block" />
-                    Kabut
+                    {lang === 'en' ? 'Mist' : 'Kabut'}
                   </span>
                 </div>
-                <span className="text-[7px] text-slate-500 font-pixel">[M] Tutup</span>
+                <span className="text-[7px] text-slate-500 font-pixel">{lang === 'en' ? '[M] Close' : '[M] Tutup'}</span>
               </div>
             </>
           )}

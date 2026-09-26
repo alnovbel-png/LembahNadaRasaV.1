@@ -1,6 +1,7 @@
 import React from 'react';
 import { CheckCircle2, Lock, X } from 'lucide-react';
 import { CharacterPortrait } from './CharacterPortrait';
+import { useLanguage } from '../game/localization';
 
 export interface MissionStepData {
   step: number;
@@ -30,13 +31,14 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
   onNavigateToTarget,
   isNewUnlock = false,
 }) => {
+  const { lang, ui } = useLanguage();
   if (!isOpen) return null;
 
   const steps = [
-    { num: 1, title: 'Alun-Alun', char: 'Kiki' },
-    { num: 2, title: 'Jembatan', char: 'Kakek Ranu' },
-    { num: 3, title: 'Hutan Sunyi', char: 'Bimo' },
-    { num: 4, title: 'Menara Jam', char: 'Sosok Kabut' },
+    { num: 1, title: lang === 'en' ? 'Plaza' : 'Alun-Alun', char: 'Kiki' },
+    { num: 2, title: lang === 'en' ? 'Bridge' : 'Jembatan', char: lang === 'en' ? 'Grandpa Ranu' : 'Kakek Ranu' },
+    { num: 3, title: lang === 'en' ? 'Silent Forest' : 'Hutan Sunyi', char: 'Bimo' },
+    { num: 4, title: lang === 'en' ? 'Clock Tower' : 'Menara Jam', char: lang === 'en' ? 'Spirit Elder' : 'Sosok Kabut' },
   ];
 
   // Target character configuration for missions 1 to 5
@@ -45,12 +47,12 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
       case 1:
         return {
           sprite: mission.portrait || 'squirrel',
-          name: mission.speaker || 'Kiki Si Tupai',
+          name: mission.speaker || (lang === 'en' ? 'Kiki the Squirrel' : 'Kiki Si Tupai'),
         };
       case 2:
         return {
           sprite: mission.portrait || 'old_man',
-          name: mission.speaker || 'Kakek Ranu',
+          name: mission.speaker || (lang === 'en' ? 'Grandpa Ranu' : 'Kakek Ranu'),
         };
       case 3:
         return {
@@ -60,13 +62,13 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
       case 4:
         return {
           sprite: mission.portrait || 'spirit_elder',
-          name: mission.speaker || 'Sosok Kabut',
+          name: mission.speaker || (lang === 'en' ? 'Spirit Elder' : 'Sosok Kabut'),
         };
       case 5:
       default:
         return {
           sprite: mission.portrait || 'player',
-          name: mission.speaker || 'Ezsel & Warga Desa',
+          name: mission.speaker || (lang === 'en' ? 'Ezzel & Villagers' : 'Ezsel & Warga Desa'),
         };
     }
   };
@@ -88,13 +90,13 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
         <div className="flex items-center justify-between gap-2 pb-1.5 sm:pb-2 border-b border-amber-500/30">
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0">
             <span className="bg-rose-600 text-white font-black text-[9px] sm:text-xs px-2 sm:px-2.5 py-0.5 rounded-full border border-rose-300 shadow-sm uppercase tracking-wider whitespace-nowrap">
-              {isNewUnlock ? 'MISI BARU' : 'PANDUAN MISI'}
+              {isNewUnlock ? (lang === 'en' ? 'NEW MISSION' : 'MISI BARU') : (lang === 'en' ? 'MISSION GUIDE' : 'PANDUAN MISI')}
             </span>
             <span
               style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
               className="text-[10px] sm:text-[11px] font-bold text-amber-950 bg-amber-400/80 px-2 sm:px-2.5 py-0.5 rounded-full border border-amber-600/40 whitespace-nowrap"
             >
-              Langkah {mission.step} dari {mission.total}
+              {lang === 'en' ? `Step ${mission.step} of ${mission.total}` : `Langkah ${mission.step} dari ${mission.total}`}
             </span>
           </div>
 
@@ -102,7 +104,7 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
             id="close-mission-modal-btn"
             onClick={onClose}
             className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-950 text-amber-300 hover:text-white hover:bg-rose-700 active:scale-90 flex items-center justify-center border-2 border-amber-400 shadow-md transition-all cursor-pointer shrink-0"
-            title="Tutup (ESC)"
+            title={lang === 'en' ? 'Close (ESC)' : 'Tutup (ESC)'}
           >
             <X className="w-4 h-4 font-bold" />
           </button>
@@ -117,16 +119,16 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
             {mission.title}
           </h2>
           <div className="text-[10px] sm:text-xs text-amber-900 font-semibold mt-0.5">
-            <span>Lokasi: <strong>{mission.locationName}</strong></span>
+            <span>{lang === 'en' ? 'Location:' : 'Lokasi:'} <strong>{mission.locationName}</strong></span>
           </div>
         </div>
 
         {/* Sequential Mission Flow Stepper (Alur Berurutan) */}
         <div className="bg-amber-400/40 border-2 border-amber-500/60 rounded-xl sm:rounded-2xl p-1.5 sm:p-2.5">
           <div className="flex items-center justify-between text-[8px] sm:text-[9px] font-bold text-amber-950 mb-1 uppercase tracking-wider">
-            <span>Alur Wajib Berurutan:</span>
+            <span>{lang === 'en' ? 'Sequential Order Flow:' : 'Alur Wajib Berurutan:'}</span>
             <span className="text-[7px] sm:text-[9px] text-amber-900 bg-amber-300/80 px-1.5 py-0.2 rounded font-sans">
-              Selesaikan 1 per 1
+              {lang === 'en' ? 'Complete one by one' : 'Selesaikan 1 per 1'}
             </span>
           </div>
 
@@ -157,7 +159,7 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
                       <Lock className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-amber-900/50 shrink-0" />
                     )}
                     <span className="text-[7px] sm:text-[9px] font-black">
-                      Misi {s.num}
+                      {lang === 'en' ? `Mission ${s.num}` : `Misi ${s.num}`}
                     </span>
                   </div>
                   <span className="text-[7px] sm:text-[8px] truncate max-w-full font-sans mt-0.5 font-medium leading-tight">
@@ -189,7 +191,7 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
 
           <div className="flex-1 flex flex-col gap-1 sm:gap-1.5 min-w-0">
             <span className="text-[8px] sm:text-[9px] font-bold text-rose-700 uppercase tracking-wide">
-              {mission.step <= 4 ? `Target Misi ${mission.step}:` : 'Status Misi:'}
+              {mission.step <= 4 ? (lang === 'en' ? `Mission ${mission.step} Target:` : `Target Misi ${mission.step}:`) : (lang === 'en' ? 'Mission Status:' : 'Status Misi:')}
             </span>
             <p
               style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
@@ -198,12 +200,20 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
               {mission.hint}
             </p>
             <div className="text-[8px] sm:text-[9px] text-amber-800 bg-amber-50 rounded-lg p-1 sm:p-1.5 border border-amber-200 flex items-center gap-1 mt-0.5">
-              <span className="text-amber-700 font-bold shrink-0">Petunjuk:</span>
+              <span className="text-amber-700 font-bold shrink-0">{lang === 'en' ? 'Hint:' : 'Petunjuk:'}</span>
               <span className="text-[8px] sm:text-[9px] leading-snug">
                 {mission.step <= 4 ? (
-                  <>Ikuti panah kuning menuju {targetCharacter.name}.</>
+                  lang === 'en' ? (
+                    <>Follow the golden arrow towards {targetCharacter.name}.</>
+                  ) : (
+                    <>Ikuti panah kuning menuju {targetCharacter.name}.</>
+                  )
                 ) : (
-                  <>Desa sudah pulih! Ayo sapa semua temanmu.</>
+                  lang === 'en' ? (
+                    <>The village is fully restored! Greet all your friends and celebrate together.</>
+                  ) : (
+                    <>Desa sudah pulih! Ayo sapa semua temanmu.</>
+                  )
                 )}
               </span>
             </div>
@@ -220,7 +230,7 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
             }}
             className="w-full py-2.5 px-3 sm:px-4 min-h-[42px] sm:min-h-[44px] rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-green-600 hover:from-emerald-500 hover:to-green-500 active:scale-[0.98] text-white font-bold border-2 border-emerald-300 shadow-[0_4px_16px_rgba(16,185,129,0.35)] flex items-center justify-center cursor-pointer transition-all text-center"
           >
-            <span className="text-[11px] sm:text-xs tracking-wide">Tuntun Karakter</span>
+            <span className="text-[11px] sm:text-xs tracking-wide">{lang === 'en' ? 'Guide Character' : 'Tuntun Karakter'}</span>
           </button>
 
           <button
@@ -228,7 +238,7 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
             onClick={onClose}
             className="w-full py-2.5 px-3 sm:px-4 min-h-[42px] sm:min-h-[44px] rounded-xl sm:rounded-2xl bg-slate-950 hover:bg-slate-900 active:scale-[0.98] text-amber-300 font-bold border-2 border-amber-400 shadow-md flex items-center justify-center cursor-pointer transition-all text-center"
           >
-            <span className="text-[11px] sm:text-xs tracking-wide">Saya Cari Sendiri</span>
+            <span className="text-[11px] sm:text-xs tracking-wide">{lang === 'en' ? 'Explore on My Own' : 'Saya Cari Sendiri'}</span>
           </button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import React, { createContext, useContext, useState } from 'react';
 import { DialogueNode, GameQuest, PSEAchievement, Item } from '../types/game';
 
 export type GameLanguage = 'id' | 'en';
@@ -45,6 +46,20 @@ export const UI_TEXT = {
     startButton: 'MULAI SEBAGAI {name}',
     enterTip: 'Tekan tombol di atas atau tekan [ENTER] untuk masuk',
 
+    // Start Menu Actions
+    mainMenu: 'MENU UTAMA',
+    play: 'PLAY',
+    startAdventure: 'MULAI PETUALANGAN',
+    settings: 'PENGATURAN',
+    gameOptions: 'OPSI GAME & AKSESIBILITAS',
+    exit: 'KELUAR',
+    closeGame: 'TUTUP PERMAINAN',
+    pressEnterToSelect: 'Tekan Tombol [ENTER] untuk Memilih',
+    exitConfirmTitle: 'Konfirmasi Keluar Permainan',
+    exitConfirmDesc: 'Apakah kamu yakin ingin menutup jendela permainan ini? Progres tersimpan otomatis di perangkatmu.',
+    cancel: 'Batal',
+    confirmExit: 'Keluar Permainan',
+
     // Dialogue Box
     skip: 'LEWATI',
     closeEsc: 'TUTUP [ESC]',
@@ -69,6 +84,15 @@ export const UI_TEXT = {
     missionFreeRoamBadge: 'JELAJAH BEBAS',
 
     // Virtual Controls & HUD
+    brandTitle: 'Lembah Nada Rasa',
+    openPauseMenu: 'Buka Pause Menu [Esc]',
+    activeResonance: 'RESONANSI AKTIF',
+    heartCompass: 'KOMPAS HATI',
+    toggleResonance: 'Aktifkan Kompas Resonansi Hati [C]',
+    map: 'Peta',
+    regulation: 'Regulasi',
+    journal: 'Jurnal',
+    certificate: 'Sertifikat',
     adventureMenu: 'Menu Petualangan',
     valleyMap: 'Peta Lembah',
     valleyMapDesc: 'Lihat lokasi warga, jembatan, dan menara jam',
@@ -91,12 +115,88 @@ export const UI_TEXT = {
     btnTalk: 'BICARA',
     languageToggle: 'Bahasa',
 
+    // Quick Actions
+    talkAction: 'BICARA',
+    examineAction: 'PERIKSA',
+    readSignAction: 'BACA PLANG',
+    guideButton: 'Tuntun',
+    guideButtonTitle: 'Tuntun karakter otomatis berjalan ke target misi',
+    missionTarget: 'TARGET MISI',
+    missionStep: 'MISI {step}/4',
+    missionStepFull: 'MISI {step} DARI {total}',
+    missionCompleted: 'SELESAI',
+    freeRoamActive: 'JELAJAH BEBAS',
+
+    // Mission Banners
+    mission1Title: 'Misi 1: Redakan Amarah Kiki',
+    mission2Title: 'Misi 2: Temui Kakek Ranu',
+    mission3Title: 'Misi 3: Tolong Bimo di Hutan',
+    mission4Title: 'Misi 4: Aktifkan Menara Jam',
+    mission5Title: 'Lembah Pulih Sepenuhnya!',
+    mission1Hint: 'Ayo dekati Kiki di dekat air mancur. Buka Kompas Hati [Tekan C] untuk tahu perasaannya!',
+    mission1HintActive: 'Ayo dekati Kiki di dekat air mancur. Ajak Kiki bicara [Tekan Spasi / Tombol Bicara].',
+    mission2Hint: 'Jalan ke jembatan di sebelah timur. Temui Kakek Ranu dan bantu perbaiki jembatan.',
+    mission3Hint: 'Jalan ke Hutan Sunyi di barat laut. Temukan Bimo yang sedang sembunyi.',
+    mission4Hint: 'Bawa Roda Gigi Emas ke Menara Jam. Pasang roda gigi agar lonceng berbunyi indah!',
+    mission5Hint: '🌿 Desa sudah ceria kembali! Ayo sapa semua temanmu dan rayakan bersama.',
+
+    // Locations
+    locationPlaza: 'Alun-Alun & Air Mancur',
+    locationBridge: 'Jembatan Kayu (Arah Timur)',
+    locationForest: 'Hutan Sunyi (Barat Laut)',
+    locationTower: 'Menara Jam Harmoni (Timur Laut)',
+    locationVillage: 'Seluruh Desa',
+
+    // Pause Menu
+    gamePaused: 'PERMAINAN DIJEDA',
+    pausedDesc: 'Ambil napas sejenak, periksa jurnal, atau ubah pengaturan.',
+    resumeGame: 'Lanjutkan Petualangan [Esc]',
+    regulationMenu: 'Studio Regulasi [R]',
+    journalMenu: 'Jurnal Kompas & Panduan [J]',
+    optionsMenu: 'Pengaturan & Panduan [O]',
+    backToTitle: 'Menu Awal / Mulai Ulang',
+
+    // Regulation Studio
+    regulationStudioTitle: 'STUDIO REGULASI EMOSI',
+    regulationStudioSubtitle: 'Latihan Pernapasan, Kesadaran Panca Indra & Ketenangan Diri',
+    modeBalloonTitle: 'Irama Balon Tenang',
+    modeBalloonSubtitle: 'Napas Berirama 4-4-4',
+    modeBalloonCategory: 'Ritme & Keseimbangan Napas',
+    modeBalloonDesc: 'Tahan napas tepat 4 detik agar balon menyentuh cincin target, jaga kursor di zona hijau yang bergetar 4 detik, lalu hembuskan perlahan.',
+    modeGroundingTitle: 'Kaca Pembesar Indra',
+    modeGroundingSubtitle: 'Grounding 5-4-3-2-1',
+    modeGroundingCategory: 'Pencarian Objek Bergerak (Hidden Object)',
+    modeGroundingDesc: 'Kendalikan lensa kaca pembesar untuk menembus kabut kepanikan dan tangkap 5 objek alam yang bergerak cepat sebelum waktu habis.',
+    modeStopTitle: 'Rem Reaksi S-T-O-P',
+    modeStopSubtitle: 'Cegah Respon Impulsif',
+    modeStopCategory: 'Quick Time Event & Tracing',
+    modeStopDesc: 'Kejar dan smash tombol STOP merah yang memantul liar di layar! Bekukan waktu lalu tebalkan huruf S, T, O, dan P secara berurutan.',
+    modeShakeoutTitle: 'Goyang Lepas Ketegangan',
+    modeShakeoutSubtitle: 'Pelepasan Somatik Otot',
+    modeShakeoutCategory: 'Pelepasan Stres & Regulasi Somatik',
+    modeShakeoutDesc: 'Lepaskan hormon stres dan ketegangan otot dengan gerakan tubuh energik bergantian.',
+    startExercise: 'Mulai Latihan',
+    closeStudio: 'Kembali ke Petualangan',
+
+    // Compass Journal
+    journalTitle: 'Jurnal Kompas Hati & Lore Cerita',
+    journalSubtitle: 'Kisah lengkap lembah harmoni, pencapaian lencana PSE, tas petualangan, & harmoni desa',
+    tabLore: 'Lore Cerita',
+    tabBadges: 'Lencana',
+    tabBag: 'Tas & Pusaka',
+    tabHarmony: 'Harmoni Desa',
+    downloadCertificate: 'Unduh Sertifikat Kelulusan',
+
     // Settings Modal
     settingsTitle: 'Pusat Opsi & Panduan',
     tabQuest: 'Misi & Peta',
     tabAchievements: 'Lencana PSE',
     tabAudio: 'Pengaturan Audio',
     tabControls: 'Panduan Kontrol',
+    tabLanguage: 'Bahasa / Language',
+    chooseLanguage: 'PILIH BAHASA PERMAINAN / SELECT GAME LANGUAGE',
+    langIdDesc: 'Gunakan Bahasa Indonesia di seluruh dialog, teks antarmuka, misi, dan lencana.',
+    langEnDesc: 'Use English across all dialogues, UI text, quests, and badges.',
     bgmVolume: 'Volume Musik Latar (BGM)',
     sfxVolume: 'Volume Efek Suara (SFX)',
     soundMuted: 'Suara Dibisukan',
@@ -110,6 +210,35 @@ export const UI_TEXT = {
     keyboardMap: 'Tampilkan / Sembunyikan Peta Mini',
     keyboardSettings: 'Buka / Tutup Menu Opsi & Panduan',
     touchControlsTip: '💡 Di perangkat layar sentuh, gunakan analog virtual di kiri bawah dan tombol aksi di kanan bawah.',
+
+    // MiniMap
+    mapTitle: 'PETA LEMBAH NADA RASA',
+    mapSubtitle: 'Navigasi Lokasi Desa & Target Misi',
+    closeMap: 'Tutup Peta [M]',
+    legendQuest: 'Target Misi Utama',
+    legendVillagers: 'Warga Desa',
+    legendRestored: 'Wilayah Harmonis',
+    legendUnrestored: 'Terselimuti Kabut',
+    clickToWalk: 'Klik pada peta untuk berjalan otomatis ke lokasi tersebut',
+    northShort: 'U',
+    southShort: 'S',
+    westShort: 'B',
+    eastShort: 'T',
+    zoomInTitle: 'Perbesar Peta [+] / Scroll Atas',
+    zoomOutTitle: 'Perkecil Peta [-] / Scroll Bawah',
+    followPlayer: 'IKUTI',
+    centerPlayer: 'PUSAT',
+
+    // Celebrations & Endings
+    allBadgesTitle: 'SELAMAT! 10 LENCANA EMAS PSE LENGKAP',
+    allBadgesDesc: 'Kamu telah menguasai seluruh pilar Pembelajaran Sosial-Emosional di Lembah Nada Rasa!',
+    missionSuccess: 'MISI BERHASIL DISELESAIKAN!',
+    nextMissionOpen: 'MISI BERIKUTNYA TERBUKA!',
+    continueAdventure: 'Lanjut Berpetualang',
+    endingTitle: 'LEMBAH NADA RASA PULIH BERKILAU',
+    endingSubtitle: 'Harmoni dan Empati Telah Kembali',
+    continueFreeRoam: 'Jelajahi Desa Bebas',
+    getCertificate: 'Lihat & Unduh Sertifikat',
 
     // Notifications
     devModeActive: '🚀 MODE DEVELOPER AKTIF: Mode Jelajah Bebas Terbuka! Misi Utama 100% & Pencapaian 100% Terbuka Penuh.',
@@ -147,6 +276,20 @@ export const UI_TEXT = {
     startButton: 'START AS {name}',
     enterTip: 'Click above or press [ENTER] to start',
 
+    // Start Menu Actions
+    mainMenu: 'MAIN MENU',
+    play: 'PLAY',
+    startAdventure: 'START ADVENTURE',
+    settings: 'SETTINGS',
+    gameOptions: 'GAME OPTIONS & ACCESSIBILITY',
+    exit: 'EXIT',
+    closeGame: 'CLOSE GAME',
+    pressEnterToSelect: 'Press [ENTER] to Select',
+    exitConfirmTitle: 'Confirm Exit Game',
+    exitConfirmDesc: 'Are you sure you want to close this game window? Progress is automatically saved on your device.',
+    cancel: 'Cancel',
+    confirmExit: 'Exit Game',
+
     // Dialogue Box
     skip: 'SKIP',
     closeEsc: 'CLOSE [ESC]',
@@ -171,6 +314,15 @@ export const UI_TEXT = {
     missionFreeRoamBadge: 'FREE ROAM',
 
     // Virtual Controls & HUD
+    brandTitle: 'Valley of Harmony',
+    openPauseMenu: 'Open Pause Menu [Esc]',
+    activeResonance: 'RESONANCE ACTIVE',
+    heartCompass: 'HEART COMPASS',
+    toggleResonance: 'Toggle Heart Resonance Compass [C]',
+    map: 'Map',
+    regulation: 'Regulate',
+    journal: 'Journal',
+    certificate: 'Certificate',
     adventureMenu: 'Adventure Menu',
     valleyMap: 'Valley Map',
     valleyMapDesc: 'View villagers, bridge, and clock tower locations',
@@ -193,12 +345,88 @@ export const UI_TEXT = {
     btnTalk: 'TALK',
     languageToggle: 'Language',
 
+    // Quick Actions
+    talkAction: 'TALK',
+    examineAction: 'EXAMINE',
+    readSignAction: 'READ SIGN',
+    guideButton: 'Guide',
+    guideButtonTitle: 'Auto-guide character to the mission target',
+    missionTarget: 'MISSION TARGET',
+    missionStep: 'MISSION {step}/4',
+    missionStepFull: 'MISSION {step} OF {total}',
+    missionCompleted: 'COMPLETED',
+    freeRoamActive: 'FREE ROAM',
+
+    // Mission Banners
+    mission1Title: "Mission 1: Soothe Kiki's Panic",
+    mission2Title: 'Mission 2: Meet Grandpa Ranu',
+    mission3Title: 'Mission 3: Help Bimo in the Forest',
+    mission4Title: 'Mission 4: Activate the Clock Tower',
+    mission5Title: 'Valley Fully Restored!',
+    mission1Hint: 'Approach Kiki near the fountain. Activate the Heart Compass [Press C] to read his feelings!',
+    mission1HintActive: 'Approach Kiki near the fountain. Talk to Kiki [Press Space / Talk Button].',
+    mission2Hint: 'Head to the wooden bridge in the east. Meet Grandpa Ranu and help repair the bridge.',
+    mission3Hint: 'Head to the Silent Forest in the northwest. Find Bimo hiding behind the trees.',
+    mission4Hint: 'Bring the Golden Gear of Harmony to the Clock Tower. Place the gear to ring the bells of harmony!',
+    mission5Hint: '🌿 The valley is vibrant and joyful again! Say hello to all your friends and celebrate together.',
+
+    // Locations
+    locationPlaza: 'Plaza & Fountain',
+    locationBridge: 'Wooden Bridge (East)',
+    locationForest: 'Silent Forest (Northwest)',
+    locationTower: 'Harmony Clock Tower (Northeast)',
+    locationVillage: 'Entire Village',
+
+    // Pause Menu
+    gamePaused: 'GAME PAUSED',
+    pausedDesc: 'Take a mindful breath, check your journal, or change settings.',
+    resumeGame: 'Resume Adventure [Esc]',
+    regulationMenu: 'Regulation Studio [R]',
+    journalMenu: 'Compass Journal & Lore [J]',
+    optionsMenu: 'Settings & Guides [O]',
+    backToTitle: 'Title Screen / Restart',
+
+    // Regulation Studio
+    regulationStudioTitle: 'EMOTION REGULATION STUDIO',
+    regulationStudioSubtitle: 'Breathing Exercises, Sensory Awareness & Self-Calming',
+    modeBalloonTitle: 'Calm Balloon Rhythm',
+    modeBalloonSubtitle: 'Rhythmic Breathing 4-4-4',
+    modeBalloonCategory: 'Breath Rhythm & Balance',
+    modeBalloonDesc: 'Hold your breath for 4 seconds so the balloon touches the target ring, stabilize the cursor in the vibrating green zone, then exhale slowly.',
+    modeGroundingTitle: 'Sensory Magnifier',
+    modeGroundingSubtitle: '5-4-3-2-1 Sensory Grounding',
+    modeGroundingCategory: 'Moving Object Discovery (Hidden Object)',
+    modeGroundingDesc: 'Guide the magnifying glass through the fog of panic and spot 5 moving natural objects before time runs out.',
+    modeStopTitle: 'S-T-O-P Reaction Brake',
+    modeStopSubtitle: 'Prevent Impulsive Reactions',
+    modeStopCategory: 'Quick Time Event & Tracing',
+    modeStopDesc: 'Catch and smash the bouncing red STOP button! Freeze time then trace the letters S, T, O, and P in sequence.',
+    modeShakeoutTitle: 'Tension Shake-Out',
+    modeShakeoutSubtitle: 'Somatic Muscle Release',
+    modeShakeoutCategory: 'Stress Discharge & Somatic Regulation',
+    modeShakeoutDesc: 'Discharge stress hormones and physical tension with alternating energetic whole-body movements.',
+    startExercise: 'Start Exercise',
+    closeStudio: 'Back to Adventure',
+
+    // Compass Journal
+    journalTitle: 'Heart Compass Journal & Story Lore',
+    journalSubtitle: 'Complete story of the valley, SEL badge achievements, adventure bag, & village harmony',
+    tabLore: 'Story Lore',
+    tabBadges: 'Badges',
+    tabBag: 'Bag & Relics',
+    tabHarmony: 'Village Harmony',
+    downloadCertificate: 'Download SEL Certificate',
+
     // Settings Modal
     settingsTitle: 'Options & Guides Hub',
     tabQuest: 'Quests & Map',
     tabAchievements: 'SEL Badges',
     tabAudio: 'Audio Settings',
     tabControls: 'Controls Guide',
+    tabLanguage: 'Language / Bahasa',
+    chooseLanguage: 'SELECT GAME LANGUAGE / PILIH BAHASA',
+    langIdDesc: 'Gunakan Bahasa Indonesia di seluruh dialog, teks antarmuka, misi, dan lencana.',
+    langEnDesc: 'Use English across all dialogues, UI text, quests, and badges.',
     bgmVolume: 'Background Music Volume (BGM)',
     sfxVolume: 'Sound Effects Volume (SFX)',
     soundMuted: 'Sound Muted',
@@ -213,10 +441,108 @@ export const UI_TEXT = {
     keyboardSettings: 'Open / Close Options & Settings',
     touchControlsTip: '💡 On touchscreen devices, use the virtual analog joystick on the bottom-left and action buttons on the bottom-right.',
 
+    // MiniMap
+    mapTitle: 'VALLEY OF HARMONY MAP',
+    mapSubtitle: 'Village Navigation & Quest Destinations',
+    closeMap: 'Close Map [M]',
+    legendQuest: 'Main Quest Target',
+    legendVillagers: 'Villagers',
+    legendRestored: 'Harmonized Zone',
+    legendUnrestored: 'Fog Covered',
+    clickToWalk: 'Click on map to automatically walk to this location',
+    northShort: 'N',
+    southShort: 'S',
+    westShort: 'W',
+    eastShort: 'E',
+    zoomInTitle: 'Zoom In [+] / Scroll Up',
+    zoomOutTitle: 'Zoom Out [-] / Scroll Down',
+    followPlayer: 'FOLLOW',
+    centerPlayer: 'CENTER',
+
+    // Celebrations & Endings
+    allBadgesTitle: 'CONGRATULATIONS! ALL 10 GOLD SEL BADGES ACHIEVED',
+    allBadgesDesc: 'You have mastered all core Social-Emotional Learning pillars in the Valley of Harmony!',
+    missionSuccess: 'MISSION COMPLETED SUCCESSFULLY!',
+    nextMissionOpen: 'NEXT MISSION UNLOCKED!',
+    continueAdventure: 'Continue Adventure',
+    endingTitle: 'THE VALLEY OF HARMONY SHINES ANEW',
+    endingSubtitle: 'Harmony and Empathy Have Returned',
+    continueFreeRoam: 'Explore Free Roam Mode',
+    getCertificate: 'View & Download Certificate',
+
     // Notifications
     devModeActive: '🚀 DEVELOPER MODE ACTIVE: Free Roam Mode Unlocked! 100% Main Quests & 100% Achievements Unlocked.',
   },
 };
+
+export interface LanguageContextType {
+  lang: GameLanguage;
+  setLang: (lang: GameLanguage) => void;
+  toggleLang: () => void;
+  ui: (typeof UI_TEXT)['id'];
+  t: (key: keyof (typeof UI_TEXT)['id'], params?: Record<string, string | number>) => string;
+}
+
+const LanguageContext = createContext<LanguageContextType | null>(null);
+
+export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [lang, setLangState] = useState<GameLanguage>(getInitialLanguage);
+
+  const setLang = (newLang: GameLanguage) => {
+    setLangState(newLang);
+    try {
+      localStorage.setItem('lembah_game_language', newLang);
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const toggleLang = () => {
+    setLang(lang === 'id' ? 'en' : 'id');
+  };
+
+  const ui = UI_TEXT[lang] || UI_TEXT.id;
+
+  const t = (key: keyof typeof UI_TEXT.id, params?: Record<string, string | number>): string => {
+    let str = (UI_TEXT[lang]?.[key] ?? UI_TEXT.id[key] ?? '') as string;
+    if (params) {
+      Object.entries(params).forEach(([k, v]) => {
+        str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+      });
+    }
+    return str;
+  };
+
+  return React.createElement(
+    LanguageContext.Provider,
+    { value: { lang, setLang, toggleLang, ui, t } },
+    children
+  );
+};
+
+export function useLanguage(): LanguageContextType {
+  const ctx = useContext(LanguageContext);
+  if (!ctx) {
+    const fallbackLang = getInitialLanguage();
+    const ui = UI_TEXT[fallbackLang] || UI_TEXT.id;
+    return {
+      lang: fallbackLang,
+      setLang: () => {},
+      toggleLang: () => {},
+      ui,
+      t: (key, params) => {
+        let str = (ui[key] ?? '') as string;
+        if (params) {
+          Object.entries(params).forEach(([k, v]) => {
+            str = str.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+          });
+        }
+        return str;
+      },
+    };
+  }
+  return ctx;
+}
 
 export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
   // --- PROLOGUE & KIKI ---
@@ -921,3 +1247,126 @@ export function getLocalizedAchievements(
     };
   });
 }
+
+export function getLocalizedMissionStepData(
+  step: number,
+  lang: GameLanguage,
+  isCompassActive: boolean,
+  isCompleted: boolean,
+  isFreeRoam: boolean
+) {
+  const ui = UI_TEXT[lang];
+  if (isCompleted || isFreeRoam) {
+    return {
+      step: 5,
+      total: 4,
+      badge: ui.missionCompletedBadge,
+      title: ui.mission5Title,
+      speaker: lang === 'en' ? 'Ezzel & Villagers' : 'Ezzel & Warga Desa',
+      portrait: 'player',
+      hint: ui.mission5Hint,
+      locationName: ui.locationVillage,
+      targetCoords: { x: 11, y: 15 },
+      isCompleted: true,
+    };
+  }
+  switch (step) {
+    case 1:
+      return {
+        step: 1,
+        total: 4,
+        badge: ui.missionStepFull.replace('{step}', '1').replace('{total}', '4'),
+        title: ui.mission1Title,
+        speaker: lang === 'en' ? 'Kiki the Squirrel' : 'Kiki Si Tupai',
+        portrait: 'squirrel',
+        hint: isCompassActive ? ui.mission1HintActive : ui.mission1Hint,
+        locationName: ui.locationPlaza,
+        targetCoords: { x: 8, y: 14 },
+        isCompleted: false,
+      };
+    case 2:
+      return {
+        step: 2,
+        total: 4,
+        badge: ui.missionStepFull.replace('{step}', '2').replace('{total}', '4'),
+        title: ui.mission2Title,
+        speaker: lang === 'en' ? 'Grandpa Ranu' : 'Kakek Ranu',
+        portrait: 'old_man',
+        hint: ui.mission2Hint,
+        locationName: ui.locationBridge,
+        targetCoords: { x: 20, y: 15 },
+        isCompleted: false,
+      };
+    case 3:
+      return {
+        step: 3,
+        total: 4,
+        badge: ui.missionStepFull.replace('{step}', '3').replace('{total}', '4'),
+        title: ui.mission3Title,
+        speaker: 'Bimo',
+        portrait: 'boy_glasses',
+        hint: ui.mission3Hint,
+        locationName: ui.locationForest,
+        targetCoords: { x: 7, y: 6 },
+        isCompleted: false,
+      };
+    case 4:
+      return {
+        step: 4,
+        total: 4,
+        badge: ui.missionStepFull.replace('{step}', '4').replace('{total}', '4'),
+        title: ui.mission4Title,
+        speaker: lang === 'en' ? 'Spirit Elder' : 'Sosok Kabut',
+        portrait: 'spirit_elder',
+        hint: ui.mission4Hint,
+        locationName: ui.locationTower,
+        targetCoords: { x: 29, y: 8 },
+        isCompleted: false,
+      };
+    default:
+      return {
+        step: 5,
+        total: 4,
+        badge: ui.missionCompletedBadge,
+        title: ui.mission5Title,
+        speaker: lang === 'en' ? 'Ezzel & Villagers' : 'Ezzel & Warga Desa',
+        portrait: 'player',
+        hint: ui.mission5Hint,
+        locationName: ui.locationVillage,
+        targetCoords: { x: 11, y: 15 },
+        isCompleted: true,
+      };
+  }
+}
+
+export function getLocalizedItems(items: Item[], lang: GameLanguage): Item[] {
+  if (lang === 'id') return items;
+  const enItemMap: Record<string, Partial<Item>> = {
+    compass: {
+      name: 'Resonant Heart Compass',
+      description: 'Sacred artifact that detects unspoken emotions and inner feelings.',
+    },
+    gear: {
+      name: 'Golden Gear of Harmony',
+      description: 'The ancient gear that brings the Harmony Clock Tower to life.',
+    },
+    key: {
+      name: 'Bridge Keeper Key',
+      description: 'Grandpa Ranu\'s brass key to unlock the path across the river.',
+    },
+    letter: {
+      name: 'Ancient Village Letter',
+      description: 'A weathered letter full of heartfelt messages between villagers.',
+    },
+    flower: {
+      name: 'Resonance Blossom',
+      description: 'A magical petal that blooms when positive emotions are shared.',
+    },
+  };
+  return items.map((it) => {
+    const en = enItemMap[it.id];
+    if (!en) return it;
+    return { ...it, name: en.name || it.name, description: en.description || it.description };
+  });
+}
+

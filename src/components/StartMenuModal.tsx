@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { sound, useAudioSettings } from '../utils/audio';
 import { CharacterPortrait } from './CharacterPortrait';
+import { useLanguage } from '../game/localization';
 
 export type MenuView = 'main' | 'play';
 
@@ -35,6 +36,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
   initialPlayerAvatar = 'boy',
 }) => {
   const { isMuted, toggleMute } = useAudioSettings();
+  const { lang, toggleLang, ui } = useLanguage();
   const [menuView, setMenuView] = useState<MenuView>('main');
   const [selectedMainMenuIndex, setSelectedMainMenuIndex] = useState<number>(0); // 0: Play, 1: Setting, 2: Keluar
   const [playerName, setPlayerName] = useState<string>(initialPlayerName);
@@ -183,38 +185,55 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
       {/* 1. TOP BAR: Compact & well-proportioned for 16:9 displays */}
       {/* =================================================================== */}
       <div className="w-full flex items-center justify-between z-20 max-w-5xl mx-auto px-2">
-        {/* Left: EDISI RESMI ANAK-ANAK */}
+        {/* Left: EDISI RESMI ANAK-ANAK / OFFICIAL KIDS EDITION */}
         <div className="font-pixel text-amber-400 text-[10px] sm:text-xs tracking-wider font-bold">
-          EDISI RESMI ANAK-ANAK
+          {ui.headerBadge}
         </div>
 
         {/* Center Badge: RPG SOSIAL-EMOSIONAL & MINDFULNESS */}
         <div className="hidden sm:inline-flex items-center gap-1.5 bg-[#251b14]/90 border border-amber-600/70 rounded-full px-3 py-1 shadow-md">
           <Compass className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <span className="font-pixel text-[8px] sm:text-[9px] text-amber-300 font-bold tracking-wider">
-            RPG SOSIAL-EMOSIONAL & MINDFULNESS
+            {ui.genreBadge}
           </span>
         </div>
 
-        {/* Right: Sound Toggle Button */}
-        <button
-          type="button"
-          onClick={toggleMute}
-          title={isMuted ? 'Nyalakan Audio' : 'Matikan Audio'}
-          className="inline-flex items-center gap-1.5 bg-[#10222a]/90 hover:bg-[#18333e] border border-cyan-700/70 rounded-full px-2.5 sm:px-3 py-1 transition text-cyan-200 cursor-pointer shadow-md active:scale-95"
-        >
-          {isMuted ? (
-            <>
-              <VolumeX className="w-3 h-3 text-red-400" />
-              <span className="font-pixel text-[8px] sm:text-[9px] text-red-300">Suara OFF</span>
-            </>
-          ) : (
-            <>
-              <Volume2 className="w-3 h-3 text-cyan-400" />
-              <span className="font-pixel text-[8px] sm:text-[9px] text-cyan-200">Suara ON</span>
-            </>
-          )}
-        </button>
+        {/* Right: Language Selector & Sound Toggle Buttons */}
+        <div className="flex items-center gap-2">
+          {/* Language Toggle Button */}
+          <button
+            type="button"
+            id="btn-start-language-toggle"
+            onClick={toggleLang}
+            title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+            className="inline-flex items-center gap-1.5 bg-[#172033]/90 hover:bg-[#202c45] border border-amber-500/70 rounded-full px-2.5 sm:px-3 py-1 transition text-amber-200 cursor-pointer shadow-md active:scale-95"
+          >
+            <span className="text-xs">{lang === 'id' ? '🇮🇩 ID' : '🇬🇧 EN'}</span>
+            <span className="font-pixel text-[8px] sm:text-[9px] text-amber-300 font-bold uppercase tracking-wider">
+              {lang === 'id' ? 'Bahasa Indonesia' : 'English'}
+            </span>
+          </button>
+
+          {/* Sound Toggle Button */}
+          <button
+            type="button"
+            onClick={toggleMute}
+            title={isMuted ? (lang === 'en' ? 'Unmute Audio' : 'Nyalakan Audio') : (lang === 'en' ? 'Mute Audio' : 'Matikan Audio')}
+            className="inline-flex items-center gap-1.5 bg-[#10222a]/90 hover:bg-[#18333e] border border-cyan-700/70 rounded-full px-2.5 sm:px-3 py-1 transition text-cyan-200 cursor-pointer shadow-md active:scale-95"
+          >
+            {isMuted ? (
+              <>
+                <VolumeX className="w-3 h-3 text-red-400" />
+                <span className="font-pixel text-[8px] sm:text-[9px] text-red-300">{ui.soundMute}</span>
+              </>
+            ) : (
+              <>
+                <Volume2 className="w-3 h-3 text-cyan-400" />
+                <span className="font-pixel text-[8px] sm:text-[9px] text-cyan-200">{ui.soundOn}</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* =================================================================== */}
@@ -224,7 +243,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
         {/* Game Title: Proportionate size without overwhelming the vertical space */}
         <div className="text-center mb-2.5 sm:mb-3.5">
           <h1 className="font-pixel text-xl sm:text-2xl md:text-3xl text-amber-400 drop-shadow-[0_3px_0_#000] tracking-wider leading-snug">
-            LEMBAH NADA RASA
+            {ui.gameTitle}
           </h1>
         </div>
 
@@ -236,7 +255,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             {/* Header: MENU UTAMA */}
             <div className="text-center pt-0.5 pb-0.5">
               <span className="font-pixel text-amber-400 text-xs sm:text-sm tracking-[0.2em] font-bold">
-                MENU UTAMA
+                {ui.mainMenu}
               </span>
             </div>
 
@@ -277,10 +296,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 {/* Centered Text */}
                 <div className="w-full flex flex-col items-center justify-center">
                   <span className="font-pixel text-sm sm:text-base md:text-lg text-white font-bold tracking-wider">
-                    PLAY
+                    {ui.play}
                   </span>
                   <span className="font-pixel text-[9px] sm:text-[10px] text-amber-400 tracking-wider mt-0.5">
-                    MULAI PETUALANGAN
+                    {ui.startAdventure}
                   </span>
                 </div>
               </button>
@@ -316,10 +335,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 {/* Centered Text */}
                 <div className="w-full flex flex-col items-center justify-center">
                   <span className="font-pixel text-sm sm:text-base md:text-lg text-[#cbd5e1] group-hover:text-white font-bold tracking-wider">
-                    PENGATURAN
+                    {ui.settings}
                   </span>
                   <span className="font-pixel text-[9px] sm:text-[10px] text-[#94a3b8] tracking-wider mt-0.5">
-                    OPSI GAME & AKSESIBILITAS
+                    {ui.gameOptions}
                   </span>
                 </div>
               </button>
@@ -351,10 +370,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 {/* Centered Text */}
                 <div className="w-full flex flex-col items-center justify-center">
                   <span className="font-pixel text-sm sm:text-base md:text-lg text-[#f87171] font-bold tracking-wider">
-                    KELUAR
+                    {ui.exit}
                   </span>
                   <span className="font-pixel text-[9px] sm:text-[10px] text-[#ef4444]/90 tracking-wider mt-0.5">
-                    TUTUP PERMAINAN
+                    {ui.closeGame}
                   </span>
                 </div>
               </button>
@@ -366,12 +385,12 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 <div className="w-3.5 h-3.5 rounded-full border border-emerald-400/80 flex items-center justify-center shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 </div>
-                <span>100% di browser & aman untuk anak-anak</span>
+                <span>{ui.safeBrowserNote}</span>
               </div>
               <div className="flex items-center gap-1 text-slate-400">
-                <span>Tekan Tombol</span>
+                <span>{lang === 'en' ? 'Press' : 'Tekan Tombol'}</span>
                 <span className="font-pixel text-amber-400 font-bold text-[10px]">[ENTER]</span>
-                <span>untuk Memilih</span>
+                <span>{lang === 'en' ? 'to Select' : 'untuk Memilih'}</span>
               </div>
             </div>
           </div>
@@ -385,7 +404,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             {/* Header: PENYIAPAN PETUALANG */}
             <div className="text-center pt-0.5 pb-0.5">
               <span className="font-pixel text-amber-400 text-xs sm:text-sm tracking-[0.2em] font-bold">
-                PENYIAPAN PETUALANG
+                {ui.charCustomizationTitle}
               </span>
             </div>
 
@@ -396,10 +415,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   htmlFor="character-nickname-input"
                   className="font-pixel text-[10px] sm:text-xs text-amber-300 font-bold"
                 >
-                  NAMA KARAKTER:
+                  {ui.nicknameLabel}
                 </label>
                 <span className="text-[10px] font-sans text-slate-400">
-                  Maks. 12 Karakter
+                  {ui.maxChars}
                 </span>
               </div>
 
@@ -418,7 +437,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                       handleStart();
                     }
                   }}
-                  placeholder="Ketik di sini..."
+                  placeholder={lang === 'en' ? 'Type here...' : 'Ketik di sini...'}
                   maxLength={12}
                   className="w-full bg-slate-950/90 border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.3)] focus:shadow-[0_0_22px_rgba(34,211,238,0.5)] focus:border-cyan-300 rounded-xl px-3.5 py-2 text-cyan-100 font-pixel text-xs sm:text-sm focus:outline-none transition-all placeholder:text-slate-600 placeholder:font-sans"
                 />
@@ -427,11 +446,11 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setPlayerName(getDefaultNameForAvatar(playerAvatar))}
-                  title="Gunakan nama bawaan"
+                  title={lang === 'en' ? 'Use default name' : 'Gunakan nama bawaan'}
                   className="absolute right-2.5 px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-amber-300 font-pixel text-[8px] border border-slate-700 transition cursor-pointer flex items-center gap-1"
                 >
                   <RotateCcw className="w-2.5 h-2.5" />
-                  <span>Reset</span>
+                  <span>{ui.reset}</span>
                 </button>
               </div>
             </div>
@@ -439,7 +458,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             {/* Section 2: Character Selection Cards (2 Karakter: Ezzel & Ezzy) */}
             <div className="flex flex-col gap-1.5">
               <span className="font-pixel text-[10px] sm:text-[11px] text-slate-300">
-                PILIH KARAKTER PETUALANG:
+                {lang === 'en' ? 'CHOOSE ADVENTURER AVATAR:' : 'PILIH KARAKTER PETUALANG:'}
               </span>
 
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -469,7 +488,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                       EZZEL
                     </span>
                     <span className="font-sans text-[10px] text-slate-300">
-                      Petualang Laki-Laki
+                      {ui.boyTitle}
                     </span>
                   </div>
                 </button>
@@ -500,7 +519,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                       EZZY
                     </span>
                     <span className="font-sans text-[10px] text-slate-300">
-                      Petualang Perempuan
+                      {ui.girlTitle}
                     </span>
                   </div>
                 </button>
@@ -518,10 +537,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   setMenuView('main');
                 }}
                 className="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border-2 border-red-500/80 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-pixel text-[10px] sm:text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)] active:scale-95 shrink-0"
-                title="Kembali ke Menu Utama"
+                title={lang === 'en' ? 'Back to Main Menu' : 'Kembali ke Menu Utama'}
               >
                 <ArrowLeft className="w-3.5 h-3.5 text-red-400" />
-                <span>KEMBALI</span>
+                <span>{lang === 'en' ? 'BACK' : 'KEMBALI'}</span>
               </button>
 
               {/* MULAI PETUALANGAN BUTTON */}
@@ -533,7 +552,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
               >
                 <Play className="w-3.5 h-3.5 fill-slate-950 text-slate-950 shrink-0" />
                 <span className="font-pixel text-[11px] sm:text-xs tracking-wider truncate">
-                  MULAI: [{currentDisplayNickname.toUpperCase()}]
+                  {lang === 'en' ? 'START' : 'MULAI'}: [{currentDisplayNickname.toUpperCase()}]
                 </span>
               </button>
             </div>
@@ -544,10 +563,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 <div className="w-3.5 h-3.5 rounded-full border border-emerald-400/80 flex items-center justify-center shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 </div>
-                <span>100% di browser & aman untuk anak-anak</span>
+                <span>{ui.safeBrowserNote}</span>
               </div>
               <div className="font-pixel text-[9px] text-amber-300/90">
-                Tekan [ENTER] untuk Mulai
+                {lang === 'en' ? 'Press [ENTER] to Start' : 'Tekan [ENTER] untuk Mulai'}
               </div>
             </div>
           </div>
@@ -564,10 +583,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in select-none">
           <div className="w-full max-w-sm bg-[#121626] border-2 border-red-500/80 rounded-2xl p-5 text-center shadow-[0_0_35px_rgba(239,68,68,0.3)]">
             <h3 className="font-pixel text-sm sm:text-base text-red-400 mb-1.5">
-              TUTUP PERMAINAN?
+              {ui.exitConfirmTitle}
             </h3>
             <p className="font-sans text-xs text-slate-300 mb-5 leading-relaxed">
-              Semua progres petualangan dan pengaturan suara tersimpan secara otomatis di browsermu. Kamu dapat menutup tab peramban ini atau melanjutkan kembali petualangan kapan saja!
+              {ui.exitConfirmDesc}
             </p>
             <div className="flex gap-2.5">
               <button
@@ -578,7 +597,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 }}
                 className="flex-1 py-2.5 px-3 rounded-xl border border-amber-500/80 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 font-pixel text-[11px] cursor-pointer transition active:scale-95"
               >
-                KEMBALI KE MENU
+                {ui.cancel}
               </button>
               <button
                 type="button"
@@ -593,7 +612,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 }}
                 className="flex-1 py-2.5 px-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-pixel text-[11px] cursor-pointer shadow-md transition active:scale-95"
               >
-                TUTUP TAB
+                {ui.confirmExit}
               </button>
             </div>
           </div>
@@ -602,3 +621,4 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
     </div>
   );
 };
+

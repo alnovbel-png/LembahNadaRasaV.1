@@ -44,6 +44,14 @@ import { MissionNotificationModal, MissionStepData } from './components/MissionN
 import { Sparkles, Compass } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
 import { PSE_ACHIEVEMENTS } from './game/constants';
+import {
+  useLanguage,
+  getLocalizedDialogue,
+  getLocalizedQuests,
+  getLocalizedItems,
+  getLocalizedMissionStepData,
+  getLocalizedAchievements,
+} from './game/localization';
 
 // Calculate camera zoom to guarantee the protagonist and world are framed at the exact
 // comfortable, focused scale shown in reference image.png across all screen sizes and resolutions.
@@ -212,6 +220,7 @@ export default function App() {
   });
 
   // Active UI states
+  const { lang, ui, toggleLang, setLang } = useLanguage();
   const [showStartMenu, setShowStartMenu] = useState<boolean>(true);
   const [playerName, setPlayerName] = useState<string>(() => {
     const saved = localStorage.getItem('lembah_player_name');
@@ -697,19 +706,21 @@ export default function App() {
   useEffect(() => {
     if (canvasRef.current && !rendererRef.current) {
       const renderer = new GameRenderer(canvasRef.current);
+      renderer.lang = lang;
       renderer.setPlayerAvatar(playerAvatar);
       renderer.setPlayerName(playerName);
       rendererRef.current = renderer;
     }
-  }, [playerAvatar, playerName]);
+  }, [playerAvatar, playerName, lang]);
 
-  // Sync avatar and name representation if changed
+  // Sync avatar, name, and language representation if changed
   useEffect(() => {
     if (rendererRef.current) {
+      rendererRef.current.lang = lang;
       rendererRef.current.setPlayerAvatar(playerAvatar);
       rendererRef.current.setPlayerName(playerName);
     }
-  }, [playerAvatar, playerName]);
+  }, [playerAvatar, playerName, lang]);
 
   // Toggle Resonance Compass
   const handleToggleCompass = useCallback(() => {
@@ -3830,91 +3841,19 @@ export default function App() {
 
   // Computed active sequential mission data
   const currentMissionData = useMemo<MissionStepData>(() => {
-    if (isFreeRoamActive) {
-      return {
-        step: 5,
-        total: 4,
-        badge: 'JELAJAH BEBAS',
-        title: 'Semua Misi Selesai!',
-        speaker: 'Ezsel & Warga Desa',
-        portrait: 'player',
-        hint: '🌿 Desa sudah ceria kembali! Ayo sapa teman-teman dan rayakan bersama.',
-        locationName: 'Lembah Nada Rasa',
-        targetCoords: { x: 11, y: 15 },
-        isCompleted: true,
-      };
-    }
-    if (!zoneStatus.plaza) {
-      return {
-        step: 1,
-        total: 4,
-        badge: 'MISI 1 DARI 4',
-        title: 'Misi 1: Redakan Amarah Kiki',
-        speaker: 'Kiki Si Tupai',
-        portrait: 'squirrel',
-        hint: isCompassActive
-          ? 'Ayo dekati Kiki di dekat air mancur. Ajak Kiki bicara [Tekan Spasi / Tombol Bicara].'
-          : 'Ayo dekati Kiki di dekat air mancur. Buka Kompas Hati [Tekan C] untuk tahu perasaannya!',
-        locationName: 'Alun-Alun & Air Mancur',
-        targetCoords: { x: 8, y: 14 },
-        isCompleted: false,
-      };
-    }
-    if (!zoneStatus.bridge) {
-      return {
-        step: 2,
-        total: 4,
-        badge: 'MISI 2 DARI 4',
-        title: 'Misi 2: Temui Kakek Ranu',
-        speaker: 'Kakek Ranu',
-        portrait: 'old_man',
-        hint: 'Jalan ke jembatan di sebelah timur. Temui Kakek Ranu dan bantu perbaiki jembatan.',
-        locationName: 'Jembatan Kayu (Arah Timur)',
-        targetCoords: { x: 20, y: 15 },
-        isCompleted: false,
-      };
-    }
-    if (!zoneStatus.forest) {
-      return {
-        step: 3,
-        total: 4,
-        badge: 'MISI 3 DARI 4',
-        title: 'Misi 3: Tolong Bimo di Hutan',
-        speaker: 'Bimo',
-        portrait: 'boy_glasses',
-        hint: 'Jalan ke Hutan Sunyi di barat laut. Temukan Bimo yang sedang sembunyi.',
-        locationName: 'Hutan Sunyi (Barat Laut)',
-        targetCoords: { x: 7, y: 6 },
-        isCompleted: false,
-      };
-    }
-    if (!zoneStatus.tower) {
-      return {
-        step: 4,
-        total: 4,
-        badge: 'MISI 4 DARI 4',
-        title: 'Misi 4: Aktifkan Menara Jam',
-        speaker: 'Sosok Kabut',
-        portrait: 'spirit_elder',
-        hint: 'Bawa Roda Gigi Emas ke Menara Jam. Pasang roda gigi agar lonceng berbunyi indah!',
-        locationName: 'Menara Jam Harmoni (Timur Laut)',
-        targetCoords: { x: 29, y: 8 },
-        isCompleted: false,
-      };
-    }
-    return {
-      step: 5,
-      total: 4,
-      badge: 'SELESAI',
-      title: 'Lembah Pulih Sepenuhnya!',
-      speaker: 'Ezsel & Warga Desa',
-      portrait: 'player',
-      hint: '🌿 Desa sudah ceria kembali! Ayo sapa semua temanmu dan rayakan bersama.',
-      locationName: 'Seluruh Desa',
-      targetCoords: { x: 11, y: 15 },
-      isCompleted: true,
-    };
-  }, [zoneStatus, isFreeRoamActive, isCompassActive]);
+    const step = isFreeRoamActive
+      ? 5
+      : !zoneStatus.plaza
+      ? 1
+      : !zoneStatus.bridge
+      ? 2
+      : !zoneStatus.forest
+      ? 3
+      : !zoneStatus.tower
+      ? 4
+      : 5;
+    return getLocalizedMissionStepData(step, lang, isCompassActive, step === 5, isFreeRoamActive);
+  }, [zoneStatus, isFreeRoamActive, isCompassActive, lang]);
 
   // Sync hint string for other systems
   useEffect(() => {
@@ -3995,13 +3934,13 @@ export default function App() {
               setIsNewMissionUnlock(false);
               setShowMissionModal(true);
             }}
-            title="Klik untuk melihat panduan langkah misi lengkap"
+            title={lang === 'en' ? 'Click to view complete mission guide' : 'Klik untuk melihat panduan langkah misi lengkap'}
             className="bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-200 border-2 sm:border-3 border-amber-600 hover:border-amber-700 rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-[0_6px_20px_rgba(245,158,11,0.45),0_0_0_2px_rgba(255,255,255,0.9)] flex items-center gap-2 sm:gap-3 pointer-events-auto cursor-pointer transition-all active:scale-[0.99] group text-slate-950"
           >
             {/* Scarlet/Crimson Badge */}
             <div className="flex items-center gap-1 sm:gap-1.5 bg-rose-600 border border-rose-300 rounded-lg sm:rounded-xl px-2 sm:px-3 py-0.5 sm:py-1 text-white font-pixel text-[8px] sm:text-[10px] shrink-0 font-black shadow-sm group-hover:bg-rose-500 transition-colors">
               <Sparkles className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 text-yellow-300 shrink-0" />
-              <span>{currentMissionData.step <= 4 ? `MISI ${currentMissionData.step}/4` : 'SELESAI'}</span>
+              <span>{currentMissionData.step <= 4 ? (lang === 'en' ? `MISSION ${currentMissionData.step}/4` : `MISI ${currentMissionData.step}/4`) : (lang === 'en' ? 'COMPLETED' : 'SELESAI')}</span>
             </div>
 
             {/* Instruction Text with Pixelify Sans - 2 lines max on mobile with comfortable leading */}
@@ -4021,9 +3960,9 @@ export default function App() {
                   handleGuideToMission(currentMissionData.step);
                 }}
                 className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-slate-950 hover:bg-slate-900 active:scale-95 text-amber-300 hover:text-amber-200 border border-amber-400 font-pixel text-[8px] sm:text-[10px] font-bold shadow-sm transition flex items-center gap-1 shrink-0 cursor-pointer"
-                title="Tuntun karakter otomatis berjalan ke target misi"
+                title={lang === 'en' ? 'Auto-guide character towards mission target' : 'Tuntun karakter otomatis berjalan ke target misi'}
               >
-                <span>Tuntun</span>
+                <span>{lang === 'en' ? 'Guide' : 'Tuntun'}</span>
                 <span className="text-[9px] sm:text-xs">🏃</span>
               </button>
             )}
@@ -4076,7 +4015,7 @@ export default function App() {
           npcs={npcs}
           zoneStatus={zoneStatus}
           mapLayout={mapLayout}
-          quests={quests}
+          quests={getLocalizedQuests(quests, lang)}
           onNavigateToTile={handleMiniMapNavigate}
           isCompassActive={isCompassActive}
         />
@@ -4085,7 +4024,7 @@ export default function App() {
       {/* Dialogue System Box */}
       {currentDialogue && (
         <DialogueBox
-          dialogue={currentDialogue}
+          dialogue={getLocalizedDialogue(currentDialogue, lang) || currentDialogue}
           onChoiceSelect={handleChoiceSelect}
           onNext={handleDialogueNext}
           onSkipRegulation={handleSkipRegulation}
@@ -4135,7 +4074,7 @@ export default function App() {
                 setCurrentDialogue(afterNode);
               }
             } else {
-              setQuestHint('🌟 Latihan Regulasi Selesai! Pikiranmu jernih, tenang, dan siap berpetualang.');
+              setQuestHint(lang === 'en' ? '🌟 Regulation Complete! Your mind is clear, calm, and ready to explore.' : '🌟 Latihan Regulasi Selesai! Pikiranmu jernih, tenang, dan siap berpetualang.');
             }
           }}
         />
@@ -4145,7 +4084,7 @@ export default function App() {
       <CompassJournalModal
         isOpen={showJournal}
         onClose={() => setShowJournal(false)}
-        items={inventory}
+        items={getLocalizedItems(inventory, lang)}
         zoneStatus={zoneStatus}
         stats={stats}
         onOpenAllBadgesCelebration={() => setShowAllBadgesCelebration(true)}
@@ -4156,7 +4095,7 @@ export default function App() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         initialTab={settingsTab}
-        quests={quests}
+        quests={getLocalizedQuests(quests, lang)}
         stats={stats}
         zoneStatus={zoneStatus}
         npcs={npcs}

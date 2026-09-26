@@ -29,6 +29,7 @@ import { useAudioSettings, BgmPhase, sound } from '../utils/audio';
 import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
 import { PSE_ACHIEVEMENTS } from '../game/constants';
 import { PeopleGuideModal } from './PeopleGuideModal';
+import { useLanguage, getLocalizedAchievements } from '../game/localization';
 
 export type SettingsModalTab = 'quest' | 'achievements' | 'audio' | 'controls';
 
@@ -69,6 +70,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onNavigateToTile,
   onActivateDeveloperMode,
 }) => {
+  const { lang, ui, toggleLang } = useLanguage();
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
   const [showPeopleGuide, setShowPeopleGuide] = useState(false);
   const [selectedVillagerForGuide, setSelectedVillagerForGuide] = useState<string | null>(null);
@@ -118,7 +120,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       onActivateDeveloperMode?.();
       onClose();
     } else {
-      setDevPinError('Kode PIN salah! Masukkan kode PIN yang sesuai (12345).');
+      setDevPinError(
+        lang === 'en'
+          ? 'Incorrect PIN! Please enter the correct PIN (12345).'
+          : 'Kode PIN salah! Masukkan kode PIN yang sesuai (12345).'
+      );
       sound.playMenuSelect();
     }
   };
@@ -162,29 +168,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
               className="font-bold text-base text-amber-300 tracking-wide"
             >
-              Pengaturan Game & Petualangan
+              {lang === 'en' ? 'Game & Adventure Settings' : 'Pengaturan Game & Petualangan'}
             </h2>
             <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300 text-[9px] sm:text-[10px] font-pixel shadow-sm animate-pulse">
               <span>⏸️</span>
-              <span>GAME DI-PAUSE</span>
+              <span>{lang === 'en' ? 'GAME PAUSED' : 'GAME DI-PAUSE'}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Language Switcher Button */}
+            <button
+              id="settings-language-toggle-btn"
+              onClick={toggleLang}
+              className="px-2.5 py-1.5 rounded-xl border border-amber-400/80 bg-slate-950 hover:bg-slate-900 active:scale-95 text-amber-300 font-pixel text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer shadow transition"
+              title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+            >
+              <span>🌐</span>
+              <span className="font-bold">{lang === 'id' ? 'ID 🇮🇩' : 'EN 🇬🇧'}</span>
+            </button>
+
             {onCaptureMoment && (
               <button
                 id="settings-header-capture-moment-btn"
                 onClick={onCaptureMoment}
                 className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 hover:scale-105 hover:shadow-[0_0_16px_rgba(245,158,11,0.6)] active:scale-95 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition-all duration-200 cursor-pointer"
-                title="Ambil screenshot area game saat ini dengan bingkai dekoratif"
+                title={lang === 'en' ? 'Take screenshot of current area with decorative frame' : 'Ambil screenshot area game saat ini dengan bingkai dekoratif'}
               >
                 <Camera className="w-4 h-4 text-slate-950" />
-                <span>Abadikan Momen</span>
+                <span>{lang === 'en' ? 'Capture Moment' : 'Abadikan Momen'}</span>
               </button>
             )}
             <button
               id="close-settings-btn"
               onClick={onClose}
-              aria-label="Tutup menu pengaturan"
+              aria-label={lang === 'en' ? 'Close settings menu' : 'Tutup menu pengaturan'}
               className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-rose-950/50 hover:scale-110 hover:shadow-[0_0_10px_rgba(244,63,94,0.4)] transition-all duration-200 cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -208,7 +225,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
               className="truncate"
             >
-              Misi & Objektif
+              {lang === 'en' ? 'Quests & Objectives' : 'Misi & Objektif'}
             </span>
           </button>
 
@@ -226,7 +243,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
               className="truncate"
             >
-              Pencapaian ({unlockedCount}/{totalBadges})
+              {lang === 'en' ? `Badges (${unlockedCount}/${totalBadges})` : `Pencapaian (${unlockedCount}/${totalBadges})`}
             </span>
           </button>
 
@@ -249,7 +266,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               }}
               className="truncate"
             >
-              Audio & Efek Suara
+              {lang === 'en' ? 'Audio & Sound' : 'Audio & Efek Suara'}
             </span>
           </button>
 
@@ -270,7 +287,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               }}
               className="truncate"
             >
-              Kontrol Permainan
+              {lang === 'en' ? 'Controls & Guide' : 'Kontrol Permainan'}
             </span>
           </button>
         </div>

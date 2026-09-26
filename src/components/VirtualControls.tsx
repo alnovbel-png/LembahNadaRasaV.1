@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X, Home, Sparkles } from 'lucide-react';
+import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X, Home, Sparkles, Globe } from 'lucide-react';
 import { useIsMobileOrTablet } from '../utils/device';
+import { useLanguage } from '../game/localization';
 
 interface VirtualControlsProps {
   onDirectionPress: (dir: 'up' | 'down' | 'left' | 'right', pressed: boolean) => void;
@@ -41,6 +42,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   onOpenPauseMenu,
   isPauseOpen = false,
 }) => {
+  const { lang, toggleLang, ui } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobileOrTablet = useIsMobileOrTablet();
 
@@ -224,15 +226,15 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               if (!isSettingsOpen) onOpenPauseMenu?.();
             }
           }}
-          title="Buka Pause Menu [Esc]"
-          aria-label="Pause Menu Lembah Nada Rasa"
+          title={ui.openPauseMenu}
+          aria-label={ui.openPauseMenu}
           className={`group bg-slate-950/95 hover:bg-slate-900 border border-slate-800 hover:border-amber-400/80 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl hover:shadow-[0_0_20px_rgba(245,158,11,0.25)] backdrop-blur-md flex items-center gap-1.5 shrink-0 transition-all duration-150 cursor-pointer select-none active:scale-95 ${
             isSettingsOpen ? 'pointer-events-none opacity-40' : 'pointer-events-auto'
           }`}
         >
           <span className="text-xs sm:text-sm transition-transform duration-200 group-hover:rotate-12">🧭</span>
           <span className="font-pixel text-[8.5px] sm:text-[10px] text-amber-400 group-hover:text-amber-300 font-bold tracking-tight whitespace-nowrap">
-            Lembah Nada Rasa
+            {ui.brandTitle}
           </span>
         </div>
 
@@ -242,7 +244,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
             id="toggle-resonance-btn"
             onClick={onCompassToggle}
             disabled={isSettingsOpen}
-            title="Aktifkan Kompas Resonansi Hati [C]"
+            title={ui.toggleResonance}
             className={`relative px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition hidden md:flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
               isCompassActive
                 ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.7)] font-bold ring-2 ring-amber-300/60'
@@ -261,7 +263,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             )}
             <span className="font-pixel text-[8px] sm:text-[9px] whitespace-nowrap">
-              {isCompassActive ? 'RESONANSI AKTIF' : 'KOMPAS HATI'}
+              {isCompassActive ? ui.activeResonance : ui.heartCompass}
             </span>
             <span className="hidden xl:inline text-[10px] text-slate-400 font-mono">
               [C]
@@ -276,7 +278,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
             <button
               id="top-unified-menu-btn"
               onClick={() => setIsMenuOpen(true)}
-              aria-label="Buka Menu Game"
+              aria-label="Menu"
               className="px-2.5 py-1 sm:py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:border-amber-300 hover:bg-slate-900 hover:scale-105 hover:shadow-[0_0_14px_rgba(245,158,11,0.5)] active:bg-amber-500/20 text-amber-300 shadow-xl backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95"
             >
               <Menu className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
@@ -290,7 +292,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               <button
                 id="top-map-toggle-btn"
                 onClick={onToggleMiniMap}
-                title={isMiniMapOpen ? 'Sembunyikan Peta Mini [M]' : 'Buka Peta Mini [M]'}
+                title={isMiniMapOpen ? (lang === 'en' ? 'Hide Mini Map [M]' : 'Sembunyikan Peta Mini [M]') : (lang === 'en' ? 'Open Mini Map [M]' : 'Buka Peta Mini [M]')}
                 className={`px-2.5 py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-1.5 text-xs font-semibold cursor-pointer ${
                   isMiniMapOpen
                     ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_16px_rgba(245,158,11,0.6)] hover:shadow-[0_0_20px_rgba(245,158,11,0.8)]'
@@ -301,7 +303,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   style={{ backgroundColor: '#000000' }}
                   className="w-4 h-4 text-amber-400 rounded-sm"
                 />
-                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Peta</span>
+                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.map}</span>
                 <span className="text-[10px] text-slate-400 font-mono">[M]</span>
               </button>
             )}
@@ -310,11 +312,11 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               <button
                 id="top-regulation-btn"
                 onClick={onOpenRegulation}
-                title="Buka Studio Regulasi Emosi & Relaksasi [R]"
+                title={lang === 'en' ? 'Open Emotion Regulation Studio [R]' : 'Buka Studio Regulasi Emosi & Relaksasi [R]'}
                 className="px-2.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:border-cyan-300 hover:bg-cyan-900/90 hover:scale-105 hover:shadow-[0_0_16px_rgba(6,182,212,0.5)] active:scale-95 text-cyan-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
               >
                 <Wind className="w-4 h-4 text-cyan-300" />
-                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Regulasi</span>
+                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.regulation}</span>
                 <span className="text-[10px] text-cyan-400/80 font-mono">[R]</span>
               </button>
             )}
@@ -322,11 +324,11 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
             <button
               id="top-journal-btn"
               onClick={onOpenJournal}
-              title="Buka Jurnal Kompas Hati & Tas [J]"
+              title={lang === 'en' ? 'Open Heart Compass Journal & Bag [J]' : 'Buka Jurnal Kompas Hati & Tas [J]'}
               className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:border-amber-400 hover:bg-slate-900 hover:scale-105 hover:shadow-[0_0_16px_rgba(245,158,11,0.5)] active:scale-95 text-amber-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
             >
               <BookOpen className="w-4 h-4 text-amber-400" />
-              <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Jurnal</span>
+              <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.journal}</span>
               <span className="text-[10px] text-amber-400/80 font-mono">[J]</span>
             </button>
 
@@ -334,23 +336,36 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               <button
                 id="top-ending-btn"
                 onClick={onOpenEnding}
-                title="Buka Sertifikat Kelulusan & Menu Akhir Kisah"
+                title={lang === 'en' ? 'Open Graduation Certificate & Epilogue' : 'Buka Sertifikat Kelulusan & Menu Akhir Kisah'}
                 className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 hover:scale-105 hover:shadow-[0_0_20px_rgba(245,158,11,0.85)] active:scale-95 text-slate-950 border border-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.6)] font-bold transition-all duration-200 flex items-center gap-1.5 text-xs cursor-pointer"
               >
                 <Award className="w-4 h-4 text-slate-950" />
-                <span>Sertifikat</span>
+                <span>{ui.certificate}</span>
               </button>
             )}
 
             <button
               id="top-settings-btn"
               onClick={onOpenSettings}
-              title="Menu Pengaturan: Misi, Pencapaian, Audio & Kontrol [O]"
+              title={ui.settingsTitle}
               className="px-3 py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 hover:scale-105 hover:shadow-[0_0_16px_rgba(245,158,11,0.5)] active:scale-95 text-amber-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-bold cursor-pointer"
             >
               <Sliders className="w-4 h-4 text-amber-400" />
-              <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>Pengaturan</span>
+              <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.settings}</span>
               <span className="text-[10px] text-slate-400 font-mono">[O]</span>
+            </button>
+
+            {/* Language Switcher Button */}
+            <button
+              id="top-language-toggle-btn"
+              onClick={toggleLang}
+              title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
+              className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/60 hover:border-amber-300 hover:bg-slate-900 hover:scale-105 active:scale-95 text-amber-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1 text-xs font-semibold cursor-pointer"
+            >
+              <Globe className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-pixel text-[8px] sm:text-[9px] font-bold">
+                {lang === 'id' ? 'ID' : 'EN'}
+              </span>
             </button>
           </div>
         </div>
@@ -407,15 +422,15 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     </div>
                     <div>
                       <div className="font-semibold text-xs text-amber-200 flex items-center gap-1.5">
-                        <span>Peta Lembah</span>
+                        <span>{lang === 'en' ? 'Valley Map' : 'Peta Lembah'}</span>
                         {isMiniMapOpen && (
                           <span className="text-[9px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-bold shadow-[0_0_8px_rgba(245,158,11,0.5)]">
-                            Aktif
+                            {lang === 'en' ? 'Active' : 'Aktif'}
                           </span>
                         )}
                       </div>
                       <div className="text-[10.5px] text-slate-400">
-                        Lihat lokasi warga, jembatan, dan menara jam
+                        {lang === 'en' ? 'View villagers, bridges, and clocktower' : 'Lihat lokasi warga, jembatan, dan menara jam'}
                       </div>
                     </div>
                   </div>
@@ -440,10 +455,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     </div>
                     <div>
                       <div className="font-semibold text-xs text-cyan-200">
-                        Studio Regulasi Emosi
+                        {lang === 'en' ? 'Emotion Regulation Studio' : 'Studio Regulasi Emosi'}
                       </div>
                       <div className="text-[10.5px] text-slate-400">
-                        Latihan napas balon, relaksasi 4-7-8 & grounding
+                        {lang === 'en' ? 'Balloon breathing, 4-7-8 relaxation & grounding' : 'Latihan napas balon, relaksasi 4-7-8 & grounding'}
                       </div>
                     </div>
                   </div>
@@ -467,10 +482,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   </div>
                   <div>
                     <div className="font-semibold text-xs text-amber-200">
-                      Jurnal & Tas Petualang
+                      {lang === 'en' ? 'Journal & Adventurer Bag' : 'Jurnal & Tas Petualang'}
                     </div>
                     <div className="text-[10.5px] text-slate-400">
-                      Lore cerita desa, barang pusaka & wawasan empati
+                      {lang === 'en' ? 'Village lore, sacred items & empathy insights' : 'Lore cerita desa, barang pusaka & wawasan empati'}
                     </div>
                   </div>
                 </div>
@@ -494,15 +509,15 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     </div>
                     <div>
                       <div className="font-bold text-xs text-amber-300">
-                        Sertifikat Kelulusan PSE
+                        {lang === 'en' ? 'SEL Graduation Certificate' : 'Sertifikat Kelulusan PSE'}
                       </div>
                       <div className="text-[10.5px] text-amber-200/80">
-                        Piagam Duta Empati Emas Ezzel
+                        {lang === 'en' ? "Ezzel's Golden Empathy Ambassador Charter" : 'Piagam Duta Empati Emas Ezzel'}
                       </div>
                     </div>
                   </div>
                   <span className="text-[9px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.5 rounded shadow">
-                    LULUS
+                    {lang === 'en' ? 'GRAD' : 'LULUS'}
                   </span>
                 </button>
               )}
@@ -521,10 +536,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   </div>
                   <div>
                     <div className="font-semibold text-xs text-slate-200">
-                      Pengaturan, Misi & Bantuan
+                      {lang === 'en' ? 'Settings, Quests & Help' : 'Pengaturan, Misi & Bantuan'}
                     </div>
                     <div className="text-[10.5px] text-slate-400">
-                      Daftar misi, pencapaian lencana, audio & ekspor offline
+                      {lang === 'en' ? 'Quest list, badges, audio & offline export' : 'Daftar misi, pencapaian lencana, audio & ekspor offline'}
                     </div>
                   </div>
                 </div>
@@ -548,10 +563,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     </div>
                     <div>
                       <div className="font-semibold text-xs text-amber-300">
-                        Menu Awal / Opening Start
+                        {ui.titleScreen}
                       </div>
                       <div className="text-[10.5px] text-slate-400">
-                        Buka layar pembuka, sinopsis & opsi game
+                        {ui.titleScreenDesc}
                       </div>
                     </div>
                   </div>
@@ -560,12 +575,37 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   </span>
                 </button>
               )}
+
+              {/* Option 7: Ganti Bahasa / Language Switcher */}
+              <button
+                onClick={() => {
+                  toggleLang();
+                }}
+                className="w-full p-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 active:bg-slate-750 border border-amber-500/40 hover:border-amber-400 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-xs text-amber-300">
+                      {lang === 'id' ? 'Bahasa: Indonesia 🇮🇩' : 'Language: English 🇬🇧'}
+                    </div>
+                    <div className="text-[10.5px] text-slate-400">
+                      {lang === 'id' ? 'Klik untuk beralih ke Bahasa Inggris' : 'Click to switch to Bahasa Indonesia'}
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[9px] text-amber-400 font-mono bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">
+                  {lang.toUpperCase()}
+                </span>
+              </button>
             </div>
 
             {/* Menu Footer */}
             <div className="px-4 py-2.5 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-[10px] text-slate-400">
-              <span>Karakter Utama: <strong className="text-emerald-400">Ezzel</strong></span>
-              <span>Kompas Hati: <strong className="text-amber-400">{isCompassActive ? 'Aktif' : 'Siaga'}</strong></span>
+              <span>{ui.mainCharacterLabel} <strong className="text-emerald-400">Ezzel</strong></span>
+              <span>{ui.compassLabel} <strong className="text-amber-400">{isCompassActive ? ui.compassActive : ui.compassStandby}</strong></span>
             </div>
           </div>
         </div>
@@ -647,7 +687,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               <Compass className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
             )}
             <span className="text-[7.5px] font-pixel tracking-tighter">
-              {isCompassActive ? 'AKTIF' : 'HATI'}
+              {isCompassActive ? ui.btnCompassActive : ui.btnCompassStandby}
             </span>
           </button>
 
@@ -659,7 +699,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
             className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-400 text-white hover:scale-110 hover:shadow-[0_0_24px_rgba(16,185,129,0.85)] active:text-slate-950 border-2 border-emerald-300 flex flex-col items-center justify-center text-xs font-bold shadow-xl active:scale-95 transition-all duration-200 cursor-pointer"
           >
             <span className="text-sm sm:text-base font-black">A</span>
-            <span className="text-[7.5px] font-pixel tracking-tighter">AKSI</span>
+            <span className="text-[7.5px] font-pixel tracking-tighter">{ui.btnAction}</span>
           </button>
         </div>
       )}
