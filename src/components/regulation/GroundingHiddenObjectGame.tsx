@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { sound } from '../../utils/audio';
+import { useLanguage, getLocalizedNpcName } from '../../game/localization';
 import { Eye, Search, Sparkles, CheckCircle2, RotateCcw, Clock, ShieldCheck } from 'lucide-react';
 
 interface HiddenObject {
@@ -16,6 +17,23 @@ interface HiddenObject {
   isCaught: boolean;
 }
 
+const OBJECT_META: Record<string, Record<string, { name: string; senseLabel: string }>> = {
+  id: {
+    obj_butterfly: { name: 'Kupu-kupu Biru', senseLabel: '👁️ Dilihat: Kupu-kupu Biru Lembah' },
+    obj_leaf: { name: 'Daun Emas Melayang', senseLabel: '✋ Disentuh: Daun Emas Gugur' },
+    obj_crystal: { name: 'Kristal Kompas', senseLabel: '👂 Didengar: Gemerincing Kristal' },
+    obj_flower: { name: 'Bunga Harum', senseLabel: '👃 Dihirup: Wangi Bunga Lavender' },
+    obj_dewdrop: { name: 'Tetes Embun Air', senseLabel: '👅 Dirasa: Embun Air Kesejukan' },
+  },
+  en: {
+    obj_butterfly: { name: 'Blue Butterfly', senseLabel: '👁️ Sight: Valley Blue Butterfly' },
+    obj_leaf: { name: 'Drifting Golden Leaf', senseLabel: '✋ Touch: Fallen Golden Leaf' },
+    obj_crystal: { name: 'Compass Crystal', senseLabel: '👂 Sound: Chime of Crystal' },
+    obj_flower: { name: 'Fragrant Lavender', senseLabel: '👃 Scent: Fragrant Lavender' },
+    obj_dewdrop: { name: 'Cool Dewdrop', senseLabel: '👅 Taste: Cool Fresh Dewdrop' },
+  },
+};
+
 interface GroundingHiddenObjectGameProps {
   targetName: string;
   onSuccess: () => void;
@@ -25,6 +43,11 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
   targetName,
   onSuccess,
 }) => {
+  const { lang } = useLanguage();
+  const localizedTarget =
+    targetName === 'Pemain' || targetName === 'Karakter Utama'
+      ? (lang === 'en' ? 'Player' : 'Pemain')
+      : getLocalizedNpcName(targetName.toLowerCase(), lang, true, targetName);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [lensPos, setLensPos] = useState({ x: 50, y: 50 }); // percentage
   const [isInsideContainer, setIsInsideContainer] = useState(false);
@@ -201,12 +224,14 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
 
     sound.playSensoryChime(freq);
 
+    const displayName = OBJECT_META[lang]?.[id]?.name || name;
+
     // Add sparkle burst
     const newSparkle = {
       id: Date.now() + Math.random(),
       x: objX,
       y: objY,
-      text: `✨ ${name} Ditemukan!`,
+      text: lang === 'en' ? `✨ ${displayName} Found!` : `✨ ${displayName} Ditemukan!`,
     };
     setSparkles((s) => [...s, newSparkle]);
     setTimeout(() => {
@@ -234,7 +259,10 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
     <div className="space-y-3 select-none">
       {/* Educational Banner */}
       <div className="bg-emerald-950/40 border border-emerald-500/30 rounded-xl p-2.5 text-xs text-emerald-200">
-        🔍 <strong>Pencarian Panca Indera Dinamis</strong>: Gerakkan <strong>Kaca Pembesar</strong> untuk menembus kabut kepanikan! Tangkap 5 objek alam yang bergerak sebelum waktu habis.
+        🔍 <strong>{lang === 'en' ? 'Dynamic 5 Senses Search' : 'Pencarian Panca Indera Dinamis'}</strong>:{' '}
+        {lang === 'en'
+          ? 'Move the Magnifying Glass to pierce through anxiety fog! Catch 5 moving natural objects before time runs out.'
+          : 'Gerakkan Kaca Pembesar untuk menembus kabut kepanikan! Tangkap 5 objek alam yang bergerak sebelum waktu habis.'}
       </div>
 
       {/* Top Status: Timer & Caught Count */}
@@ -242,11 +270,15 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
         <div className="flex items-center gap-2">
           <span className="text-emerald-400 font-bold flex items-center gap-1">
             <Eye className="w-3.5 h-3.5" />
-            <span>Fokus Indera: {caughtCount}/5 Objek</span>
+            <span>
+              {lang === 'en' ? `Sensory Focus: ${caughtCount}/5 Objects` : `Fokus Indera: ${caughtCount}/5 Objek`}
+            </span>
           </span>
           <span className="text-slate-500">|</span>
           <span className="text-slate-300 text-[10px]">
-            {caughtCount === 5 ? 'Lembah Telah Jernih Seutuhnya!' : 'Arahkan lensa ke objek bergerak'}
+            {caughtCount === 5
+              ? (lang === 'en' ? 'The Valley is Completely Clear!' : 'Lembah Telah Jernih Seutuhnya!')
+              : (lang === 'en' ? 'Aim the lens at moving objects' : 'Arahkan lensa ke objek bergerak')}
           </span>
         </div>
 
@@ -281,9 +313,18 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
           </div>
 
           <div className="text-center opacity-30 text-[10px] font-pixel text-slate-400">
-            {caughtCount === 0 && 'Kabut kecemasan mengaburkan pandangan... Gunakan kaca pembesar!'}
-            {caughtCount > 0 && caughtCount < 5 && 'Kabut mulai memudar, pandangan semakin jernih...'}
-            {caughtCount === 5 && 'Pandangan jernih sempurna! Lembah damai dan tenang.'}
+            {caughtCount === 0 &&
+              (lang === 'en'
+                ? 'Anxiety fog clouds vision... Use the magnifying glass!'
+                : 'Kabut kecemasan mengaburkan pandangan... Gunakan kaca pembesar!')}
+            {caughtCount > 0 && caughtCount < 5 &&
+              (lang === 'en'
+                ? 'Fog begins to dissipate, vision becomes clearer...'
+                : 'Kabut mulai memudar, pandangan semakin jernih...')}
+            {caughtCount === 5 &&
+              (lang === 'en'
+                ? 'Crystal clear view! The Valley is serene and peaceful.'
+                : 'Pandangan jernih sempurna! Lembah damai dan tenang.')}
           </div>
 
           <div className="flex justify-around items-end opacity-50 text-xl">
@@ -304,20 +345,20 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
         {objects.map((obj) => {
           if (obj.isCaught) return null;
 
-          // Distance from lens center
+          const objDisplayName = OBJECT_META[lang]?.[obj.id]?.name || obj.name;
           const distToLens = Math.hypot(obj.x - lensPos.x, obj.y - lensPos.y);
           const isUnderLens = distToLens < 18;
 
           return (
             <div
               key={obj.id}
-              onClick={() => handleCatchObject(obj.id, obj.x, obj.y, obj.freq, obj.name)}
+              onClick={() => handleCatchObject(obj.id, obj.x, obj.y, obj.freq, objDisplayName)}
               style={{
                 left: `${obj.x}%`,
                 top: `${obj.y}%`,
                 transform: `translate(-50%, -50%) scale(${isUnderLens ? obj.scale * 1.35 : obj.scale})`,
               }}
-              title={`Klik untuk menangkap ${obj.name}!`}
+              title={lang === 'en' ? `Click to catch ${objDisplayName}!` : `Klik untuk menangkap ${objDisplayName}!`}
               className={`absolute cursor-pointer transition-transform duration-100 p-2 rounded-full select-none z-20 hover:scale-150 ${
                 isUnderLens
                   ? 'drop-shadow-[0_0_16px_rgba(245,158,11,1)] animate-bounce ring-2 ring-amber-300/80 bg-amber-400/20'
@@ -327,7 +368,7 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
               <span className="text-2xl sm:text-3xl filter drop-shadow-md">{obj.emoji}</span>
               {isUnderLens && (
                 <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-950/90 text-amber-300 font-pixel text-[8px] px-1.5 py-0.5 rounded border border-amber-400 shadow">
-                  Klik! 👆
+                  {lang === 'en' ? 'Click! 👆' : 'Klik! 👆'}
                 </span>
               )}
             </div>
@@ -379,10 +420,12 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
               ✨
             </div>
             <h3 className="font-pixel text-sm sm:text-base font-bold text-emerald-300 mb-1">
-              PANCA INDERA SELARAS PARIPURNA!
+              {lang === 'en' ? 'ALL 5 SENSES HARMONIZED!' : 'PANCA INDERA SELARAS PARIPURNA!'}
             </h3>
             <p className="font-pixel text-[10px] text-slate-200 max-w-sm">
-              Semua 5 objek telah ditemukan. Pikiran {targetName} kembali jernih, tenang, dan terhubung utuh dengan dunia nyata.
+              {lang === 'en'
+                ? `All 5 sensory objects found. ${localizedTarget}'s mind is clear, calm, and grounded in the present moment.`
+                : `Semua 5 objek telah ditemukan. Pikiran ${localizedTarget} kembali jernih, tenang, dan terhubung utuh dengan dunia nyata.`}
             </p>
           </div>
         )}
@@ -392,17 +435,19 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
           <div className="absolute inset-0 z-40 bg-slate-950/85 backdrop-blur-xs flex flex-col items-center justify-center p-4 text-center animate-fade-in">
             <div className="text-3xl mb-2">⏳</div>
             <h3 className="font-pixel text-sm font-bold text-rose-300 mb-1">
-              WAKTU PENCARIAN HABIS
+              {lang === 'en' ? 'SEARCH TIME EXPIRED' : 'WAKTU PENCARIAN HABIS'}
             </h3>
             <p className="font-pixel text-[10px] text-slate-300 max-w-xs mb-3">
-              Kabut masih agak tebal. Yuk ulangi pencarian dengan tenang, gerakkan kaca pembesar untuk menemukan objek yang tersisa!
+              {lang === 'en'
+                ? 'The fog is still lingering. Let us search again calmly, move the lens to find the remaining objects!'
+                : 'Kabut masih agak tebal. Yuk ulangi pencarian dengan tenang, gerakkan kaca pembesar untuk menemukan objek yang tersisa!'}
             </p>
             <button
               onClick={resetGame}
               className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-pixel font-bold text-xs flex items-center gap-1.5 shadow transition cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Coba Cari Lagi</span>
+              <span>{lang === 'en' ? 'Try Searching Again' : 'Coba Cari Lagi'}</span>
             </button>
           </div>
         )}
@@ -410,24 +455,27 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
 
       {/* Target Item Checklist Badges */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-        {objects.map((obj) => (
-          <div
-            key={obj.id}
-            className={`p-1.5 rounded-lg border font-pixel text-[9px] flex items-center gap-1.5 transition-all ${
-              obj.isCaught
-                ? 'bg-emerald-950/80 border-emerald-400 text-emerald-200 shadow-sm'
-                : 'bg-slate-900 border-slate-800 text-slate-400'
-            }`}
-          >
-            <span className="text-sm shrink-0">{obj.emoji}</span>
-            <div className="truncate">
-              <span className="block font-bold">{obj.name}</span>
-              <span className="text-[7.5px] text-slate-400 block truncate">
-                {obj.isCaught ? '✅ Ditemukan' : '🔍 Cari di kabut'}
-              </span>
+        {objects.map((obj) => {
+          const objDisplayName = OBJECT_META[lang]?.[obj.id]?.name || obj.name;
+          return (
+            <div
+              key={obj.id}
+              className={`p-1.5 rounded-lg border font-pixel text-[9px] flex items-center gap-1.5 transition-all ${
+                obj.isCaught
+                  ? 'bg-emerald-950/80 border-emerald-400 text-emerald-200 shadow-sm'
+                  : 'bg-slate-900 border-slate-800 text-slate-400'
+              }`}
+            >
+              <span className="text-sm shrink-0">{obj.emoji}</span>
+              <div className="truncate">
+                <span className="block font-bold">{objDisplayName}</span>
+                <span className="text-[7.5px] text-slate-400 block truncate">
+                  {obj.isCaught ? (lang === 'en' ? '✅ Found' : '✅ Ditemukan') : (lang === 'en' ? '🔍 In Fog' : '🔍 Cari di kabut')}
+                </span>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Final Completion Action Button */}
@@ -439,7 +487,7 @@ export const GroundingHiddenObjectGame: React.FC<GroundingHiddenObjectGameProps>
             className="w-full sm:w-80 py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-pixel font-black text-xs sm:text-sm shadow-[0_0_30px_rgba(16,185,129,0.85)] flex items-center justify-center gap-2 animate-bounce transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-slate-950" />
-            <span>TERAPKAN KETENANGAN GROUNDING!</span>
+            <span>{lang === 'en' ? 'APPLY GROUNDING CALMNESS!' : 'TERAPKAN KETENANGAN GROUNDING!'}</span>
           </button>
         </div>
       )}

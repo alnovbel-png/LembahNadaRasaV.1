@@ -28,7 +28,7 @@ import {
 } from '../game/miniMapTextures';
 import { sound } from '../utils/audio';
 import { useIsMobileOrTablet, useIsPortrait, useHideMinimapExtraControls } from '../utils/device';
-import { useLanguage } from '../game/localization';
+import { useLanguage, getLocalizedNpcName, getLocalizedNpcRole } from '../game/localization';
 
 interface MiniMapProps {
   isOpen: boolean;
@@ -878,8 +878,8 @@ export const MiniMap: React.FC<MiniMapProps> = ({
             ? (lang === 'en' ? 'West ⬅️' : 'Barat ⬅️')
             : (lang === 'en' ? 'East ➡️' : 'Timur ➡️');
         setHoveredInfo({
-          name: npc.name,
-          role: npc.role,
+          name: getLocalizedNpcName(npc.id, lang, npc.isResolved, npc.name),
+          role: getLocalizedNpcRole(npc.id, lang, npc.isResolved, npc.role),
           facing: facingText,
           status: isQuestTarget
             ? (lang === 'en' ? 'Active Quest Target!' : 'Target Misi Aktif!')

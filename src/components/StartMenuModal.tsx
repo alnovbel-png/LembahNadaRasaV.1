@@ -185,13 +185,8 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
       {/* 1. TOP BAR: Compact & well-proportioned for 16:9 displays */}
       {/* =================================================================== */}
       <div className="w-full flex items-center justify-between z-20 max-w-5xl mx-auto px-2">
-        {/* Left: EDISI RESMI ANAK-ANAK / OFFICIAL KIDS EDITION */}
-        <div className="font-pixel text-amber-400 text-[10px] sm:text-xs tracking-wider font-bold">
-          {ui.headerBadge}
-        </div>
-
-        {/* Center Badge: RPG SOSIAL-EMOSIONAL & MINDFULNESS */}
-        <div className="hidden sm:inline-flex items-center gap-1.5 bg-[#251b14]/90 border border-amber-600/70 rounded-full px-3 py-1 shadow-md">
+        {/* Left: RPG SOSIAL-EMOSIONAL & MINDFULNESS (Moved to replace official text) */}
+        <div className="inline-flex items-center gap-1.5 bg-[#251b14]/90 border border-amber-600/70 rounded-full px-2.5 sm:px-3 py-1 shadow-md">
           <Compass className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <span className="font-pixel text-[8px] sm:text-[9px] text-amber-300 font-bold tracking-wider">
             {ui.genreBadge}

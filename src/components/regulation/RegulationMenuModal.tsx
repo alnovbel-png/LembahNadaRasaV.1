@@ -1,6 +1,6 @@
 import React from 'react';
 import { sound } from '../../utils/audio';
-import { useLanguage } from '../../game/localization';
+import { useLanguage, getLocalizedNpcName } from '../../game/localization';
 import {
   Wind,
   Eye,
@@ -49,6 +49,9 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
   if (!isOpen) return null;
 
   const isSelfPractice = targetName === 'Pemain' || targetName === 'Karakter Utama';
+  const localizedTarget = isSelfPractice
+    ? (lang === 'en' ? 'Player' : 'Pemain')
+    : getLocalizedNpcName(targetName.toLowerCase(), lang, true, targetName);
 
   const menuItems: RegulationItem[] = [
     {
@@ -61,7 +64,10 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
         lang === 'en'
           ? 'Hold breath for exactly 4s to inflate balloon to the ring, keep cursor in vibrating green zone for 4s, then exhale smoothly.'
           : 'Tahan napas tepat 4 detik agar balon menyentuh cincin target, jaga kursor di zona hijau yang bergetar 4 detik, lalu hembuskan perlahan.',
-      mechanics: 'Rhythmic Hold · Stabilizer Track · Deflation Timing',
+      mechanics:
+        lang === 'en'
+          ? 'Rhythmic Hold · Stabilizer Track · Deflation Timing'
+          : 'Tahan Berirama · Jalur Penstabil · Waktu Hembus',
       duration: lang === 'en' ? '4s Per Phase' : '4 Detik per Fase',
       icon: <Wind className="w-6 h-6 text-cyan-300" />,
       borderTheme: 'border-cyan-500/40 hover:border-cyan-400',
@@ -80,7 +86,10 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
         lang === 'en'
           ? 'Control the magnifying glass to pierce panic fog and catch 5 fast-moving natural objects before time runs out.'
           : 'Kendalikan lensa kaca pembesar untuk menembus kabut kepanikan dan tangkap 5 objek alam yang bergerak cepat sebelum waktu habis.',
-      mechanics: 'Spotlight Cursor · Moving Objects · 45s Countdown',
+      mechanics:
+        lang === 'en'
+          ? 'Spotlight Cursor · Moving Objects · 45s Countdown'
+          : 'Kursor Sorot · Objek Bergerak · Hitung Mundur 45 Detik',
       duration: lang === 'en' ? '5 Hidden Objects' : '5 Objek Tersembunyi',
       icon: <Eye className="w-6 h-6 text-emerald-300" />,
       borderTheme: 'border-emerald-500/40 hover:border-emerald-400',
@@ -94,12 +103,15 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
       number: 3,
       title: lang === 'en' ? 'S-T-O-P Reaction Brake' : 'Rem Reaksi S-T-O-P',
       subtitle: lang === 'en' ? 'Inhibit Impulsive Reaction' : 'Cegah Respon Impulsif',
-      category: 'Quick Time Event & Tracing',
+      category: lang === 'en' ? 'Quick Time Event & Letter Tracing' : 'Quick Time Event & Tracing Huruf',
       description:
         lang === 'en'
           ? 'Chase and smash the bouncing red STOP button! Freeze time then trace letters S, T, O, and P sequentially.'
           : 'Kejar dan smash tombol STOP merah yang memantul liar di layar! Bekukan waktu lalu tebalkan huruf S, T, O, dan P secara berurutan.',
-      mechanics: 'Smash Bouncing Button · Time-Freeze · Letter Tracing',
+      mechanics:
+        lang === 'en'
+          ? 'Smash Bouncing Button · Time-Freeze · Letter Tracing'
+          : 'Tekan Tombol Pantul · Pembekuan Waktu · Tracing Huruf',
       duration: lang === 'en' ? '4 Consecutive Letters' : '4 Huruf Berurutan',
       icon: <ShieldAlert className="w-6 h-6 text-rose-300" />,
       borderTheme: 'border-rose-500/40 hover:border-rose-400',
@@ -113,12 +125,15 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
       number: 4,
       title: lang === 'en' ? 'Tension Vine Release' : 'Pembebas Sulur Ketegangan',
       subtitle: lang === 'en' ? 'Kinesthetic Muscle Shake-Out' : 'Goyang Otot Kinestetik',
-      category: 'Alternating Button Mash (L & R)',
+      category: lang === 'en' ? 'Alternating Button Mash (L & R)' : 'Ketuk Tombol Bergantian (Kiri & Kanan)',
       description:
         lang === 'en'
-          ? 'Alternate Left and Right (A/D) keys as fast as possible to break free from tension and snap 5 stress vines.'
-          : 'Tekan tombol Kiri dan Kanan (A/D) secara bergantian secepat mungkin layaknya membebaskan diri dari efek stun untuk memutuskan 5 sulur stres Kiki.',
-      mechanics: 'Rapid L/R Alternation · Tension Vine Break · Kinesthetic',
+          ? `Alternate Left and Right (A/D) keys as fast as possible to break free from tension and snap 5 stress vines on ${localizedTarget}.`
+          : `Tekan tombol Kiri dan Kanan (A/D) secara bergantian secepat mungkin layaknya membebaskan diri dari efek stun untuk memutuskan 5 sulur stres ${localizedTarget}.`,
+      mechanics:
+        lang === 'en'
+          ? 'Rapid L/R Alternation · Tension Vine Break · Kinesthetic'
+          : 'Ganti Kiri/Kanan Cepat · Pemutus Sulur Stres · Kinestetik',
       duration: lang === 'en' ? '5 Thorny Vines' : '5 Sulur Berduri',
       icon: <Zap className="w-6 h-6 text-purple-300" />,
       borderTheme: 'border-purple-500/40 hover:border-purple-400',
@@ -153,7 +168,7 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
                 className="text-[10px] sm:text-xs font-normal text-slate-400"
                 style={{ fontFamily: "'Geist Pixel'" }}
               >
-                · {isSelfPractice ? (lang === 'en' ? 'Solo Character Practice' : 'Latihan Mandiri Pemain') : (lang === 'en' ? `Helping: ${targetName}` : `Membantu: ${targetName}`)}
+                · {isSelfPractice ? (lang === 'en' ? 'Solo Character Practice' : 'Latihan Mandiri Pemain') : (lang === 'en' ? `Helping: ${localizedTarget}` : `Membantu: ${localizedTarget}`)}
               </span>
             </h2>
             <p
@@ -177,22 +192,17 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
         </div>
 
         {/* Grid of 4 Distinct Mini-Game Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 relative z-10 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10 mb-4 items-stretch">
           {menuItems.map((item) => {
-            const isBreathing = item.id === 'breathing';
-            const isGrounding = item.id === 'grounding';
-            const isStop = item.id === 'stop';
-            const isShakeout = item.id === 'shakeout';
-
             return (
               <div
                 key={item.id}
-                className={`rounded-2xl border-2 bg-gradient-to-br ${item.bgGlow} p-4 flex flex-col justify-between transition-all duration-200 hover:scale-[1.015] hover:shadow-xl relative overflow-hidden group ${item.borderTheme}`}
+                className={`rounded-2xl border-2 bg-gradient-to-br ${item.bgGlow} p-4 sm:p-5 flex flex-col justify-between transition-all duration-200 hover:scale-[1.015] hover:shadow-xl relative overflow-hidden group ${item.borderTheme}`}
               >
-                <div>
+                <div className="flex-1 flex flex-col">
                   {/* Header: Number, Icon, Title, Badge */}
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2.5">
+                  <div className="flex items-start justify-between gap-2.5 mb-2.5">
+                    <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-slate-900/90 border border-slate-700 flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform">
                         {item.icon}
                       </div>
@@ -201,10 +211,11 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
                           Mini-Game {item.number}
                         </span>
                         <h3
-                          className="font-pixel text-xs sm:text-sm font-bold text-white group-hover:text-amber-200 transition-colors"
+                          className="font-bold text-white group-hover:text-amber-200 transition-colors"
                           style={{
-                            textAlign: isBreathing || isGrounding ? 'left' : undefined,
-                            fontSize: isBreathing ? '14px' : isStop || isShakeout ? '12px' : undefined,
+                            fontFamily: "'Pixelify Sans', sans-serif",
+                            fontSize: '14px',
+                            textAlign: 'left',
                           }}
                         >
                           {item.title}
@@ -213,7 +224,11 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
                     </div>
 
                     <span
-                      className={`text-[8.5px] font-pixel px-2 py-0.5 rounded-md border font-semibold shrink-0 ${item.badgeTheme}`}
+                      className={`px-2.5 py-0.5 rounded-md border font-semibold shrink-0 ${item.badgeTheme}`}
+                      style={{
+                        fontFamily: "'Pixelify Sans', sans-serif",
+                        fontSize: '10.5px',
+                      }}
                     >
                       {item.subtitle}
                     </span>
@@ -221,39 +236,32 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
 
                   {/* Description */}
                   <p
-                    className="font-pixel text-[10px] text-slate-300 leading-relaxed mb-3"
+                    className="text-slate-300 leading-relaxed mb-3 flex-1"
                     style={{
-                      fontFamily: isBreathing || isGrounding || isStop || isShakeout ? "'Geist Pixel'" : undefined,
-                      fontSize: isBreathing || isGrounding ? '12px' : isStop || isShakeout ? '11px' : undefined,
-                      lineHeight: isBreathing
-                        ? '15.25px'
-                        : isGrounding
-                        ? '14.25px'
-                        : isStop
-                        ? '13.25px'
-                        : isShakeout
-                        ? '14.25px'
-                        : undefined,
+                      fontFamily: 'Arial, sans-serif',
+                      fontSize: '12px',
                     }}
                   >
                     {item.description}
                   </p>
 
                   {/* Mechanics Metadata */}
-                  <div className="text-[8.5px] font-pixel text-slate-400 bg-slate-950/70 border border-slate-800 rounded-lg px-2.5 py-1.5 mb-3 flex items-center justify-between">
+                  <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-2 mb-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <span
-                      className="truncate"
+                      className="text-slate-300 leading-snug flex-1"
                       style={{
-                        fontSize: isBreathing || isGrounding ? '8.5px' : isStop || isShakeout ? '7.5px' : undefined,
-                        fontFamily: isBreathing || isGrounding || isStop || isShakeout ? "'Geist Pixel'" : undefined,
+                        fontFamily: "'Pixelify Sans', sans-serif",
+                        fontSize: '11px',
+                        letterSpacing: '0.01em',
                       }}
                     >
                       {item.mechanics}
                     </span>
                     <span
-                      className="text-amber-300 font-bold shrink-0 ml-2"
+                      className="text-amber-300 font-bold shrink-0 self-start sm:self-auto px-2 py-0.5 rounded-md bg-amber-400/10 border border-amber-400/25 whitespace-nowrap"
                       style={{
-                        fontSize: '7.5px',
+                        fontFamily: "'Pixelify Sans', sans-serif",
+                        fontSize: '10.5px',
                       }}
                     >
                       {item.duration}
@@ -265,21 +273,18 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
                 <button
                   id={`btn-play-mini-game-${item.id}`}
                   onClick={() => handleChoose(item.id)}
-                  className={`w-full py-2.5 px-4 rounded-xl font-pixel font-bold text-[10px] sm:text-xs flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 ${item.btnTheme}`}
-                  style={{
-                    lineHeight: isStop ? '17px' : undefined,
-                  }}
+                  className={`w-full py-2.5 px-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-95 shadow-md ${item.btnTheme}`}
                 >
-                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <Play className="w-3.5 h-3.5 fill-current shrink-0" />
                   <span
                     style={{
-                      textAlign: isBreathing || isGrounding || isStop || isShakeout ? 'left' : undefined,
-                      fontSize: isBreathing || isGrounding ? '10px' : isStop ? '11px' : isShakeout ? '12px' : undefined,
+                      fontFamily: "'Pixelify Sans', sans-serif",
+                      fontSize: '14px',
                     }}
                   >
                     {lang === 'en' ? 'PLAY FULLSCREEN MINI-GAME' : 'MAINKAN MINI-GAME SECARA FULLSCREEN'}
                   </span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                 </button>
               </div>
             );

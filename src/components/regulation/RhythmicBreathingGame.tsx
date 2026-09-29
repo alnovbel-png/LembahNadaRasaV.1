@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { sound } from '../../utils/audio';
+import { useLanguage, getLocalizedNpcName } from '../../game/localization';
 import { Wind, RotateCcw, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
 
 interface RhythmicBreathingGameProps {
@@ -13,6 +14,11 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
   targetName,
   onSuccess,
 }) => {
+  const { lang } = useLanguage();
+  const localizedTarget =
+    targetName === 'Pemain' || targetName === 'Karakter Utama'
+      ? (lang === 'en' ? 'Player' : 'Pemain')
+      : getLocalizedNpcName(targetName.toLowerCase(), lang, true, targetName);
   const [phase, setPhase] = useState<Phase>('ready');
   const [inhaleProgress, setInhaleProgress] = useState(0); // 0 to 100
   const [holdStabilityProgress, setHoldStabilityProgress] = useState(0); // 0 to 100
@@ -187,7 +193,11 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
 
     const elapsed = holdStartTimeRef.current ? (performance.now() - holdStartTimeRef.current) / 1000 : 0;
     if (elapsed < 3.2) {
-      triggerMiss('Tombol dilepas terlalu cepat! Tahan balon sampai mengembang penuh 4 detik.');
+      triggerMiss(
+        lang === 'en'
+          ? 'Button released too quickly! Hold the balloon until fully inflated for 4 seconds.'
+          : 'Tombol dilepas terlalu cepat! Tahan balon sampai mengembang penuh 4 detik.'
+      );
     } else {
       sound.playSensoryChime(659.25);
       setInhaleProgress(100);
@@ -282,7 +292,10 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
     <div className="space-y-3 text-center select-none">
       {/* Educational Header */}
       <div className="bg-cyan-950/40 border border-cyan-500/30 rounded-xl p-2.5 text-xs text-cyan-200 max-w-md mx-auto">
-        🎈 <strong>Irama Balon Tenang (4-4-4)</strong>: Tahan tombol 4 detik untuk mengisi balon, seimbangkan napas di zona hijau 4 detik, lalu hembuskan perlahan!
+        🎈 <strong>{lang === 'en' ? 'Calm Balloon Rhythm (4-4-4)' : 'Irama Balon Tenang (4-4-4)'}</strong>:{' '}
+        {lang === 'en'
+          ? 'Hold the button for 4s to inflate the balloon, balance your breath in the green zone for 4s, then exhale gently!'
+          : 'Tahan tombol 4 detik untuk mengisi balon, seimbangkan napas di zona hijau 4 detik, lalu hembuskan perlahan!'}
       </div>
 
       {/* Main Interactive Stage */}
@@ -298,7 +311,7 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
           }`}
         >
           <span className="absolute -top-3 bg-slate-900 px-2 py-0.5 rounded text-[8px] font-pixel text-cyan-300 border border-cyan-500/40">
-            CINCIN TARGET 100%
+            {lang === 'en' ? '100% TARGET RING' : 'CINCIN TARGET 100%'}
           </span>
         </div>
 
@@ -342,8 +355,8 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
                     : phase === 'exhale'
                     ? `${(4 - (exhaleProgress / 100) * 4).toFixed(1)}s`
                     : phase === 'success'
-                    ? 'LEGA!'
-                    : 'KEMPES'}
+                    ? (lang === 'en' ? 'RELIEF!' : 'LEGA!')
+                    : (lang === 'en' ? 'DEFLATED' : 'KEMPES')}
                 </span>
               </div>
             </div>
@@ -361,10 +374,12 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
           {phase === 'ready' && (
             <div className="space-y-1">
               <span className="font-pixel text-xs text-amber-300 font-bold block animate-pulse">
-                LANGKAH 1: TARIK NAPAS
+                {lang === 'en' ? 'STEP 1: INHALE' : 'LANGKAH 1: TARIK NAPAS'}
               </span>
               <p className="font-pixel text-[10px] text-slate-300">
-                Tekan dan Tahan tombol di bawah tepat 4 detik hingga balon menyentuh cincin!
+                {lang === 'en'
+                  ? 'Press and hold the button below for exactly 4s until the balloon touches the ring!'
+                  : 'Tekan dan Tahan tombol di bawah tepat 4 detik hingga balon menyentuh cincin!'}
               </p>
             </div>
           )}
@@ -372,10 +387,12 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
           {phase === 'inhale' && (
             <div className="space-y-1 animate-fade-in">
               <span className="font-pixel text-xs text-cyan-300 font-bold block">
-                💨 Tarik Napas Perlahan... ({Math.round(inhaleProgress)}%)
+                💨 {lang === 'en' ? 'Inhale Slowly...' : 'Tarik Napas Perlahan...'} ({Math.round(inhaleProgress)}%)
               </span>
               <p className="font-pixel text-[10px] text-slate-400">
-                Tahan terus tombol sampai balon mengembang pas menyentuh cincin target!
+                {lang === 'en'
+                  ? 'Keep holding the button until the balloon expands to touch the target ring!'
+                  : 'Tahan terus tombol sampai balon mengembang pas menyentuh cincin target!'}
               </p>
             </div>
           )}
@@ -384,10 +401,12 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
             <div className="space-y-1 animate-fade-in w-full max-w-xs mx-auto">
               <span className="font-pixel text-xs text-amber-300 font-bold block flex items-center justify-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5 text-amber-400 animate-bounce" />
-                LANGKAH 2: TAHAN NAPAS ({Math.round(holdStabilityProgress)}%)
+                {lang === 'en' ? 'STEP 2: HOLD BREATH' : 'LANGKAH 2: TAHAN NAPAS'} ({Math.round(holdStabilityProgress)}%)
               </span>
               <p className="font-pixel text-[9px] text-slate-300">
-                Gerakkan jari/mouse atau tekan [←/→] agar kursor tetap di dalam zona hijau!
+                {lang === 'en'
+                  ? 'Move mouse/touch or press [←/→] / [A/D] to stay inside the green zone!'
+                  : 'Gerakkan jari/mouse atau tekan [←/→] agar kursor tetap di dalam zona hijau!'}
               </p>
 
               {/* Stabilization Balance Track */}
@@ -410,7 +429,7 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
                   }`}
                 >
                   <span className="text-[7.5px] font-pixel text-emerald-200 uppercase font-bold tracking-tight">
-                    ZONA TENANG
+                    {lang === 'en' ? 'CALM ZONE' : 'ZONA TENANG'}
                   </span>
                 </div>
 
@@ -436,10 +455,12 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
           {phase === 'exhale' && (
             <div className="space-y-1 animate-fade-in">
               <span className="font-pixel text-xs text-blue-300 font-bold block">
-                🌬️ LANGKAH 3: HEMBUSKAN NAPAS LEMBUT (4 Detik)
+                🌬️ {lang === 'en' ? 'STEP 3: EXHALE GENTLY (4 Seconds)' : 'LANGKAH 3: HEMBUSKAN NAPAS LEMBUT (4 Detik)'}
               </span>
               <p className="font-pixel text-[10px] text-slate-300">
-                Lepaskan napas perlahan... Tubuh dan pikiranmu kembali rileks seutuhnya!
+                {lang === 'en'
+                  ? 'Release breath slowly... Your body and mind are completely relaxed!'
+                  : 'Lepaskan napas perlahan... Tubuh dan pikiranmu kembali rileks seutuhnya!'}
               </p>
               <div className="w-48 mx-auto bg-slate-800 h-1.5 rounded-full overflow-hidden mt-1.5 border border-slate-700">
                 <div
@@ -454,10 +475,12 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
             <div className="space-y-1 animate-scale-up">
               <span className="font-pixel text-xs text-emerald-300 font-bold block flex items-center justify-center gap-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                HEBAT! IRAMA NAPAS PARIPURNA 4-4-4 BERHASIL! 🎉
+                {lang === 'en' ? 'EXCELLENT! 4-4-4 RHYTHMIC BREATHING COMPLETED! 🎉' : 'HEBAT! IRAMA NAPAS PARIPURNA 4-4-4 BERHASIL! 🎉'}
               </span>
               <p className="font-pixel text-[10px] text-slate-300">
-                Detak jantung telah melambat dan oksigen segar menenangkan otak {targetName}.
+                {lang === 'en'
+                  ? `Heart rate has slowed and fresh oxygen is soothing ${localizedTarget}'s mind.`
+                  : `Detak jantung telah melambat dan oksigen segar menenangkan otak ${localizedTarget}.`}
               </p>
             </div>
           )}
@@ -465,10 +488,10 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
           {phase === 'miss' && (
             <div className="space-y-1 animate-shake">
               <span className="font-pixel text-xs text-rose-300 font-bold block">
-                Balon Kempes! 💨
+                {lang === 'en' ? 'Balloon Deflated! 💨' : 'Balon Kempes! 💨'}
               </span>
               <p className="font-pixel text-[10px] text-rose-200">
-                {missReason || 'Ritme napas meleset. Yuk atur napas lagi tanpa tergesa-gesa!'}
+                {missReason || (lang === 'en' ? 'Breathing rhythm slipped. Let us pace our breath again calmly!' : 'Ritme napas meleset. Yuk atur napas lagi tanpa tergesa-gesa!')}
               </p>
             </div>
           )}
@@ -504,9 +527,9 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
             >
               <Wind className={`w-4 h-4 text-slate-950 ${phase === 'inhale' ? 'animate-spin' : ''}`} />
               {phase === 'inhale' ? (
-                <span>TAHAN TERUS... ({Math.round(inhaleProgress)}%)</span>
+                <span>{lang === 'en' ? 'HOLD ON...' : 'TAHAN TERUS...'} ({Math.round(inhaleProgress)}%)</span>
               ) : (
-                <span>TEKAN & TAHAN UNTUK TARIK NAPAS (4s) [SPASI]</span>
+                <span>{lang === 'en' ? 'PRESS & HOLD TO INHALE (4s) [SPACE]' : 'TEKAN & TAHAN UNTUK TARIK NAPAS (4s) [SPASI]'}</span>
               )}
             </button>
 
@@ -525,12 +548,16 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
             <div className="text-[11px] font-pixel text-slate-200 flex items-center gap-2 bg-slate-900/90 px-3 py-1.5 rounded-xl border border-slate-700">
               <span className={`w-2.5 h-2.5 rounded-full ${isInGreenZone ? 'bg-emerald-400 animate-ping' : 'bg-rose-500 animate-pulse'}`} />
               <span className={isInGreenZone ? 'text-emerald-300 font-bold' : 'text-amber-300'}>
-                {isInGreenZone ? 'Napas Stabil di Zona Tenang!' : 'Arahkan kursor ke Zona Hijau!'}
+                {isInGreenZone
+                  ? (lang === 'en' ? 'Breath Stable in Calm Zone!' : 'Napas Stabil di Zona Tenang!')
+                  : (lang === 'en' ? 'Guide cursor into Green Zone!' : 'Arahkan kursor ke Zona Hijau!')}
               </span>
               <span className="font-bold text-white ml-auto">({Math.round(holdStabilityProgress)}%)</span>
             </div>
             <span className="text-[9px] font-pixel text-slate-400">
-              Tips: Gerakkan mouse / sentuh bilah atau gunakan tombol [← / →] atau [A / D]
+              {lang === 'en'
+                ? 'Tip: Move mouse / touch bar or use [← / →] / [A / D]'
+                : 'Tips: Gerakkan mouse / sentuh bilah atau gunakan tombol [← / →] atau [A / D]'}
             </span>
           </div>
         ) : phase === 'success' ? (
@@ -540,7 +567,7 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
             className="w-full sm:w-80 py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-pixel font-black text-xs sm:text-sm shadow-[0_0_30px_rgba(16,185,129,0.85)] flex items-center justify-center gap-2 animate-bounce transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-slate-950" />
-            <span>TERAPKAN KETENANGAN NAPAS!</span>
+            <span>{lang === 'en' ? 'APPLY BREATH CALMNESS!' : 'TERAPKAN KETENANGAN NAPAS!'}</span>
           </button>
         ) : null}
 
@@ -550,7 +577,7 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
             className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-pixel text-xs flex items-center gap-1.5 border border-slate-700 cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Mulai Ulang Siklus Balon</span>
+            <span>{lang === 'en' ? 'Restart Balloon Cycle' : 'Mulai Ulang Siklus Balon'}</span>
           </button>
         )}
       </div>

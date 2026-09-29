@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import { DialogueNode, GameQuest, PSEAchievement, Item } from '../types/game';
+import { DialogueNode, ChoiceOption, GameQuest, PSEAchievement, Item } from '../types/game';
 
 export type GameLanguage = 'id' | 'en';
 
@@ -48,7 +48,7 @@ export const UI_TEXT = {
 
     // Start Menu Actions
     mainMenu: 'MENU UTAMA',
-    play: 'PLAY',
+    play: 'BERMAIN',
     startAdventure: 'MULAI PETUALANGAN',
     settings: 'PENGATURAN',
     gameOptions: 'OPSI GAME & AKSESIBILITAS',
@@ -544,7 +544,210 @@ export function useLanguage(): LanguageContextType {
   return ctx;
 }
 
-export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
+export const NPC_NAMES_EN: Record<string, string> = {
+  kiki: 'Kiki',
+  kakek_ranu: 'Grandpa Ranu',
+  'kakek ranu': 'Grandpa Ranu',
+  'Kakek Ranu': 'Grandpa Ranu',
+  bimo: 'Bimo',
+  Bimo: 'Bimo',
+  prof_kotek: 'Prof. Kotek',
+  'Prof. Kotek': 'Prof. Kotek',
+  'Profesor Kotek': 'Prof. Kotek',
+  penjaga_kabut: 'Spirit Elder',
+  'penjaga kabut': 'Spirit Elder',
+  'Sosok Kabut': 'Spirit Elder',
+  'Sosok Misterius Kabut': 'Mysterious Mist Spirit',
+  'Sosok Kabut / Menara Jam': 'Spirit Elder / Clock Tower',
+  'Sosok Kabut / Nenek Wilis': 'Spirit Elder / Grandma Wilis',
+  'Nenek Wilis': 'Grandma Wilis',
+  'nenek wilis': 'Grandma Wilis',
+  kak_citra: 'Sister Citra',
+  'kak citra': 'Sister Citra',
+  'Kak Citra': 'Sister Citra',
+  kakek_damai: 'Grandpa Damai',
+  'kakek damai': 'Grandpa Damai',
+  'Kakek Damai': 'Grandpa Damai',
+  moka: 'Moka the Cat',
+  moka_cat: 'Moka the Cat',
+  'Moka': 'Moka the Cat',
+  'Moka Si Kucing': 'Moka the Cat',
+  pak_joko: 'Farmer Joko',
+  'pak joko': 'Farmer Joko',
+  'Pak Joko': 'Farmer Joko',
+  didi: 'Didi',
+  didi_scout: 'Didi',
+  Didi: 'Didi',
+  teguh: 'Mr. Teguh',
+  teguh_woodcutter: 'Mr. Teguh',
+  'Pak Teguh': 'Mr. Teguh',
+  'pak teguh': 'Mr. Teguh',
+  sari: 'Mrs. Sari',
+  sari_fruit: 'Mrs. Sari',
+  'Ibu Sari': 'Mrs. Sari',
+  'ibu sari': 'Mrs. Sari',
+  jala: 'Brother Jala',
+  jala_fisher: 'Brother Jala',
+  'Bung Jala': 'Brother Jala',
+  'bung jala': 'Brother Jala',
+  Pemain: 'Player',
+  pemain: 'Player',
+  'Karakter Utama': 'Player',
+  'karakter utama': 'Player',
+};
+
+export const NPC_ROLES_EN: Record<string, string> = {
+  kiki: 'Little Mail Squirrel',
+  kakek_ranu: 'Carpenter & Bridge Keeper',
+  bimo: 'Clockmaker Apprentice (Grade 4)',
+  prof_kotek: 'Emotion Researcher Rooster',
+  penjaga_kabut: 'Tower Keeper & Village Librarian',
+  kak_citra: 'Flower Garden Counselor',
+  kakek_damai: 'Mindful Bonsai Master',
+  moka: 'Gentle Library Cat',
+  moka_cat: 'Gentle Library Cat',
+  pak_joko: 'Garden of Hope Farmer',
+  didi: 'Little Village Scout',
+  didi_scout: 'Little Village Scout',
+  teguh: 'Wise Forest Woodcutter',
+  teguh_woodcutter: 'Wise Forest Woodcutter',
+  sari: 'Forest Orchard Farmer',
+  sari_fruit: 'Forest Orchard Farmer',
+  jala: 'Patient River Fisherman',
+  jala_fisher: 'Patient River Fisherman',
+  'Tupai Pos Cilik Lembah': 'Little Mail Squirrel',
+  'Tukang Kayu Sepuh & Penjaga Jembatan': 'Carpenter & Bridge Keeper',
+  'Murid Pengrajin Jam Lembah': 'Clockmaker Apprentice (Grade 4)',
+  'Ayam Peneliti Emosi Lembah': 'Emotion Researcher Rooster',
+  'Pustakawan Sepuh Desa': 'Elder Village Librarian',
+  'Sosok Penjaga Puncak Menara Jam': 'Guardian of Clock Tower Summit',
+  'Konselor Taman Bunga Harmoni': 'Flower Garden Counselor',
+  'Master Tanaman & Perenungan Jiwa': 'Mindful Bonsai Master',
+  'Kucing Lembut Penjaga Perpustakaan': 'Gentle Library Cat',
+  'Petani Sepuh Kebun Harapan': 'Garden of Hope Farmer',
+  'Pramuka Cilik Penjelajah Hutan': 'Little Village Scout',
+  'Penebang Kayu Hutan Berhati Lembut': 'Wise Forest Woodcutter',
+  'Pengelola Kebun Buah Hutan': 'Forest Orchard Farmer',
+  'Nelayan Sabar Sungai Harmoni': 'Patient River Fisherman',
+};
+
+export const SPEAKER_NAMES_EN: Record<string, string> = {
+  'Kakek Ranu': 'Grandpa Ranu',
+  'Sosok Kabut': 'Spirit Elder',
+  'Sosok Misterius Kabut': 'Mysterious Mist Spirit',
+  'Sosok Kabut / Menara Jam': 'Spirit Elder / Clock Tower',
+  'Sosok Kabut / Nenek Wilis': 'Spirit Elder / Grandma Wilis',
+  'Nenek Wilis': 'Grandma Wilis',
+  'Nenek Wilis & Seluruh Warga': 'Grandma Wilis & All Villagers',
+  'Kak Citra': 'Sister Citra',
+  'Kakek Damai': 'Grandpa Damai',
+  'Moka': 'Moka the Cat',
+  'Moka Si Kucing': 'Moka the Cat',
+  'Pak Joko': 'Farmer Joko',
+  'Didi': 'Didi',
+  'Pak Teguh': 'Mr. Teguh',
+  'Ibu Sari': 'Mrs. Sari',
+  'Bung Jala': 'Brother Jala',
+  'Profesor Kotek': 'Prof. Kotek',
+  'Prof. Kotek': 'Prof. Kotek',
+  'Pohon Sahabat Purba': 'Ancient Sacred Tree',
+  'Pesan Kapsul Waktu 1950': 'Time Capsule Message 1950',
+  'Air Mancur Harmoni': 'Harmony Fountain',
+  'Plang Petunjuk Arah': 'Crossroads Signpost',
+  'Plang Petunjuk Arah Hutan': 'Forest Trail Signpost',
+  'Pondok Hutan Pak Teguh': "Mr. Teguh's Forest Lodge",
+  'Plang Kawasan Pertanian': 'Farmland Signpost',
+  'Menara Jam Harmoni': 'Harmony Clock Tower',
+  'Menara Jam Harmoni (Telah Pulih!)': 'Harmony Clock Tower (Restored!)',
+  'Prasasti Batu Pendiri Menara': 'Tower Founder Stone Tablet',
+  'Mekanisme Jam Harmoni': 'Harmony Clockwork Mechanism',
+  'Lonceng Harmoni Perunggu': 'Bronze Harmony Bell',
+  'Lonceng Menara Jam': 'Chimes of Clock Tower',
+  'Harmoni Lembah': 'Valley of Harmony',
+  'Narator Cerita': 'Story Narrator',
+  'Pencerita Kisah': 'Story Narrator',
+  'Petunjuk Pertama': 'First Clue',
+  'Petunjuk Awal': 'First Clue',
+  'Pesan Suci Kompas': 'Sacred Message of the Compass',
+  'Pesan Rahasia Kompas': 'Sacred Message of the Compass',
+  'Suara Hati Terdalam': 'Innermost Heart Voice',
+  'Kincir Angin Harmoni': 'Harmony Windmill',
+  'Sapi Padang Rumput': 'Pasture Cow',
+  'Domba Wol Putih': 'Fluffy White Sheep',
+  'Rusa Tutul Hutan': 'Forest Spotted Deer',
+  'Kelinci Padang Rumput': 'Meadow Bunny',
+  'Anak Domba Gemas': 'Little Lamb',
+  'Tupai Hutan': 'Forest Squirrel',
+  'Aliran Sungai Jernih': 'Clear River Stream',
+  'Air Terjun Sungai Harmoni': 'Harmony River Waterfall',
+};
+
+export function getLocalizedNpcName(
+  npcId: string,
+  lang: GameLanguage,
+  isResolved?: boolean,
+  originalName?: string
+): string {
+  if (lang === 'id') {
+    if (npcId === 'penjaga_kabut' || npcId === 'Sosok Kabut') {
+      return isResolved ? 'Nenek Wilis' : (originalName || 'Sosok Kabut');
+    }
+    return originalName || (npcId === 'kakek_ranu' ? 'Kakek Ranu' : npcId);
+  }
+  if (
+    npcId === 'penjaga_kabut' ||
+    npcId === 'Sosok Kabut' ||
+    originalName === 'Sosok Kabut' ||
+    originalName === 'Sosok Kabut / Nenek Wilis' ||
+    originalName === 'Nenek Wilis'
+  ) {
+    return isResolved ? 'Grandma Wilis' : 'Spirit Elder';
+  }
+  return (
+    NPC_NAMES_EN[npcId] ||
+    NPC_NAMES_EN[npcId.toLowerCase()] ||
+    SPEAKER_NAMES_EN[npcId] ||
+    (originalName && (NPC_NAMES_EN[originalName] || NPC_NAMES_EN[originalName.toLowerCase()] || SPEAKER_NAMES_EN[originalName])) ||
+    originalName ||
+    npcId
+  );
+}
+
+export function getLocalizedNpcRole(
+  npcId: string,
+  lang: GameLanguage,
+  isResolved?: boolean,
+  originalRole?: string
+): string {
+  if (lang === 'id') {
+    if ((npcId === 'penjaga_kabut' || npcId === 'Sosok Kabut') && isResolved) {
+      return 'Pustakawan Sepuh Desa';
+    }
+    return originalRole || '';
+  }
+  if ((npcId === 'penjaga_kabut' || npcId === 'Sosok Kabut') && isResolved) {
+    return 'Elder Village Librarian';
+  }
+  return (
+    NPC_ROLES_EN[npcId] ||
+    NPC_ROLES_EN[npcId.toLowerCase()] ||
+    (originalRole && (NPC_ROLES_EN[originalRole] || NPC_ROLES_EN[originalRole.trim()])) ||
+    originalRole ||
+    ''
+  );
+}
+
+export function getLocalizedSpeaker(speaker: string | undefined, lang: GameLanguage): string {
+  if (!speaker) return '';
+  if (lang === 'id') return speaker;
+  return SPEAKER_NAMES_EN[speaker] || NPC_NAMES_EN[speaker] || NPC_NAMES_EN[speaker.toLowerCase()] || speaker;
+}
+
+export type DialogueNodeOverride = Omit<Partial<DialogueNode>, 'choices'> & {
+  choices?: Array<Partial<ChoiceOption>>;
+};
+
+export const GAME_DIALOGUES_EN: Record<string, DialogueNodeOverride> = {
   // --- PROLOGUE & KIKI ---
   intro_start: {
     speaker: 'Story Narrator',
@@ -694,7 +897,17 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
     speakerRole: 'Main Adventurer (Empathy Friend)',
     text: 'When we are anxious, our muscles tighten up! Shake your paws, wiggle your feet, and wag your tail to shake away the stiffness and stress hormones!',
   },
+  kiki_breathe_prep: {
+    speaker: 'Ezzel',
+    speakerRole: 'Main Adventurer (Empathy Friend)',
+    text: "Let's do this together, Kiki! Inhale slowly through your nose for 4 seconds, imagine inflating a balloon in your tummy, hold gently, then exhale slowly.",
+  },
   kiki_after_breathing: {
+    speaker: 'Kiki',
+    speakerRole: 'Little Mail Squirrel',
+    text: 'Phew... it worked like magic! My heartbeat is slowing down. My head feels so much clearer and I can breathe freely again! Thank you for balloon breathing with me, Ezzel!',
+  },
+  kiki_after_breathe: {
     speaker: 'Kiki',
     speakerRole: 'Little Mail Squirrel',
     text: 'Phew... it worked like magic! My heartbeat is slowing down. My head feels so much clearer and I can breathe freely again! Thank you for balloon breathing with me, Ezzel!',
@@ -845,6 +1058,11 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
     speakerRole: 'Village Carpenter',
     text: 'I was so bitter and lonely that I locked the bridge to keep everyone out. But your kind words melted the ice in my heart. Let me unlock the bridge and give you the Archive Key!',
   },
+  ranu_path_empathy_3: {
+    speaker: 'Grandpa Ranu',
+    speakerRole: 'Village Carpenter',
+    text: 'Thank you for listening to my heart, Ezzel. Take this bridge key. Please meet my apprentice, Bimo, across the bridge. Tell him Grandpa is not angry at him. Grandpa is eagerly waiting for him to come home!',
+  },
   ranu_path_logic: {
     speaker: 'Grandpa Ranu',
     speakerRole: 'Village Carpenter',
@@ -914,139 +1132,784 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
     text: 'Hello Ezzel! I am not afraid anymore. My misunderstanding with Grandpa Ranu is resolved, and I learned to forgive myself. Thank you for your heartfelt help!',
   },
 
-  // --- CLOCK TOWER & ENDINGS ---
+  // --- CLOCK TOWER & NENEK WILIS (ENDING CLIMAX) ---
   tower_intro: {
-    speaker: 'Spirit Elder',
-    speakerRole: 'Keeper of the Clock Tower',
-    text: 'Welcome, young bearer of the Heart Compass! The final mist lingers here at the top of the world. Who do you hold responsible for the grey fog that descended upon our valley?',
-    thoughtBubble: 'Will they blame one person, or recognize that misunderstandings were shared?',
+    speaker: 'Spirit Elder / Clock Tower',
+    speakerRole: 'Final Guardian of the Valley of Harmony',
+    text: 'Who dares step through the dense fog to the summit of the Clock Tower? Do not approach, young explorer... My heart is weary of hearing the villagers quarrel!',
+    thoughtBubble: 'Everyone only blames each other... No one wants to listen with patience anymore...',
     choices: [
       {
-        id: 'tower_c1',
-        text: 'No single person is to blame. Fear, loneliness, and shame locked our hearts, but empathy and listening brought our colors back!',
-        impactScore: 25,
-        resultDialogueId: 'tower_empathy',
+        id: 'tw_c1',
+        text: 'Who are you really? Are you the monster making the grey fog?',
+        impactScore: 5,
+        resultDialogueId: 'tower_reveal',
       },
       {
-        id: 'tower_c2',
-        text: 'It was all Bimo\'s fault for dropping the gear and Kakek Ranu\'s fault for being grumpy!',
-        impactScore: -10,
-        resultDialogueId: 'tower_accuse',
+        id: 'tw_c2',
+        text: 'We came not to fight. Our compass senses a profound sadness in your heart.',
+        impactScore: 25,
+        resultDialogueId: 'tower_empathy_twist',
       },
     ],
   },
-  tower_accuse: {
-    speaker: 'Spirit Elder',
-    speakerRole: 'Keeper of the Clock Tower',
-    text: 'Pointing fingers only deepens the fog of resentment, child. Look deeper into the hearts of your neighbors and try again.',
+  tower_reveal: {
+    speaker: 'Mysterious Mist Spirit',
+    speakerRole: 'Shadow of the Tower',
+    text: 'A monster? Haha... take a closer look with your Heart Compass!',
   },
-  tower_empathy: {
-    speaker: 'Spirit Elder',
-    speakerRole: 'Keeper of the Clock Tower',
-    text: 'Wisdom shines brightly from your spirit! Place the Golden Gear into the heart of the tower and pull the golden cord to ring the chimes of harmony!',
+  tower_empathy_twist: {
+    speaker: 'Grandma Wilis',
+    speakerRole: 'Elder Village Librarian',
+    text: 'My name is Grandma Wilis. I am no monster. This grey fog descended because we constantly misunderstood one another and forgot to truly listen.',
   },
-  tower_ring_bell: {
-    speaker: 'Valley of Harmony',
-    speakerRole: 'Triumphant Chimes',
-    text: 'DIIING... DOOONG... The golden bell chimes across the skies! A warm wave of sunlight bursts forth, banishing the last trace of grey fog. Every flower, brook, and rooftop sparkles with glorious colors!',
+  tower_twist_explanation: {
+    speaker: 'Grandma Wilis',
+    speakerRole: 'Elder Village Librarian',
+    text: 'You have proven true kindness: helping anxious Kiki, comforting Grandpa Ranu, and reassuring Bimo. You are wonderful!',
+  },
+  tower_final_choice: {
+    speaker: 'Grandma Wilis',
+    speakerRole: 'Elder Village Librarian',
+    text: 'Now the Golden Gear is in your hands, Ezzel. The final choice is yours: What proclamation do you wish to declare as the chime of harmony rings?',
+    choices: [
+      {
+        id: 'choice_ending_perfect',
+        text: '"Message of Empathy": Let us declare a Village of Heart Listeners, where every feeling is acknowledged and valued!',
+        impactScore: 30,
+        resultDialogueId: 'ending_perfect_scene',
+      },
+      {
+        id: 'choice_ending_resilient',
+        text: '"Message of Courage": Admitting mistakes and forgiving each other is the true strength of our Valley children!',
+        impactScore: 25,
+        resultDialogueId: 'ending_resilient_scene',
+      },
+    ],
+  },
+  ending_perfect_scene: {
+    speaker: 'Clock Tower Bell',
+    speakerRole: 'Harmony of the Valley',
+    text: 'DIIING... DOOONG! The bell chime reverberates across the whole valley! A rainbow wave of golden sunlight washes across every land, restoring 100% of the world\'s colors!',
+  },
+  nenek_wilis_closing_perfect: {
+    speaker: 'Grandma Wilis',
+    speakerRole: 'Elder Village Librarian',
+    text: 'Look all around us, Ezzel! The grey fog is gone. Flowers bloom again thanks to your kindness in listening to others.',
+    thoughtBubble: 'My heart is deeply at peace seeing the children grow to love and listen to one another.',
+  },
+  ending_resilient_scene: {
+    speaker: 'Clock Tower Bell',
+    speakerRole: 'Harmony of the Valley',
+    text: 'DIIING... DOOONG! Warm resonant chimes pierce through the mist! Trees bloom with vivid blossoms, birds sing, and villagers step out with bright smiles and warm hugs!',
+  },
+  nenek_wilis_closing_resilient: {
+    speaker: 'Grandma Wilis',
+    speakerRole: 'Elder Village Librarian',
+    text: 'Thank you from the bottom of my heart, Ezzel... You proved that the courage to acknowledge mistakes and forgive each other is the true key to peace among villagers.',
+    thoughtBubble: 'This child\'s bravery has melted prejudice and reunited the hearts of the villagers.',
   },
   ending_summary_perfect: {
-    speaker: 'Grandma Wilis',
-    speakerRole: 'Village Librarian & Elder',
-    text: 'Splendid work, Ezzel! You guided every soul with patience, kindness, and deep empathy. The Valley of Harmony has never shone more brightly!',
+    speaker: 'Grandma Wilis & All Villagers',
+    speakerRole: 'Valley Harmony Celebration',
+    text: 'Congratulations, Ezzel! All the villagers cheer and applaud our young hero. The Valley\'s harmony is 100% restored and you are officially awarded the highest honor: "GRADE 4 GOLDEN EMPATHY AMBASSADOR"!',
   },
   ending_summary_resilient: {
-    speaker: 'Grandma Wilis',
-    speakerRole: 'Village Librarian & Elder',
-    text: 'You persevered through doubts and mistakes, Ezzel! Learning from missteps is the true heart of resilience. Our valley celebrates your courage!',
+    speaker: 'Grandma Wilis & All Villagers',
+    speakerRole: 'Valley Harmony Celebration',
+    text: 'Incredible, Ezzel! The Valley\'s harmony is 100% restored from the fog of misunderstanding. Everyone learned that listening and forgiving brings peace. You are awarded: "RESILIENT HEART EXPLORER"!',
   },
   tower_resolved: {
-    speaker: 'Spirit Elder',
-    speakerRole: 'Keeper of the Clock Tower',
+    speaker: 'Grandma Wilis',
+    speakerRole: 'Elder Village Librarian',
     text: 'May the chimes of the Clock Tower always remind us that empathy, gentle breath, and honest listening can heal any misunderstanding.',
   },
+  chat_nenek_wilis: {
+    speaker: 'Grandma Wilis',
+    speakerRole: 'Tower Guardian & Village Librarian (Gazing at the Beautiful Valley)',
+    text: 'Ezzel, my beloved grandchild... Look at the village from this tower landing. Agile Kiki delivering letters, cheerful Didi patrolling, Professor Kotek diligently recording laughter, and kind neighbors enjoying each other\'s company. You restored not only the colors, but the very soul of Harmony.',
+    thoughtBubble: 'Every tick of the Harmony Clock now resonates in tune with the loving heartbeat of all villagers.',
+  },
 
-  // --- EDUCATOR NPCS ---
+  // --- EDUCATOR NPCS: CITRA, DAMAI, MOKA, JOKO, DIDI, TEGUH, SARI, JALA, KOTEK ---
   citra_intro: {
     speaker: 'Sister Citra',
     speakerRole: 'Flower Garden Counselor',
-    text: 'Welcome to the Flower Garden! Did you know that our feelings can be grouped into 4 colorful zones? Green (calm & focused), Yellow (worried or excited), Red (intense anger or panic), and Blue (tired or sad). All zones are completely normal!',
+    text: 'Welcome to the Flower Garden, Ezzel! Look at these flowers. Just like flowers blooming in countless colors, our feelings also have "4 Color Zones", and every single one is precious!',
+    choices: [
+      {
+        id: 'citra_c1',
+        text: 'What are the 4 Emotion Color Zones, Sister Citra?',
+        impactScore: 10,
+        resultDialogueId: 'citra_zones_explain',
+      },
+      {
+        id: 'citra_c2',
+        text: 'Is it okay if I am in the Red Zone (very angry)?',
+        impactScore: 10,
+        resultDialogueId: 'citra_zones_red_ask',
+      },
+    ],
   },
+  citra_zones_explain: {
+    speaker: 'Sister Citra',
+    speakerRole: 'Flower Garden Counselor',
+    text: '🌱 Green: Calm, Focused, Cheerful (Ready to learn). ⚡ Yellow: Anxious, Restless, Excited. 🔥 Red: Fiery Anger, Panic, Feeling like exploding. 🌧️ Blue: Sad, Exhausted, Disappointed.',
+  },
+  citra_zones_red_ask: {
+    speaker: 'Sister Citra',
+    speakerRole: 'Flower Garden Counselor',
+    text: 'Of course it is okay! THERE ARE NO wrong or forbidden emotions. What matters is not suppressing emotions, but how we respond safely without hurting ourselves or our friends.',
+  },
+  citra_zones_question: {
+    speaker: 'Sister Citra',
+    speakerRole: 'Flower Garden Counselor',
+    text: 'Quick SEL Quiz: If your friend is in the Red Zone (screaming angrily), what is your best response as a mindful listener?',
+    choices: [
+      {
+        id: 'c_z1',
+        text: 'Scream back even louder to make them be quiet.',
+      },
+      {
+        id: 'c_z2',
+        text: 'Provide a safe space, calm yourself first, then listen gently when they are ready to breathe peacefully.',
+      },
+    ],
+  },
+  citra_quiz_wrong: {
+    speaker: 'Sister Citra',
+    speakerRole: 'Flower Garden Counselor',
+    text: 'Oh dear, pouring oil on a fire only makes the blaze roar! When a friend is in the Red Zone, their amygdala is on high alert. It is far better to stay calm and offer a gentle space.',
+  },
+  citra_reward: {
+    speaker: 'Sister Citra',
+    speakerRole: 'Flower Garden Counselor',
+    text: 'Exactly right, Ezzel! Outstanding! You have mastered Self-Awareness regarding the 4 Regulation Zones. Receive this badge of honor in your Adventure Journal!',
+  },
+  citra_resolved: {
+    speaker: 'Sister Citra',
+    speakerRole: 'Flower Garden Counselor',
+    text: 'The flowers in this garden bloom in harmony with the 4 color zones! Keep checking in with your feelings and recognize when your body needs rest.',
+    thoughtBubble: 'Every child who can recognize their emotions holds a guiding lantern for life.',
+  },
+
   damai_intro: {
     speaker: 'Grandpa Damai',
     speakerRole: 'Mindful Bonsai Master',
-    text: 'Breathe in peace, breathe out worry... In life, there are things within our Circle of Control (our words, efforts, and reactions) and things outside our control (the weather or other people\'s moods). Focus your energy on what you can control!',
+    text: 'Peaceful greetings, young Ezzel. Gaze upon this flowing river... the stones never yell at the water, and the water never forces the stone to move. Have you ever heard of the "Circle of Control"?',
+    choices: [
+      {
+        id: 'damai_c1',
+        text: 'What is the Circle of Control, Grandpa?',
+        impactScore: 10,
+        resultDialogueId: 'damai_control_explain',
+      },
+      {
+        id: 'damai_c2',
+        text: 'How do we stop worrying about things beyond our control?',
+        impactScore: 10,
+        resultDialogueId: 'damai_control_tips',
+      },
+    ],
   },
+  damai_control_explain: {
+    speaker: 'Grandpa Damai',
+    speakerRole: 'Mindful Bonsai Master',
+    text: 'There are things WITHIN OUR CONTROL: our words, study effort, how we respond, and our courage to apologize. And there are things OUTSIDE OUR CONTROL: the rain, how others treat us, or things that already happened.',
+  },
+  damai_control_tips: {
+    speaker: 'Grandpa Damai',
+    speakerRole: 'Mindful Bonsai Master',
+    text: 'When anxiety strikes, ask your inner heart: "Can I change this through my own actions right now?" If not, take a deep breath and let it go into the care of the universe.',
+  },
+  damai_practice: {
+    speaker: 'Grandpa Damai',
+    speakerRole: 'Mindful Bonsai Master',
+    text: 'When you lose a game or your group project is delayed because a friend is sick, where should you dedicate your energy?',
+    choices: [
+      {
+        id: 'd_p1',
+        text: 'Keep complaining and blaming bad luck or the weather.',
+      },
+      {
+        id: 'd_p2',
+        text: 'Focus on what I can do right now: help organize our parts and learn with patience from the process.',
+      },
+    ],
+  },
+  damai_wrong: {
+    speaker: 'Grandpa Damai',
+    speakerRole: 'Mindful Bonsai Master',
+    text: 'Complaining wastes energy on things that cannot be changed. Turn your gaze back inside your own circle of control.',
+  },
+  damai_reward: {
+    speaker: 'Grandpa Damai',
+    speakerRole: 'Mindful Bonsai Master',
+    text: 'Such a wise heart! You now understand the secret of inner serenity. Wear this "Ruler of the Circle of Control" badge as a mark of your wisdom.',
+  },
+  damai_resolved: {
+    speaker: 'Grandpa Damai',
+    speakerRole: 'Mindful Bonsai Master',
+    text: 'Peaceful greetings... A mind that focuses on things within its control remains calm and still, like a tranquil lake without ripples.',
+    thoughtBubble: 'True peace is not the absence of trouble, but inner stillness in the midst of storms.',
+  },
+
   moka_intro: {
     speaker: 'Moka the Cat',
     speakerRole: 'Gentle Library Cat',
-    text: 'Meow! True listening is done not just with ears, but with an open heart. Put down distractions, make gentle eye contact, and validate how your friend feels before offering advice.',
+    text: 'Purrr... Meow! Sit beside me on this wooden bench for a moment, Ezzel. Sometimes we get so busy crafting replies in our heads while others talk that we forget to genuinely LISTEN.',
+    choices: [
+      {
+        id: 'moka_c1',
+        text: 'How do we listen with the eyes of the heart, Moka?',
+        impactScore: 10,
+        resultDialogueId: 'moka_listen_explain',
+      },
+      {
+        id: 'moka_c2',
+        text: 'Why does it hurt so much when someone interrupts our story?',
+        impactScore: 10,
+        resultDialogueId: 'moka_cut_explain',
+      },
+    ],
   },
+  moka_listen_explain: {
+    speaker: 'Moka the Cat',
+    speakerRole: 'Gentle Library Cat',
+    text: '3 Keys to Active Listening: 1) Put down devices & make gentle eye contact. 2) Hold back the impulse to interrupt or lecture. 3) Validate their feelings: "It must feel really painful to go through that."',
+  },
+  moka_cut_explain: {
+    speaker: 'Moka the Cat',
+    speakerRole: 'Gentle Library Cat',
+    text: 'When our story is interrupted with "Oh that\'s nothing, I had it way worse!", we feel our feelings are belittled and unworthy.',
+  },
+  moka_question: {
+    speaker: 'Moka the Cat',
+    speakerRole: 'Gentle Library Cat',
+    text: 'When a friend tells you they just lost their favorite pencil, which response reflects true empathy?',
+    choices: [
+      {
+        id: 'm_q1',
+        text: '"That\'s why you shouldn\'t be clumsy! Buying another one is easy anyway."',
+      },
+      {
+        id: 'm_q2',
+        text: '"You must be sad, that pencil has special memories for you. Would you like me to help search under the desks together?"',
+      },
+    ],
+  },
+  moka_wrong: {
+    speaker: 'Moka the Cat',
+    speakerRole: 'Gentle Library Cat',
+    text: 'Meow... judgmental words make friends retreat into their shells. Try responding with empathetic validation.',
+  },
+  moka_reward: {
+    speaker: 'Moka the Cat',
+    speakerRole: 'Gentle Library Cat',
+    text: 'Purrr! Your warmth soothes the soul. You truly deserve the "True Empathic Listener" badge! Continue to be a comforting listener for all your friends!',
+  },
+  moka_resolved: {
+    speaker: 'Moka the Cat',
+    speakerRole: 'Gentle Library Cat',
+    text: 'Purrr... Meow! Ears that listen with care are the finest balm for an aching heart. Continue to be a safe haven for your friends!',
+    thoughtBubble: 'Listening without judgment is the purest expression of compassion.',
+  },
+
   joko_intro: {
     speaker: 'Farmer Joko',
     speakerRole: 'Garden of Hope Farmer',
-    text: 'Seeds do not sprout overnight, young adventurer! Patience and a Growth Mindset mean knowing that abilities can be nurtured through practice, curiosity, and learning from mistakes.',
+    text: 'Hello young one! Crisp morning air, isn\'t it? Look at these rows of carrots, cabbages, and golden wheat I am watering. Every single one started from a tiny seed buried in dark soil.',
+    thoughtBubble: 'Plants cannot be yanked upward to grow faster. Growth takes time, water, and loving patience.',
   },
+  pak_joko_intro: {
+    speaker: 'Farmer Joko',
+    speakerRole: 'Garden of Hope Farmer',
+    text: 'Hello youngster! Welcome to the garden! The gate is wide open so you can explore. Everything here blossomed from small seeds cared for with patience.',
+  },
+  joko_lesson: {
+    speaker: 'Farmer Joko',
+    speakerRole: 'Garden of Hope Farmer',
+    text: 'In Social-Emotional Learning, there is a concept called the "Growth Mindset". Just like seedling sprouts, our brains and abilities expand through practice and refusing to give up.',
+    choices: [
+      {
+        id: 'c_joko_ask',
+        text: 'What if we make mistakes while learning, Farmer Joko?',
+      },
+      {
+        id: 'c_joko_pass',
+        text: 'Your harvest looks so lush and abundant, Farmer Joko!',
+      },
+    ],
+  },
+  joko_compliment: {
+    speaker: 'Farmer Joko',
+    speakerRole: 'Garden of Hope Farmer',
+    text: 'Thank you, child! But this abundance was born from years of crop failures long ago. My crops once withered from improper watering, but I learned from every mistake.',
+  },
+  joko_question: {
+    speaker: 'Farmer Joko',
+    speakerRole: 'Garden of Hope Farmer',
+    text: 'Now, answer this old farmer\'s riddle: When you receive a test score below what you hoped for, or struggle to solve a hard math problem, which attitude reflects a Growth Mindset?',
+    choices: [
+      {
+        id: 'c_joko_fixed',
+        text: '"I\'m simply not talented in this subject, I might as well quit."',
+      },
+      {
+        id: 'c_joko_growth',
+        text: '"I haven\'t mastered it YET, but with fresh study methods and asking questions, my skills will grow!"',
+      },
+    ],
+  },
+  joko_fixed_feedback: {
+    speaker: 'Farmer Joko',
+    speakerRole: 'Garden of Hope Farmer',
+    text: 'Oh dear, that is called a Fixed Mindset. Do not limit your potential, child! Add the magic word "NOT YET" instead of "CANNOT". Let\'s reflect once more.',
+  },
+  joko_growth_reward: {
+    speaker: 'Farmer Joko',
+    speakerRole: 'Garden of Hope Farmer',
+    text: 'Spot on! The magic word is "YET". Mistakes are the richest fertilizer for wisdom. Receive this "Growth Mindset Scholar" badge! Keep watering your dreams with grit!',
+  },
+  joko_resolved: {
+    speaker: 'Farmer Joko',
+    speakerRole: 'Garden of Hope Farmer',
+    text: 'Look at that, child! Our vegetables flourish thanks to the fertilizer of patience and effort! Always remember the lesson of the little seed that never gave up!',
+  },
+  pak_joko_resolved: {
+    speaker: 'Farmer Joko',
+    speakerRole: 'Garden of Hope Farmer',
+    text: 'The Garden of Hope is always open to you! Keep practicing and nurturing the great potential inside you!',
+    thoughtBubble: 'A growth mindset enables children to stand tall and resilient like banyan trees.',
+  },
+
+  didi_intro: {
+    speaker: 'Didi',
+    speakerRole: 'Little Village Scout',
+    text: 'Hello there new friend! *waves cheerfully* My name is Didi! I love walking all around our village, from the crossroads of the plaza to the eastern fruit orchards!',
+    thoughtBubble: 'Greeting people with a smile always warms my heart!',
+  },
+  didi_lesson: {
+    speaker: 'Didi',
+    speakerRole: 'Little Village Scout',
+    text: 'Do you know my biggest secret while exploring? Relationship Skills begin with something delightfully simple: a sincere smile and a warm greeting!',
+    choices: [
+      {
+        id: 'c_didi_q',
+        text: 'What if we feel shy or awkward meeting someone new, Didi?',
+      },
+      {
+        id: 'c_didi_fun',
+        text: 'Your backpack looks packed full of adventuring gear!',
+      },
+    ],
+  },
+  didi_backpack: {
+    speaker: 'Didi',
+    speakerRole: 'Little Village Scout',
+    text: 'Hehehe! Inside my backpack is a village map, a little compass, and a notebook of new friends I meet along the road!',
+  },
+  didi_question: {
+    speaker: 'Didi',
+    speakerRole: 'Little Village Scout',
+    text: 'Awkwardness is completely normal! Now, if a new kid is standing all alone in the schoolyard without any friends yet, what is the best step we can take?',
+    choices: [
+      {
+        id: 'c_didi_ignore',
+        text: 'Just ignore them; they can find friends on their own if they want to.',
+      },
+      {
+        id: 'c_didi_greet',
+        text: 'Smile warmly, greet them by name, and invite them to play together.',
+      },
+    ],
+  },
+  didi_wrong: {
+    speaker: 'Didi',
+    speakerRole: 'Little Village Scout',
+    text: 'Oh no, if we ignore them they will feel lonely and excluded. Remember, our small greeting can be a bright light for their entire day! Let\'s try again!',
+  },
+  didi_reward: {
+    speaker: 'Didi',
+    speakerRole: 'Little Village Scout',
+    text: 'Wonderful! Kindness and warm greetings are a universal language understood by every heart. Here is the "Village Ambassador of Warmth" badge for you! Let\'s spread smiles everywhere we go!',
+  },
+  didi_resolved: {
+    speaker: 'Didi',
+    speakerRole: 'Little Village Scout',
+    text: 'Hello explorer friend! The village feels so lively and warm. Keep greeting everyone you meet with a sincere smile!',
+    thoughtBubble: 'Seeing others smile gives my steps so much bounce and energy!',
+  },
+  didi_roaming: {
+    speaker: 'Didi',
+    speakerRole: 'Little Village Scout (Harmony Route Patrol)',
+    text: 'Hello friend Ezzel! I just completed a full expedition round: from the Plaza fountain, along Farmer Joko\'s vegetable garden, through Mr. Teguh\'s pine forest, up to the Clock Tower stairs! The whole village breathes in peaceful rhythm!',
+  },
+
   teguh_intro: {
     speaker: 'Mr. Teguh',
     speakerRole: 'Wise Forest Woodcutter',
-    text: 'When anger surges like a blazing fire, do not throw wood onto it! Take a deliberate pause, step back, and cool down your amygdala before speaking words you cannot take back.',
+    text: 'Chop... chop... chop! Greetings, young explorer! Enjoying our lush pine forest? Fear not, my axe only trims rotten branches and thorny vines that block the forest trail.',
+    thoughtBubble: 'The forest teaches us that stiff trees break in storms, while flexible ones bend and stay strong.',
+    choices: [
+      {
+        id: 'c_teguh_anger',
+        text: 'Why is trimming rotten branches compared to managing anger, Mr. Teguh?',
+      },
+      {
+        id: 'c_teguh_axe',
+        text: 'Your axe looks sturdy and well-cared for, Mr. Teguh!',
+      },
+    ],
   },
+  teguh_axe_reply: {
+    speaker: 'Mr. Teguh',
+    speakerRole: 'Wise Forest Woodcutter',
+    text: 'Indeed! This axe is sharpened with patience. Just like sharpening our discernment: if dulled by boiling rage, we risk harming beautiful things around us.',
+  },
+  teguh_lesson: {
+    speaker: 'Mr. Teguh',
+    speakerRole: 'Wise Forest Woodcutter',
+    text: 'In Social-Emotional Learning, when anger blazes like glowing embers in your chest, there is the art of "Self-Management". Try answering this old woodcutter\'s quiz:',
+  },
+  teguh_question: {
+    speaker: 'Mr. Teguh',
+    speakerRole: 'Wise Forest Woodcutter',
+    text: 'When a friend accidentally damages something you made and you feel boiling mad, what action reflects wisely cutting the cycle of anger?',
+    choices: [
+      {
+        id: 'c_teguh_retaliate',
+        text: 'Immediately ruin one of their belongings in return so they know how it feels.',
+      },
+      {
+        id: 'c_teguh_timeout',
+        text: 'Take a time-out, breathe deeply to soothe the amygdala, and express disappointment calmly using an "I-statement".',
+      },
+    ],
+  },
+  teguh_wrong: {
+    speaker: 'Mr. Teguh',
+    speakerRole: 'Wise Forest Woodcutter',
+    text: 'Careful! If fire is met with fire, the whole forest of friendship burns to ash! Take a mindful breath and rethink your choice.',
+  },
+  teguh_reward: {
+    speaker: 'Mr. Teguh',
+    speakerRole: 'Wise Forest Woodcutter',
+    text: 'Right on the mark! Excellent! You know when to put down the axe of anger and choose peace. Here is your "Wise Anger Regulator" badge!',
+  },
+  teguh_resolved: {
+    speaker: 'Mr. Teguh',
+    speakerRole: 'Wise Forest Woodcutter',
+    text: 'This pine forest feels all the cooler thanks to your inner calm. Remember: a 5-second mindful breath is always better than years of regret!',
+  },
+
   sari_intro: {
     speaker: 'Mrs. Sari',
-    speakerRole: 'Orchard Farmer',
-    text: 'Look at these sweet apples! Sharing our blessings and pausing to count three things we are grateful for every morning doubles our daily joy and spreads warmth to everyone.',
+    speakerRole: 'Forest Orchard Farmer',
+    text: 'Good morning, sweet child! Breathe in the scent of crisp red apples and juicy oranges! The orchard trees are bearing heavy harvest this year.',
+    thoughtBubble: 'The sweetest fruit is the fruit picked and savored together with dear friends.',
+    choices: [
+      {
+        id: 'c_sari_gratitude',
+        text: 'How do these trees produce such luscious fruit, Mrs. Sari?',
+      },
+      {
+        id: 'c_sari_taste',
+        text: 'These apples look wonderfully delicious and fresh!',
+      },
+    ],
   },
+  sari_taste_reply: {
+    speaker: 'Mrs. Sari',
+    speakerRole: 'Forest Orchard Farmer',
+    text: 'Hehehe, of course! Because every single tree is tended with gratitude and loving care every morning.',
+  },
+  sari_lesson: {
+    speaker: 'Mrs. Sari',
+    speakerRole: 'Forest Orchard Farmer',
+    text: 'In emotional learning, there is a sweet fruit called "Gratitude" and "Social-Awareness". Try answering this sweet riddle from Mrs. Sari:',
+  },
+  sari_question: {
+    speaker: 'Mrs. Sari',
+    speakerRole: 'Forest Orchard Farmer',
+    text: 'When you achieve top of your class or win a big competition, what is the best way to multiply your gratitude according to social-emotional values?',
+    choices: [
+      {
+        id: 'c_sari_boast',
+        text: 'Show off your trophy repeatedly and tease friends who didn\'t win to feel superior.',
+      },
+      {
+        id: 'c_sari_share',
+        text: 'Thank your teachers and parents, stay humble, and encourage friends who are still striving.',
+      },
+    ],
+  },
+  sari_wrong: {
+    speaker: 'Mrs. Sari',
+    speakerRole: 'Forest Orchard Farmer',
+    text: 'Boasting makes the fruit of friendship rot and pushes companions away. True gratitude bears sweet humility. Let\'s try again!',
+  },
+  sari_reward: {
+    speaker: 'Mrs. Sari',
+    speakerRole: 'Forest Orchard Farmer',
+    text: 'What sweet character you have! Gratitude yields true joy that never withers. Receive this "Harvester of Gratitude & Giving" badge!',
+  },
+  sari_resolved: {
+    speaker: 'Mrs. Sari',
+    speakerRole: 'Forest Orchard Farmer',
+    text: 'Seeing children of noble character like you makes the orchard fruit taste a thousand times sweeter! Continue sharing kindness!',
+  },
+
   jala_intro: {
     speaker: 'Brother Jala',
     speakerRole: 'Patient River Fisherman',
-    text: 'The river flows at its own pace. Fishing taught me that rushing brings frustration, while quiet patience and deep breaths reward us with true peace of mind.',
+    text: 'Shh... gentle steps, my friend. Look at the ripples of this clear river... still water reflects the blue sky with sheer perfection.',
+    thoughtBubble: 'Patience is not passive waiting; it is maintaining a peaceful heart throughout the journey.',
+    choices: [
+      {
+        id: 'c_jala_patience',
+        text: 'Have any fish taken your bait yet, Brother Jala?',
+      },
+      {
+        id: 'c_jala_bored',
+        text: 'Don\'t you get bored sitting for hours by the riverbank?',
+      },
+    ],
   },
+  jala_bored_reply: {
+    speaker: 'Brother Jala',
+    speakerRole: 'Patient River Fisherman',
+    text: 'Haha! Those who only fixate on instant results get bored quickly. But those who savor the breeze, the water splash, and their gentle breaths find a lavish inner calm.',
+  },
+  jala_lesson: {
+    speaker: 'Brother Jala',
+    speakerRole: 'Patient River Fisherman',
+    text: 'In child development, the ability to delay instant gratification for a greater outcome is known as "Delayed Gratification". Let us test your patience:',
+  },
+  jala_question: {
+    speaker: 'Brother Jala',
+    speakerRole: 'Patient River Fisherman',
+    text: 'When you are learning a new skill (like an instrument, drawing, or math) and aren\'t immediately great at it, what is the wisest attitude?',
+    choices: [
+      {
+        id: 'c_jala_quit',
+        text: 'Slam your book or pencil down in frustration because you didn\'t master it in the first five minutes.',
+      },
+      {
+        id: 'c_jala_persist',
+        text: 'Breathe steadily, practice a little every day, and trust that every drop of effort will bear beautiful fruit.',
+      },
+    ],
+  },
+  jala_wrong: {
+    speaker: 'Brother Jala',
+    speakerRole: 'Patient River Fisherman',
+    text: 'If you yank the line before the fish takes the bait, your line tangles and the fish swims away. Learning is just the same! Take a silent breath and choose anew.',
+  },
+  jala_reward: {
+    speaker: 'Brother Jala',
+    speakerRole: 'Patient River Fisherman',
+    text: 'Your hook of patience is sharp and true! You have achieved deep inner calm. Wear this "Angler of Pure Patience" badge with pride!',
+  },
+  jala_resolved: {
+    speaker: 'Brother Jala',
+    speakerRole: 'Patient River Fisherman',
+    text: 'Listen to the river\'s gentle murmur, friend... water carves through hard stone not by violence, but through persistent perseverance.',
+  },
+
   kotek_intro: {
     speaker: 'Prof. Kotek',
     speakerRole: 'Emotion Researcher Rooster',
     text: 'Cluck-cluck! My scientific research proves that genuine laughter releases wonderful endorphins that instantly calm the fight-or-flight alarm in your brain!',
   },
-  didi_intro: {
-    speaker: 'Didi',
-    speakerRole: 'Little Village Scout',
-    text: 'A cheerful smile and a warm greeting are the fastest bridges between two hearts! Never underestimate the power of saying a kind "Good morning!" to someone.',
+  kotek_funny: {
+    speaker: 'Prof. Kotek',
+    speakerRole: 'Emotion Researcher Rooster',
+    text: "Hold on, don't be fooled! These glasses have empathy-focus lenses! Because you smiled looking at me, you just released Oxytocin and Endorphins that relax your body!",
+  },
+  kotek_fact: {
+    speaker: 'Prof. Kotek',
+    speakerRole: 'Emotion Researcher Rooster',
+    text: "SEL Science Fact: When humans feel angry or panicked, the Amygdala fires up like a fire alarm. One hug or wholesome laughter can turn off that alarm instantly! Take this 'Cheerful Egg Badge'!",
+    thoughtBubble: 'Laughter and wholesome humor are the greatest shield against cortisol stress hormones!',
+  },
+  kotek_reward: {
+    speaker: 'Prof. Kotek',
+    speakerRole: 'Emotion Researcher Rooster',
+    text: 'COCK-A-DOODLE-DOO! Congratulations! You mastered the science of emotions and are officially awarded the honorary "Doctor of Humor & Endorphins" badge! Remember, a sincere smile is the finest amygdala soother!',
+    thoughtBubble: 'My cheerfulness sensor detects a 100% surge in happiness hormones across the entire village!',
+  },
+  kotek_resolved: {
+    speaker: 'Prof. Kotek',
+    speakerRole: 'Emotion Researcher Rooster',
+    text: 'COCK-A-DOODLE-DOO! My endorphin sensor detects 100% happiness levels across the entire village! Keep smiling and spreading joyful laughter!',
+    thoughtBubble: 'My cheerful crow today is guaranteed to lower the stress hormones of anyone who hears it!',
+  },
+  prof_kotek_roaming: {
+    speaker: 'Prof. Kotek',
+    speakerRole: 'Emotion Researcher Rooster (Field Research)',
+    text: 'CLUCK-COCK-A-DOODLE-DOO! Ezzel! See the galvanometer sensor in my monitor glasses? Villager happiness waves are fluctuating at the golden 528 Hz frequency today! I am patrolling the laughter resonance between Plaza and Gardens!',
+  },
+  kiki_roaming: {
+    speaker: 'Kiki',
+    speakerRole: 'Little Mail Squirrel (Delivering Village Letters)',
+    text: 'Squeak... Hello Ezzel! My mail bag is overflowing with heartfelt appreciation letters between villagers! A thank-you card for Grandpa Ranu, a recipe note for Mrs. Sari, and a friendship poem for Bimo. Connecting villagers makes my paws fly so lightly!',
   },
 
-  // Landmark examinations
+  // --- CHATTING PAIRS IN VILLAGE ---
+  chat_citra_moka_citra: {
+    speaker: 'Sister Citra',
+    speakerRole: 'Flower Garden Counselor (Chatting with Moka)',
+    text: 'Oh, Ezzel! What lovely timing! Moka and I were just admiring how fresh the flower garden feels now that village emotional harmony has returned. Moka noticed that children are much more peaceful when expressing their hearts.',
+    thoughtBubble: 'Listening alongside Moka feels like reading a book brimming with friendship.',
+  },
+  chat_citra_moka_moka: {
+    speaker: 'Moka the Cat',
+    speakerRole: 'Gentle Library Cat',
+    text: 'Purrr... Meow... That is so true, Ezzel! When Sister Citra listens with deep empathy and I purr on their lap, all anxieties gently melt away. Full presence without judgment is the most soothing embrace.',
+  },
+  chat_ranu_bimo_ranu: {
+    speaker: 'Grandpa Ranu',
+    speakerRole: 'Village Carpenter (Chatting with Bimo)',
+    text: 'Ha! Look who is here! Ezzel! Clever boy Bimo is showing me a new gear blueprint for the bridge. I am so thankful our misunderstanding was cleared. Now I always remind myself to breathe deeply instead of snapping when weary!',
+    thoughtBubble: 'Mentoring young ones like Bimo makes my heart warm and valued once again.',
+  },
+  chat_ranu_bimo_bimo: {
+    speaker: 'Bimo',
+    speakerRole: 'Clockmaker Apprentice (Learning with Grandpa Ranu)',
+    text: 'And I learned not to assume the worst when Grandpa Ranu speaks firmly! We listen to each other now, and this bridge gear turns so smoothly!',
+    thoughtBubble: 'I am no longer afraid of making mistakes because Grandpa Ranu encourages me with patience!',
+  },
+  chat_teguh_sari_teguh: {
+    speaker: 'Mr. Teguh',
+    speakerRole: 'Wise Forest Woodcutter (Chatting with Mrs. Sari)',
+    text: 'Welcome, Ezzel! Mrs. Sari just brought over a basket of freshly picked wild apples. We were sharing tips on tree care: trimming thorny overgrowth is just as vital as checking our anger before it hurts others.',
+  },
+  chat_teguh_sari_sari: {
+    speaker: 'Mrs. Sari',
+    speakerRole: 'Forest Orchard Farmer',
+    text: 'And the dry firewood split by Mr. Teguh helps us bake apple pies for the whole village! Sharing nature\'s bounty and appreciating our neighbors\' hard work is our greatest joy here!',
+  },
+  chat_damai_jala_damai: {
+    speaker: 'Grandpa Damai',
+    speakerRole: 'Mindful Bonsai Master (Chatting with Brother Jala)',
+    text: 'Silent and peaceful greetings, Ezzel... Brother Jala and I are enjoying the dancing river ripples beneath the willow tree. We realized fishing and meditation share the same essence: releasing haste and being fully present now.',
+  },
+  chat_damai_jala_jala: {
+    speaker: 'Brother Jala',
+    speakerRole: 'Patient River Fisherman',
+    text: 'Very true, Ezzel. A fish cannot be forced to strike the bait, just as emotions cannot be forced away in an instant. We simply observe the float, breathe deeply, and trust the flow of time with patience.',
+  },
+
+  // --- LANDMARKS & EXAMINATIONS ---
   secret_tree: {
     speaker: 'Ancient Sacred Tree',
     speakerRole: 'Village Heritage',
     text: 'You inspect the hollow of the giant ancient tree. Inside rests a sealed time capsule with three golden words inscribed: "PLEASE, THANK YOU, and I AM SORRY—the three magic keys of friendship."',
+  },
+  secret_tree_capsule: {
+    speaker: '1950 Time Capsule Message',
+    speakerRole: 'Founders of the Valley Letter',
+    text: '"O child of the future: Whenever the fog of misunderstanding blankets your village, remember the three magical keys: Please, Thank You, and I am Sorry. Listening is the greatest gift you can offer your fellow human beings."',
   },
   fountain_examine: {
     speaker: 'Plaza Fountain',
     speakerRole: 'Heart of the Village',
     text: 'Crystal-clear water dances in the sunlight, singing a cheerful melody that echoes through the cobblestone square.',
   },
-  signpost_forest: {
+  signpost_examine: {
     speaker: 'Crossroads Signpost',
+    speakerRole: 'Trail Guide',
+    text: '📍 Carved Wooden Signpost: [⬅️ West: Villager Houses & Kiki\'s Post] [⬆️ North: Silent Forest & Sacred Ancient Tree] [➡️ East: Wooden Bridge & Harmony Clock Tower] [⬇️ South: Central Plaza & Harmony Fountain].',
+  },
+  signpost_forest: {
+    speaker: 'Forest Trail Signpost',
     speakerRole: 'Trail Guide',
     text: 'Pointing arrows: [West: Central Plaza] • [East: River & Wooden Bridge] • [Northwest: Silent Forest & Woodcutter Lodge] • [Northeast: Harmony Clock Tower].',
   },
   signpost_farm: {
-    speaker: 'Orchard Signpost',
+    speaker: 'Farmland Signpost',
     speakerRole: 'Trail Guide',
     text: 'Pointing arrows: [Southwest: Farmer Joko\'s Hope Garden] • [Southeast: Mrs. Sari\'s Sweet Fruit Orchard & Grandpa Damai\'s Tea House].',
   },
   forest_cabin_examine: {
-    speaker: "Woodcutter's Lodge",
+    speaker: "Mr. Teguh's Forest Lodge",
     speakerRole: 'Forest Landmark',
     text: 'A cozy log cabin made of aromatic cedar. Neatly stacked firewood sits beside the stone chimney, smelling of fresh mountain pine.',
+    choices: [
+      {
+        id: 'c_cabin_philosophy',
+        text: '🪵 Learn the Philosophy of Branch Trimming & Self-Regulation',
+        impactScore: 5,
+        resultDialogueId: 'forest_cabin_philosophy',
+      },
+      {
+        id: 'c_cabin_leave',
+        text: '👋 Say thank you and continue your exploration',
+        impactScore: 2,
+        resultDialogueId: 'forest_cabin_farewell',
+      },
+    ],
+  },
+  forest_cabin_farewell: {
+    speaker: "Mr. Teguh's Forest Lodge",
+    speakerRole: 'Forest Landmark',
+    text: 'Fresh mountain pine air invigorates your chest. Your steps feel light and ready to continue the quest to restore harmony.',
+  },
+  forest_cabin_philosophy: {
+    speaker: 'Mr. Teguh',
+    speakerRole: 'Wise Forest Woodcutter',
+    text: 'Mr. Teguh smiles warmly: "Every log in this stack came from dry branches whose time had come to be trimmed. Just like our emotions—if anger or resentment is hoarded, it weighs heavily on the soul. Learn to cut the cycle of anger with mindful breath, so your heart remains spacious and luminous!"',
   },
   tower_examine: {
     speaker: 'Harmony Clock Tower',
     speakerRole: 'Ancient Spire',
     text: 'A magnificent stone clocktower reaching toward the clouds. Its heavy iron-banded door is quiet, waiting for the Golden Gear to awaken its harmonious bells.',
+    choices: [
+      {
+        id: 'c_tw_hist',
+        text: '📜 Read Historical Inscription & Tower Philosophy',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_history',
+      },
+      {
+        id: 'c_tw_mech',
+        text: '⚙️ Inspect the 4 Clockwork Gears & SEL Learning Pillars',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_mechanics',
+      },
+      {
+        id: 'c_tw_bell',
+        text: '🔔 Listen to the Resonant Chime of the Ancient Bell',
+        impactScore: 5,
+        resultDialogueId: 'tower_examine_bell',
+      },
+      {
+        id: 'c_tw_exit',
+        text: '🚪 Finish Inspecting the Tower (Continue Adventure)',
+        impactScore: 0,
+        resultDialogueId: '',
+      },
+    ],
+  },
+  tower_examine_history: {
+    speaker: 'Tower Founder Stone Tablet',
+    speakerRole: 'Valley Historical Record (1785)',
+    text: '📜 "Erected in 1785 by Ki Waskita and the early pioneers. Designed as an Inner Harmony Barometer. The pendulum symbolizes Emotional Equilibrium: anger and sorrow may swing the soul to the edge, but through mindful breath, we can always return to our tranquil center."',
+  },
+  tower_examine_mechanics: {
+    speaker: 'Harmony Clockwork Mechanism',
+    speakerRole: '4 Pillars of Social-Emotional Learning (SEL)',
+    text: '⚙️ The clockwork room is driven by 4 Core Gears:\n1. 🌟 Plaza Gear: Self-Awareness (Recognizing emotions without self-judgment).\n2. 🤝 Bridge Gear: Empathy & Respect (Understanding how others feel).\n3. 🌱 Garden & Forest Gear: Emotion Regulation & Growth Mindset (Managing responses & learning from mistakes).\n4. 🕊️ Tower Pinnacle Gear: Reconciliation & Conflict Resolution (Listening with an open heart).',
+  },
+  tower_examine_bell: {
+    speaker: 'Bronze Harmony Bell',
+    speakerRole: 'The Power of Pause',
+    text: '🔔 *CLAAANG...* The clear resonance of the bronze bell vibrates across the valley. Take a deep breath for 4 counts... hold for 2... exhale slowly for 6. Feel tension dissolve as peace fills your heart.',
   },
   tower_examine_restored: {
-    speaker: 'Harmony Clock Tower',
-    speakerRole: 'Ancient Spire',
+    speaker: 'Harmony Clock Tower (Restored!)',
+    speakerRole: 'Ancient Spire of Light',
     text: 'The astronomical golden clock ticks rhythmically with warm light. Its resonant bells ring on every hour, reminding the villagers to cherish harmony and empathy.',
   },
   free_roam_waterfall: {
@@ -1055,27 +1918,27 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
     text: 'Sparkling freshwater cascades down mossy rocks, creating tiny rainbows in the mist. The sound brings an instant sense of calm and clarity.',
   },
   free_roam_windmill: {
-    speaker: 'Meadow Windmill',
+    speaker: 'Harmony Windmill',
     speakerRole: 'Village Mill',
     text: 'The large wooden sails turn lazily in the pleasant breeze, grinding golden wheat for the bakery with steady, soothing rhythm.',
   },
   free_roam_cow: {
-    speaker: 'Daisy the Cow',
+    speaker: 'Pasture Cow',
     speakerRole: 'Meadow Grazer',
-    text: 'Moo-oo! Daisy is happily chewing fresh clover in the warm sunshine, completely relaxed and content.',
+    text: 'Moo-oo! The healthy pasture cow happily chews sweet clover in the warm sunshine, completely relaxed and content.',
   },
   free_roam_sheep: {
-    speaker: 'Fluffy Sheep',
+    speaker: 'Fluffy White Sheep',
     speakerRole: 'Pasture Friend',
-    text: 'Baa-aa! The sheep huddles warmly with its flock, enjoying the lush green grass of the restored valley.',
+    text: 'Baa-aa! The fluffy sheep huddles warmly with its flock, enjoying the lush green grass of the restored valley.',
   },
   free_roam_deer: {
-    speaker: 'Spotted Fawn',
+    speaker: 'Forest Spotted Deer',
     speakerRole: 'Forest Wildlife',
-    text: 'A gentle fawn peeks through the blueberry bushes. Sensing your peaceful heart, it wiggles its ears happily instead of fleeing.',
+    text: 'A gentle spotted deer peeks through the blueberry bushes. Sensing your peaceful heart, it wiggles its ears happily instead of fleeing.',
   },
   free_roam_rabbit: {
-    speaker: 'Hop the Bunny',
+    speaker: 'Meadow Bunny',
     speakerRole: 'Plaza Mascot',
     text: 'Hop, hop! A fluffy bunny munches on a fresh orange carrot near the flowerbeds, twitching its nose in greeting.',
   },
@@ -1085,12 +1948,12 @@ export const GAME_DIALOGUES_EN: Record<string, Partial<DialogueNode>> = {
     text: 'Baaa! The little lamb playfully prances across the meadow, enjoying the freedom of a peaceful afternoon.',
   },
   free_roam_squirrel: {
-    speaker: 'Plaza Squirrel',
+    speaker: 'Forest Squirrel',
     speakerRole: 'Nut Collector',
     text: 'Squeak-squeak! The squirrel buries an acorn beside the fountain, preparing for the upcoming harvest festival.',
   },
   free_roam_river: {
-    speaker: 'Harmony Riverbed',
+    speaker: 'Clear River Stream',
     speakerRole: 'Scenic View',
     text: 'Silvery trout leap gracefully in the clear stream beneath the bridge, catching droplets of golden sunshine.',
   },
@@ -1108,7 +1971,16 @@ export function getLocalizedDialogue(
   if (lang === 'id') return node;
 
   const enOverride = GAME_DIALOGUES_EN[node.id];
-  if (!enOverride) return node;
+  const translatedSpeaker = enOverride?.speaker || getLocalizedSpeaker(node.speaker, lang);
+  const translatedRole = enOverride?.speakerRole || node.speakerRole;
+
+  if (!enOverride) {
+    return {
+      ...node,
+      speaker: translatedSpeaker,
+      speakerRole: translatedRole,
+    };
+  }
 
   const mergedChoices = node.choices?.map((originalChoice, idx) => {
     const enChoice = enOverride.choices?.[idx] || enOverride.choices?.find((c) => c.id === originalChoice.id);
@@ -1120,8 +1992,8 @@ export function getLocalizedDialogue(
 
   return {
     ...node,
-    speaker: enOverride.speaker || node.speaker,
-    speakerRole: enOverride.speakerRole || node.speakerRole,
+    speaker: translatedSpeaker,
+    speakerRole: translatedRole,
     text: enOverride.text || node.text,
     thoughtBubble: enOverride.thoughtBubble !== undefined ? enOverride.thoughtBubble : node.thoughtBubble,
     choices: mergedChoices || node.choices,

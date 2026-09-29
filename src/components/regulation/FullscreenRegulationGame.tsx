@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { sound } from '../../utils/audio';
-import { useLanguage } from '../../game/localization';
+import { useLanguage, getLocalizedNpcName } from '../../game/localization';
 import {
   Wind,
   Eye,
@@ -38,6 +38,10 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
   onComplete,
 }) => {
   const { lang, ui } = useLanguage();
+  const localizedTarget =
+    targetName === 'Pemain' || targetName === 'Karakter Utama'
+      ? (lang === 'en' ? 'Player' : 'Pemain')
+      : getLocalizedNpcName(targetName.toLowerCase(), lang, true, targetName);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [replayKey, setReplayKey] = useState(0);
 
@@ -109,8 +113,8 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
       themeBorder: 'border-purple-500/40',
       successMessage:
         lang === 'en'
-          ? 'All 5 muscle tension vines broken! Stress hormones discharged and muscles are relaxed.'
-          : 'Semua 5 sulur ketegangan otot berhasil diputus! Hormon stres terbuang dan tubuh Kiki kembali rileks bebas dari kaku.',
+          ? `All 5 muscle tension vines broken! Stress hormones discharged and ${localizedTarget}'s muscles are relaxed.`
+          : `Semua 5 sulur ketegangan otot berhasil diputus! Hormon stres terbuang dan tubuh ${localizedTarget} kembali rileks bebas dari kaku.`,
     },
   }[mode];
 
@@ -158,7 +162,7 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
           <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/90 border border-slate-700 text-[10px] font-pixel text-slate-300">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>
-              {isSelfPractice ? (lang === 'en' ? 'Solo Practice (Player)' : 'Latihan Mandiri (Pemain)') : (lang === 'en' ? `Helping: ${targetName}` : `Membantu: ${targetName}`)}
+              {isSelfPractice ? (lang === 'en' ? 'Solo Practice (Player)' : 'Latihan Mandiri (Pemain)') : (lang === 'en' ? `Helping: ${localizedTarget}` : `Membantu: ${localizedTarget}`)}
             </span>
           </div>
 

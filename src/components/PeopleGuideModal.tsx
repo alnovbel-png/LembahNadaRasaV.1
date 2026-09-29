@@ -22,7 +22,7 @@ import { NPC, EmotionType } from '../types/game';
 import { VILLAGER_GUIDE_DATA, VillagerGuideProfile } from '../game/villagerGuideData';
 import { sound } from '../utils/audio';
 import { CharacterPortrait } from './CharacterPortrait';
-import { useLanguage } from '../game/localization';
+import { useLanguage, getLocalizedNpcName, getLocalizedNpcRole } from '../game/localization';
 
 export interface PeopleGuideModalProps {
   isOpen: boolean;
@@ -103,8 +103,10 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
       // Search query
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();
-        const matchesName = profile.name.toLowerCase().includes(query);
-        const matchesRole = profile.role.toLowerCase().includes(query);
+        const locName = getLocalizedNpcName(profile.id, lang, isResolved, profile.name);
+        const locRole = getLocalizedNpcRole(profile.id, lang, isResolved, profile.role);
+        const matchesName = locName.toLowerCase().includes(query) || profile.name.toLowerCase().includes(query);
+        const matchesRole = locRole.toLowerCase().includes(query) || profile.role.toLowerCase().includes(query);
         const matchesZone = profile.zoneName.toLowerCase().includes(query);
         const matchesPillar = profile.selConcept.pillar.toLowerCase().includes(query);
         return matchesName || matchesRole || matchesZone || matchesPillar;
@@ -446,7 +448,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                           <div>
                             <div className="flex items-center gap-1.5">
                               <h3 className="font-bold text-sm text-slate-100 group-hover:text-amber-300 transition">
-                                {profile.name}
+                                {getLocalizedNpcName(profile.id, lang, isResolved, profile.name)}
                               </h3>
                               {isResolved ? (
                                 <span title={lang === 'en' ? 'Harmonious' : 'Telah Harmonis'}>
@@ -459,7 +461,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                               )}
                             </div>
                             <p className="text-[11px] text-amber-200/80 font-medium line-clamp-1 mt-0.5">
-                              {profile.role}
+                              {getLocalizedNpcRole(profile.id, lang, isResolved, profile.role)}
                             </p>
                           </div>
                         </div>
@@ -541,7 +543,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                 <BookOpen className="w-4 h-4 text-amber-400" />
                 <span>{lang === 'en' ? 'Villager Profile Dialog' : 'Pop-Up Dialog Profil Warga Desa'}</span>
                 <span className="text-slate-500">•</span>
-                <span className="text-slate-300">{activeProfile.name}</span>
+                <span className="text-slate-300">{getLocalizedNpcName(activeProfile.id, lang, activeLiveNpc?.isResolved, activeProfile.name)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -575,7 +577,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                         style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
                         className="text-xl sm:text-2xl font-bold text-amber-300"
                       >
-                        {activeProfile.name}
+                        {getLocalizedNpcName(activeProfile.id, lang, activeLiveNpc?.isResolved, activeProfile.name)}
                       </h2>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase bg-amber-950 text-amber-300 border border-amber-700">
                         {activeProfile.categoryLabel}
@@ -593,7 +595,7 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                       )}
                     </div>
                     <p className="text-xs sm:text-sm text-slate-300 font-semibold mt-1">
-                      {activeProfile.role}
+                      {getLocalizedNpcRole(activeProfile.id, lang, activeLiveNpc?.isResolved, activeProfile.role)}
                     </p>
                     <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
                       <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />

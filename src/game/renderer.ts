@@ -1,6 +1,7 @@
 import { TILE, TILE_SIZE, MAP_COLS, MAP_ROWS } from './constants';
 import { NPC, ZoneColorStatus, EmotionType } from '../types/game';
 import { freeRoamWorld } from './freeRoamWorld';
+import { getLocalizedNpcName, getLocalizedSpeaker } from './localization';
 
 export interface Player {
   x: number;
@@ -6807,7 +6808,8 @@ export class GameRenderer {
       ctx.font = '9px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
-      const displayName = npc.isResolved ? `✨ ${npc.name}` : npc.name;
+      const localizedName = getLocalizedNpcName(npc.id, this.lang, npc.isResolved, npc.name);
+      const displayName = npc.isResolved ? `✨ ${localizedName}` : localizedName;
       const textW = ctx.measureText(displayName).width;
       ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
       ctx.fillRect(nx + 16 - textW / 2 - 5, ny - 11 + headBob, textW + 10, 14);
@@ -6835,7 +6837,7 @@ export class GameRenderer {
 
       // Bold Red/Gold "★ MISI X" Pill Badge
       const stepNum = this.activeQuestTarget?.stepNumber || 1;
-      const badgeText = `★ MISI ${stepNum}`;
+      const badgeText = `${this.lang === 'en' ? '★ MISSION' : '★ MISI'} ${stepNum}`;
       ctx.font = 'bold 8px "Pixelify Sans", "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -7172,12 +7174,29 @@ export class GameRenderer {
         ctx.font = '8px "Plus Jakarta Sans", sans-serif';
         ctx.textAlign = 'center';
 
+        const emotionNameEn: Record<string, string> = {
+          marah: 'ANGER',
+          cemas: 'ANXIETY',
+          sedih: 'SADNESS',
+          tenang: 'CALM',
+          gembira: 'JOY',
+          kecewa: 'DISAPPOINTMENT',
+          takut: 'FEAR',
+          haru: 'TOUCHED',
+        };
+        const surfaceEmotionStr = this.lang === 'en'
+          ? (emotionNameEn[npc.emotionProfile.surfaceEmotion] || npc.emotionProfile.surfaceEmotion.toUpperCase())
+          : npc.emotionProfile.surfaceEmotion.toUpperCase();
+        const deepEmotionStr = this.lang === 'en'
+          ? (emotionNameEn[npc.emotionProfile.deepEmotion] || npc.emotionProfile.deepEmotion.toUpperCase())
+          : npc.emotionProfile.deepEmotion.toUpperCase();
+
         const surfaceLabel = isResolved
-          ? `Luar: ${npc.emotionProfile.surfaceEmotion.toUpperCase()} (LEGA & HARMONIS)`
-          : `Luar: ${npc.emotionProfile.surfaceEmotion.toUpperCase()}`;
+          ? (this.lang === 'en' ? `Surface: ${surfaceEmotionStr} (RELIEVED & HARMONIOUS)` : `Luar: ${surfaceEmotionStr} (LEGA & HARMONIS)`)
+          : (this.lang === 'en' ? `Surface: ${surfaceEmotionStr}` : `Luar: ${surfaceEmotionStr}`);
         const deepLabel = isResolved
-          ? `Hati: ${npc.emotionProfile.deepEmotion.toUpperCase()} (DAMAI & BERSYUKUR)`
-          : `Hati: ${npc.emotionProfile.deepEmotion.toUpperCase()}`;
+          ? (this.lang === 'en' ? `Inner: ${deepEmotionStr} (PEACEFUL & GRATEFUL)` : `Hati: ${deepEmotionStr} (DAMAI & BERSYUKUR)`)
+          : (this.lang === 'en' ? `Inner: ${deepEmotionStr}` : `Hati: ${deepEmotionStr}`);
 
         // Tag background
         const tagW = isResolved ? 150 : 116;
@@ -8445,11 +8464,14 @@ export class GameRenderer {
     const borderColor = isTower || isWindmill ? '#f59e0b' : isAnimal || isRiver ? '#38bdf8' : isNPC ? '#f59e0b' : '#10b981';
     const textColor = isTower || isWindmill ? '#fef08a' : isAnimal || isRiver ? '#e0f2fe' : isNPC ? '#fef08a' : '#a7f3d0';
     const icon = isTower ? '🕰️' : isWindmill ? '🌾' : isAnimal ? '🐮' : isRiver ? '🐟' : isNPC ? '💬' : '🔍';
-    const actionLabel = isTower ? 'Klik Periksa Menara' : isWindmill ? 'Klik Periksa Kincir' : isAnimal ? 'Klik Dekati' : isRiver ? 'Klik Amati' : isNPC ? 'Klik Bicara' : 'Klik Periksa';
+    const actionLabel = this.lang === 'en'
+      ? (isTower ? 'Click to Examine' : isWindmill ? 'Click to Examine' : isAnimal ? 'Click to Approach' : isRiver ? 'Click to Observe' : isNPC ? 'Click to Talk' : 'Click to Examine')
+      : (isTower ? 'Klik Periksa Menara' : isWindmill ? 'Klik Periksa Kincir' : isAnimal ? 'Klik Dekati' : isRiver ? 'Klik Amati' : isNPC ? 'Klik Bicara' : 'Klik Periksa');
 
     ctx.font = '7px "Press Start 2P", monospace';
     ctx.textAlign = 'center';
-    const labelText = `${icon} ${name} [${actionLabel}]`;
+    const localizedTargetName = getLocalizedSpeaker(name, this.lang) || name;
+    const labelText = `${icon} ${localizedTargetName} [${actionLabel}]`;
     const textW = ctx.measureText(labelText).width;
 
     // Background pill

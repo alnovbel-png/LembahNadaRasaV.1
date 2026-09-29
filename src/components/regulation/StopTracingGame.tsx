@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { sound } from '../../utils/audio';
+import { useLanguage, getLocalizedNpcName } from '../../game/localization';
 import { ShieldAlert, Sparkles, CheckCircle2, RotateCcw, Clock, Snowflake, Award } from 'lucide-react';
 
 interface StopTracingGameProps {
@@ -22,65 +23,106 @@ interface LetterConfig {
   nodes: TraceNode[];
 }
 
-const LETTERS: LetterConfig[] = [
-  {
-    letter: 'S',
-    title: 'S - STOP!',
-    subtitle: 'Berhenti Sejenak',
-    description: 'Injak rem emosi! Hentikan ucapan atau tindakan impulsif sebelum menyakiti orang lain.',
-    nodes: [
-      { id: 1, x: 75, y: 22 },
-      { id: 2, x: 30, y: 24 },
-      { id: 3, x: 45, y: 48 },
-      { id: 4, x: 72, y: 72 },
-      { id: 5, x: 26, y: 78 },
-    ],
-  },
-  {
-    letter: 'T',
-    title: 'T - TAKE A BREATH',
-    subtitle: 'Ambil Napas Dalam',
-    description: 'Tarik satu napas panjang menenangkan untuk mengalirkan oksigen segar ke otak logika.',
-    nodes: [
-      { id: 1, x: 22, y: 25 },
-      { id: 2, x: 50, y: 25 },
-      { id: 3, x: 78, y: 25 },
-      { id: 4, x: 50, y: 55 },
-      { id: 5, x: 50, y: 80 },
-    ],
-  },
-  {
-    letter: 'O',
-    title: 'O - OBSERVE',
-    subtitle: 'Amati Perasaan',
-    description: 'Sadari apa yang terjadi di tubuh: apakah dada berdebar, tangan mengepal, atau pikiran riuh.',
-    nodes: [
-      { id: 1, x: 50, y: 20 },
-      { id: 2, x: 25, y: 48 },
-      { id: 3, x: 50, y: 80 },
-      { id: 4, x: 75, y: 48 },
-      { id: 5, x: 50, y: 24 },
-    ],
-  },
-  {
-    letter: 'P',
-    title: 'P - PROCEED',
-    subtitle: 'Pilih Respon Bijak',
-    description: 'Lanjutkan dengan tindakan yang bijak, asertif, dan berorientasi pada solusi damai.',
-    nodes: [
-      { id: 1, x: 30, y: 80 },
-      { id: 2, x: 30, y: 22 },
-      { id: 3, x: 72, y: 24 },
-      { id: 4, x: 72, y: 50 },
-      { id: 5, x: 32, y: 50 },
-    ],
-  },
-];
+const LETTER_NODES: Record<'S' | 'T' | 'O' | 'P', TraceNode[]> = {
+  S: [
+    { id: 1, x: 75, y: 22 },
+    { id: 2, x: 30, y: 24 },
+    { id: 3, x: 45, y: 48 },
+    { id: 4, x: 72, y: 72 },
+    { id: 5, x: 26, y: 78 },
+  ],
+  T: [
+    { id: 1, x: 22, y: 25 },
+    { id: 2, x: 50, y: 25 },
+    { id: 3, x: 78, y: 25 },
+    { id: 4, x: 50, y: 55 },
+    { id: 5, x: 50, y: 80 },
+  ],
+  O: [
+    { id: 1, x: 50, y: 20 },
+    { id: 2, x: 25, y: 48 },
+    { id: 3, x: 50, y: 80 },
+    { id: 4, x: 75, y: 48 },
+    { id: 5, x: 50, y: 24 },
+  ],
+  P: [
+    { id: 1, x: 30, y: 80 },
+    { id: 2, x: 30, y: 22 },
+    { id: 3, x: 72, y: 24 },
+    { id: 4, x: 72, y: 50 },
+    { id: 5, x: 32, y: 50 },
+  ],
+};
+
+const LETTERS_TEXT = {
+  id: [
+    {
+      letter: 'S' as const,
+      title: 'S - STOP!',
+      subtitle: 'Berhenti Sejenak',
+      description: 'Injak rem emosi! Hentikan ucapan atau tindakan impulsif sebelum menyakiti orang lain.',
+    },
+    {
+      letter: 'T' as const,
+      title: 'T - TAKE A BREATH',
+      subtitle: 'Ambil Napas Dalam',
+      description: 'Tarik satu napas panjang menenangkan untuk mengalirkan oksigen segar ke otak logika.',
+    },
+    {
+      letter: 'O' as const,
+      title: 'O - OBSERVE',
+      subtitle: 'Amati Perasaan',
+      description: 'Sadari apa yang terjadi di tubuh: apakah dada berdebar, tangan mengepal, atau pikiran riuh.',
+    },
+    {
+      letter: 'P' as const,
+      title: 'P - PROCEED',
+      subtitle: 'Pilih Respon Bijak',
+      description: 'Lanjutkan dengan tindakan yang bijak, asertif, dan berorientasi pada solusi damai.',
+    },
+  ],
+  en: [
+    {
+      letter: 'S' as const,
+      title: 'S - STOP!',
+      subtitle: 'Pause & Stop',
+      description: 'Hit the emotion brakes! Halt impulsive words or actions before hurting others.',
+    },
+    {
+      letter: 'T' as const,
+      title: 'T - TAKE A BREATH',
+      subtitle: 'Take a Deep Breath',
+      description: 'Take a long calming breath to supply fresh oxygen to the logical brain.',
+    },
+    {
+      letter: 'O' as const,
+      title: 'O - OBSERVE',
+      subtitle: 'Observe Feelings',
+      description: 'Notice bodily sensations: is your heart racing, fists clenching, or thoughts rushing?',
+    },
+    {
+      letter: 'P' as const,
+      title: 'P - PROCEED',
+      subtitle: 'Proceed Wisely',
+      description: 'Continue with thoughtful, assertive, and peace-oriented positive choices.',
+    },
+  ],
+};
 
 export const StopTracingGame: React.FC<StopTracingGameProps> = ({
   targetName,
   onSuccess,
 }) => {
+  const { lang } = useLanguage();
+  const localizedTarget =
+    targetName === 'Pemain' || targetName === 'Karakter Utama'
+      ? (lang === 'en' ? 'Player' : 'Pemain')
+      : getLocalizedNpcName(targetName.toLowerCase(), lang, true, targetName);
+
+  const letters: LetterConfig[] = (LETTERS_TEXT[lang] || LETTERS_TEXT.id).map((item) => ({
+    ...item,
+    nodes: LETTER_NODES[item.letter],
+  }));
   // Game states: 'bounce' (QTE catch) -> 'tracing' (trace S-T-O-P) -> 'success' | 'timeup'
   const [phase, setPhase] = useState<'bounce' | 'tracing' | 'success' | 'timeup'>('bounce');
 
@@ -176,7 +218,7 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
   };
 
   // Tracing node interaction
-  const currentLetterConfig = LETTERS[currentLetterIndex];
+  const currentLetterConfig = letters[currentLetterIndex];
 
   const handleTouchOrHoverNode = (nodeId: number) => {
     if (phase !== 'tracing' || !currentLetterConfig) return;
@@ -195,7 +237,7 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
         setCompletedLetters((prev) => [...prev, letter]);
 
         // Next letter or Finish
-        if (currentLetterIndex + 1 < LETTERS.length) {
+        if (currentLetterIndex + 1 < letters.length) {
           setTimeout(() => {
             setCurrentLetterIndex((idx) => idx + 1);
             setTracedNodeIds([]);
@@ -232,7 +274,10 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
     <div className="space-y-3 select-none">
       {/* Educational Header */}
       <div className="bg-amber-950/40 border border-amber-500/30 rounded-xl p-2.5 text-xs text-amber-200">
-        🛑 <strong>Rem S-T-O-P Cepat (Quick-Time & Tracing)</strong>: Tangkap tombol STOP yang memantul liar! Saat waktu membeku, tebalkan huruf <strong>S, T, O, dan P</strong> untuk mengendalikan impuls emosi.
+        🛑 <strong>{lang === 'en' ? 'Quick S-T-O-P Brake (Quick-Time & Tracing)' : 'Rem S-T-O-P Cepat (Quick-Time & Tracing)'}</strong>:{' '}
+        {lang === 'en'
+          ? 'Catch the wildly bouncing STOP button! When time freezes, trace letters S, T, O, and P to gain self-control.'
+          : 'Tangkap tombol STOP yang memantul liar! Saat waktu membeku, tebalkan huruf S, T, O, dan P untuk mengendalikan impuls emosi.'}
       </div>
 
       {/* Main Game Stage */}
@@ -264,10 +309,12 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
             {/* Top Prompt */}
             <div className="text-center z-10 font-pixel">
               <span className="text-rose-400 text-xs font-bold uppercase tracking-wider block animate-pulse">
-                🚨 EMOSI MEMUNCAK! INJAK REM DARURAT!
+                {lang === 'en' ? '🚨 EMOTION SURGE! HIT EMERGENCY BRAKES!' : '🚨 EMOSI MEMUNCAK! INJAK REM DARURAT!'}
               </span>
               <p className="text-[10px] text-slate-300 mt-0.5">
-                Tombol memantul liar! Kejar dengan kursor dan KLIK tombol STOP secepatnya!
+                {lang === 'en'
+                  ? 'The button is bouncing wildly! Chase it with your cursor and CLICK the STOP button fast!'
+                  : 'Tombol memantul liar! Kejar dengan kursor dan KLIK tombol STOP secepatnya!'}
               </p>
             </div>
 
@@ -286,14 +333,16 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
                   STOP!
                 </span>
                 <span className="text-[7.5px] uppercase tracking-tighter text-white/90">
-                  KLIK / SMASH!
+                  {lang === 'en' ? 'CLICK / SMASH!' : 'KLIK / SMASH!'}
                 </span>
               </div>
             </div>
 
             {/* Bottom reminder */}
             <div className="text-center z-10 text-[9px] font-pixel text-slate-400">
-              Gerakkan kursor/sentuh tombol merah untuk membekukan waktu
+              {lang === 'en'
+                ? 'Move cursor / touch the red button to freeze time'
+                : 'Gerakkan kursor/sentuh tombol merah untuk membekukan waktu'}
             </div>
           </>
         )}
@@ -305,7 +354,11 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
             <div className="flex items-center justify-between border-b border-cyan-500/30 pb-1.5 font-pixel">
               <div className="flex items-center gap-1.5 text-cyan-300 font-bold text-xs">
                 <Snowflake className="w-4 h-4 text-cyan-400 animate-spin" />
-                <span>WAKTU MEMBEKU ❄️ TEBALKAN: {currentLetterConfig.title}</span>
+                <span>
+                  {lang === 'en'
+                    ? `TIME FROZEN ❄️ TRACE: ${currentLetterConfig.title}`
+                    : `WAKTU MEMBEKU ❄️ TEBALKAN: ${currentLetterConfig.title}`}
+                </span>
               </div>
 
               <div className="flex items-center gap-1 text-amber-300 font-bold text-xs">
@@ -394,10 +447,12 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
               🛡️
             </div>
             <h3 className="text-sm sm:text-base font-bold text-emerald-300 mb-1">
-              REM S-T-O-P SUKSES DITEGAKKAN!
+              {lang === 'en' ? 'S-T-O-P BRAKE APPLIED SUCCESSFULLY!' : 'REM S-T-O-P SUKSES DITEGAKKAN!'}
             </h3>
             <p className="text-[10px] text-slate-200 max-w-sm">
-              Impuls emosi berhasil diredam. {targetName} kini siap mengambil keputusan yang tenang, bijak, dan penuh kasih.
+              {lang === 'en'
+                ? `Emotional impulse subdued. ${localizedTarget} is now ready to make calm, wise, and considerate decisions.`
+                : `Impuls emosi berhasil diredam. ${localizedTarget} kini siap mengambil keputusan yang tenang, bijak, dan penuh kasih.`}
             </p>
           </div>
         )}
@@ -407,17 +462,19 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
           <div className="flex flex-col items-center justify-center h-full text-center z-10 animate-fade-in font-pixel">
             <div className="text-3xl mb-2">⏳</div>
             <h3 className="text-sm font-bold text-rose-300 mb-1">
-              WAKTU BEKU HABIS
+              {lang === 'en' ? 'FREEZE TIME EXPIRED' : 'WAKTU BEKU HABIS'}
             </h3>
             <p className="text-[10px] text-slate-300 max-w-xs mb-3">
-              Impuls sempat lolos! Ayo ulangi dengan mengejar tombol STOP dan menebalkan huruf lebih sigap.
+              {lang === 'en'
+                ? 'Impulse broke through! Let us try again by hitting the STOP button and tracing letters swiftly.'
+                : 'Impuls sempat lolos! Ayo ulangi dengan mengejar tombol STOP dan menebalkan huruf lebih sigap.'}
             </p>
             <button
               onClick={resetGame}
               className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Coba Lagi Dari Awal</span>
+              <span>{lang === 'en' ? 'Try Again from Start' : 'Coba Lagi Dari Awal'}</span>
             </button>
           </div>
         )}
@@ -425,7 +482,7 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
 
       {/* S-T-O-P Letters Badges Progress */}
       <div className="grid grid-cols-4 gap-1.5">
-        {LETTERS.map((item, idx) => {
+        {letters.map((item, idx) => {
           const isDone = completedLetters.includes(item.letter);
           const isCurrent = idx === currentLetterIndex && phase === 'tracing';
 
@@ -442,7 +499,7 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
             >
               <span className="block font-bold text-xs">{item.letter}</span>
               <span className="text-[7.5px] block truncate">
-                {isDone ? '✅ Berhasil' : item.subtitle}
+                {isDone ? (lang === 'en' ? '✅ Mastered' : '✅ Berhasil') : item.subtitle}
               </span>
             </div>
           );
@@ -458,7 +515,7 @@ export const StopTracingGame: React.FC<StopTracingGameProps> = ({
             className="w-full sm:w-80 py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-pixel font-black text-xs sm:text-sm shadow-[0_0_30px_rgba(16,185,129,0.85)] flex items-center justify-center gap-2 animate-bounce transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-slate-950" />
-            <span>TERAPKAN KEPUTUSAN BIJAK S-T-O-P!</span>
+            <span>{lang === 'en' ? 'APPLY S-T-O-P MINDFUL WISDOM!' : 'TERAPKAN KEPUTUSAN BIJAK S-T-O-P!'}</span>
           </button>
         </div>
       )}
