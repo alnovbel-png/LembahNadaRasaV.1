@@ -7263,6 +7263,10 @@ export class GameRenderer {
 
   private updateAndDrawParticles() {
     const ctx = this.ctx;
+    // Cap active particles to prevent frame drops & GC spikes on lower-end devices
+    if (this.particles.length > 180) {
+      this.particles.splice(0, this.particles.length - 180);
+    }
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
       p.x += p.vx;

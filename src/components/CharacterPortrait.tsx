@@ -30,41 +30,98 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
 
   switch (sprite) {
     // =========================================================================
-    // EZSEL (PLAYER / PROTAGONIST - BOY & GIRL AVATARS)
+    // EZSEL (PLAYER / PROTAGONIST - BOY AVATAR: EZZEL)
     // =========================================================================
     case 'player':
     case 'player_boy':
     case 'aris':
       return (
         <div
-          className={`${sizeClasses} bg-[#112b29] rounded-xl flex items-center justify-center border-2 border-[#2ca88e] shadow-[0_0_12px_rgba(44,168,142,0.35)] overflow-hidden relative ${className}`}
+          className={`${sizeClasses} bg-[#112b29] rounded-xl flex items-center justify-center border-2 border-[#2ca88e] shadow-[0_0_14px_rgba(44,168,142,0.45)] overflow-hidden relative ${className}`}
         >
           <svg viewBox="0 0 32 32" className="w-full h-full p-0.5" style={svgStyle}>
-            {/* Soft Oval Shadow */}
-            <ellipse cx="16" cy="29" rx="10" ry="3.5" fill="rgba(0,0,0,0.4)" />
-            {/* Dark Charcoal Navy Legs */}
-            <rect x="10" y="26" width="4" height="5" fill="#242c3d" />
-            <rect x="18" y="26" width="4" height="5" fill="#242c3d" />
-            {/* Emerald/Jade Teal Tunic */}
-            <rect x="8" y="15" width="16" height="11" fill="#1ea282" />
-            <rect x="8" y="15" width="2" height="11" fill="#168c70" />
-            <rect x="22" y="15" width="2" height="11" fill="#168c70" />
-            {/* Golden Waist Buckle / Compass */}
-            <rect x="14" y="22" width="4" height="4" fill="#f5b822" />
-            <rect x="14" y="22" width="2" height="2" fill="#fef08a" />
-            {/* Red Scarf / Collar */}
-            <rect x="8" y="13" width="16" height="3" fill="#ef4444" />
-            <rect x="8" y="13" width="16" height="1" fill="#f87171" />
+            {/* Soft Ground Shadow */}
+            <ellipse cx="16" cy="30" rx="10" ry="2.5" fill="rgba(0,0,0,0.45)" />
+
+            {/* Explorer Leather Backpack peeking behind shoulders & sides */}
+            <rect x="5" y="11" width="22" height="13" rx="1" fill="#451a03" />
+            <rect x="6" y="12" width="20" height="11" fill="#78350f" />
+            {/* Rolled Sleeping Mat / Bedroll underneath backpack */}
+            <rect x="5" y="23" width="22" height="3" rx="1" fill="#b8b894" />
+            <rect x="5" y="25" width="22" height="1" fill="#8c8c66" />
+            <rect x="10" y="23" width="1.5" height="3" fill="#451a03" />
+            <rect x="20" y="23" width="1.5" height="3" fill="#451a03" />
+            {/* Water Canteen Bottle peeking on right */}
+            <rect x="25" y="15" width="3" height="5" rx="1" fill="#93c5fd" />
+            <rect x="25" y="14" width="2" height="1" fill="#e2e8f0" />
+
+            {/* Dark Charcoal Traveler Pants */}
+            <rect x="10" y="24" width="5" height="4" fill="#1e293b" />
+            <rect x="17" y="24" width="5" height="4" fill="#1e293b" />
+            {/* Explorer Laced Hiking Boots */}
+            <rect x="9" y="27" width="6" height="4" rx="1" fill="#3d2817" />
+            <rect x="17" y="27" width="6" height="4" rx="1" fill="#3d2817" />
+            <rect x="11" y="28" width="2" height="1" fill="#78350f" />
+            <rect x="19" y="28" width="2" height="1" fill="#78350f" />
+
+            {/* Emerald/Jade Explorer Tunic (Ezzel signature color) */}
+            <rect x="8" y="15" width="16" height="9" fill="#259d88" />
+            <rect x="9" y="15" width="14" height="2" fill="#34d399" />
+            <rect x="8" y="22" width="16" height="2" fill="#1b7d6c" />
+            {/* Tunic Sleeves */}
+            <rect x="6" y="16" width="3" height="5" fill="#259d88" />
+            <rect x="23" y="16" width="3" height="5" fill="#259d88" />
+            <rect x="6" y="16" width="3" height="1" fill="#34d399" />
+            <rect x="23" y="16" width="3" height="1" fill="#34d399" />
+            {/* Peach Hands */}
+            <rect x="6" y="21" width="3" height="3" fill="#fcd7b0" />
+            <rect x="23" y="21" width="3" height="3" fill="#fcd7b0" />
+
+            {/* Dark Explorer Belt & Golden Buckle */}
+            <rect x="8" y="21" width="16" height="2" fill="#1f483f" />
+            <rect x="13" y="20" width="6" height="4" rx="0.5" fill="#f59e0b" />
+            <rect x="15" y="21" width="2" height="2" fill="#1f483f" />
+            <rect x="14" y="20" width="1" height="1" fill="#fef08a" />
+
+            {/* Backpack Leather Straps across chest */}
+            <rect x="10" y="15" width="2" height="6" fill="#451a03" />
+            <rect x="20" y="15" width="2" height="6" fill="#451a03" />
+
+            {/* Cozy Crimson Red Scarf (Wrapped snugly around collar) */}
+            <rect x="7" y="12" width="18" height="4" rx="1" fill="#dc2626" />
+            <rect x="8" y="12" width="16" height="2" fill="#ef4444" />
+            <rect x="8" y="12" width="16" height="1" fill="#f87171" />
+            <rect x="7" y="15" width="18" height="1" fill="#b91c1c" />
+
             {/* Face Skin Tone */}
-            <rect x="8" y="7" width="16" height="7" fill="#fcd7b0" />
-            {/* Brown Hair Bangs & Locks */}
-            <rect x="8" y="3" width="16" height="5" fill="#7d3817" />
-            <rect x="8" y="7" width="3" height="4" fill="#7d3817" />
-            <rect x="21" y="7" width="3" height="4" fill="#7d3817" />
-            <rect x="9" y="4" width="14" height="2" fill="#8c421d" />
-            {/* Expressive Dark Square Eyes */}
-            <rect x="11" y="8" width="2" height="3" fill="#192134" />
-            <rect x="19" y="8" width="2" height="3" fill="#192134" />
+            <rect x="8" y="6" width="16" height="7" fill="#fcd7b0" />
+            {/* Cheerful Adventurer Smile */}
+            <rect x="14" y="11" width="4" height="1" fill="#b45309" />
+            {/* Subtle Warm Cheeks */}
+            <rect x="9" y="10" width="3" height="1.5" rx="0.5" fill="#fca5a5" opacity="0.6" />
+            <rect x="20" y="10" width="3" height="1.5" rx="0.5" fill="#fca5a5" opacity="0.6" />
+            {/* Expressive Dark Eyes with Catchlight */}
+            <rect x="11" y="8" width="2" height="3" fill="#172033" />
+            <rect x="11" y="8" width="1" height="1" fill="#ffffff" />
+            <rect x="19" y="8" width="2" height="3" fill="#172033" />
+            <rect x="19" y="8" width="1" height="1" fill="#ffffff" />
+
+            {/* Ezzel's Tousled Warm Chestnut Brown Hair */}
+            <rect x="7" y="2" width="18" height="5" fill="#8e4a23" />
+            <rect x="8" y="3" width="16" height="2" fill="#b45309" />
+            {/* Hair Outline/Shade */}
+            <rect x="7" y="2" width="18" height="1" fill="#723816" />
+            <rect x="6" y="3" width="2" height="4" fill="#723816" />
+            <rect x="24" y="3" width="2" height="4" fill="#723816" />
+            {/* Adventurous Boy Bangs & Locks */}
+            <rect x="7" y="5" width="3" height="4" fill="#8e4a23" />
+            <rect x="22" y="5" width="3" height="4" fill="#8e4a23" />
+            <rect x="10" y="5" width="3" height="2" fill="#8e4a23" />
+            <rect x="15" y="5" width="4" height="2" fill="#8e4a23" />
+            <rect x="19" y="5" width="3" height="2" fill="#8e4a23" />
+            {/* Sideburn Locks */}
+            <rect x="7" y="6" width="2" height="4" fill="#723816" />
+            <rect x="23" y="6" width="2" height="4" fill="#723816" />
           </svg>
         </div>
       );

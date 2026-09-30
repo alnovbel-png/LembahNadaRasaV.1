@@ -30,17 +30,33 @@ import { sound } from './utils/audio';
 import { freeRoamWorld } from './game/freeRoamWorld';
 import { findTilePath } from './game/pathfinder';
 import { DialogueBox } from './components/DialogueBox';
-import { EmotionRegulationModal, RegulationMode } from './components/EmotionRegulationModal';
-import { CompassJournalModal } from './components/CompassJournalModal';
-import { SettingsModal, SettingsModalTab } from './components/SettingsModal';
-import { EndingModal } from './components/EndingModal';
-import { AllBadgesCelebrationModal } from './components/AllBadgesCelebrationModal';
-import { CaptureMomentModal } from './components/CaptureMomentModal';
+import type { RegulationMode } from './components/EmotionRegulationModal';
+import type { SettingsModalTab } from './components/SettingsModal';
 import { VirtualControls } from './components/VirtualControls';
 import { MiniMap } from './components/MiniMap';
 import { StartMenuModal } from './components/StartMenuModal';
 import { PauseMenuModal } from './components/PauseMenuModal';
 import { MissionNotificationModal, MissionStepData } from './components/MissionNotificationModal';
+
+// Code-split heavy modals to significantly shrink initial bundle and boost performance on mobile & low-end devices
+const EmotionRegulationModal = React.lazy(() =>
+  import('./components/EmotionRegulationModal').then((m) => ({ default: m.EmotionRegulationModal }))
+);
+const CompassJournalModal = React.lazy(() =>
+  import('./components/CompassJournalModal').then((m) => ({ default: m.CompassJournalModal }))
+);
+const SettingsModal = React.lazy(() =>
+  import('./components/SettingsModal').then((m) => ({ default: m.SettingsModal }))
+);
+const EndingModal = React.lazy(() =>
+  import('./components/EndingModal').then((m) => ({ default: m.EndingModal }))
+);
+const AllBadgesCelebrationModal = React.lazy(() =>
+  import('./components/AllBadgesCelebrationModal').then((m) => ({ default: m.AllBadgesCelebrationModal }))
+);
+const CaptureMomentModal = React.lazy(() =>
+  import('./components/CaptureMomentModal').then((m) => ({ default: m.CaptureMomentModal }))
+);
 import { Sparkles, Compass } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
 import { PSE_ACHIEVEMENTS } from './game/constants';
@@ -4035,137 +4051,132 @@ export default function App() {
         />
       )}
 
-      {/* Interactive Emotion Regulation Studio (4 Modes for Player & NPCs) */}
-      {showBreathingMiniGame && (
-        <EmotionRegulationModal
-          isOpen={showBreathingMiniGame}
-          targetName={breathingTarget}
-          initialMode={regulationInitialMode}
-          onClose={() => setShowBreathingMiniGame(false)}
-          onComplete={(_mode) => {
-            setShowBreathingMiniGame(false);
-            setStats((s) => ({
-              ...s,
-              calmTechniquesMastered: s.calmTechniquesMastered + 1,
-              empathyScore: s.empathyScore + 25,
-            }));
+      {/* Lazy-Loaded Modals wrapped in Suspense to preserve 60 FPS and low memory on all devices */}
+      <React.Suspense fallback={null}>
+        {/* Interactive Emotion Regulation Studio (4 Modes for Player & NPCs) */}
+        {showBreathingMiniGame && (
+          <EmotionRegulationModal
+            isOpen={showBreathingMiniGame}
+            targetName={breathingTarget}
+            initialMode={regulationInitialMode}
+            onClose={() => setShowBreathingMiniGame(false)}
+            onComplete={(_mode) => {
+              setShowBreathingMiniGame(false);
+              setStats((s) => ({
+                ...s,
+                calmTechniquesMastered: s.calmTechniquesMastered + 1,
+                empathyScore: s.empathyScore + 25,
+              }));
 
-            // Sparkling aura effect around player's position
-            rendererRef.current?.addSparkle(
-              playerRef.current.x + 16,
-              playerRef.current.y + 16,
-              '#38bdf8',
-              35
-            );
+              // Sparkling aura effect around player's position
+              rendererRef.current?.addSparkle(
+                playerRef.current.x + 16,
+                playerRef.current.y + 16,
+                '#38bdf8',
+                35
+              );
 
-            if (breathingTarget === 'Kiki' || breathingTarget === 'kiki') {
-              let afterNode = GAME_DIALOGUES.kiki_after_breathing;
-              if (_mode === 'grounding') {
-                afterNode = GAME_DIALOGUES.kiki_after_grounding || afterNode;
-              } else if (_mode === 'stop') {
-                afterNode = GAME_DIALOGUES.kiki_after_stop || afterNode;
-              } else if (_mode === 'shakeout') {
-                afterNode = GAME_DIALOGUES.kiki_after_shakeout || afterNode;
-              } else if (_mode === 'breathing') {
-                afterNode = GAME_DIALOGUES.kiki_after_breathing || afterNode;
+              if (breathingTarget === 'Kiki' || breathingTarget === 'kiki') {
+                let afterNode = GAME_DIALOGUES.kiki_after_breathing;
+                if (_mode === 'grounding') {
+                  afterNode = GAME_DIALOGUES.kiki_after_grounding || afterNode;
+                } else if (_mode === 'stop') {
+                  afterNode = GAME_DIALOGUES.kiki_after_stop || afterNode;
+                } else if (_mode === 'shakeout') {
+                  afterNode = GAME_DIALOGUES.kiki_after_shakeout || afterNode;
+                } else if (_mode === 'breathing') {
+                  afterNode = GAME_DIALOGUES.kiki_after_breathing || afterNode;
+                }
+                if (afterNode) {
+                  processDialogueTriggers(afterNode);
+                  setCurrentDialogue(afterNode);
+                }
+              } else {
+                setQuestHint(lang === 'en' ? '🌟 Regulation Complete! Your mind is clear, calm, and ready to explore.' : '🌟 Latihan Regulasi Selesai! Pikiranmu jernih, tenang, dan siap berpetualang.');
               }
-              if (afterNode) {
-                processDialogueTriggers(afterNode);
-                setCurrentDialogue(afterNode);
-              }
-            } else {
-              setQuestHint(lang === 'en' ? '🌟 Regulation Complete! Your mind is clear, calm, and ready to explore.' : '🌟 Latihan Regulasi Selesai! Pikiranmu jernih, tenang, dan siap berpetualang.');
-            }
-          }}
-        />
-      )}
+            }}
+          />
+        )}
 
-      {/* Compass Journal & PSE Dictionary Modal */}
-      <CompassJournalModal
-        isOpen={showJournal}
-        onClose={() => setShowJournal(false)}
-        items={getLocalizedItems(inventory, lang)}
-        zoneStatus={zoneStatus}
-        stats={stats}
-        onOpenAllBadgesCelebration={() => setShowAllBadgesCelebration(true)}
-      />
+        {/* Compass Journal & PSE Dictionary Modal */}
+        {showJournal && (
+          <CompassJournalModal
+            isOpen={showJournal}
+            onClose={() => setShowJournal(false)}
+            items={getLocalizedItems(inventory, lang)}
+            zoneStatus={zoneStatus}
+            stats={stats}
+            onOpenAllBadgesCelebration={() => setShowAllBadgesCelebration(true)}
+          />
+        )}
 
-      {/* Unified Settings Modal (Quests, Achievements, Audio, Controls Guide, Offline Export) */}
-      <SettingsModal
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-        initialTab={settingsTab}
-        quests={getLocalizedQuests(quests, lang)}
-        stats={stats}
-        zoneStatus={zoneStatus}
-        npcs={npcs}
-        unlockedBadges={stats.unlockedBadges}
-        empathyScore={stats.empathyScore}
-        isMuted={isMuted}
-        isFreeRoamActive={isFreeRoamActive}
-        onToggleMute={handleToggleMute}
-        onOpenAllBadgesCelebration={() => setShowAllBadgesCelebration(true)}
-        onUnlockAllBadges={handleUnlockAllBadgesTest}
-        onCaptureMoment={handleCaptureMoment}
-        onNavigateToTile={handleMiniMapNavigate}
-        onActivateDeveloperMode={handleActivateDeveloperMode}
-      />
+        {/* Unified Settings Modal (Quests, Achievements, Audio, Controls Guide) */}
+        {showSettings && (
+          <SettingsModal
+            isOpen={showSettings}
+            onClose={() => setShowSettings(false)}
+            initialTab={settingsTab}
+            quests={getLocalizedQuests(quests, lang)}
+            stats={stats}
+            zoneStatus={zoneStatus}
+            npcs={npcs}
+            unlockedBadges={stats.unlockedBadges}
+            empathyScore={stats.empathyScore}
+            isMuted={isMuted}
+            isFreeRoamActive={isFreeRoamActive}
+            onToggleMute={handleToggleMute}
+            onOpenAllBadgesCelebration={() => setShowAllBadgesCelebration(true)}
+            onUnlockAllBadges={handleUnlockAllBadgesTest}
+            onCaptureMoment={handleCaptureMoment}
+            onNavigateToTile={handleMiniMapNavigate}
+            onActivateDeveloperMode={handleActivateDeveloperMode}
+          />
+        )}
 
-      {/* Developer Mode Toast Notification */}
-      {developerToast && (
-        <div
-          id="developer-mode-toast"
-          className="fixed top-20 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none px-4 py-2.5 rounded-xl bg-slate-950/95 border-2 border-amber-400 shadow-[0_0_30px_rgba(245,158,11,0.55)] flex items-center gap-2.5 max-w-[90vw] animate-bounce"
-        >
-          <Sparkles className="w-5 h-5 text-amber-400 shrink-0 animate-spin" />
-          <p className="text-amber-200 text-xs sm:text-sm font-bold tracking-wide text-center">
-            {developerToast}
-          </p>
-        </div>
-      )}
+        {/* Capture Moment / Abadikan Momen Modal with decorative overlay */}
+        {showCaptureMoment && (
+          <CaptureMomentModal
+            isOpen={showCaptureMoment}
+            onClose={() => setShowCaptureMoment(false)}
+            screenshotDataUrl={screenshotDataUrl}
+            locationName={capturedLocationName}
+            stats={stats}
+            zoneStatus={zoneStatus}
+            onRetake={handleCaptureMoment}
+          />
+        )}
 
-      {/* Capture Moment / Abadikan Momen Modal with decorative overlay */}
-      <CaptureMomentModal
-        isOpen={showCaptureMoment}
-        onClose={() => setShowCaptureMoment(false)}
-        screenshotDataUrl={screenshotDataUrl}
-        locationName={capturedLocationName}
-        stats={stats}
-        zoneStatus={zoneStatus}
-        onRetake={handleCaptureMoment}
-      />
+        {/* Grand 10/10 Badges Appreciation Celebration Modal */}
+        {showAllBadgesCelebration && (
+          <AllBadgesCelebrationModal
+            isOpen={showAllBadgesCelebration}
+            onClose={() => setShowAllBadgesCelebration(false)}
+            stats={stats}
+            playerName={playerName}
+            onOpenJournal={() => {
+              setShowAllBadgesCelebration(false);
+              setShowJournal(true);
+            }}
+            onFreeRoam={() => {
+              setShowAllBadgesCelebration(false);
+              handleFreeRoam();
+            }}
+          />
+        )}
 
-      {/* Camera shutter flash effect */}
-      {showCameraFlash && (
-        <div className="fixed inset-0 bg-white pointer-events-none z-[9999] transition-opacity duration-300 opacity-90 animate-pulse" />
-      )}
-
-      {/* Grand 10/10 Badges Appreciation Celebration Modal */}
-      <AllBadgesCelebrationModal
-        isOpen={showAllBadgesCelebration}
-        onClose={() => setShowAllBadgesCelebration(false)}
-        stats={stats}
-        playerName={playerName}
-        onOpenJournal={() => {
-          setShowAllBadgesCelebration(false);
-          setShowJournal(true);
-        }}
-        onFreeRoam={() => {
-          setShowAllBadgesCelebration(false);
-          handleFreeRoam();
-        }}
-      />
-
-      {/* Ending Celebration & Certificate Modal */}
-      <EndingModal
-        isOpen={showEnding}
-        onRestart={handleRestart}
-        onFreeRoam={handleFreeRoam}
-        stats={stats}
-        branchTag={branchChoice}
-        endingType={endingType}
-        playerName={playerName}
-      />
+        {/* Ending Celebration & Certificate Modal */}
+        {showEnding && (
+          <EndingModal
+            isOpen={showEnding}
+            onRestart={handleRestart}
+            onFreeRoam={handleFreeRoam}
+            stats={stats}
+            branchTag={branchChoice}
+            endingType={endingType}
+            playerName={playerName}
+          />
+        )}
+      </React.Suspense>
 
       {/* Opening Start Menu Modal (Displayed before entering the game story) */}
       <StartMenuModal
