@@ -249,7 +249,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
           <div className="w-full max-w-[460px] sm:max-w-[500px] md:max-w-[520px] bg-[#121626]/95 border-2 border-amber-500/90 rounded-[22px] sm:rounded-[24px] shadow-[0_0_40px_rgba(245,158,11,0.2)] p-4 sm:p-5 flex flex-col gap-2.5 sm:gap-3 animate-fade-in-slide-up">
             {/* Header: MENU UTAMA */}
             <div className="text-center pt-0.5 pb-0.5">
-              <span className="font-pixel text-amber-400 text-xs sm:text-sm tracking-[0.2em] font-bold">
+              <span
+                style={{ fontSize: '12px', textDecorationLine: 'none' }}
+                className="font-pixel text-amber-400 text-[12px] no-underline tracking-[0.2em] font-bold"
+              >
                 {ui.mainMenu}
               </span>
             </div>

@@ -35,10 +35,10 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
   if (!isOpen) return null;
 
   const steps = [
-    { num: 1, title: lang === 'en' ? 'Plaza' : 'Alun-Alun', char: 'Kiki' },
-    { num: 2, title: lang === 'en' ? 'Bridge' : 'Jembatan', char: lang === 'en' ? 'Grandpa Ranu' : 'Kakek Ranu' },
-    { num: 3, title: lang === 'en' ? 'Silent Forest' : 'Hutan Sunyi', char: 'Bimo' },
-    { num: 4, title: lang === 'en' ? 'Clock Tower' : 'Menara Jam', char: lang === 'en' ? 'Spirit Elder' : 'Sosok Kabut' },
+    { num: 1, title: lang === 'en' ? 'Mainspring' : 'Pegas Jam', char: 'Kiki' },
+    { num: 2, title: lang === 'en' ? 'Drive Axle' : 'Poros Jam', char: lang === 'en' ? 'Grandpa Ranu' : 'Kakek Ranu' },
+    { num: 3, title: lang === 'en' ? 'Golden Gear' : 'Roda Gigi', char: 'Bimo' },
+    { num: 4, title: lang === 'en' ? '12 Clock Pieces' : '12 Komponen Jam', char: lang === 'en' ? 'Collect 12 Pieces' : 'Kumpulkan 12 Komponen' },
   ];
 
   // Target character configuration for missions 1 to 5
@@ -61,8 +61,8 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
         };
       case 4:
         return {
-          sprite: mission.portrait || 'spirit_elder',
-          name: mission.speaker || (lang === 'en' ? 'Spirit Elder' : 'Sosok Kabut'),
+          sprite: mission.portrait || 'girl_counselor',
+          name: mission.speaker || (lang === 'en' ? 'Village Friends (12 Clock Pieces)' : 'Warga Desa (12 Komponen Jam)'),
         };
       case 5:
       default:

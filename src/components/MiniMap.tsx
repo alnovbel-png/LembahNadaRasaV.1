@@ -309,7 +309,58 @@ export const MiniMap: React.FC<MiniMapProps> = ({
         ctx.fillRect(0, 0, MINI_MAP_W, MINI_MAP_H);
       }
 
-      // 2. Zone Restoration & Fog of Isolation Overlays
+      // 2. Zone Restoration & Fog of Isolation Overlays (Localized around resolved NPCs)
+      if (zoneStatus.tower) {
+        // Fully restored: celebratory golden-emerald radiant bloom over entire valley
+        ctx.fillStyle = 'rgba(52, 211, 153, 0.16)';
+        ctx.fillRect(0, 0, MINI_MAP_W, MINI_MAP_H);
+      } else {
+        // Cold mist layer over unrestored valley
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.38)';
+        ctx.fillRect(0, 0, MINI_MAP_W, MINI_MAP_H);
+
+        // Radiant color pockets strictly centered around each resolved NPC's location
+        npcs.forEach((npc) => {
+          if (!npc.isResolved) return;
+          const cx = (npc.x + 0.5) * MINI_TILE_PX;
+          const cy = (npc.y + 0.5) * MINI_TILE_PX;
+          let rTiles = 3.6;
+          if (npc.id === 'kiki' || npc.id === 'kakek_ranu') rTiles = 3.8;
+          else if (npc.id === 'didi_scout') rTiles = 3.2;
+
+          const rPx = rTiles * MINI_TILE_PX;
+          const grad = ctx.createRadialGradient(cx, cy, 1, cx, cy, rPx);
+          grad.addColorStop(0, 'rgba(52, 211, 153, 0.45)');
+          grad.addColorStop(0.65, 'rgba(245, 158, 11, 0.22)');
+          grad.addColorStop(1, 'rgba(52, 211, 153, 0)');
+
+          ctx.save();
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.strokeStyle = 'rgba(52, 211, 153, 0.45)';
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        });
+
+        // Cozy lantern glow at spawn point
+        const spX = (11 + 0.5) * MINI_TILE_PX;
+        const spY = (15 + 0.5) * MINI_TILE_PX;
+        const spRPx = 1.8 * MINI_TILE_PX;
+        const spGrad = ctx.createRadialGradient(spX, spY, 1, spX, spY, spRPx);
+        spGrad.addColorStop(0, 'rgba(254, 240, 138, 0.35)');
+        spGrad.addColorStop(1, 'rgba(254, 240, 138, 0)');
+        ctx.fillStyle = spGrad;
+        ctx.beginPath();
+        ctx.arc(spX, spY, spRPx, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
       const ZONES_CONFIG = [
         {
           id: 'plaza',
@@ -368,22 +419,10 @@ export const MiniMap: React.FC<MiniMapProps> = ({
       ];
 
       for (const zone of ZONES_CONFIG) {
-        if (zone.isRestored) {
-          // Restored zone: radiant emerald/amber tint with crisp border
-          ctx.fillStyle = zone.restoredColor;
-          ctx.fillRect(zone.x, zone.y, zone.w, zone.h);
-
-          ctx.strokeStyle = 'rgba(52, 211, 153, 0.45)';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(zone.x, zone.y, zone.w, zone.h);
-        } else {
-          // Unrecovered area: desaturated cold isolation fog overlay
-          ctx.fillStyle = 'rgba(30, 41, 59, 0.48)';
-          ctx.fillRect(zone.x, zone.y, zone.w, zone.h);
-
+        if (!zone.isRestored) {
           // Subtle drifting pixel fog particles
           const fogShift = (tick * 0.25) % (zone.w + 16);
-          ctx.fillStyle = 'rgba(148, 163, 184, 0.15)';
+          ctx.fillStyle = 'rgba(148, 163, 184, 0.12)';
           ctx.fillRect(zone.x + fogShift - 10, zone.y + 2, 8, zone.h - 4);
 
           if (zone.isQuestZone) {
@@ -399,8 +438,8 @@ export const MiniMap: React.FC<MiniMapProps> = ({
             // Subdued dashed outline
             ctx.save();
             ctx.setLineDash([2, 3]);
-            ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
-            ctx.lineWidth = 1;
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+            ctx.lineWidth = 0.8;
             ctx.strokeRect(zone.x, zone.y, zone.w, zone.h);
             ctx.restore();
           }

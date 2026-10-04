@@ -112,6 +112,7 @@ export class GameRenderer {
   private waterfallParticleId: number = 0;
   private destinationTarget: { x: number; y: number; anim: number; type: DestinationType } | null = null;
   private hoverTarget: HoverTarget | null = null;
+  private currentNpcs: NPC[] = [];
   private shakeIntensity: number = 0;
   private shakeDuration: number = 0;
   private shakeElapsed: number = 0;
@@ -541,6 +542,7 @@ export class GameRenderer {
     timeOfDay?: 'day' | 'night'
   ) {
     this.tickCount++;
+    this.currentNpcs = npcs || [];
     this.isAllMissionsCompleted =
       isMissionCompleted ??
       (zoneColorStatus.plaza &&
@@ -556,9 +558,9 @@ export class GameRenderer {
     ctx.save();
     ctx.imageSmoothingEnabled = false;
 
-    // Clear background with natural terrain base color
-    const isPlazaRestored = this.isAllMissionsCompleted || zoneColorStatus.plaza;
-    const dayTerrain = isPlazaRestored ? '#386641' : '#334155';
+    // Clear background with natural terrain base color (only fully green when tower is restored or free roam)
+    const isEntireWorldRestored = this.isAllMissionsCompleted || zoneColorStatus.tower;
+    const dayTerrain = isEntireWorldRestored ? '#386641' : '#334155';
     ctx.fillStyle = dayTerrain;
     ctx.fillRect(0, 0, viewportW, viewportH);
 
@@ -854,12 +856,52 @@ export class GameRenderer {
     ctx.restore();
   }
 
-  // Check which zone a coordinate belongs to
+  // Check whether a tile coordinate is colored, based on the localized restoration around each resolved NPC
   private isZoneColored(c: number, r: number, status: ZoneColorStatus): boolean {
-    if (c >= 25 && r <= 12) return status.tower;
-    if (c >= 20 && (r >= 12 && r <= 20)) return status.bridge;
-    if (c <= 16 && r <= 10) return status.forest;
-    return status.plaza;
+    // 1. If final mission completed or tower restored, entire world is 100% full color!
+    if (this.isAllMissionsCompleted || status.tower) {
+      return true;
+    }
+
+    // 2. Check localized restoration radius around each resolved NPC
+    // Area color is restored in pockets specifically around each NPC who has been helped
+    if (this.currentNpcs && this.currentNpcs.length > 0) {
+      for (const npc of this.currentNpcs) {
+        if (!npc.isResolved) continue;
+
+        const dx = c - npc.x;
+        const dy = r - npc.y;
+        const distSq = dx * dx + dy * dy;
+
+        // Custom organic restoration radius based on each NPC's location (localized, not too big)
+        let radius = 3.5;
+        if (npc.id === 'kiki') radius = 3.8;              // Fountain & central plaza square
+        else if (npc.id === 'kakek_ranu') radius = 3.8;   // Wooden bridge & river crossing
+        else if (npc.id === 'bimo') radius = 3.6;         // Forest clearing & grove
+        else if (npc.id === 'kak_citra') radius = 3.5;    // Flower garden & flower cart
+        else if (npc.id === 'kakek_damai') radius = 3.6;  // Riverbank & mindful bonsai garden
+        else if (npc.id === 'pak_joko') radius = 3.8;     // Vegetable patches & farm crops
+        else if (npc.id === 'teguh_woodcutter') radius = 3.6; // Forest cabin & timber logs
+        else if (npc.id === 'sari_fruit') radius = 3.6;   // Apple & orange orchards
+        else if (npc.id === 'jala_fisher') radius = 3.5;  // Fishing pier & southern river
+        else if (npc.id === 'moka_cat') radius = 3.4;     // Reading bench & library area
+        else if (npc.id === 'prof_kotek') radius = 3.4;   // Chicken coop & pasture
+        else if (npc.id === 'didi_scout') radius = 3.2;   // Village pathway network
+
+        if (distSq <= radius * radius) {
+          return true;
+        }
+      }
+    }
+
+    // 3. Small cozy lantern glow around central spawn point (c=11, r=15)
+    const spawnDx = c - 11;
+    const spawnDy = r - 15;
+    if (spawnDx * spawnDx + spawnDy * spawnDy <= 1.8 * 1.8) {
+      return true;
+    }
+
+    return false;
   }
 
   // Helper to draw tile base with subpixel overdraw (+1px) to guarantee no dark hairline seams

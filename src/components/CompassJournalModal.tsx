@@ -253,65 +253,70 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                 </p>
               </div>
 
-              {/* Bab 4: Penjelajahan 4 Zona */}
+              {/* Bab 4: Mengumpulkan Komponen Jam & Meluruskan Salah Paham */}
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
-                  <span>🗺️</span>
-                  <h4>{lang === 'en' ? 'Chapter 4: Restoring the Four Corners of the Valley' : 'Bab 4: Memulihkan 4 Sudut Lembah'}</h4>
+                  <span>⚙️</span>
+                  <h4>{lang === 'en' ? 'Chapter 4: Gathering Clock Components & Resolving Misunderstandings' : 'Bab 4: Mengumpulkan Komponen Jam & Meluruskan Salah Paham'}</h4>
                 </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {lang === 'en'
+                    ? 'Because of heated misunderstandings and emotional distress, the Clock Tower broke and its 12 components were scattered among the villagers. Each villager holds onto a component until someone truly listens and responds with empathy:'
+                    : 'Akibat salah paham hebat dan emosi yang meluap, Menara Jam Harmoni rusak dan 12 komponennya terpencar di tangan para warga desa. Setiap warga menyimpan satu komponen jam hingga ada yang bersedia mendengarkan dan memahami emosi mereka dengan respon yang benar:'}
+                </p>
                 <div className="space-y-2 text-xs text-slate-300">
                   <div className="flex items-start gap-2 bg-slate-900/50 hover:bg-slate-900/80 hover:border-amber-400/50 hover:scale-[1.01] hover:shadow-[0_0_10px_rgba(245,158,11,0.2)] p-2.5 rounded-lg border border-slate-700/60 transition-all">
-                    <span className="text-base shrink-0">🐿️</span>
+                    <span className="text-base shrink-0">⏱️</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '1. Village Plaza & Kiki the Post Squirrel:' : '1. Alun-Alun Desa & Kiki si Tupai Pos:'}
+                        {lang === 'en' ? '1. Village Plaza — Kiki (Clock Mainspring):' : '1. Alun-Alun Desa — Kiki (Pegas Detak Jam):'}
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
                         {lang === 'en'
-                          ? 'Kiki panicked when letters blew away in a sudden gust. Ezzel guided Kiki through mindful STOP breathing. Once calm, the letters were gathered, and the plaza bloomed with vibrant colors!'
-                          : 'Kiki panik karena surat-surat warga berhamburan tertiup angin kencang. Ezzel mengajak Kiki mempraktikkan teknik bernapas sadar (STOP). Setelah tenang, surat berhasil dikumpulkan, dan alun-alun kembali mekar ceria!'}
+                          ? 'Kiki panicked fearing everyone would blame him for the broken clock and lost mail. Ezzel validated his fear and guided him through mindful calming. Feeling safe, Kiki happily handed over the Clock Mainspring!'
+                          : 'Kiki panik karena takut disalahkan atas rusaknya Menara Jam dan surat yang berhamburan. Ezzel memvalidasi rasa takutnya tanpa menyalahkan. Merasa aman dan dihargai, Kiki menyerahkan Pegas Detak Jam!'}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2 bg-slate-900/50 hover:bg-slate-900/80 hover:border-amber-400/50 hover:scale-[1.01] hover:shadow-[0_0_10px_rgba(245,158,11,0.2)] p-2.5 rounded-lg border border-slate-700/60 transition-all">
-                    <span className="text-base shrink-0">🪵</span>
+                    <span className="text-base shrink-0">🗝️</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '2. River Wooden Bridge & Grandpa Ranu:' : '2. Jembatan Kayu & Kakek Ranu:'}
+                        {lang === 'en' ? '2. River Bridge — Grandpa Ranu (Drive Axle & Lever Key):' : '2. Jembatan Kayu — Kakek Ranu (Poros & Kunci Tuas Jam):'}
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
                         {lang === 'en'
-                          ? 'Grandpa Ranu locked the bridge, feeling his craftsmanship was taken for granted. Ezzel listened with reverence and acknowledged his dedication. Grandpa Ranu opened the bridge, and clear waters flowed once more!'
-                          : 'Kakek Ranu mengunci jembatan karena marah hasil karyanya tak dihargai warga. Ezzel mendengarkan dengan penuh hormat dan mengakui jasa sang kakek. Hati Kakek Ranu luluh, jembatan dibuka kembali, dan air sungai mengalir jernih!'}
+                          ? 'Grandpa Ranu felt lonely and angry, believing his craft was taken for granted. Ezzel genuinely appreciated his dedication, melting the misunderstanding and receiving the Clock Drive Axle.'
+                          : 'Kakek Ranu merasa kesepian dan lelah karena mengira jerih payahnya tak dihargai. Ezzel mengapresiasi kerja kerasnya dengan tulus, meluruskan salah paham, dan menerima Poros Tuas Jam.'}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2 bg-slate-900/50 hover:bg-slate-900/80 hover:border-amber-400/50 hover:scale-[1.01] hover:shadow-[0_0_10px_rgba(245,158,11,0.2)] p-2.5 rounded-lg border border-slate-700/60 transition-all">
-                    <span className="text-base shrink-0">🌲</span>
+                    <span className="text-base shrink-0">⚙️</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '3. Silent Forest & Friend Bimo:' : '3. Hutan Sunyi & Sahabat Bimo:'}
+                        {lang === 'en' ? '3. Silent Forest — Bimo (Golden Master Gear):' : '3. Hutan Sunyi — Bimo (Roda Gigi Emas Pusaka Jam):'}
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
                         {lang === 'en'
-                          ? 'Bimo isolated himself under the ancient tree, fearing judgment. Ezzel showed genuine, unconditional acceptance. Bimo regained confidence, and the forest flourished into song!'
-                          : 'Bimo menyendiri di bawah pohon purba karena takut dijauhi teman-temannya. Ezzel membuktikan bahwa ia tulus ingin berteman tanpa syarat. Rasa percaya diri Bimo pulih, dan hutan kembali rimbun bernyanyi!'}
+                          ? 'Bimo fled in shame after making a mistake, terrified of being scolded. Ezzel nurtured a growth mindset—mistakes are how we learn! Bimo regained courage and handed over the Golden Master Gear.'
+                          : 'Bimo menyendiri di hutan karena takut dimarahi dan dicap anak gagal. Ezzel menumbuhkan Growth Mindset bahwa kesalahan adalah proses belajar. Bimo kembali percaya diri dan menyerahkan Roda Gigi Emas Jam.'}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-2 bg-slate-900/50 hover:bg-slate-900/80 hover:border-amber-400/50 hover:scale-[1.01] hover:shadow-[0_0_10px_rgba(245,158,11,0.2)] p-2.5 rounded-lg border border-slate-700/60 transition-all">
-                    <span className="text-base shrink-0">🔔</span>
+                    <span className="text-base shrink-0">💎</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '4. Clock Tower Peak & Elder Wilis:' : '4. Puncak Menara Jam & Nenek Wilis:'}
+                        {lang === 'en' ? '4. Clock Tower Summit — Elder Wilis (12/12 Components & Core Crystal):' : '4. Puncak Menara Jam — Nenek Wilis (12/12 Komponen & Kristal Inti):'}
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
                         {lang === 'en'
-                          ? 'Ezzel carried the Harmony Gear to the tower peak to meet Elder Wilis. Seeing the genuine empathy blooming in young hearts, the mist dissolved forever, bells chimed, and full harmony returned!'
-                          : 'Ezzel membawa Roda Gigi Harmoni ke puncak menara dan berbicara kepada Nenek Wilis. Melihat ketulusan anak-anak yang telah belajar berempati, kabut abu-abu terangkat selamanya, lonceng berdentang merdu, dan harmoni lembah pulih seutuhnya!'}
+                          ? 'At the summit, after all 12 clock components are collected from every villager across the village, Elder Wilis unites the mechanism, places the Core Crystal, and the chimes ring out to light up the tower and restore harmony 100%!'
+                          : 'Di puncak menara, setelah seluruh 12 komponen jam terkumpul lengkap dari semua warga desa, Nenek Wilis menyatukan mesin waktu desa, memasang Kristal Inti Jam, lonceng berdentang menggetarkan lembah, menara jam menyala terang, dan kabut abu-abu sirna digantikan warna pelangi 100%!'}
                       </p>
                     </div>
                   </div>
@@ -493,7 +498,46 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
           )}
 
           {activeTab === 'tas' && (
-            <div>
+            <div className="space-y-3">
+              {/* Clock Tower Components Restoration Header */}
+              {(() => {
+                const clockItems = localizedItems.filter(
+                  (it) =>
+                    it.id.startsWith('item_clock_') ||
+                    it.id === 'item_letter' ||
+                    it.id === 'item_secret_key' ||
+                    it.id === 'item_bridge_pass' ||
+                    it.id === 'item_gold_gear' ||
+                    it.id === 'item_egg_badge'
+                );
+                return (
+                  <div className="bg-gradient-to-r from-amber-950/60 via-slate-900 to-cyan-950/60 border border-amber-500/40 rounded-xl p-3 shadow-md flex flex-col sm:flex-row items-center justify-between gap-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="text-2xl p-1.5 bg-amber-500/20 rounded-lg border border-amber-400/40">
+                        ⚙️
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-amber-300 text-xs sm:text-sm font-pixel">
+                          {lang === 'en'
+                            ? `Clock Tower Components: ${clockItems.length}/12 Restored`
+                            : `Komponen Menara Jam: ${clockItems.length}/12 Terkumpul`}
+                        </h4>
+                        <p className="text-[10.5px] text-slate-300">
+                          {lang === 'en'
+                            ? 'Every villager holds a piece of the Clock Tower. Empathize with their emotions to restore the clock!'
+                            : 'Setiap warga desa memegang satu komponen Menara Jam. Pahami emosi tiap NPC dan berikan respon yang benar untuk memulihkannya!'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="shrink-0 flex items-center gap-1 font-pixel text-xs text-amber-300 bg-slate-950/80 px-2.5 py-1 rounded-lg border border-amber-400/40">
+                      <span>{clockItems.length}</span>
+                      <span className="text-slate-500">/</span>
+                      <span>12</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {localizedItems.length === 0 ? (
                 <div className="text-center py-10 text-slate-500 text-xs">
                   {lang === 'en'
@@ -502,22 +546,47 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {localizedItems.map((it) => (
-                    <div
-                      key={it.id}
-                      className="bg-slate-800/80 border border-slate-700 hover:border-amber-400/70 hover:scale-[1.025] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] rounded-xl p-3 flex gap-2.5 items-start transition-all duration-200 cursor-default"
-                    >
-                      <span className="text-2xl shrink-0 p-1 bg-slate-900 rounded-lg border border-slate-700 shadow-inner">
-                        {it.icon}
-                      </span>
-                      <div>
-                        <h4 className="font-bold text-xs text-amber-300">{it.name}</h4>
-                        <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
-                          {it.description}
-                        </p>
+                  {localizedItems.map((it) => {
+                    const isClockComponent =
+                      it.id.startsWith('item_clock_') ||
+                      it.id === 'item_letter' ||
+                      it.id === 'item_secret_key' ||
+                      it.id === 'item_bridge_pass' ||
+                      it.id === 'item_gold_gear' ||
+                      it.id === 'item_egg_badge';
+                    return (
+                      <div
+                        key={it.id}
+                        className={`rounded-xl p-3 flex gap-2.5 items-start transition-all duration-200 cursor-default ${
+                          isClockComponent
+                            ? 'bg-amber-950/30 border-2 border-amber-500/60 hover:border-amber-400 hover:scale-[1.025] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]'
+                            : 'bg-slate-800/80 border border-slate-700 hover:border-slate-500 hover:scale-[1.01] rounded-xl'
+                        }`}
+                      >
+                        <span className="text-2xl shrink-0 p-1 bg-slate-900 rounded-lg border border-slate-700 shadow-inner">
+                          {it.icon}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className="font-bold text-xs text-amber-300 truncate">{it.name}</h4>
+                            {isClockComponent && (
+                              <span className="text-[9px] font-pixel text-amber-300 bg-amber-500/20 border border-amber-400/40 rounded px-1 shrink-0">
+                                ⚙️ {lang === 'en' ? 'CLOCK PIECE' : 'KOMPONEN'}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-slate-300 mt-0.5 leading-snug">
+                            {it.description}
+                          </p>
+                          {it.foundLocation && (
+                            <span className="text-[9.5px] text-slate-400 mt-1 block italic">
+                              📍 {it.foundLocation}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

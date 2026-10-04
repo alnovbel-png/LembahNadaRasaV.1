@@ -563,7 +563,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'cemas',
       deepEmotion: 'takut',
-      reason: 'Surat-surat penting desa berhamburan saat kabut datang, takut mengecewakan semua orang!',
+      reason: 'Panik surat berhamburan dan takut dituduh sebagai penyebab Menara Jam mati. Memegang Pegas Detak Jam.',
       selInsight: 'Kecemasan membuat napas pendek & pikiran kusut. Teknik Napas Balon membantu menenangkan detak jantung.',
       calmTechnique: 'napas_balon',
     },
@@ -581,7 +581,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'marah',
       deepEmotion: 'kecewa',
-      reason: 'Marah karena jembatan dituduh rusak karena kelalaiannya, padahal ia kesepian dan merasa tak dihargai.',
+      reason: 'Marah karena merasa dituduh lalai merawat roda gigi jam dan tidak dihargai; mengunci jembatan serta menyimpan Poros Jam.',
       selInsight: 'Kemarahan seringkali adalah "lapisan luar" pelindung dari rasa terluka atau merasa tidak dipedulikan.',
       calmTechnique: 'validasi',
     },
@@ -599,7 +599,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'sedih',
       deepEmotion: 'cemas',
-      reason: 'Bersembunyi di hutan memeluk Roda Gigi Jam karena salah paham mengira Kakek Ranu membencinya setelah dibentak saat kakek kelelahan.',
+      reason: 'Bersembunyi di hutan memeluk Roda Gigi Emas Jam karena salah paham mengira Kakek Ranu membencinya setelah jam macet.',
       selInsight: 'Bimo butuh dukungan untuk meluruskan salah paham dengan Kakek Ranu, memaafkan diri, dan memisahkan kesalahan tindakan dari harga diri.',
       calmTechnique: 'reframing',
     },
@@ -617,7 +617,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'gembira',
       deepEmotion: 'tenang',
-      reason: 'Mengamati tingkat stres warga dengan alat pengukur detak kokok!',
+      reason: 'Mengamati tingkat stres warga dengan alat pengukur detak kokok sambil mengamankan Pegas Tawa Menara Jam.',
       selInsight: 'Tawa dan humor sehat memicu pelepasan endorfin yang menurunkan hormon stres kortisol.',
       calmTechnique: 'solusi_bersama',
     },
@@ -636,7 +636,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'kecewa',
       deepEmotion: 'sedih',
-      reason: 'Menutup menara dengan kabut abu-abu karena lelah melihat warga saling menyalahkan tanpa mendengar isi hati.',
+      reason: 'Menutup menara dengan kabut abu-abu karena sedih melihat warga berselisih dan membiarkan komponen Menara Jam terpencar.',
       selInsight: 'Kebutuhan dasar manusia adalah didengar (heard) dan dipahami (understood). Empati membuka jalan rekonsiliasi.',
       calmTechnique: 'solusi_bersama',
     },
@@ -655,7 +655,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'tenang',
       deepEmotion: 'gembira',
-      reason: 'Senang membantu anak-anak mengenali 4 Zona Regulasi Emosi lewat bunga-bunga warna-warni.',
+      reason: 'Menyimpan Lensa Prisma Menara Jam sambil membimbing anak-anak memahami 4 Zona Regulasi Emosi di taman bunga.',
       selInsight: 'Mengenali zona emosi diri sendiri (Hijau, Kuning, Merah, Biru) adalah pilar kesadaran diri (Self-Awareness).',
       calmTechnique: 'validasi',
     },
@@ -674,7 +674,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'tenang',
       deepEmotion: 'tenang',
-      reason: 'Mengamati aliran sungai jernih sambil melatih Lingkaran Kendali (Circle of Control).',
+      reason: 'Mengamati aliran sungai jernih sambil menjaga Bandul Keseimbangan Jam dan melatih Lingkaran Kendali diri.',
       selInsight: 'Fokus pada hal yang bisa kita kendalikan (respon, kata-kata) membebaskan pikiran dari kecemasan berlebih.',
       calmTechnique: 'reframing',
     },
@@ -693,7 +693,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'tenang',
       deepEmotion: 'haru',
-      reason: 'Menemani siapa saja yang butuh didengarkan tanpa buru-buru dipotong atau dinasihati.',
+      reason: 'Menjaga Lonceng Resonansi Jam dan menemani siapa saja yang butuh didengarkan tanpa buru-buru dipotong atau dihakimi.',
       selInsight: 'Mendengarkan aktif (Active Listening) berarti hadir utuh dengan mata dan hati, bukan sekadar menunggu giliran bicara.',
       calmTechnique: 'validasi',
     },
@@ -712,7 +712,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'tenang',
       deepEmotion: 'gembira',
-      reason: 'Menyiram tanaman dengan sabar setiap pagi. Belajar bahwa pertumbuhan butuh waktu, pupuk perhatian, dan proses.',
+      reason: 'Menyimpan Minyak Pelumas Alami Jam. Mengajarkan bahwa hubungan yang retak bisa dipulihkan lewat proses belajar bertahap.',
       selInsight: 'Growth Mindset & Kesabaran Proses: Karakter dan ketenangan batin tidak tumbuh dalam semalam, melainkan dipupuk lewat latihan harian.',
       calmTechnique: 'reframing',
     },
@@ -731,14 +731,14 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'gembira',
       deepEmotion: 'tenang',
-      reason: 'Senang berkeliling menyapa tetangga dan menikmati udara segar pedesaan!',
+      reason: 'Menyimpan Jarum Menit Jam sambil berkeliling menyapa tetangga membawa pesan bahwa senyuman ramah mencairkan ketegangan sosial.',
       selInsight: 'Keterampilan Relasi (Relationship Skills): Senyuman dan sapaan ramah adalah jembatan tercepat membangun rasa aman dan persahabatan di lingkungan sosial.',
       calmTechnique: 'solusi_bersama',
     },
     currentDialogueId: 'didi_intro',
     isResolved: false,
     isOptionalEducator: true,
-    isRoaming: true,
+    isRoaming: false,
     roamActivity: 'Patroli Rute Harmoni Desa',
   },
   {
@@ -752,7 +752,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'tenang',
       deepEmotion: 'haru',
-      reason: 'Hanya menebang ranting rapuh agar tunas muda mendapat cahaya matahari. Melatih kontrol amarah!',
+      reason: 'Menyimpan Casing Kayu Pelindung Jam. Mengajarkan bahwa pohon yang sehat butuh pemangkasan ranting lapuk, sama seperti jeda regulasi amarah.',
       selInsight: 'Self-Management & Regulasi Amarah: Mengetahui kapan harus "memotong" siklus emosi mendidih sebelum melukai orang lain.',
       calmTechnique: 'reframing',
     },
@@ -771,7 +771,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'gembira',
       deepEmotion: 'haru',
-      reason: 'Memetik buah manis hutan bersama warga dan bersyukur atas berkah alam yang melimpah.',
+      reason: 'Menyimpan Sekrup Emas Jam. Bersyukur atas panen buah dan meyakini bahwa berbagi rasa syukur melipatgandakan kedamaian desa.',
       selInsight: 'Social-Awareness & Rasa Syukur: Berbagi keberhasilan dan mengapresiasi kebaikan sesama melipatgandakan kebahagiaan batin.',
       calmTechnique: 'solusi_bersama',
     },
@@ -790,7 +790,7 @@ export const INITIAL_NPCS: NPC[] = [
     emotionProfile: {
       surfaceEmotion: 'tenang',
       deepEmotion: 'tenang',
-      reason: 'Menikmati aliran air jernih sungai. Memancing mengajarkan bahwa hal berharga butuh kesabaran dan ketenangan.',
+      reason: 'Menyimpan Tali Katrol Beban Jam. Menikmati proses memancing yang mengajarkan bahwa memulihkan persahabatan butuh kesabaran dan ketenangan batin.',
       selInsight: 'Mindfulness & Kesabaran (Delayed Gratification): Belajar hening, menerima proses tanpa frustrasi, dan bernapas teratur.',
       calmTechnique: 'napas_balon',
     },
@@ -833,39 +833,39 @@ export const NPC_INTRO_DIALOGUES: Record<string, string> = {
   jala_fisher: 'jala_intro',
 };
 
-// Quests flow (Alur Misi Utama Berurutan)
+// Quests flow (Alur Misi Utama: Mengumpulkan Komponen Jam Harmoni)
 export const INITIAL_QUESTS: GameQuest[] = [
   {
     id: 'quest_start',
-    title: 'Misi 1: Gunakan Kompas Resonansi Hati',
+    title: 'Misi 1: Mengambil Pegas Detak Jam (Kiki)',
     targetNPC: 'kiki',
-    description: 'Langkah 1: Bumi bergetar dan warna memudar! Dekati Kiki si tupai di barat air mancur Alun-Alun dan aktifkan Kompas Hati.',
+    description: 'Menara Jam berhenti berdetak dan komponennya terpencar akibat salah paham warga! Dekati Kiki yang panik di barat air mancur Alun-Alun, tenangkan kecemasannya dengan Kompas Hati & regulasi napas agar ia memberikan Pegas Detak Jam.',
     isCompleted: false,
-    stepHint: 'Dekati Kiki di barat air mancur lalu aktifkan Kompas Resonansi [C / Tombol Hati].',
+    stepHint: 'Dekati Kiki di barat air mancur Alun-Alun. Aktifkan Kompas Resonansi [C] dan respon dengan empati untuk mendapatkan Pegas Detak Jam.',
   },
   {
     id: 'quest_bridge',
-    title: 'Misi 2: Misteri Jembatan Terkunci',
+    title: 'Misi 2: Mengambil Poros Pengunci Jam (Kakek Ranu)',
     targetNPC: 'kakek_ranu',
-    description: 'Langkah 2: Kakek Ranu mengunci jembatan kayu ke timur. Kenali alasan kemarahannya dengan Kompas dan berikan respon empatik.',
+    description: 'Kakek Ranu mengunci jembatan kayu dan menyimpan Poros Jam karena merasa dituduh dan tidak dihargai. Pahami rasa lelah dan kesepiannya dengan respon empatik agar ia luluh dan memberikan Poros Jam.',
     isCompleted: false,
-    stepHint: 'Pergi ke timur menuju Jembatan Kayu. Gunakan Resonansi Emosi untuk membantu Kakek Ranu.',
+    stepHint: 'Pergi ke timur menuju Jembatan Kayu. Dengarkan isi hati Kakek Ranu dengan respon empatik bijak untuk mendapatkan Poros Jam.',
   },
   {
     id: 'quest_bimo',
-    title: 'Misi 3: Jejak Roda Gigi di Hutan Sunyi',
+    title: 'Misi 3: Mengambil Roda Gigi Emas Jam (Bimo)',
     targetNPC: 'bimo',
-    description: 'Langkah 3: Bimo bersembunyi di hutan barat laut. Bantu dia meluruskan salah paham dengan Kakek Ranu dan mengatasi rasa takut bersalah agar ia menyerahkan roda gigi jam.',
+    description: 'Bimo bersembunyi di Hutan Sunyi memeluk Roda Gigi Emas Jam karena takut dimusuhi akibat salah paham. Kuatkan hatinya dengan Growth Mindset dan luruskan prasangkanya agar ia menyerahkan Roda Gigi Emas Jam.',
     isCompleted: false,
-    stepHint: 'Seberangi jembatan ke Hutan Sunyi di barat laut. Temui Bimo di balik pohon rimbun.',
+    stepHint: 'Seberangi jembatan ke Hutan Sunyi di barat laut. Temui Bimo di balik pohon dan luruskan salah paham agar ia menyerahkan Roda Gigi Emas Jam.',
   },
   {
     id: 'quest_tower',
-    title: 'Misi 4: Membuka Hati Menara Jam',
-    targetNPC: 'penjaga_kabut',
-    description: 'Langkah 4 (Misi Akhir): Bawa Roda Gigi Harmoni ke puncak Menara Jam di timur laut dan pulihkan warna seluruh lembah!',
+    title: 'Misi 4: Kumpulkan 12 Komponen Jam & Nyalakan Menara Jam',
+    targetNPC: 'kak_citra',
+    description: 'Kumpulkan seluruh 12 komponen jam dari para warga desa! Setelah ke-12 komponen jam terkumpul lengkap di tasmu, temui Nenek Wilis di puncak Menara Jam untuk merakit kembali dan menyalakan Menara Jam Harmoni agar seluruh lembah pulih!',
     isCompleted: false,
-    stepHint: 'Menuju puncak Menara Jam di timur laut untuk menyatukan kembali harmoni desa.',
+    stepHint: 'Kumpulkan seluruh 12 komponen jam dari para warga desa, lalu temui Nenek Wilis di Menara Jam untuk merakit dan menyalakannya kembali!',
   },
 ];
 

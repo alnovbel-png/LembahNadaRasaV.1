@@ -43,21 +43,19 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
             {/* Soft Ground Shadow */}
             <ellipse cx="16" cy="30" rx="10" ry="2.5" fill="rgba(0,0,0,0.45)" />
 
-            {/* Explorer Leather Backpack peeking behind shoulders & sides */}
-            <rect x="5" y="11" width="22" height="13" rx="1" fill="#451a03" />
-            <rect x="6" y="12" width="20" height="11" fill="#78350f" />
-            {/* Rolled Sleeping Mat / Bedroll underneath backpack */}
-            <rect x="5" y="23" width="22" height="3" rx="1" fill="#b8b894" />
-            <rect x="5" y="25" width="22" height="1" fill="#8c8c66" />
-            <rect x="10" y="23" width="1.5" height="3" fill="#451a03" />
-            <rect x="20" y="23" width="1.5" height="3" fill="#451a03" />
-            {/* Water Canteen Bottle peeking on right */}
-            <rect x="25" y="15" width="3" height="5" rx="1" fill="#93c5fd" />
-            <rect x="25" y="14" width="2" height="1" fill="#e2e8f0" />
+            {/* Explorer Leather Backpack (Matching Official Model Sheet) */}
+            <rect x="6" y="11" width="20" height="13" rx="1.5" fill="#3c1c18" />
+            <rect x="7" y="12" width="18" height="11" fill="#532924" />
+            <rect x="7" y="12" width="18" height="2" fill="#6a3630" />
+            {/* Backpack Buckle Straps on Back & Sides */}
+            <rect x="9" y="14" width="2" height="7" fill="#3c1c18" />
+            <rect x="21" y="14" width="2" height="7" fill="#3c1c18" />
+            <rect x="9" y="18" width="2" height="2" fill="#f4b728" />
+            <rect x="21" y="18" width="2" height="2" fill="#f4b728" />
 
             {/* Dark Charcoal Traveler Pants */}
-            <rect x="10" y="24" width="5" height="4" fill="#1e293b" />
-            <rect x="17" y="24" width="5" height="4" fill="#1e293b" />
+            <rect x="10" y="24" width="5" height="4" fill="#232d3f" />
+            <rect x="17" y="24" width="5" height="4" fill="#232d3f" />
             {/* Explorer Laced Hiking Boots */}
             <rect x="9" y="27" width="6" height="4" rx="1" fill="#3d2817" />
             <rect x="17" y="27" width="6" height="4" rx="1" fill="#3d2817" />
@@ -74,18 +72,19 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
             <rect x="6" y="16" width="3" height="1" fill="#34d399" />
             <rect x="23" y="16" width="3" height="1" fill="#34d399" />
             {/* Peach Hands */}
-            <rect x="6" y="21" width="3" height="3" fill="#fcd7b0" />
-            <rect x="23" y="21" width="3" height="3" fill="#fcd7b0" />
+            <rect x="6" y="21" width="3" height="3" fill="#fcd0a1" />
+            <rect x="23" y="21" width="3" height="3" fill="#fcd0a1" />
 
             {/* Dark Explorer Belt & Golden Buckle */}
             <rect x="8" y="21" width="16" height="2" fill="#1f483f" />
-            <rect x="13" y="20" width="6" height="4" rx="0.5" fill="#f59e0b" />
+            <rect x="13" y="20" width="6" height="4" rx="0.5" fill="#f4b728" />
             <rect x="15" y="21" width="2" height="2" fill="#1f483f" />
             <rect x="14" y="20" width="1" height="1" fill="#fef08a" />
+            <rect x="13" y="23" width="6" height="1" fill="#d99b16" />
 
             {/* Backpack Leather Straps across chest */}
-            <rect x="10" y="15" width="2" height="6" fill="#451a03" />
-            <rect x="20" y="15" width="2" height="6" fill="#451a03" />
+            <rect x="10" y="15" width="2" height="6" fill="#3e201b" />
+            <rect x="20" y="15" width="2" height="6" fill="#3e201b" />
 
             {/* Cozy Crimson Red Scarf (Wrapped snugly around collar) */}
             <rect x="7" y="12" width="18" height="4" rx="1" fill="#dc2626" />
@@ -94,7 +93,7 @@ export const CharacterPortrait: React.FC<CharacterPortraitProps> = ({
             <rect x="7" y="15" width="18" height="1" fill="#b91c1c" />
 
             {/* Face Skin Tone */}
-            <rect x="8" y="6" width="16" height="7" fill="#fcd7b0" />
+            <rect x="8" y="6" width="16" height="7" fill="#fcd0a1" />
             {/* Cheerful Adventurer Smile */}
             <rect x="14" y="11" width="4" height="1" fill="#b45309" />
             {/* Subtle Warm Cheeks */}

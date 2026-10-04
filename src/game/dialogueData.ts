@@ -7,7 +7,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Narator Cerita',
     speakerRole: 'Lembah Nada Rasa',
     portrait: 'narrator',
-    text: 'Langit bergemuruh pelan. Kabut abu-abu menutupi desa kita! Air mancur berhenti dan bunga jadi kelabu.',
+    text: 'Langit bergemuruh pelan. Akibat perselisihan dan salah paham hebat antarwarga, Menara Jam Harmoni rusak dan berhenti berdetak! Komponen-komponen jam terpencar dipegang oleh warga yang sedang emosional. Kabut abu-abu menutupi desa kita dan warna-warni memudar!',
     nextId: 'intro_start_2',
   },
   intro_start_2: {
@@ -15,7 +15,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Ezzel',
     speakerRole: 'Murid Petualang Kelas 4',
     portrait: 'player',
-    text: 'Ada apa dengan desa kita? Lihat, ada benda berkilau jatuh di depanku. Ini Kompas Hati ajaib!',
+    text: 'Menara Jam Harmoni berhenti berdetak? Tanpa detak jam, waktu membeku dan prasangka menyelimuti desa. Benda berkilau ini... Kompas Hati ajaib!',
     nextId: 'intro_start_3',
   },
   intro_start_3: {
@@ -23,11 +23,11 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Pesan Rahasia Kompas',
     speakerRole: 'Pusaka Lembah',
     portrait: 'compass_item',
-    text: '"Warna desa hilang karena salah paham. Gunakan Kompas Hati untuk mengerti perasaan temanmu!"',
+    text: '"Kumpulkan kembali komponen-komponen Menara Jam dari warga! Pahami emosi dan luruskan salah paham mereka dengan respon empati yang benar, maka mereka akan memberikan komponen jam padamu!"',
     choices: [
       {
         id: 'c_start_help',
-        text: 'Tekan Kompas dan hampiri Kiki si Tupai!',
+        text: 'Tekan Kompas dan hampiri Kiki si Tupai untuk mencari komponen jam pertama!',
         impactScore: 10,
         resultDialogueId: 'kiki_wait',
       },
@@ -38,7 +38,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Petunjuk Awal',
     speakerRole: 'Misi Pertama',
     portrait: 'narrator',
-    text: 'Kiki si tupai pos panik di dekat air mancur. Dekati Kiki lalu gunakan Kompas Hati untuk menolongnya!',
+    text: 'Kiki si tupai pos panik di dekat air mancur memegang Pegas Detak Jam. Dekati Kiki lalu gunakan Kompas Hati untuk menolongnya!',
   },
 
   // Kiki dialogue
@@ -47,8 +47,8 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kiki',
     speakerRole: 'Tupai Pos Cilik',
     portrait: 'squirrel',
-    text: 'Ciiit! Gawat sekali! Surat-surat warga terbang terbawa angin! Aku takut semua orang memarahiku.',
-    thoughtBubble: 'Jantungku berdegup kencang... Aku takut berbuat salah.',
+    text: 'Ciiit! Gawat sekali! Saat Menara Jam macet dan warga berselisih, aku panik dan surat-surat warga terbang terbawa angin! Aku memegang Pegas Detak Jam ini tapi aku takut semua orang menuduh dan memarahiku!',
+    thoughtBubble: 'Jantungku berdegup kencang... Aku takut disalahkan atas rusaknya Menara Jam...',
     emotionAura: 'cemas',
     choices: [
       {
@@ -59,13 +59,13 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
       },
       {
         id: 'c_kiki_2',
-        text: 'Tenang Kiki, ayo kita menenangkan diri dulu.',
+        text: 'Tenang Kiki, kami tidak menyalahkanmu. Ayo kita menenangkan diri dulu bersama.',
         impactScore: 15,
         resultDialogueId: 'kiki_calm_options',
       },
       {
         id: 'c_kiki_3',
-        text: 'Wajar kamu merasa panik, tapi surat yang jatuh bisa kita kumpulkan bersama.',
+        text: 'Wajar kamu merasa panik, tapi surat dan komponen jam itu bisa kita rapikan bersama dengan tenang.',
         impactScore: 10,
         resultDialogueId: 'kiki_validate',
       },
@@ -268,7 +268,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kiki',
     speakerRole: 'Tupai Pos Cilik',
     portrait: 'squirrel',
-    text: 'Lihat, Ezzel! Air mancur kembali jernih dan rumput kembali hijau! Ini surat penting yang kutemukan untuk Kakek Ranu di jembatan.',
+    text: 'Lihat, Ezzel! Air mancur kembali jernih dan rumput kembali hijau! Karena kamu mendengarkan rasa panikku dengan sabar dan tidak menyalahkanku, ini Pegas Detak Jam yang kupegang dan surat damai untuk Kakek Ranu di jembatan. Bawalah untuk memulihkan Menara Jam!',
     givesItem: 'item_letter',
   },
 
@@ -351,6 +351,65 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     emotionAura: 'tenang',
   },
 
+  // --- MISI 4: BUTUH 12 KOMPONEN JAM LENGKAP SEBELUM MENYALAKAN MENARA JAM ---
+  tower_need_more_components: {
+    id: 'tower_need_more_components',
+    speaker: 'Nenek Wilis',
+    speakerRole: 'Pustakawan Sepuh Menara Jam',
+    portrait: 'grandmother',
+    text: 'Halo Ezzel! Aku melihat kamu baru membawa sebagian komponen jam. Menara Jam Harmoni membutuhkan SELURUH 12 KOMPONEN JAM (12/12) dari para warga agar mesin waktu dapat dirakit dan menyala kembali! Kumpulkan seluruh 12 komponen jam dari para warga desa terlebih dahulu ya.',
+    thoughtBubble: 'Tepat ada 12 komponen jam pusaka dari 12 warga desa yang harus disatukan kembali...',
+    emotionAura: 'kecewa',
+    choices: [
+      {
+        id: 'tw_check_missing',
+        text: 'Siapa saja warga yang masih memegang komponen jam, Nenek?',
+        impactScore: 10,
+        resultDialogueId: 'tower_missing_hint',
+      },
+      {
+        id: 'tw_go_search',
+        text: 'Baik Nenek Wilis! Aku akan berkeliling desa dan mendengarkan warga untuk mengumpulkan seluruh 12 komponen jam (12/12)!',
+        impactScore: 15,
+        resultDialogueId: 'tower_search_cheer',
+      },
+    ],
+  },
+  tower_missing_hint: {
+    id: 'tower_missing_hint',
+    speaker: 'Nenek Wilis',
+    speakerRole: 'Pustakawan Sepuh Menara Jam',
+    portrait: 'grandmother',
+    text: 'Setiap warga memegang satu komponen berharga: Kiki, Kakek Ranu, Bimo, Kak Citra di taman, Kakek Damai & Bung Jala di tepi sungai, Moka di perpustakaan, Prof. Kotek di kandang ayam, Pak Joko di kebun, Didi si pengelana, serta Pak Teguh & Ibu Sari di hutan! Tekan tombol "Tuntun" pada banner misi atau buka Tab Tas di Jurnal [J] untuk panduan lokasi mereka.',
+    nextId: 'tower_search_cheer',
+  },
+  tower_search_cheer: {
+    id: 'tower_search_cheer',
+    speaker: 'Nenek Wilis',
+    speakerRole: 'Pustakawan Sepuh Menara Jam',
+    portrait: 'grandmother',
+    text: 'Semangat, pahlawan cilik! Gunakan Kompas Hati [C] saat berbicara dengan warga. Pahami perasaan mereka dengan empati, maka mereka akan dengan sukarela menyerahkan komponen jam kepadamu!',
+    emotionAura: 'tenang',
+  },
+
+  tower_door_need_all_items: {
+    id: 'tower_door_need_all_items',
+    speaker: 'Panel Pintu Menara Jam',
+    speakerRole: 'Mekanisme Kunci 12 Komponen',
+    portrait: 'clock_tower',
+    text: '🔒 Pintu mesin Menara Jam belum dapat dibuka! Di panel kunci terukir 12 slot komponen jam. Kumpulkan seluruh 12 komponen jam dari para warga desa agar mesin jam dapat dirakit dan menyala kembali memulihkan seluruh lembah!',
+    thoughtBubble: 'Setiap komponen jam yang dipegang warga desa harus disatukan agar roda gigi utama dapat berputar kembali.',
+    emotionAura: 'tenang',
+    choices: [
+      {
+        id: 'door_ack',
+        text: 'Aku akan mengumpulkan seluruh 12 komponen jam dari warga desa!',
+        impactScore: 5,
+        resultDialogueId: '',
+      },
+    ],
+  },
+
   kiki_remind_bridge: {
     id: 'kiki_remind_bridge',
     speaker: 'Kiki',
@@ -376,8 +435,8 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Bimo',
     speakerRole: 'Murid Pembuat Jam (Kelas 4)',
     portrait: 'boy_glasses',
-    text: 'Roda Gigi sudah ada di tanganmu, Ezzel! Bawalah ke Menara Jam di timur laut. Nenek Wilis dan warga desa menunggu dentang jam berbunyi lagi!',
-    thoughtBubble: 'Menara Jam akan berdetak kembali berkat keberanian kita meluruskan salah paham!',
+    text: 'Roda Gigi Emas sudah ada di tanganmu, Ezzel! Masih ada komponen jam lain yang disimpan oleh warga desa. Tekan tombol "Tuntun" pada banner misi untuk mencari warga berikutnya dan kumpulkan seluruh 12 komponen jam!',
+    thoughtBubble: 'Menara Jam membutuhkan seluruh 12 komponen lengkap dari para warga agar dapat dirakit dan berputar kembali!',
     emotionAura: 'gembira',
   },
 
@@ -528,7 +587,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Bimo',
     speakerRole: 'Murid Pembuat Jam (Kelas 4)',
     portrait: 'boy_glasses',
-    text: 'Aku tidak akan lari lagi! Ini Roda Gigi Emas yang kusimpan. Bawalah ke Menara Jam untuk Nenek Wilis. Ayo kita kembalikan warna desa kita!',
+    text: 'Aku tidak akan lari lagi! Ini Roda Gigi Emas yang kusimpan. Menara Jam membutuhkan seluruh 12 komponen jam dari warga desa. Ayo kita temui warga lainnya dan kumpulkan ke-12 komponen jam!',
     triggerColorRestoreZone: 'forest',
     triggerQuestProgress: 'quest_bimo',
     givesItem: 'item_gold_gear',
@@ -660,7 +719,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Nenek Wilis',
     speakerRole: 'Pustakawan Sepuh Desa',
     portrait: 'grandmother',
-    text: 'Kalian telah membuktikan kebaikan: menolong Kiki yang cemas, menghibur Kakek Ranu, dan menenangkan Bimo. Kalian hebat!',
+    text: 'Luar biasa, Ezzel! Kamu telah membawa seluruh 12 komponen jam (12/12) yang terpencar! Pegas detak dari Kiki, Poros dari Kakek Ranu, Roda Gigi Emas dari Bimo, serta seluruh komponen dari warga desa lainnya... semuanya kini telah lengkap terpasang!',
+    thoughtBubble: 'Seluruh warga desa telah saling memaafkan dan mendengarkan. Mesin waktu harmoni siap menyala kembali!',
+    emotionAura: 'tenang',
     nextId: 'tower_final_choice',
   },
   tower_final_choice: {
@@ -668,7 +729,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Nenek Wilis',
     speakerRole: 'Pustakawan Sepuh Desa',
     portrait: 'grandmother',
-    text: 'Kini Roda Gigi Emas ada di tanganmu, Ezzel. Pilihan terakhir ada padamu: Pesan apa yang ingin kau canangkan saat lonceng harmoni berdentang?',
+    text: 'Ke-12 komponen jam telah terpasang sempurna di dalam Menara Jam Harmoni! Pilihan terakhir ada padamu, Ezzel: Pesan apa yang ingin kau canangkan saat lonceng harmoni berdentang?',
     choices: [
       {
         id: 'choice_ending_perfect',
@@ -689,7 +750,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Lonceng Menara Jam',
     speakerRole: 'Harmoni Lembah',
     portrait: 'bell_tower',
-    text: 'DIIING... DOOONG! Dentang lonceng menara menggetarkan seluruh lembah! Gelombang cahaya emas pelangi menyapu setiap sudut tanah, memulihkan seluruh warna dunia 100%!',
+    text: 'DIIING... DOOONG! Ke-12 komponen jam berputar serempak dalam harmoni sempurna! Dentang lonceng menara menggetarkan seluruh lembah! Gelombang cahaya emas pelangi menyapu setiap sudut tanah, memulihkan seluruh warna dunia 100%!',
     triggerColorRestoreZone: 'tower',
     triggerQuestProgress: 'quest_tower',
     nextId: 'nenek_wilis_closing_perfect',
@@ -699,8 +760,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Nenek Wilis',
     speakerRole: 'Pustakawan Sepuh Desa',
     portrait: 'grandmother',
-    text: 'Lihatlah sekeliling kita, Ezzel! Kabut abu-abu telah hilang. Bunga-bunga mekar kembali berkat kebaikanmu mendengarkan sesama.',
+    text: 'Lihatlah sekeliling kita, Ezzel! Kabut abu-abu telah hilang. Bunga-bunga mekar kembali berkat kebaikanmu mendengarkan sesama. Terimalah Kristal Inti & Jarum Emas Jam Harmoni ini sebagai lambang persatuan warga desa!',
     thoughtBubble: 'Hatiku sangat damai melihat anak-anak kini tumbuh saling mengasihi dan mendengarkan.',
+    givesItem: 'item_clock_crystal',
     nextId: 'ending_summary_perfect',
   },
   ending_resilient_scene: {
@@ -718,8 +780,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Nenek Wilis',
     speakerRole: 'Pustakawan Sepuh Desa',
     portrait: 'grandmother',
-    text: 'Terima kasih dari lubuk hati terdalam, Ezzel... Kamu telah membuktikan bahwa keberanian untuk mengakui kesalahan dan saling memaafkan adalah kunci sejati kerukunan warga desa.',
+    text: 'Terima kasih dari lubuk hati terdalam, Ezzel... Kamu telah membuktikan bahwa keberanian untuk mengakui kesalahan dan saling memaafkan adalah kunci sejati kerukunan warga desa. Terimalah Kristal Inti & Jarum Emas Jam Harmoni ini!',
     thoughtBubble: 'Keberanian anak ini telah meluluhkan prasangka dan menyatukan kembali hati warga.',
+    givesItem: 'item_clock_crystal',
     nextId: 'ending_summary_resilient',
   },
   ending_summary_perfect: {
@@ -811,8 +874,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kak Citra',
     speakerRole: 'Konselor Cilik Lembah',
     portrait: 'girl_counselor',
-    text: 'Tepat sekali, Ezzel! Luar biasa! Kamu telah menguasai Kesadaran Diri (Self-Awareness) tentang 4 Zona Regulasi. Terimalah lencana penghargaan ini di Buku Catatanmu!',
+    text: 'Tepat sekali, Ezzel! Luar biasa! Kamu telah menguasai Kesadaran Diri (Self-Awareness) tentang 4 Zona Regulasi. Terimalah lencana penghargaan ini dan Lensa Prisma Refleksi Jam yang kusimpan saat Menara Jam berhenti berputar! Prisma ini memancarkan 4 zona warna harmoni.',
     unlocksBadge: 'badge_counselor_zones',
+    givesItem: 'item_clock_lens',
   },
 
   // --- KAKEK DAMAI (LINGKARAN KENDALI / CIRCLE OF CONTROL) ---
@@ -889,8 +953,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kakek Damai',
     speakerRole: 'Praktisi Mindful & Bonsai',
     portrait: 'zen_master',
-    text: 'Hati yang lapang! Kamu kini mengerti rahasia ketenangan batin. Bawalah lencana "Penguasa Lingkaran Kendali" sebagai tanda kearifanmu.',
+    text: 'Hati yang lapang! Kamu kini mengerti rahasia ketenangan batin. Bawalah lencana "Penguasa Lingkaran Kendali" serta Bandul Keseimbangan Jam ini agar ritme tenang Menara Jam desa kembali pulih!',
     unlocksBadge: 'badge_circle_of_control',
+    givesItem: 'item_clock_pendulum',
   },
 
   // --- MOKA SI KUCING PUSTAKAWAN (MENDENGARKAN AKTIF) ---
@@ -967,8 +1032,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Moka',
     speakerRole: 'Kucing Pustakawan Lembut',
     portrait: 'cat_librarian',
-    text: 'Purrr! Kehangatanmu terasa menyejukkan hati. Kamu pantas menerima lencana "Sahabat Pendengar Sejati"! Jadilah teladan pendengar yang baik untuk teman-temanmu ya!',
+    text: 'Purrr! Kehangatanmu terasa menyejukkan hati. Kamu pantas menerima lencana "Sahabat Pendengar Sejati" dan Lonceng Resonansi Hati Jam ini! Dentangkan kebaikan di seluruh desa ya!',
     unlocksBadge: 'badge_active_listening',
+    givesItem: 'item_clock_chime',
   },
 
   // --- WORLD INSPECTION / EXAMINE OBJECTS ---
@@ -1289,8 +1355,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Pak Joko',
     speakerRole: 'Petani Kebun Harapan',
     portrait: 'farmer',
-    text: 'Tepat sekali! Kata sakti itu adalah "BELUM". Kesalahan adalah pupuk terbaik bagi kebijaksanaan. Terimalah lencana "Pakar Pola Pikir Berkembang" ini! Teruslah menyiram impianmu dengan ketekunan!',
+    text: 'Tepat sekali! Kata sakti itu adalah "BELUM". Kesalahan adalah pupuk terbaik bagi kebijaksanaan. Terimalah lencana "Pakar Pola Pikir Berkembang" dan Minyak Pelumas Alami Jam ini agar roda-roda Menara Jam berputar licin tanpa macet!',
     unlocksBadge: 'badge_growth_mindset',
+    givesItem: 'item_clock_oil',
   },
 
   // --- DIDI (PENGELANA CILIK DESA - RELATIONSHIP SKILLS & FRIENDLINESS) ---
@@ -1369,8 +1436,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Didi',
     speakerRole: 'Pengelana Cilik Desa',
     portrait: 'wandering_scout',
-    text: 'Hebat sekali! Kebaikan dan sapaan hangat adalah bahasa universal yang bisa dimengerti setiap hati. Ini lencana "Duta Sapaan Ramah Desa" untukmu! Mari tebarkan senyuman ke mana pun kita pergi!',
+    text: 'Hebat sekali! Kebaikan dan sapaan hangat adalah bahasa universal yang bisa dimengerti setiap hati. Ini lencana "Duta Sapaan Ramah Desa" dan Jarum Penunjuk Menit Jam untukmu! Mari tebarkan senyuman ke mana pun kita pergi!',
     unlocksBadge: 'badge_friendly_greeter',
+    givesItem: 'item_clock_pointer',
     nextId: 'didi_resolved',
   },
   didi_resolved: {
@@ -1459,8 +1527,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Pak Teguh',
     speakerRole: 'Penebang Pohon Hutan Bijak',
     portrait: 'woodcutter',
-    text: 'Tepat sekali! Luar biasa! Kamu tahu kapan harus meletakkan kapak amarah dan memilih kedamaian. Ini lencana "Penebang Amarah Bijak" untukmu!',
+    text: 'Tepat sekali! Luar biasa! Kamu tahu kapan harus meletakkan kapak amarah dan memilih kedamaian. Ini lencana "Penebang Amarah Bijak" dan Casing Kayu Pelindung Jam untukmu! Lindungi kerukunan kita dari badai amarah!',
     unlocksBadge: 'badge_woodcutter_anger',
+    givesItem: 'item_clock_casing',
     nextId: 'teguh_resolved',
   },
   teguh_resolved: {
@@ -1549,8 +1618,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Ibu Sari',
     speakerRole: 'Petani Kebun Buah Hutan',
     portrait: 'fruit_farmer',
-    text: 'Manis sekali budi pekertimu! Rasa syukur melahirkan kebahagiaan sejati yang tak pernah layu. Terimalah lencana "Pemetik Rasa Syukur & Berbagi" ini!',
+    text: 'Manis sekali budi pekertimu! Rasa syukur melahirkan kebahagiaan sejati yang tak pernah layu. Terimalah lencana "Pemetik Rasa Syukur & Berbagi" serta Sekrup Emas Pengikat Jam ini untuk mengikat erat persaudaraan warga desa!',
     unlocksBadge: 'badge_fruit_gratitude',
+    givesItem: 'item_clock_screws',
     nextId: 'sari_resolved',
   },
   sari_resolved: {
@@ -1639,8 +1709,9 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Bung Jala',
     speakerRole: 'Pemancing Sabar Tepi Sungai',
     portrait: 'fisherman',
-    text: 'Mata kail kesabaranmu sangat tajam! Kamu telah menguasai ketenangan jiwa tingkat tinggi. Terimalah lencana "Pemancing Kesabaran Murni" ini!',
+    text: 'Mata kail kesabaranmu sangat tajam! Kamu telah menguasai ketenangan jiwa tingkat tinggi. Terimalah lencana "Pemancing Kesabaran Murni" dan Tali Katrol Beban Jam ini agar beban jam terangkat dengan seimbang!',
     unlocksBadge: 'badge_fisherman_patience',
+    givesItem: 'item_clock_cord',
     nextId: 'jala_resolved',
   },
   jala_resolved: {

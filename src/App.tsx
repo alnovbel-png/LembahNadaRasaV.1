@@ -57,7 +57,7 @@ const AllBadgesCelebrationModal = React.lazy(() =>
 const CaptureMomentModal = React.lazy(() =>
   import('./components/CaptureMomentModal').then((m) => ({ default: m.CaptureMomentModal }))
 );
-import { Sparkles, Compass } from 'lucide-react';
+import { Sparkles, Compass, ChevronDown, ChevronUp, Minus } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
 import { PSE_ACHIEVEMENTS } from './game/constants';
 import {
@@ -122,6 +122,62 @@ export default function App() {
   statsRef.current = stats;
 
   const isFreeRoamActiveRef = useRef<boolean>(false);
+  const [isMissionBannerMinimized, setIsMissionBannerMinimized] = useState<boolean>(false);
+
+  // Count Clock Tower components collected so far (12 unique components from 12 villagers)
+  const clockComponentsCount = useMemo(() => {
+    let count = 0;
+    const has = (id: string) => inventory.some((it) => it.id === id);
+    if (has('item_letter')) count++; // 1. Kiki (Plaza)
+    if (has('item_secret_key') || has('item_bridge_pass')) count++; // 2. Kakek Ranu (Jembatan)
+    if (has('item_gold_gear')) count++; // 3. Bimo (Hutan)
+    if (has('item_clock_lens')) count++; // 4. Kak Citra (Taman Bunga)
+    if (has('item_clock_pendulum')) count++; // 5. Kakek Damai (Tepi Sungai)
+    if (has('item_clock_chime')) count++; // 6. Moka (Perpustakaan)
+    if (has('item_egg_badge')) count++; // 7. Prof. Kotek (Kandang Ayam)
+    if (has('item_clock_oil')) count++; // 8. Pak Joko (Kebun Harapan)
+    if (has('item_clock_pointer')) count++; // 9. Didi (Jalan Setapak)
+    if (has('item_clock_casing')) count++; // 10. Pak Teguh (Pondok Hutan)
+    if (has('item_clock_screws')) count++; // 11. Ibu Sari (Kebun Buah Hutan)
+    if (has('item_clock_cord')) count++; // 12. Bung Jala (Dermaga Sungai)
+    return count;
+  }, [inventory]);
+
+  // Determine next missing clock component NPC for guided progression during Mission 4
+  const nextMissingClockNPC = useMemo(() => {
+    const has = (id: string) => inventory.some((it) => it.id === id);
+    const checklist: { itemId: string | string[]; npcId: string; defaultX: number; defaultY: number; name: string; sprite: string }[] = [
+      { itemId: 'item_letter', npcId: 'kiki', defaultX: 8, defaultY: 13, name: 'Kiki', sprite: 'squirrel' },
+      { itemId: ['item_secret_key', 'item_bridge_pass'], npcId: 'kakek_ranu', defaultX: 20, defaultY: 15, name: 'Kakek Ranu', sprite: 'old_man' },
+      { itemId: 'item_gold_gear', npcId: 'bimo', defaultX: 7, defaultY: 6, name: 'Bimo', sprite: 'boy_glasses' },
+      { itemId: 'item_clock_lens', npcId: 'kak_citra', defaultX: 14, defaultY: 18, name: 'Kak Citra', sprite: 'girl_counselor' },
+      { itemId: 'item_clock_pendulum', npcId: 'kakek_damai', defaultX: 27, defaultY: 19, name: 'Kakek Damai', sprite: 'zen_master' },
+      { itemId: 'item_clock_chime', npcId: 'moka_cat', defaultX: 6, defaultY: 15, name: 'Moka', sprite: 'cat_librarian' },
+      { itemId: 'item_egg_badge', npcId: 'prof_kotek', defaultX: 16, defaultY: 19, name: 'Prof. Kotek', sprite: 'chicken_glasses' },
+      { itemId: 'item_clock_oil', npcId: 'pak_joko', defaultX: 8, defaultY: 23, name: 'Pak Joko', sprite: 'farmer' },
+      { itemId: 'item_clock_pointer', npcId: 'didi_scout', defaultX: 11, defaultY: 17, name: 'Didi', sprite: 'wandering_scout' },
+      { itemId: 'item_clock_casing', npcId: 'teguh_woodcutter', defaultX: 10, defaultY: 5, name: 'Pak Teguh', sprite: 'woodcutter' },
+      { itemId: 'item_clock_screws', npcId: 'sari_fruit', defaultX: 13, defaultY: 7, name: 'Ibu Sari', sprite: 'fruit_farmer' },
+      { itemId: 'item_clock_cord', npcId: 'jala_fisher', defaultX: 21, defaultY: 19, name: 'Bung Jala', sprite: 'fisherman' },
+    ];
+
+    for (const item of checklist) {
+      const isCollected = Array.isArray(item.itemId)
+        ? item.itemId.some((id) => has(id))
+        : has(item.itemId);
+
+      if (!isCollected) {
+        const liveNpc = npcs.find((n) => n.id === item.npcId);
+        return {
+          npcId: item.npcId,
+          targetCoords: liveNpc ? { x: liveNpc.x, y: liveNpc.y } : { x: item.defaultX, y: item.defaultY },
+          hintName: liveNpc ? liveNpc.name : item.name,
+          sprite: liveNpc?.sprite || item.sprite,
+        };
+      }
+    }
+    return null;
+  }, [inventory, npcs]);
 
   // Player position & movement
   const playerRef = useRef<Player>({
@@ -371,6 +427,23 @@ export default function App() {
       }))
     );
 
+    // Isi tas petualang dengan ke-12 komponen jam & kristal inti jam
+    setInventory([
+      { id: 'item_letter', name: 'Pegas Detak Jam & Surat Maaf', icon: '💌', description: 'Pegas spiral pengatur detak Menara Jam.', foundLocation: 'Alun-Alun (Kiki)' },
+      { id: 'item_secret_key', name: 'Poros Pengunci Jam', icon: '🗝️', description: 'Poros pengunci jam pusaka.', foundLocation: 'Jembatan Kayu (Kakek Ranu)' },
+      { id: 'item_gold_gear', name: 'Roda Gigi Emas Pusaka Jam', icon: '⚙️', description: 'Roda gigi utama penggerak jam.', foundLocation: 'Hutan Sunyi (Bimo)' },
+      { id: 'item_clock_lens', name: 'Lensa Prisma Refleksi Jam', icon: '🔮', description: 'Prisma pemancar 4 Zona Warna.', foundLocation: 'Taman Bunga (Kak Citra)' },
+      { id: 'item_clock_pendulum', name: 'Bandul Keseimbangan Jam', icon: '⚖️', description: 'Bandul pengatur ritme tenang.', foundLocation: 'Tepi Sungai (Kakek Damai)' },
+      { id: 'item_clock_chime', name: 'Lonceng Resonansi Hati Jam', icon: '🔔', description: 'Lonceng perunggu dentang merdu.', foundLocation: 'Perpustakaan Desa (Moka)' },
+      { id: 'item_egg_badge', name: 'Pegas Tawa Jam & Telur Ceria', icon: '🥚', description: 'Pegas tawa peredam stres.', foundLocation: 'Kandang Ayam (Prof. Kotek)' },
+      { id: 'item_clock_oil', name: 'Minyak Pelumas Alami Jam', icon: '🧪', description: 'Minyak pelumas roda gigi.', foundLocation: 'Kebun Harapan (Pak Joko)' },
+      { id: 'item_clock_pointer', name: 'Jarum Penunjuk Menit Jam', icon: '🧭', description: 'Jarum penunjuk waktu.', foundLocation: 'Jalan Setapak (Didi)' },
+      { id: 'item_clock_casing', name: 'Casing Kayu Pelindung Jam', icon: '🪵', description: 'Casing kayu pelindung mesin.', foundLocation: 'Pondok Hutan (Pak Teguh)' },
+      { id: 'item_clock_screws', name: 'Sekrup Emas Pengikat Jam', icon: '🔩', description: 'Sekrup pengikat presisi.', foundLocation: 'Kebun Buah (Ibu Sari)' },
+      { id: 'item_clock_cord', name: 'Tali Katrol Beban Jam', icon: '🧵', description: 'Tali katrol beban jam.', foundLocation: 'Dermaga Sungai (Bung Jala)' },
+      { id: 'item_clock_crystal', name: 'Kristal Inti & Jarum Jam Harmoni', icon: '💎', description: 'Kristal inti pemulih warna.', foundLocation: 'Puncak Menara Jam' },
+    ]);
+
     // 3. Buka seluruh 10 Lencana Pencapaian PSE (100%) dengan skor empati maksimal
     const allBadgeIds = PSE_ACHIEVEMENTS.map((b) => b.id);
     setStats({
@@ -538,9 +611,11 @@ export default function App() {
             '#4ade80',
             25
           );
+          const isDidi = npc.id === 'didi_scout' || npc.id === 'didi';
           return {
             ...npc,
             isResolved: true,
+            isRoaming: isDidi ? true : npc.isRoaming,
             currentDialogueId: nextDialogueId || `${npcId}_resolved`,
             emotionProfile: {
               ...npc.emotionProfile,
@@ -633,14 +708,25 @@ export default function App() {
         targetY: (bimo?.y ?? 6) * TILE_SIZE + 16,
       });
     } else if (!zoneStatus.tower) {
-      const penjaga = npcs.find((n) => n.id === 'penjaga_kabut');
-      rendererRef.current.setActiveQuestTarget({
-        npcId: 'penjaga_kabut',
-        stepNumber: 4,
-        label: 'Menara Jam',
-        targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
-        targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
-      });
+      if (clockComponentsCount < 12 && nextMissingClockNPC) {
+        const missingNpc = npcs.find((n) => n.id === nextMissingClockNPC.npcId);
+        rendererRef.current.setActiveQuestTarget({
+          npcId: nextMissingClockNPC.npcId,
+          stepNumber: 4,
+          label: nextMissingClockNPC.hintName,
+          targetX: (missingNpc?.x ?? nextMissingClockNPC.targetCoords.x) * TILE_SIZE + 16,
+          targetY: (missingNpc?.y ?? nextMissingClockNPC.targetCoords.y) * TILE_SIZE + 16,
+        });
+      } else {
+        const penjaga = npcs.find((n) => n.id === 'penjaga_kabut');
+        rendererRef.current.setActiveQuestTarget({
+          npcId: 'penjaga_kabut',
+          stepNumber: 4,
+          label: lang === 'en' ? 'Grandma Wilis' : 'Nenek Wilis',
+          targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
+          targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
+        });
+      }
     }
   }, [zoneStatus, npcs, isFreeRoamActive, hasCompletedIntroTutorial]);
 
@@ -1131,7 +1217,7 @@ export default function App() {
           return GAME_DIALOGUES.tower_locked_need_gear;
         }
       }
-      // Step 4: Misi 4 (Target: Menara Jam Harmoni)
+      // Step 4: Misi 4 (Target: Menara Jam Harmoni - Wajib 12/12 Komponen Jam)
       else if (!zoneStatus.tower) {
         if (npc.id === 'kiki') {
           return GAME_DIALOGUES.kiki_resolved;
@@ -1141,6 +1227,12 @@ export default function App() {
         }
         if (npc.id === 'bimo') {
           return GAME_DIALOGUES.bimo_remind_tower || GAME_DIALOGUES.bimo_resolved;
+        }
+        if (npc.id === 'penjaga_kabut') {
+          if (clockComponentsCount < 12) {
+            return GAME_DIALOGUES.tower_need_more_components;
+          }
+          return GAME_DIALOGUES.tower_intro;
         }
       }
     }
@@ -1169,7 +1261,7 @@ export default function App() {
     }
 
     return null;
-  }, [isFreeRoamActive, stats.unlockedBadges, npcs, zoneStatus]);
+  }, [isFreeRoamActive, stats.unlockedBadges, npcs, zoneStatus, clockComponentsCount]);
 
   // Main interaction trigger: Talk to nearest NPC or examine object
   const handleInteract = useCallback(() => {
@@ -1236,6 +1328,8 @@ export default function App() {
       rendererRef.current?.addSparkle(towerDoorX, towerDoorY, '#fbbf24', 12);
       if (!isFreeRoamActive && (!zoneStatus.plaza || !zoneStatus.bridge || !zoneStatus.forest)) {
         setCurrentDialogue(GAME_DIALOGUES.tower_locked_need_gear);
+      } else if (!isFreeRoamActive && !zoneStatus.tower && clockComponentsCount < 12) {
+        setCurrentDialogue(GAME_DIALOGUES.tower_door_need_all_items || GAME_DIALOGUES.tower_need_more_components);
       } else {
         setCurrentDialogue(
           zoneStatus.tower
@@ -1371,7 +1465,7 @@ export default function App() {
         setCurrentDialogue(node);
       }
     }
-  }, [currentDialogue, npcs, zoneStatus, isFreeRoamActive, getNPCDialogueNode]);
+  }, [currentDialogue, npcs, zoneStatus, isFreeRoamActive, getNPCDialogueNode, clockComponentsCount]);
 
   // Click / Tap on Floor or NPC/Props to walk there automatically
   const handleCanvasClick = useCallback(
@@ -2189,38 +2283,101 @@ export default function App() {
     const itemMap: Record<string, Item> = {
       item_letter: {
         id: 'item_letter',
-        name: 'Surat Permintaan Maaf',
-        icon: '✉️',
-        description: 'Surat Kiki yang diisi harapan agar warga saling memaafkan.',
-        foundLocation: 'Alun-alun Desa',
+        name: 'Pegas Detak Jam & Surat Damai',
+        icon: '⏱️',
+        description: 'Komponen Pegas Spiral penyeimbang detak Menara Jam yang diamankan Kiki bersama surat permohonan maaf warga.',
+        foundLocation: 'Alun-alun Desa (Kiki)',
       },
       item_secret_key: {
         id: 'item_secret_key',
-        name: 'Kunci Kuno Gudang Arsip',
+        name: 'Poros & Kunci Tuas Jam',
         icon: '🗝️',
-        description: 'Pemberian Kakek Ranu atas validasi rasa kesepiannya.',
-        foundLocation: 'Jembatan Kayu',
+        description: 'Komponen poros pengunci roda gigi Menara Jam yang disimpan Kakek Ranu saat merasa disalahkan.',
+        foundLocation: 'Jembatan Kayu (Kakek Ranu)',
       },
       item_bridge_pass: {
         id: 'item_bridge_pass',
-        name: 'Izin Jembatan Bersama',
+        name: 'Poros Penggerak & Izin Jembatan',
         icon: '📜',
-        description: 'Kesepakatan Kakek Ranu untuk mendukung Bimo belajar dari kesalahan.',
-        foundLocation: 'Jembatan Kayu',
+        description: 'Komponen poros Menara Jam dan kesepakatan Kakek Ranu untuk mendukung Bimo berani menghadapi rasa takut.',
+        foundLocation: 'Jembatan Kayu (Kakek Ranu)',
       },
       item_gold_gear: {
         id: 'item_gold_gear',
-        name: 'Roda Gigi Emas Pusaka',
+        name: 'Roda Gigi Emas Pusaka Jam',
         icon: '⚙️',
-        description: 'Roda penggerak Menara Jam desa yang diselamatkan Bimo.',
-        foundLocation: 'Hutan Sunyi',
+        description: 'Roda gigi utama penggerak Menara Jam desa yang dipeluk dan diselamatkan Bimo di Hutan Sunyi.',
+        foundLocation: 'Hutan Sunyi (Bimo)',
+      },
+      item_clock_crystal: {
+        id: 'item_clock_crystal',
+        name: 'Kristal Inti & Jarum Jam Harmoni',
+        icon: '💎',
+        description: 'Permata kristal inti dan jarum emas Menara Jam yang menyatukan seluruh komponen mesin waktu desa.',
+        foundLocation: 'Puncak Menara Jam (Nenek Wilis)',
+      },
+      item_clock_lens: {
+        id: 'item_clock_lens',
+        name: 'Lensa Prisma Refleksi Jam',
+        icon: '🔮',
+        description: 'Prisma pemancar 4 Zona Warna Menara Jam. Diberikan Kak Citra setelah kamu memahami 4 Zona Regulasi Emosi.',
+        foundLocation: 'Taman Bunga (Kak Citra)',
+      },
+      item_clock_pendulum: {
+        id: 'item_clock_pendulum',
+        name: 'Bandul Keseimbangan Jam',
+        icon: '⚖️',
+        description: 'Bandul pengatur ritme tenang Menara Jam. Diberikan Kakek Damai setelah kamu menguasai Lingkaran Kendali diri.',
+        foundLocation: 'Tepi Sungai Mindful (Kakek Damai)',
+      },
+      item_clock_chime: {
+        id: 'item_clock_chime',
+        name: 'Lonceng Resonansi Hati Jam',
+        icon: '🔔',
+        description: 'Lonceng perunggu berdentang merdu. Diberikan Moka si Kucing setelah kamu mempraktikkan Mendengarkan Aktif.',
+        foundLocation: 'Perpustakaan Desa (Moka)',
       },
       item_egg_badge: {
         id: 'item_egg_badge',
-        name: 'Lencana Telur Ceria',
+        name: 'Pegas Tawa Jam & Telur Ceria',
         icon: '🥚',
-        description: 'Hadiah Profesor Kotek. Simbol humor sehat yang meredakan hormon stres!',
-        foundLocation: 'Kandang Ayam Desa',
+        description: 'Komponen pemicu dentang ceria jam dan lencana sains dari Prof. Kotek. Meredam hormon stres dengan humor sehat!',
+        foundLocation: 'Kandang Ayam Desa (Prof. Kotek)',
+      },
+      item_clock_oil: {
+        id: 'item_clock_oil',
+        name: 'Minyak Pelumas Alami Jam',
+        icon: '🧪',
+        description: 'Minyak pelumas roda gigi agar jam berputar lancar. Diberikan Pak Joko setelah memahami Growth Mindset.',
+        foundLocation: 'Kebun Harapan (Pak Joko)',
+      },
+      item_clock_pointer: {
+        id: 'item_clock_pointer',
+        name: 'Jarum Penunjuk Menit Jam',
+        icon: '🧭',
+        description: 'Jarum penunjuk waktu Menara Jam. Diberikan Didi si Pengelana setelah memahami kekuatan sapaan ramah.',
+        foundLocation: 'Jalan Setapak Desa (Didi)',
+      },
+      item_clock_casing: {
+        id: 'item_clock_casing',
+        name: 'Casing Kayu Pelindung Jam',
+        icon: '🪵',
+        description: 'Kotak kayu kokoh pelindung mesin jam dari cuaca. Diberikan Pak Teguh setelah memahami jeda regulasi amarah.',
+        foundLocation: 'Tepi Hutan Barat (Pak Teguh)',
+      },
+      item_clock_screws: {
+        id: 'item_clock_screws',
+        name: 'Sekrup Emas Pengikat Jam',
+        icon: '🔩',
+        description: 'Sekrup pengikat presisi komponen jam. Diberikan Ibu Sari setelah memahami rasa syukur dan berbagi.',
+        foundLocation: 'Kebun Buah Hutan (Ibu Sari)',
+      },
+      item_clock_cord: {
+        id: 'item_clock_cord',
+        name: 'Tali Katrol Beban Jam',
+        icon: '🧵',
+        description: 'Tali serat kuat penggerak beban gravitasi jam. Diberikan Bung Jala setelah memahami kesabaran batin.',
+        foundLocation: 'Dermaga Sungai (Bung Jala)',
       },
       item_friendship_capsule: {
         id: 'item_friendship_capsule',
@@ -2238,6 +2395,11 @@ export default function App() {
         sound.playSecretFound();
         // Trigger haptic-like screen shake when discovering major items/secrets
         rendererRef.current?.triggerScreenShake(5, 14);
+        setQuestHint(
+          lang === 'en'
+            ? `🌟 Acquired Clock Component: ${newItem.name}!`
+            : `🌟 Mendapatkan Komponen Jam: ${newItem.name}!`
+        );
         return [...prev, newItem];
       });
     }
@@ -2472,8 +2634,13 @@ export default function App() {
         targetNpcId = 'bimo';
         targetTile = { x: 7, y: 6 };
       } else if (step === 4) {
-        targetNpcId = 'penjaga_kabut';
-        targetTile = { x: 29, y: 8 };
+        if (clockComponentsCount < 12 && nextMissingClockNPC) {
+          targetNpcId = nextMissingClockNPC.npcId;
+          targetTile = nextMissingClockNPC.targetCoords;
+        } else {
+          targetNpcId = 'penjaga_kabut';
+          targetTile = { x: 29, y: 8 };
+        }
       }
 
       const targetNpc = targetNpcId ? npcs.find((n) => n.id === targetNpcId) || null : null;
@@ -2484,7 +2651,7 @@ export default function App() {
       sound.playSecretFound();
       handleMiniMapNavigate(targetTile.x, targetTile.y, targetNpc, true);
     },
-    [currentDialogue, zoneStatus, npcs, handleMiniMapNavigate]
+    [currentDialogue, zoneStatus, npcs, handleMiniMapNavigate, clockComponentsCount, nextMissingClockNPC]
   );
 
   // Advance dialogue when pressing Next or Spacebar
@@ -3106,6 +3273,8 @@ export default function App() {
               rendererRef.current?.addSparkle(30 * TILE_SIZE + 16, 6 * TILE_SIZE + 16, '#fbbf24', 12);
               if (!isFreeRoamActive && (!zoneStatus.plaza || !zoneStatus.bridge || !zoneStatus.forest)) {
                 setCurrentDialogue(GAME_DIALOGUES.tower_locked_need_gear);
+              } else if (!isFreeRoamActive && !zoneStatus.tower && clockComponentsCount < 12) {
+                setCurrentDialogue(GAME_DIALOGUES.tower_door_need_all_items || GAME_DIALOGUES.tower_need_more_components);
               } else {
                 setCurrentDialogue(
                   zoneStatus.tower
@@ -3286,48 +3455,67 @@ export default function App() {
         const py = p.y + 16;
 
         // 1. Didi the wandering scout (Grand Circuit: Plaza -> Kebun -> Hutan -> Menara Jam)
+        // Hanya berkeliling setelah pemain menyelesaikan pembicaraan padanya (isResolved / badge_friendly_greeter unlocked)
         const didi = npcs.find((n) => n.id === 'didi_scout' || n.id === 'didi');
         if (didi) {
-          didi.isRoaming = true;
-          didi.roamActivity = 'Patroli Rute Harmoni Desa';
+          const isDidiTalkCompleted = didi.isResolved || (stats.unlockedBadges ?? []).includes('badge_friendly_greeter');
           const didiWorldX = didi.x * TILE_SIZE + 16;
           const didiWorldY = didi.y * TILE_SIZE + 16;
           const distToPlayer = Math.hypot(didiWorldX - px, didiWorldY - py);
 
-          if (distToPlayer < 55) {
-            // Notice and face player attentively
-            if (Math.abs(px - didiWorldX) > Math.abs(py - didiWorldY)) {
-              didi.facing = px > didiWorldX ? 'right' : 'left';
+          if (isDidiTalkCompleted) {
+            didi.isRoaming = true;
+            didi.roamActivity = 'Patroli Rute Harmoni Desa';
+
+            if (distToPlayer < 55) {
+              // Notice and face player attentively
+              if (Math.abs(px - didiWorldX) > Math.abs(py - didiWorldY)) {
+                didi.facing = px > didiWorldX ? 'right' : 'left';
+              } else {
+                didi.facing = py > didiWorldY ? 'down' : 'up';
+              }
             } else {
-              didi.facing = py > didiWorldY ? 'down' : 'up';
+              const patrol = didiPatrolRef.current;
+              const targetWp = patrol.waypoints[patrol.currentWaypointIndex];
+              const diffX = targetWp.x - didi.x;
+              const diffY = targetWp.y - didi.y;
+              const distToWp = Math.hypot(diffX, diffY);
+
+              if (distToWp < 0.04) {
+                didi.x = targetWp.x;
+                didi.y = targetWp.y;
+                patrol.waitTicks++;
+                if (patrol.waitTicks >= targetWp.wait) {
+                  patrol.waitTicks = 0;
+                  patrol.currentWaypointIndex =
+                    (patrol.currentWaypointIndex + 1) % patrol.waypoints.length;
+                }
+              } else {
+                const moveSpeed = 0.024; // Gentle stroll speed in tile units per frame
+                const angle = Math.atan2(diffY, diffX);
+                didi.x += Math.cos(angle) * Math.min(moveSpeed, distToWp);
+                didi.y += Math.sin(angle) * Math.min(moveSpeed, distToWp);
+
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                  didi.facing = diffX > 0 ? 'right' : 'left';
+                } else {
+                  didi.facing = diffY > 0 ? 'down' : 'up';
+                }
+              }
             }
           } else {
-            const patrol = didiPatrolRef.current;
-            const targetWp = patrol.waypoints[patrol.currentWaypointIndex];
-            const diffX = targetWp.x - didi.x;
-            const diffY = targetWp.y - didi.y;
-            const distToWp = Math.hypot(diffX, diffY);
-
-            if (distToWp < 0.04) {
-              didi.x = targetWp.x;
-              didi.y = targetWp.y;
-              patrol.waitTicks++;
-              if (patrol.waitTicks >= targetWp.wait) {
-                patrol.waitTicks = 0;
-                patrol.currentWaypointIndex =
-                  (patrol.currentWaypointIndex + 1) % patrol.waypoints.length;
+            // Belum menyelesaikan pembicaraan: Didi tetap diam di tempat asalnya (x: 11, y: 17)
+            didi.isRoaming = false;
+            didi.x = 11;
+            didi.y = 17;
+            if (distToPlayer < 55) {
+              if (Math.abs(px - didiWorldX) > Math.abs(py - didiWorldY)) {
+                didi.facing = px > didiWorldX ? 'right' : 'left';
+              } else {
+                didi.facing = py > didiWorldY ? 'down' : 'up';
               }
             } else {
-              const moveSpeed = 0.024; // Gentle stroll speed in tile units per frame
-              const angle = Math.atan2(diffY, diffX);
-              didi.x += Math.cos(angle) * Math.min(moveSpeed, distToWp);
-              didi.y += Math.sin(angle) * Math.min(moveSpeed, distToWp);
-
-              if (Math.abs(diffX) > Math.abs(diffY)) {
-                didi.facing = diffX > 0 ? 'right' : 'left';
-              } else {
-                didi.facing = diffY > 0 ? 'down' : 'up';
-              }
+              didi.facing = 'down';
             }
           }
         }
@@ -3587,14 +3775,25 @@ export default function App() {
             targetY: (bimo?.y ?? 6) * TILE_SIZE + 16,
           });
         } else if (!zoneStatus.tower) {
-          const penjaga = npcs.find((n) => n.id === 'penjaga_kabut');
-          rendererRef.current.setActiveQuestTarget({
-            npcId: 'penjaga_kabut',
-            stepNumber: 4,
-            label: 'Menara Jam',
-            targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
-            targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
-          });
+          if (clockComponentsCount < 12 && nextMissingClockNPC) {
+            const missingNpc = npcs.find((n) => n.id === nextMissingClockNPC.npcId);
+            rendererRef.current.setActiveQuestTarget({
+              npcId: nextMissingClockNPC.npcId,
+              stepNumber: 4,
+              label: nextMissingClockNPC.hintName,
+              targetX: (missingNpc?.x ?? nextMissingClockNPC.targetCoords.x) * TILE_SIZE + 16,
+              targetY: (missingNpc?.y ?? nextMissingClockNPC.targetCoords.y) * TILE_SIZE + 16,
+            });
+          } else {
+            const penjaga = npcs.find((n) => n.id === 'penjaga_kabut');
+            rendererRef.current.setActiveQuestTarget({
+              npcId: 'penjaga_kabut',
+              stepNumber: 4,
+              label: lang === 'en' ? 'Grandma Wilis' : 'Nenek Wilis',
+              targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
+              targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
+            });
+          }
         }
 
         rendererRef.current.render(
@@ -3737,7 +3936,8 @@ export default function App() {
           return { ...npc, isRoaming: true, roamActivity: 'Riset Lapangan Resonansi Emosi' };
         }
         if (npc.id === 'didi_scout' || npc.id === 'didi') {
-          return { ...npc, isRoaming: true, roamActivity: 'Patroli Rute Harmoni Desa' };
+          const isDidiResolved = npc.isResolved || unlocked.includes('badge_friendly_greeter');
+          return { ...npc, isRoaming: isDidiResolved, roamActivity: 'Patroli Rute Harmoni Desa' };
         }
         return npc;
       });
@@ -3868,8 +4068,63 @@ export default function App() {
       : !zoneStatus.tower
       ? 4
       : 5;
-    return getLocalizedMissionStepData(step, lang, isCompassActive, step === 5, isFreeRoamActive);
-  }, [zoneStatus, isFreeRoamActive, isCompassActive, lang]);
+    return getLocalizedMissionStepData(
+      step,
+      lang,
+      isCompassActive,
+      step === 5,
+      isFreeRoamActive,
+      clockComponentsCount,
+      nextMissingClockNPC?.hintName,
+      nextMissingClockNPC?.targetCoords,
+      nextMissingClockNPC?.sprite
+    );
+  }, [zoneStatus, isFreeRoamActive, isCompassActive, lang, clockComponentsCount, nextMissingClockNPC]);
+
+  // Computed dynamic active quests synchronized with clock components progression
+  const currentQuests = useMemo<GameQuest[]>(() => {
+    return quests.map((q) => {
+      if (q.id === 'quest_tower') {
+        const isAll12Collected = clockComponentsCount >= 12;
+        if (!isAll12Collected && nextMissingClockNPC) {
+          return {
+            ...q,
+            title:
+              lang === 'en'
+                ? `Mission 4: Collect 12 Clock Pieces (${clockComponentsCount}/12)`
+                : `Misi 4: Kumpulkan 12 Komponen Jam (${clockComponentsCount}/12)`,
+            targetNPC: nextMissingClockNPC.npcId,
+            description:
+              lang === 'en'
+                ? `Collect all 12 clock components from village friends (${clockComponentsCount}/12 collected, ${12 - clockComponentsCount} remaining). Meet ${nextMissingClockNPC.hintName} to receive the next clock component!`
+                : `Kumpulkan seluruh 12 komponen jam dari para warga desa (${clockComponentsCount}/12 terkumpul, tersisa ${12 - clockComponentsCount} komponen lagi). Temui ${nextMissingClockNPC.hintName} untuk mendapatkan komponen jam berikutnya!`,
+            stepHint:
+              lang === 'en'
+                ? `Approach ${nextMissingClockNPC.hintName} to receive the next clock piece (${clockComponentsCount}/12)!`
+                : `Temui ${nextMissingClockNPC.hintName} untuk mendapatkan komponen jam berikutnya (${clockComponentsCount}/12)!`,
+          };
+        } else {
+          return {
+            ...q,
+            title:
+              lang === 'en'
+                ? 'Mission 4: Light Up Harmony Clock Tower (12/12)'
+                : 'Misi 4: Nyalakan Menara Jam Harmoni (12/12)',
+            targetNPC: 'penjaga_kabut',
+            description:
+              lang === 'en'
+                ? 'All 12 clock pieces are assembled! Bring them to Grandma Wilis at the Clock Tower summit to light up the tower and restore harmony 100%!'
+                : 'Seluruh 12 komponen jam telah terkumpul lengkap! Bawa ke Nenek Wilis di Menara Jam untuk merakit dan menyalakan kembali Menara Jam Harmoni!',
+            stepHint:
+              lang === 'en'
+                ? 'Meet Grandma Wilis at the Clock Tower (12/12 Pieces Ready)!'
+                : 'Temui Nenek Wilis di Menara Jam (12/12 Komponen Siap)!',
+          };
+        }
+      }
+      return q;
+    });
+  }, [quests, clockComponentsCount, nextMissingClockNPC, lang]);
 
   // Sync hint string for other systems
   useEffect(() => {
@@ -3943,14 +4198,27 @@ export default function App() {
       {!showStartMenu && hasCompletedIntroTutorial && !currentDialogue && (
         <div
           id="quest-tracker-banner"
-          className="fixed top-13 sm:top-14 md:top-16 left-1/2 -translate-x-1/2 z-20 w-[94%] sm:w-[90%] max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-3xl pointer-events-none animate-fade-in-slide-down"
+          className={`fixed top-13 sm:top-14 md:top-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-all duration-300 animate-fade-in-slide-down ${
+            isMissionBannerMinimized
+              ? 'w-auto max-w-fit'
+              : 'w-[94%] sm:w-[90%] max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-3xl'
+          }`}
         >
           <div
             onClick={() => {
-              setIsNewMissionUnlock(false);
-              setShowMissionModal(true);
+              if (isMissionBannerMinimized) {
+                sound.playMenuSelect();
+                setIsMissionBannerMinimized(false);
+              } else {
+                setIsNewMissionUnlock(false);
+                setShowMissionModal(true);
+              }
             }}
-            title={lang === 'en' ? 'Click to view complete mission guide' : 'Klik untuk melihat panduan langkah misi lengkap'}
+            title={
+              isMissionBannerMinimized
+                ? (lang === 'en' ? 'Click to expand mission banner' : 'Klik untuk membuka tab misi')
+                : (lang === 'en' ? 'Click to view complete mission guide' : 'Klik untuk melihat panduan langkah misi lengkap')
+            }
             className="bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-200 border-2 sm:border-3 border-amber-600 hover:border-amber-700 rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-[0_6px_20px_rgba(245,158,11,0.45),0_0_0_2px_rgba(255,255,255,0.9)] flex items-center gap-2 sm:gap-3 pointer-events-auto cursor-pointer transition-all active:scale-[0.99] group text-slate-950"
           >
             {/* Scarlet/Crimson Badge */}
@@ -3959,16 +4227,33 @@ export default function App() {
               <span>{currentMissionData.step <= 4 ? (lang === 'en' ? `MISSION ${currentMissionData.step}/4` : `MISI ${currentMissionData.step}/4`) : (lang === 'en' ? 'COMPLETED' : 'SELESAI')}</span>
             </div>
 
-            {/* Instruction Text with Pixelify Sans - 2 lines max on mobile with comfortable leading */}
+            {/* Clock Components Badge */}
+            <div
+              className="flex items-center gap-1 bg-amber-900/90 text-amber-200 border border-amber-500/50 rounded-lg sm:rounded-xl px-1.5 sm:px-2 py-0.5 sm:py-1 font-pixel text-[8px] sm:text-[10px] font-bold shrink-0 shadow-sm"
+              title={lang === 'en' ? `Clock Tower Components: ${clockComponentsCount}/12 Restored` : `Komponen Menara Jam: ${clockComponentsCount}/12 Terkumpul`}
+            >
+              <span>⚙️</span>
+              <span>{clockComponentsCount}/12</span>
+            </div>
+
+            {/* Instruction Text with Mozilla Headline */}
             <p
-              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
-              className="text-slate-950 text-[10px] sm:text-[13px] md:text-sm font-bold leading-tight sm:leading-snug tracking-tight break-words flex-1 text-left select-text line-clamp-2 sm:line-clamp-none"
+              style={{
+                fontFamily: 'Mozilla Headline',
+                fontSize: '14px',
+                color: '#460000',
+                textAlign: 'justify',
+                ...(isMissionBannerMinimized ? { display: 'none' } : {}),
+              }}
+              className={`tracking-tight break-words flex-1 select-text line-clamp-2 sm:line-clamp-none animate-fade-in ${
+                isMissionBannerMinimized ? 'hidden' : ''
+              }`}
             >
               {currentMissionData.hint}
             </p>
 
             {/* Direct Kid-Friendly "Tuntun Saya" Action Button */}
-            {!currentMissionData.isCompleted && (
+            {!currentMissionData.isCompleted && !isMissionBannerMinimized && (
               <button
                 id="banner-guide-button"
                 onClick={(e) => {
@@ -3982,6 +4267,33 @@ export default function App() {
                 <span className="text-[9px] sm:text-xs">🏃</span>
               </button>
             )}
+
+            {/* Minimize / Maximize Toggle Button */}
+            <button
+              id="banner-minimize-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                sound.playMenuSelect();
+                setIsMissionBannerMinimized((prev) => !prev);
+              }}
+              className="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-amber-400/80 hover:bg-amber-500 hover:text-slate-950 active:scale-95 text-slate-800 border border-amber-600/50 shadow-xs transition flex items-center justify-center shrink-0 cursor-pointer"
+              title={
+                isMissionBannerMinimized
+                  ? (lang === 'en' ? 'Expand mission tab' : 'Perbesar tab misi')
+                  : (lang === 'en' ? 'Minimize mission tab' : 'Perkecil tab misi')
+              }
+              aria-label={
+                isMissionBannerMinimized
+                  ? (lang === 'en' ? 'Expand mission tab' : 'Perbesar tab misi')
+                  : (lang === 'en' ? 'Minimize mission tab' : 'Perkecil tab misi')
+              }
+            >
+              {isMissionBannerMinimized ? (
+                <ChevronDown className="w-3.5 h-3.5" />
+              ) : (
+                <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
+              )}
+            </button>
           </div>
         </div>
       )}
@@ -4031,7 +4343,7 @@ export default function App() {
           npcs={npcs}
           zoneStatus={zoneStatus}
           mapLayout={mapLayout}
-          quests={getLocalizedQuests(quests, lang)}
+          quests={getLocalizedQuests(currentQuests, lang)}
           onNavigateToTile={handleMiniMapNavigate}
           isCompassActive={isCompassActive}
         />
@@ -4116,7 +4428,7 @@ export default function App() {
             isOpen={showSettings}
             onClose={() => setShowSettings(false)}
             initialTab={settingsTab}
-            quests={getLocalizedQuests(quests, lang)}
+            quests={getLocalizedQuests(currentQuests, lang)}
             stats={stats}
             zoneStatus={zoneStatus}
             npcs={npcs}

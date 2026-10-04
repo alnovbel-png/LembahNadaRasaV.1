@@ -127,18 +127,18 @@ export const UI_TEXT = {
     missionCompleted: 'SELESAI',
     freeRoamActive: 'JELAJAH BEBAS',
 
-    // Mission Banners
-    mission1Title: 'Misi 1: Redakan Amarah Kiki',
-    mission2Title: 'Misi 2: Temui Kakek Ranu',
-    mission3Title: 'Misi 3: Tolong Bimo di Hutan',
-    mission4Title: 'Misi 4: Aktifkan Menara Jam',
-    mission5Title: 'Lembah Pulih Sepenuhnya!',
-    mission1Hint: 'Ayo dekati Kiki di dekat air mancur. Buka Kompas Hati [Tekan C] untuk tahu perasaannya!',
-    mission1HintActive: 'Ayo dekati Kiki di dekat air mancur. Ajak Kiki bicara [Tekan Spasi / Tombol Bicara].',
-    mission2Hint: 'Jalan ke jembatan di sebelah timur. Temui Kakek Ranu dan bantu perbaiki jembatan.',
-    mission3Hint: 'Jalan ke Hutan Sunyi di barat laut. Temukan Bimo yang sedang sembunyi.',
-    mission4Hint: 'Bawa Roda Gigi Emas ke Menara Jam. Pasang roda gigi agar lonceng berbunyi indah!',
-    mission5Hint: '🌿 Desa sudah ceria kembali! Ayo sapa semua temanmu dan rayakan bersama.',
+    // Mission Banners (Pencarian Komponen Menara Jam Harmoni)
+    mission1Title: 'Misi 1: Dapatkan Pegas Jam (Kiki)',
+    mission2Title: 'Misi 2: Dapatkan Poros Jam (Kakek Ranu)',
+    mission3Title: 'Misi 3: Dapatkan Roda Gigi Emas (Bimo)',
+    mission4Title: 'Misi 4: Kumpulkan 12 Komponen & Nyalakan Menara Jam',
+    mission5Title: 'Menara Jam Berdentang & Harmoni Pulih!',
+    mission1Hint: 'Hampiri Kiki di alun-alun. Pahami rasa panik & takutnya akibat salah paham, lalu beri respon empati untuk mendapatkan Pegas Detak Jam!',
+    mission1HintActive: 'Ajak Kiki bicara [Tekan Spasi]. Tenangkan Kiki dengan respon empati agar Kiki merasa aman dan menyerahkan Pegas Detak Jam.',
+    mission2Hint: 'Jalan ke jembatan di timur. Pahami rasa lelah Kakek Ranu dan luruskan salah paham untuk menerima Poros Penggerak Jam.',
+    mission3Hint: 'Jalan ke Hutan Sunyi di barat laut. Bantu Bimo mengatasi rasa bersalahnya agar ia menyerahkan Roda Gigi Emas Jam.',
+    mission4Hint: 'Kumpulkan seluruh 12 Komponen Jam dari warga desa! Setelah lengkap (12/12), temui Nenek Wilis di Menara Jam untuk merakit dan menyalakannya!',
+    mission5Hint: '🌿 Menara Jam berdentang lagi! Seluruh 12 komponen jam telah menyatu dan harmoni desa telah pulih seutuhnya.',
 
     // Locations
     locationPlaza: 'Alun-Alun & Air Mancur',
@@ -357,18 +357,18 @@ export const UI_TEXT = {
     missionCompleted: 'COMPLETED',
     freeRoamActive: 'FREE ROAM',
 
-    // Mission Banners
-    mission1Title: "Mission 1: Soothe Kiki's Panic",
-    mission2Title: 'Mission 2: Meet Grandpa Ranu',
-    mission3Title: 'Mission 3: Help Bimo in the Forest',
-    mission4Title: 'Mission 4: Activate the Clock Tower',
-    mission5Title: 'Valley Fully Restored!',
-    mission1Hint: 'Approach Kiki near the fountain. Activate the Heart Compass [Press C] to read his feelings!',
-    mission1HintActive: 'Approach Kiki near the fountain. Talk to Kiki [Press Space / Talk Button].',
-    mission2Hint: 'Head to the wooden bridge in the east. Meet Grandpa Ranu and help repair the bridge.',
-    mission3Hint: 'Head to the Silent Forest in the northwest. Find Bimo hiding behind the trees.',
-    mission4Hint: 'Bring the Golden Gear of Harmony to the Clock Tower. Place the gear to ring the bells of harmony!',
-    mission5Hint: '🌿 The valley is vibrant and joyful again! Say hello to all your friends and celebrate together.',
+    // Mission Banners (Clock Tower Components Quest)
+    mission1Title: 'Mission 1: Retrieve Clock Spring (Kiki)',
+    mission2Title: 'Mission 2: Retrieve Clock Axle (Grandpa Ranu)',
+    mission3Title: 'Mission 3: Retrieve Golden Gear (Bimo)',
+    mission4Title: 'Mission 4: Gather 12 Clock Pieces & Light Up Tower',
+    mission5Title: 'Clock Tower Restored & Harmony Healed!',
+    mission1Hint: 'Approach Kiki near the plaza fountain. Empathize with his panic and soothe his fear to retrieve the Clock Mainspring!',
+    mission1HintActive: 'Talk to Kiki [Press Space]. Offer genuine emotional reassurance so he feels safe to hand over the Clock Mainspring.',
+    mission2Hint: 'Head to the bridge in the east. Validate Grandpa Ranu\'s exhaustion and resolve the misunderstanding to receive the Clock Drive Shaft.',
+    mission3Hint: 'Head to the Silent Forest in the northwest. Guide Bimo through a growth mindset so he hands over the Golden Master Gear.',
+    mission4Hint: 'Collect all 12 Clock Pieces from the villagers! Once complete (12/12), meet Grandma Wilis at the Clock Tower to assemble and light it up!',
+    mission5Hint: '🌿 The Clock Tower is chiming! All 12 clock components are united, restoring harmony across the valley.',
 
     // Locations
     locationPlaza: 'Plaza & Fountain',
@@ -2020,20 +2020,22 @@ export function getLocalizedQuests(quests: GameQuest[], lang: GameLanguage): Gam
       stepHint: 'Cross the bridge to the Silent Forest in the northwest. Meet Bimo behind the lush trees.',
     },
     quest_tower: {
-      title: 'Mission 4: Unlocking the Clock Tower',
-      description: 'Step 4 (Final Mission): Bring the Golden Gear of Harmony to the top of the Clock Tower in the northeast and restore the valley!',
-      stepHint: 'Head to the summit of the Clock Tower in the northeast to reunite the village in harmony.',
+      title: 'Mission 4: Gather 12 Clock Pieces & Light Up Tower',
+      description: 'Step 4: Collect all 12 Clock Pieces from the villagers across the village. Bring all 12 pieces to Grandma Wilis at the summit of the Clock Tower to assemble and light up the tower!',
+      stepHint: 'Collect all 12 clock components from the villagers, then meet Grandma Wilis at the Clock Tower to assemble and light it up!',
     },
   };
 
   return quests.map((q) => {
     const en = enQuestMap[q.id];
     if (!en) return q;
+    // If quest title or description already has localized dynamic progress, keep it
+    const hasDynamicTitle = q.title.includes('/12');
     return {
       ...q,
-      title: en.title || q.title,
-      description: en.description || q.description,
-      stepHint: en.stepHint || q.stepHint,
+      title: hasDynamicTitle ? q.title : (en.title || q.title),
+      description: hasDynamicTitle ? q.description : (en.description || q.description),
+      stepHint: hasDynamicTitle ? q.stepHint : (en.stepHint || q.stepHint),
     };
   });
 }
@@ -2124,8 +2126,12 @@ export function getLocalizedMissionStepData(
   step: number,
   lang: GameLanguage,
   isCompassActive: boolean,
-  isCompleted: boolean,
-  isFreeRoam: boolean
+  isCompleted?: boolean,
+  isFreeRoam?: boolean,
+  clockCount: number = 0,
+  nextMissingNpcName?: string,
+  nextMissingCoords?: { x: number; y: number },
+  nextMissingSprite?: string
 ) {
   const ui = UI_TEXT[lang];
   if (isCompleted || isFreeRoam) {
@@ -2182,19 +2188,49 @@ export function getLocalizedMissionStepData(
         targetCoords: { x: 7, y: 6 },
         isCompleted: false,
       };
-    case 4:
+    case 4: {
+      const isComplete12 = clockCount >= 12;
+      const hint = isComplete12
+        ? (lang === 'en'
+            ? '🌟 All 12 Clock Pieces Collected (12/12)! Meet Grandma Wilis at the Clock Tower to assemble and light up the Harmony Clock Tower!'
+            : '🌟 Seluruh 12 Komponen Jam Lengkap (12/12)! Segera temui Nenek Wilis di Menara Jam untuk merakit dan menyalakan kembali Menara Jam Harmoni!')
+        : (nextMissingNpcName
+            ? (lang === 'en'
+                ? `Collect all 12 Clock Pieces (${clockCount}/12 collected, ${12 - clockCount} remaining). Meet ${nextMissingNpcName} to receive the next clock piece!`
+                : `Kumpulkan seluruh 12 Komponen Jam (${clockCount}/12 terkumpul, tersisa ${12 - clockCount} komponen lagi). Temui ${nextMissingNpcName} untuk mendapatkan komponen jam berikutnya!`)
+            : (lang === 'en'
+                ? `Collect all 12 Clock Pieces (${clockCount}/12). Speak with villagers across the village!`
+                : `Kumpulkan seluruh 12 Komponen Jam (${clockCount}/12). Temui para warga desa!`));
+
+      const title = isComplete12
+        ? (lang === 'en' ? 'Mission 4: Light Up Harmony Clock Tower (12/12)' : 'Misi 4: Nyalakan Menara Jam Harmoni (12/12)')
+        : (lang === 'en' ? `Mission 4: Collect 12 Clock Pieces (${clockCount}/12)` : `Misi 4: Kumpulkan 12 Komponen Jam (${clockCount}/12)`);
+
+      const speaker = isComplete12
+        ? (lang === 'en' ? 'Grandma Wilis' : 'Nenek Wilis')
+        : (nextMissingNpcName || (lang === 'en' ? 'Village Friends' : 'Warga Desa'));
+
+      const portrait = isComplete12 ? 'grandmother' : (nextMissingSprite || 'girl_counselor');
+
+      const locationName = isComplete12
+        ? ui.locationTower
+        : (nextMissingNpcName
+            ? (lang === 'en' ? `${nextMissingNpcName} (${clockCount}/12 Pieces)` : `${nextMissingNpcName} (${clockCount}/12 Komponen)`)
+            : (lang === 'en' ? 'Village Pockets' : 'Sudut-Sudut Desa'));
+
       return {
         step: 4,
         total: 4,
         badge: ui.missionStepFull.replace('{step}', '4').replace('{total}', '4'),
-        title: ui.mission4Title,
-        speaker: lang === 'en' ? 'Spirit Elder' : 'Sosok Kabut',
-        portrait: 'spirit_elder',
-        hint: ui.mission4Hint,
-        locationName: ui.locationTower,
-        targetCoords: { x: 29, y: 8 },
+        title,
+        speaker,
+        portrait,
+        hint,
+        locationName,
+        targetCoords: (!isComplete12 && nextMissingCoords) ? nextMissingCoords : { x: 29, y: 8 },
         isCompleted: false,
       };
+    }
     default:
       return {
         step: 5,
@@ -2214,31 +2250,91 @@ export function getLocalizedMissionStepData(
 export function getLocalizedItems(items: Item[], lang: GameLanguage): Item[] {
   if (lang === 'id') return items;
   const enItemMap: Record<string, Partial<Item>> = {
-    compass: {
-      name: 'Resonant Heart Compass',
-      description: 'Sacred artifact that detects unspoken emotions and inner feelings.',
+    item_letter: {
+      name: 'Clock Mainspring & Peace Letter',
+      description: 'The spiral mainspring balancing the Clock Tower heartbeat, safeguarded by Kiki alongside letters of apology.',
+      foundLocation: 'Village Plaza (Kiki)',
     },
-    gear: {
-      name: 'Golden Gear of Harmony',
-      description: 'The ancient gear that brings the Harmony Clock Tower to life.',
+    item_secret_key: {
+      name: 'Clock Drive Axle & Lever Key',
+      description: 'The locking drive axle of the Clock Tower kept by Grandpa Ranu when he felt unappreciated.',
+      foundLocation: 'River Wooden Bridge (Grandpa Ranu)',
     },
-    key: {
-      name: 'Bridge Keeper Key',
-      description: 'Grandpa Ranu\'s brass key to unlock the path across the river.',
+    item_bridge_pass: {
+      name: 'Clock Drive Shaft & Bridge Agreement',
+      description: 'Clock drive shaft component and Grandpa Ranu\'s agreement supporting Bimo\'s emotional courage.',
+      foundLocation: 'River Wooden Bridge (Grandpa Ranu)',
     },
-    letter: {
-      name: 'Ancient Village Letter',
-      description: 'A weathered letter full of heartfelt messages between villagers.',
+    item_gold_gear: {
+      name: 'Golden Master Gear of the Clock',
+      description: 'The primary golden gear powering the Clock Tower, embraced and protected by Bimo in the Silent Forest.',
+      foundLocation: 'Silent Forest (Bimo)',
     },
-    flower: {
-      name: 'Resonance Blossom',
-      description: 'A magical petal that blooms when positive emotions are shared.',
+    item_clock_crystal: {
+      name: 'Core Crystal & Golden Clock Hands',
+      description: 'The radiant crown jewel and golden hands of the Clock Tower that unify all clockwork mechanisms.',
+      foundLocation: 'Clock Tower Summit (Elder Wilis)',
+    },
+    item_clock_lens: {
+      name: 'Reflection Prism Lens of the Clock',
+      description: 'The prism casting the 4 Color Zones of the Clock Tower. Given by Kak Citra after mastering the 4 Zones of Regulation.',
+      foundLocation: 'Flower Garden (Kak Citra)',
+    },
+    item_clock_pendulum: {
+      name: 'Equilibrium Pendulum of the Clock',
+      description: 'The rhythmic pendulum regulating the serene beat of the Clock. Given by Grandpa Damai after mastering the Circle of Control.',
+      foundLocation: 'Mindful Riverbank (Grandpa Damai)',
+    },
+    item_clock_chime: {
+      name: 'Resonance Chime Bell of the Clock',
+      description: 'The bronze chime bell that rings pure harmony. Given by Moka the Cat after demonstrating Active Listening.',
+      foundLocation: 'Village Library (Moka the Cat)',
+    },
+    item_egg_badge: {
+      name: 'Laughter Spring & Cheer Badge',
+      description: 'The comedic trigger spring of the clock and science badge from Prof. Kotek. Relieves stress hormones through healthy laughter!',
+      foundLocation: 'Village Coop (Prof. Kotek)',
+    },
+    item_clock_oil: {
+      name: 'Natural Lubricant Oil of the Clock',
+      description: 'Pure oil ensuring gears spin smoothly without friction. Given by Farmer Joko after embracing a Growth Mindset.',
+      foundLocation: 'Hope Vegetable Garden (Farmer Joko)',
+    },
+    item_clock_pointer: {
+      name: 'Minute Hand Indicator of the Clock',
+      description: 'The minute hand indicating the flow of harmony. Given by Didi the Wanderer after mastering the power of warm greetings.',
+      foundLocation: 'Village Trail (Didi the Scout)',
+    },
+    item_clock_casing: {
+      name: 'Protective Cedar Casing of the Clock',
+      description: 'Sturdy hand-carved cedar casing shielding the clockwork from storms. Given by Woodcutter Teguh after mastering mindful pauses.',
+      foundLocation: 'Forest Edge (Woodcutter Teguh)',
+    },
+    item_clock_screws: {
+      name: 'Golden Precision Screws of the Clock',
+      description: 'Precision screws fastening all clock components firmly. Given by Ibu Sari after learning gratitude and generous sharing.',
+      foundLocation: 'Forest Orchard (Ibu Sari)',
+    },
+    item_clock_cord: {
+      name: 'Counterweight Pulley Cord of the Clock',
+      description: 'Durable fiber cord balancing gravitational weight in the clock. Given by Bung Jala after learning patient mindfulness.',
+      foundLocation: 'River Dock (Bung Jala)',
+    },
+    item_friendship_capsule: {
+      name: '1950 Friendship Time Capsule',
+      description: 'A wise message from the village founders celebrating empathy and kindness.',
+      foundLocation: 'Ancient Friendship Tree',
     },
   };
   return items.map((it) => {
     const en = enItemMap[it.id];
     if (!en) return it;
-    return { ...it, name: en.name || it.name, description: en.description || it.description };
+    return {
+      ...it,
+      name: en.name || it.name,
+      description: en.description || it.description,
+      foundLocation: en.foundLocation || it.foundLocation,
+    };
   });
 }
 
