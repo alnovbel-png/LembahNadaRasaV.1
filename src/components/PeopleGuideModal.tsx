@@ -213,17 +213,19 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
             </div>
           </div>
 
-          <button
-            id="btn-close-people-guide-modal"
-            onClick={() => {
-              sound.playMenuSelect();
-              onClose();
-            }}
-            aria-label="Tutup panduan warga desa"
-            className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-700/60 transition cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              id="btn-close-people-guide-modal"
+              onClick={() => {
+                sound.playMenuSelect();
+                onClose();
+              }}
+              aria-label="Tutup panduan warga desa"
+              className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-slate-700/60 transition cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Progress & Quick Stats Banner */}

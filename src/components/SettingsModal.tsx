@@ -24,6 +24,7 @@ import {
   KeyRound,
   ShieldCheck,
   Lock,
+  HelpCircle,
 } from 'lucide-react';
 import { useAudioSettings, BgmPhase, sound } from '../utils/audio';
 import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
@@ -43,6 +44,7 @@ export interface SettingsModalProps {
   npcs?: NPC[];
   unlockedBadges?: string[];
   empathyScore?: number;
+  playerName?: string;
   isMuted?: boolean;
   isFreeRoamActive?: boolean;
   onToggleMute?: () => void;
@@ -51,6 +53,7 @@ export interface SettingsModalProps {
   onCaptureMoment?: () => void;
   onNavigateToTile?: (tileX: number, tileY: number) => void;
   onActivateDeveloperMode?: () => void;
+  onOpenTutorial?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -63,12 +66,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   npcs = [],
   unlockedBadges,
   empathyScore,
+  playerName,
   isFreeRoamActive = false,
   onOpenAllBadgesCelebration,
   onUnlockAllBadges,
   onCaptureMoment,
   onNavigateToTile,
   onActivateDeveloperMode,
+  onOpenTutorial,
 }) => {
   const { lang, ui, toggleLang } = useLanguage();
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
@@ -439,22 +444,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <Sparkles className="w-4 h-4 text-amber-400" />
                       Eksplorasi Warga Desa, Hutan, & Sungai
                     </h3>
-                    <button
-                      id="btn-open-people-guide-from-quest"
-                      onClick={() => {
-                        sound.playMenuSelect();
-                        setSelectedVillagerForGuide(null);
-                        setShowPeopleGuide(true);
-                      }}
-                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md flex items-center gap-1.5 transition cursor-pointer self-start sm:self-auto border border-amber-300/60 active:scale-95"
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>Buka Panduan Warga (People Guide)</span>
-                    </button>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <button
+                        id="btn-open-people-guide-from-quest"
+                        onClick={() => {
+                          sound.playMenuSelect();
+                          setSelectedVillagerForGuide(null);
+                          setShowPeopleGuide(true);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md flex items-center gap-1.5 transition cursor-pointer border border-amber-300/60 active:scale-95"
+                      >
+                        <BookOpen className="w-3.5 h-3.5" />
+                        <span>Buka Panduan Warga (People Guide)</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Banner Info People Guide */}
-                  <div className="p-3 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border border-amber-500/30 rounded-xl flex items-center justify-between gap-3">
+                  <div
+                    onClick={() => {
+                      sound.playMenuSelect();
+                      setSelectedVillagerForGuide(null);
+                      setShowPeopleGuide(true);
+                    }}
+                    className="p-3 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border border-amber-500/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:border-amber-400/60 transition"
+                  >
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
                         <Users className="w-4 h-4" />
@@ -464,10 +478,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           Buku Panduan Karakter & Kompas Emosi Warga
                         </div>
                         <div className="text-[11px] text-slate-400">
-                          Buka panduan warga untuk melihat profil lengkap, dinamika emosi, wawasan PSE, dan tips berdialog dengan warga.
+                          Pelajari 13 profil lengkap warga, dinamika emosi, wawasan PSE, dan tips berdialog.
                         </div>
                       </div>
                     </div>
+                    <span className="text-xs text-amber-300 font-bold flex items-center gap-1">
+                      <span>Buka</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
                   </div>
                 </div>
               )}
@@ -907,6 +925,44 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* TAB 4: PANDUAN KONTROL & SAINS PSE */}
           {activeTab === 'controls' && (
             <div className="space-y-5">
+
+              {/* Interactive In-Game Tutorial Banner Card */}
+              {onOpenTutorial && (
+                <div className="bg-gradient-to-r from-emerald-950/60 via-slate-900 to-teal-950/60 p-4 rounded-xl border border-emerald-500/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 shrink-0">
+                      <HelpCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-sm text-emerald-200">
+                          {lang === 'en' ? 'Interactive In-Game Tutorial' : 'Tutorial Interaktif Cara Bermain'}
+                        </h4>
+                        <span className="text-[9px] font-bold bg-emerald-900 text-emerald-200 border border-emerald-500/40 px-1.5 py-0.5 rounded">
+                          5 LANGKAH
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300 mt-0.5">
+                        {lang === 'en'
+                          ? 'Step-by-step illustrated walkthrough of controls, talking to villagers, Heart Compass, and emotion regulation.'
+                          : 'Panduan bergambar langkah demi langkah: kontrol jalan, interaksi warga, Kompas Hati, dan regulasi emosi.'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    id="settings-open-tutorial-btn"
+                    onClick={() => {
+                      sound.playMenuSelect();
+                      onOpenTutorial();
+                    }}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-emerald-200"
+                  >
+                    <BookOpen className="w-3.5 h-3.5" />
+                    <span>{lang === 'en' ? 'Open Tutorial [H]' : 'Buka Tutorial [H]'}</span>
+                  </button>
+                </div>
+              )}
+
               {/* Keyboard & Mouse Guide */}
               <div className="bg-slate-950/60 p-4 rounded-xl border border-slate-800">
                 <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider mb-3 flex items-center gap-2">

@@ -7,6 +7,7 @@ interface PauseMenuModalProps {
   onResume: () => void;
   onOpenSettings: () => void;
   onOpenMainMenu: () => void;
+  onOpenTutorial?: () => void;
 }
 
 export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
@@ -14,6 +15,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
   onResume,
   onOpenSettings,
   onOpenMainMenu,
+  onOpenTutorial,
 }) => {
   const { lang, ui } = useLanguage();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -22,6 +24,15 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
   // Menu items list
   const menuItems = [
     { id: 'resume', label: 'Resume', action: onResume },
+    ...(onOpenTutorial
+      ? [
+          {
+            id: 'tutorial',
+            label: lang === 'en' ? 'How to Play Tutorial' : 'Tutorial Cara Bermain',
+            action: onOpenTutorial,
+          },
+        ]
+      : []),
     { id: 'settings', label: lang === 'en' ? 'Settings' : 'Pengaturan', action: onOpenSettings },
     { id: 'main-menu', label: lang === 'en' ? 'Main Menu' : 'Menu Utama', action: onOpenMainMenu },
     { id: 'quit', label: lang === 'en' ? 'Quit Game' : 'Tutup Game', action: () => setShowExitConfirm(true) },
@@ -33,7 +44,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
       menuItems[index].action();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [onResume, onOpenSettings, onOpenMainMenu]
+    [onResume, onOpenSettings, onOpenMainMenu, onOpenTutorial]
   );
 
   // Keyboard navigation inside Pause Menu

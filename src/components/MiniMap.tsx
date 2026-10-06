@@ -322,8 +322,18 @@ export const MiniMap: React.FC<MiniMapProps> = ({
         // Radiant color pockets strictly centered around each resolved NPC's location
         npcs.forEach((npc) => {
           if (!npc.isResolved) return;
-          const cx = (npc.x + 0.5) * MINI_TILE_PX;
-          const cy = (npc.y + 0.5) * MINI_TILE_PX;
+          // Karakter Kiki & Didi berkeliling desa; pertahankan wilayah warna di posisi asal tetap
+          let targetX = npc.x;
+          let targetY = npc.y;
+          if (npc.id === 'kiki') {
+            targetX = 8;
+            targetY = 13;
+          } else if (npc.id === 'didi_scout' || npc.id === 'didi') {
+            targetX = 11;
+            targetY = 17;
+          }
+          const cx = (targetX + 0.5) * MINI_TILE_PX;
+          const cy = (targetY + 0.5) * MINI_TILE_PX;
           let rTiles = 3.6;
           if (npc.id === 'kiki' || npc.id === 'kakek_ranu') rTiles = 3.8;
           else if (npc.id === 'didi_scout') rTiles = 3.2;

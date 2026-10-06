@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X, Home, Sparkles, Globe } from 'lucide-react';
+import { Compass, BookOpen, Map as MapIcon, Sliders, Award, Wind, Menu, X, Home, Sparkles, Globe, HelpCircle } from 'lucide-react';
 import { useIsMobileOrTablet } from '../utils/device';
 import { useLanguage } from '../game/localization';
 
@@ -11,6 +11,7 @@ interface VirtualControlsProps {
   isCompassActive: boolean;
   onOpenJournal: () => void;
   onOpenSettings: () => void;
+  onOpenTutorial?: () => void;
   isDialogueOpen?: boolean;
   isSettingsOpen?: boolean;
   onToggleMiniMap?: () => void;
@@ -31,6 +32,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   isCompassActive,
   onOpenJournal,
   onOpenSettings,
+  onOpenTutorial,
   isDialogueOpen = false,
   isSettingsOpen = false,
   onToggleMiniMap,
@@ -344,6 +346,19 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               </button>
             )}
 
+            {onOpenTutorial && (
+              <button
+                id="top-tutorial-btn"
+                onClick={onOpenTutorial}
+                title={lang === 'en' ? 'Open How to Play Tutorial [H]' : 'Buka Tutorial Cara Bermain [H]'}
+                className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-emerald-500/60 hover:border-emerald-300 hover:bg-slate-900 hover:scale-105 hover:shadow-[0_0_16px_rgba(16,185,129,0.5)] active:scale-95 text-emerald-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
+              >
+                <HelpCircle className="w-4 h-4 text-emerald-400" />
+                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.tutorial}</span>
+                <span className="text-[10px] text-emerald-400/80 font-mono">[H]</span>
+              </button>
+            )}
+
             <button
               id="top-settings-btn"
               onClick={onOpenSettings}
@@ -547,6 +562,34 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   [O]
                 </span>
               </button>
+
+              {/* Option 5b: Tutorial Cara Bermain */}
+              {onOpenTutorial && (
+                <button
+                  onClick={() => {
+                    onOpenTutorial();
+                    setIsMenuOpen(false);
+                  }}
+                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-emerald-500/40 hover:border-emerald-300 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(16,185,129,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-300">
+                      <HelpCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-xs text-emerald-200">
+                        {lang === 'en' ? 'How to Play Tutorial' : 'Tutorial Cara Bermain'}
+                      </div>
+                      <div className="text-[10.5px] text-slate-400">
+                        {ui.tutorialDesc}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-emerald-400 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                    [H]
+                  </span>
+                </button>
+              )}
 
               {/* Option 6: Menu Awal / Opening Start */}
               {onOpenStartMenu && (

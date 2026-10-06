@@ -99,25 +99,25 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     choices: [
       {
         id: 'c_kiki_reg_breathing_v',
-        text: '🌬️ Teknik Napas Balon (4-4-4): Tarik napas pelan lewat hidung, tahan, lalu hembuskan.',
+        text: 'Teknik Napas Balon (4-4-4): Tarik napas pelan lewat hidung, tahan, lalu hembuskan.',
         impactScore: 20,
         resultDialogueId: 'kiki_prep_breathing',
       },
       {
         id: 'c_kiki_reg_grounding_v',
-        text: '👁️ Grounding Panca Indra (5-4-3-2-1): Amati sekeliling agar pikiran kembali fokus.',
+        text: 'Grounding Panca Indra (5-4-3-2-1): Amati sekeliling agar pikiran kembali fokus.',
         impactScore: 20,
         resultDialogueId: 'kiki_prep_grounding',
       },
       {
         id: 'c_kiki_reg_stop_v',
-        text: '🛑 Metode S.T.O.P: Berhenti sejenak, ambil napas jeda, amati perasaan, lalu bertindak.',
+        text: 'Metode S.T.O.P: Berhenti sejenak, ambil napas jeda, amati perasaan, lalu bertindak.',
         impactScore: 20,
         resultDialogueId: 'kiki_prep_stop',
       },
       {
         id: 'c_kiki_reg_shakeout_v',
-        text: '⚡ Shake-Out Tubuh: Goyangkan tangan, kaki, dan ekor untuk melepas ketegangan.',
+        text: 'Shake-Out Tubuh: Goyangkan tangan, kaki, dan ekor untuk melepas ketegangan.',
         impactScore: 20,
         resultDialogueId: 'kiki_prep_shakeout',
       },
@@ -134,25 +134,25 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     choices: [
       {
         id: 'c_kiki_reg_breathing',
-        text: '🌬️ Teknik Napas Balon (4-4-4): Tarik napas pelan lewat hidung, tahan, lalu hembuskan.',
+        text: 'Teknik Napas Balon (4-4-4): Tarik napas pelan lewat hidung, tahan, lalu hembuskan.',
         impactScore: 20,
         resultDialogueId: 'kiki_prep_breathing',
       },
       {
         id: 'c_kiki_reg_grounding',
-        text: '👁️ Grounding Panca Indra (5-4-3-2-1): Amati sekeliling agar pikiran kembali fokus.',
+        text: 'Grounding Panca Indra (5-4-3-2-1): Amati sekeliling agar pikiran kembali fokus.',
         impactScore: 20,
         resultDialogueId: 'kiki_prep_grounding',
       },
       {
         id: 'c_kiki_reg_stop',
-        text: '🛑 Metode S.T.O.P: Berhenti sejenak, ambil napas jeda, amati perasaan, lalu bertindak.',
+        text: 'Metode S.T.O.P: Berhenti sejenak, ambil napas jeda, amati perasaan, lalu bertindak.',
         impactScore: 20,
         resultDialogueId: 'kiki_prep_stop',
       },
       {
         id: 'c_kiki_reg_shakeout',
-        text: '⚡ Shake-Out Tubuh: Goyangkan tangan, kaki, dan ekor untuk melepas ketegangan.',
+        text: 'Shake-Out Tubuh: Goyangkan tangan, kaki, dan ekor untuk melepas ketegangan.',
         impactScore: 20,
         resultDialogueId: 'kiki_prep_shakeout',
       },

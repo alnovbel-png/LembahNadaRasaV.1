@@ -869,14 +869,35 @@ export class GameRenderer {
       for (const npc of this.currentNpcs) {
         if (!npc.isResolved) continue;
 
+        // Karakter Kiki berkeliling desa untuk mengantar surat setelah misinya selesai.
+        // Wilayah berwarna Alun-Alun dipertahankan tetap di posisinya (Plaza & air mancur) tanpa terpatok pergerakan karakter Kiki.
+        if (npc.id === 'kiki') {
+          const distKikiPostSq = (c - 8) * (c - 8) + (r - 13) * (r - 13);
+          const distFountainSq = (c - 11) * (c - 11) + (r - 14) * (r - 14);
+          const isPlazaSquare = c >= 7 && c <= 14 && r >= 12 && r <= 16;
+          if (distKikiPostSq <= 3.8 * 3.8 || distFountainSq <= 4.0 * 4.0 || isPlazaSquare) {
+            return true;
+          }
+          continue;
+        }
+
+        // Karakter Didi berkeliling desa (patroli rute harmoni) setelah diselesaikan/disapa.
+        // Wilayah berwarna pos Didi (simpang jalur desa 11, 17) dipertahankan tetap di posisinya tanpa terpatok pergerakan karakter Didi.
+        if (npc.id === 'didi_scout' || npc.id === 'didi') {
+          const distDidiPostSq = (c - 11) * (c - 11) + (r - 17) * (r - 17);
+          if (distDidiPostSq <= 3.2 * 3.2) {
+            return true;
+          }
+          continue;
+        }
+
         const dx = c - npc.x;
         const dy = r - npc.y;
         const distSq = dx * dx + dy * dy;
 
         // Custom organic restoration radius based on each NPC's location (localized, not too big)
         let radius = 3.5;
-        if (npc.id === 'kiki') radius = 3.8;              // Fountain & central plaza square
-        else if (npc.id === 'kakek_ranu') radius = 3.8;   // Wooden bridge & river crossing
+        if (npc.id === 'kakek_ranu') radius = 3.8;   // Wooden bridge & river crossing
         else if (npc.id === 'bimo') radius = 3.6;         // Forest clearing & grove
         else if (npc.id === 'kak_citra') radius = 3.5;    // Flower garden & flower cart
         else if (npc.id === 'kakek_damai') radius = 3.6;  // Riverbank & mindful bonsai garden
@@ -891,6 +912,16 @@ export class GameRenderer {
         if (distSq <= radius * radius) {
           return true;
         }
+      }
+    }
+
+    // 2b. If plaza zone is restored, maintain the Plaza & fountain territory in full color
+    if (status.plaza) {
+      const distKikiPostSq = (c - 8) * (c - 8) + (r - 13) * (r - 13);
+      const distFountainSq = (c - 11) * (c - 11) + (r - 14) * (r - 14);
+      const isPlazaSquare = c >= 7 && c <= 14 && r >= 12 && r <= 16;
+      if (distKikiPostSq <= 3.8 * 3.8 || distFountainSq <= 4.0 * 4.0 || isPlazaSquare) {
+        return true;
       }
     }
 

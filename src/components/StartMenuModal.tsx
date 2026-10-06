@@ -7,6 +7,7 @@ import {
   Play,
   ArrowLeft,
   RotateCcw,
+  HelpCircle,
 } from 'lucide-react';
 import { sound, useAudioSettings } from '../utils/audio';
 import { CharacterPortrait } from './CharacterPortrait';
@@ -20,6 +21,7 @@ interface StartMenuModalProps {
   onOpenControls: () => void;
   onOpenAudioSettings: () => void;
   onOpenSettings?: () => void;
+  onOpenTutorial?: () => void;
   isSettingsOpen?: boolean;
   initialPlayerName?: string;
   initialPlayerAvatar?: 'boy' | 'girl';
@@ -31,6 +33,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
   onOpenControls,
   onOpenAudioSettings,
   onOpenSettings,
+  onOpenTutorial,
   isSettingsOpen = false,
   initialPlayerName = 'Ezzel',
   initialPlayerAvatar = 'boy',
@@ -228,6 +231,22 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
               </>
             )}
           </button>
+
+          {/* Tutorial Button */}
+          {onOpenTutorial && (
+            <button
+              type="button"
+              id="btn-start-tutorial"
+              onClick={onOpenTutorial}
+              title={lang === 'en' ? 'How to Play Tutorial' : 'Tutorial Cara Bermain'}
+              className="inline-flex items-center gap-1.5 bg-[#142621]/90 hover:bg-[#1a382e] border border-emerald-500/70 rounded-full px-2.5 sm:px-3 py-1 transition text-emerald-200 cursor-pointer shadow-md active:scale-95"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="font-pixel text-[8px] sm:text-[9px] text-emerald-300 font-bold uppercase tracking-wider">
+                {lang === 'en' ? 'Tutorial' : 'Cara Bermain'}
+              </span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -554,6 +573,20 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 </span>
               </button>
             </div>
+
+            {/* In-Game Tutorial Link */}
+            {onOpenTutorial && (
+              <div className="text-center pt-0.5">
+                <button
+                  type="button"
+                  onClick={onOpenTutorial}
+                  className="text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2 flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer"
+                >
+                  <HelpCircle className="w-3.5 h-3.5" />
+                  <span>{lang === 'en' ? 'New player? Open How to Play Tutorial' : 'Baru bermain? Buka Tutorial Cara Bermain'}</span>
+                </button>
+              </div>
+            )}
 
             {/* Bottom Card Footer */}
             <div className="w-full pt-1.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-slate-400 text-[10px] font-sans">
