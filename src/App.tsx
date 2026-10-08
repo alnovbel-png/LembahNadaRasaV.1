@@ -57,6 +57,12 @@ const AllBadgesCelebrationModal = React.lazy(() =>
 const CaptureMomentModal = React.lazy(() =>
   import('./components/CaptureMomentModal').then((m) => ({ default: m.CaptureMomentModal }))
 );
+const InGameTutorialModal = React.lazy(() =>
+  import('./components/InGameTutorialModal').then((m) => ({ default: m.InGameTutorialModal }))
+);
+const EndingQuizModal = React.lazy(() =>
+  import('./components/EndingQuizModal').then((m) => ({ default: m.EndingQuizModal }))
+);
 import { Sparkles, Compass, ChevronDown, ChevronUp, Minus } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
 import { PSE_ACHIEVEMENTS } from './game/constants';
@@ -316,6 +322,8 @@ export default function App() {
   const [showPauseMenu, setShowPauseMenu] = useState<boolean>(false);
   const showPauseMenuRef = useRef<boolean>(false);
   const [showEnding, setShowEnding] = useState<boolean>(false);
+  const [showEndingQuiz, setShowEndingQuiz] = useState<boolean>(false);
+  const showEndingQuizRef = useRef<boolean>(false);
   const [showAllBadgesCelebration, setShowAllBadgesCelebration] = useState<boolean>(false);
   const hasSeenAllBadgesCelebrationRef = useRef<boolean>(false);
   const pendingAllBadgesCelebrationRef = useRef<boolean>(false);
@@ -328,9 +336,16 @@ export default function App() {
   const [isMuted, setIsMuted] = useState<boolean>(() => sound.isMuted);
   const [showMiniMap, setShowMiniMap] = useState<boolean>(() => !isMobileOrTabletDevice());
   const [developerToast, setDeveloperToast] = useState<string | null>(null);
+  const [compassToast, setCompassToast] = useState<string | null>(null);
+  const [compassLiveDistance, setCompassLiveDistance] = useState<number>(0);
+  const [compassAngle, setCompassAngle] = useState<number>(0);
   const [questHint, setQuestHint] = useState<string>(
     'Pusaka Kompas Hati terjatuh di depanmu! Tekan [C] atau tombol Kompas untuk menggunakannya.'
   );
+  // In-Game Tutorial Modal state shown after character selection
+  const [showInGameTutorial, setShowInGameTutorial] = useState<boolean>(false);
+  const showInGameTutorialRef = useRef<boolean>(false);
+  const isTutorialFirstTimeAfterCharSelectRef = useRef<boolean>(false);
   // Dedicated Sequential Mission Pop-up state
   const [showMissionModal, setShowMissionModal] = useState<boolean>(false);
   const [isNewMissionUnlock, setIsNewMissionUnlock] = useState<boolean>(false);
@@ -565,16 +580,29 @@ export default function App() {
     sound.unlockAudio();
     sound.playCompassChime();
     setShowStartMenu(false);
-    // Enter the story immediately with prologue dialogue & golden sparkles
-    setTimeout(() => {
-      setCurrentDialogue(GAME_DIALOGUES.intro_start);
-      rendererRef.current?.addSparkle(
-        playerRef.current.x + 16,
-        playerRef.current.y + 16,
-        '#f59e0b',
-        30
-      );
-    }, 120);
+
+    // Setelah memilih karakter, pemain bertemu dengan pop up screen tutorial in game
+    // yang menjelaskan cara menggerakan karakter, interaksi karakter, dan tombol2 game lainnya
+    isTutorialFirstTimeAfterCharSelectRef.current = true;
+    setShowInGameTutorial(true);
+  }, []);
+
+  // Handler for closing the In-Game Tutorial
+  const handleCloseInGameTutorial = useCallback(() => {
+    setShowInGameTutorial(false);
+    if (isTutorialFirstTimeAfterCharSelectRef.current) {
+      isTutorialFirstTimeAfterCharSelectRef.current = false;
+      // Masuk ke prolog cerita game dengan dialog narasi awal & kilauan emas
+      setTimeout(() => {
+        setCurrentDialogue(GAME_DIALOGUES.intro_start);
+        rendererRef.current?.addSparkle(
+          playerRef.current.x + 16,
+          playerRef.current.y + 16,
+          '#f59e0b',
+          30
+        );
+      }, 120);
+    }
   }, []);
 
   const handleOpenRegulation = useCallback(
@@ -838,10 +866,24 @@ export default function App() {
           const py = playerRef.current.y + 16;
           rendererRef.current.triggerCompassBurst(px, py);
         }
+
+        setCompassToast(
+          lang === 'en'
+            ? '✨ Heart Compass active! Golden light trail & empathy signals guide your mission.'
+            : '✨ Kompas Hati aktif! Jalur cahaya emas & resonansi empati memandu langkah misimu.'
+        );
+        setTimeout(() => setCompassToast(null), 3500);
+      } else {
+        setCompassToast(
+          lang === 'en'
+            ? 'Heart Compass standby. Press [C] or Heart button to reactivate.'
+            : 'Kompas Hati siaga. Tekan [C] atau tombol Hati untuk mengaktifkan kembali.'
+        );
+        setTimeout(() => setCompassToast(null), 2500);
       }
       return next;
     });
-  }, []);
+  }, [lang]);
 
   // Toggle Sound
   const handleToggleMute = useCallback(() => {
@@ -1470,7 +1512,7 @@ export default function App() {
   // Click / Tap on Floor or NPC/Props to walk there automatically
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (currentDialogue || showSettings || showStartMenu || showPauseMenu) return; // In active dialogue, paused settings or start menu, don't walk
+      if (currentDialogue || showSettings || showStartMenu || showPauseMenu || showInGameTutorial || showEndingQuiz) return; // In active dialogue, paused settings, tutorial, quiz, or start menu, don't walk
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -2019,7 +2061,7 @@ export default function App() {
   // Mouse move handler for interactive object hover hints and cursor styling
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (currentDialogue || showSettings || showStartMenu) {
+      if (currentDialogue || showSettings || showStartMenu || showInGameTutorial || showEndingQuiz) {
         rendererRef.current?.setHover(null);
         return;
       }
@@ -2688,6 +2730,7 @@ export default function App() {
       }
 
       // Trigger Climax Ending Modal ONLY AFTER the player finishes reading the final dialogue!
+      // Shows the fullscreen core understanding quiz test first
       if (
         finishedId === 'ending_summary_perfect' ||
         finishedId === 'ending_summary_resilient'
@@ -2701,7 +2744,7 @@ export default function App() {
           30
         );
         setTimeout(() => {
-          setShowEnding(true);
+          setShowEndingQuiz(true);
         }, 400);
       } else if (pendingAllBadgesCelebrationRef.current) {
         setTimeout(() => {
@@ -2738,7 +2781,7 @@ export default function App() {
       completeIntroTutorial();
     }
 
-    // If closed during climax ending, trigger celebration modal smoothly
+    // If closed during climax ending, trigger fullscreen quiz test smoothly
     if (
       closedId === 'ending_summary_perfect' ||
       closedId === 'ending_summary_resilient'
@@ -2752,7 +2795,7 @@ export default function App() {
         30
       );
       setTimeout(() => {
-        setShowEnding(true);
+        setShowEndingQuiz(true);
       }, 400);
     } else if (pendingAllBadgesCelebrationRef.current) {
       setTimeout(() => {
@@ -2801,9 +2844,31 @@ export default function App() {
     }
   }, [showStartMenu]);
 
+  useEffect(() => {
+    showInGameTutorialRef.current = showInGameTutorial;
+    if (showInGameTutorial) {
+      keysPressed.current = {};
+      joystickVectorRef.current = null;
+      targetPosRef.current = null;
+      rendererRef.current?.clearDestination();
+      playerRef.current.isMoving = false;
+    }
+  }, [showInGameTutorial]);
+
+  useEffect(() => {
+    showEndingQuizRef.current = showEndingQuiz;
+    if (showEndingQuiz) {
+      keysPressed.current = {};
+      joystickVectorRef.current = null;
+      targetPosRef.current = null;
+      rendererRef.current?.clearDestination();
+      playerRef.current.isMoving = false;
+    }
+  }, [showEndingQuiz]);
+
   const handleJoystickMove = useCallback((vec: { x: number; y: number } | null) => {
-    // Cannot interact with controls if settings/pause is open (game paused) or in start menu
-    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current) return;
+    // Cannot interact with controls if settings/pause/tutorial/quiz is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current) return;
 
     joystickVectorRef.current = vec;
     if (vec && (Math.abs(vec.x) > 0.05 || Math.abs(vec.y) > 0.05)) {
@@ -2820,8 +2885,8 @@ export default function App() {
     dir: 'up' | 'down' | 'left' | 'right',
     pressed: boolean
   ) => {
-    // Cannot interact with controls if settings/pause is open (game paused) or in start menu
-    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current) return;
+    // Cannot interact with controls if settings/pause/tutorial/quiz is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current) return;
 
     const keyMap = {
       up: 'ArrowUp',
@@ -2850,9 +2915,9 @@ export default function App() {
         target?.tagName === 'TEXTAREA' ||
         Boolean(target?.isContentEditable);
 
-      // 1. Tampilan pemilihan karakter dan saat mengetik nama:
+      // 1. Tampilan pemilihan karakter, tutorial in-game, kuis akhir, dan saat mengetik nama:
       // Matikan fungsi kontrol permainan agar tidak muncul konflik dengan kontrol permainan
-      if (showStartMenu || isTypingInInput) {
+      if (showStartMenu || showInGameTutorial || showEndingQuiz || isTypingInInput) {
         keysPressed.current = {};
         return;
       }
@@ -2942,10 +3007,11 @@ export default function App() {
         setShowSettings((prev) => !prev);
       }
 
-      // Open Controls Guide via [H] inside Settings Modal - Single dedicated key [H]
-      if (e.key === 'h' || e.key === 'H' || e.code === 'KeyH') {
-        setSettingsTab('controls');
-        setShowSettings(true);
+      // Open Controls Guide / In-Game Tutorial via [H] or [?]
+      if (e.key === 'h' || e.key === 'H' || e.code === 'KeyH' || e.key === '?') {
+        if (!currentDialogue && !showSettings && !showStartMenu) {
+          setShowInGameTutorial(true);
+        }
       }
 
       // Abadikan Momen (Screenshot game dengan overlay dekoratif) - Hotkey [P]
@@ -2997,10 +3063,10 @@ export default function App() {
     const gameLoop = () => {
       const p = playerRef.current;
 
-      // 0. GAME DALAM STATUS PAUSE SAAT MENU PENGATURAN ATAU PAUSE MENU TERBUKA:
+      // 0. GAME DALAM STATUS PAUSE SAAT MENU PENGATURAN, PAUSE, TUTORIAL, ATAU KUIS TERBUKA:
       // Seluruh simulasi dunia berhenti (pergerakan player, NPC, waypoint, suara langkah).
       // Render frame statis tetap dijalankan agar kanvas tetap tampil stabil di balik dialog jeda.
-      if (showSettingsRef.current || showPauseMenuRef.current) {
+      if (showSettingsRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current) {
         p.isMoving = false;
         keysPressed.current = {};
         if (rendererRef.current) {
@@ -4132,6 +4198,92 @@ export default function App() {
   }, [currentMissionData.hint]);
 
   // Auto celebratory popup when completing previous step and unlocking next sequential mission
+  // Active Mission Target details for Heart Compass live navigation mechanic
+  const compassTargetInfo = useMemo(() => {
+    if (
+      isFreeRoamActive ||
+      (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)
+    ) {
+      return null;
+    }
+    let targetNpcId = 'kiki';
+    let targetName = 'Kiki';
+    let targetLocation = lang === 'en' ? 'Melody Plaza (West of Fountain)' : 'Alun-Alun Nada (Barat Air Mancur)';
+    let targetTileX = 8;
+    let targetTileY = 14;
+
+    if (!zoneStatus.plaza) {
+      targetNpcId = 'kiki';
+      targetName = 'Kiki';
+      targetLocation = lang === 'en' ? 'Melody Plaza (West of Fountain)' : 'Alun-Alun Nada (Barat Air Mancur)';
+      const npc = npcs.find((n) => n.id === 'kiki');
+      targetTileX = npc?.x ?? 8;
+      targetTileY = npc?.y ?? 14;
+    } else if (!zoneStatus.bridge) {
+      targetNpcId = 'kakek_ranu';
+      targetName = 'Kakek Ranu';
+      targetLocation = lang === 'en' ? 'Wooden River Bridge (East)' : 'Jembatan Kayu Sungai (Timur)';
+      const npc = npcs.find((n) => n.id === 'kakek_ranu');
+      targetTileX = npc?.x ?? 20;
+      targetTileY = npc?.y ?? 15;
+    } else if (!zoneStatus.forest) {
+      targetNpcId = 'bimo';
+      targetName = 'Bimo';
+      targetLocation = lang === 'en' ? 'Silent Forest Clearing (North)' : 'Hutan Sunyi (Utara)';
+      const npc = npcs.find((n) => n.id === 'bimo');
+      targetTileX = npc?.x ?? 7;
+      targetTileY = npc?.y ?? 6;
+    } else if (!zoneStatus.tower) {
+      if (clockComponentsCount < 12 && nextMissingClockNPC) {
+        targetNpcId = nextMissingClockNPC.npcId;
+        targetName = nextMissingClockNPC.hintName;
+        targetLocation = nextMissingClockNPC.zone;
+        const npc = npcs.find((n) => n.id === nextMissingClockNPC.npcId);
+        targetTileX = npc?.x ?? nextMissingClockNPC.targetCoords.x;
+        targetTileY = npc?.y ?? nextMissingClockNPC.targetCoords.y;
+      } else {
+        targetNpcId = 'penjaga_kabut';
+        targetName = lang === 'en' ? 'Grandma Wilis' : 'Nenek Wilis';
+        targetLocation = lang === 'en' ? 'Clock Tower Summit (Northeast)' : 'Puncak Menara Jam (Timur Laut)';
+        const npc = npcs.find((n) => n.id === 'penjaga_kabut');
+        targetTileX = npc?.x ?? 29;
+        targetTileY = npc?.y ?? 8;
+      }
+    }
+
+    return {
+      npcId: targetNpcId,
+      name: targetName,
+      location: targetLocation,
+      tileX: targetTileX,
+      tileY: targetTileY,
+    };
+  }, [zoneStatus, isFreeRoamActive, npcs, clockComponentsCount, nextMissingClockNPC, lang]);
+
+  // Real-time calculation of live distance & compass needle angle pointing to mission target
+  useEffect(() => {
+    if (!isCompassActive || !compassTargetInfo) return;
+
+    const updateCompassData = () => {
+      const p = playerRef.current;
+      if (!p) return;
+      const tx = compassTargetInfo.tileX * TILE_SIZE + 16;
+      const ty = compassTargetInfo.tileY * TILE_SIZE + 16;
+      const px = p.x + 16;
+      const py = p.y + 16;
+      const dist = Math.hypot(tx - px, ty - py);
+      const steps = Math.max(0, Math.round(dist / 32));
+      const angle = (Math.atan2(ty - py, tx - px) * 180) / Math.PI;
+
+      setCompassLiveDistance(steps);
+      setCompassAngle(Math.round(angle));
+    };
+
+    updateCompassData();
+    const interval = setInterval(updateCompassData, 150);
+    return () => clearInterval(interval);
+  }, [isCompassActive, compassTargetInfo]);
+
   useEffect(() => {
     if (showStartMenu || !hasCompletedIntroTutorial) return;
     const currentStep = currentMissionData.step;
@@ -4294,6 +4446,71 @@ export default function App() {
               )}
             </button>
           </div>
+
+          {/* Dynamic Compass Guidance HUD when isCompassActive */}
+          {isCompassActive && !currentMissionData.isCompleted && compassTargetInfo && (
+            <div
+              id="compass-guidance-hud"
+              onClick={handleToggleCompass}
+              className="mt-1.5 bg-slate-950/95 border-2 border-amber-400/90 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-[0_4px_20px_rgba(245,158,11,0.5)] flex items-center justify-between gap-2 text-amber-200 pointer-events-auto cursor-pointer hover:border-amber-300 transition-all active:scale-[0.99] animate-fade-in"
+              title={lang === 'en' ? 'Heart Compass active • Click to toggle' : 'Kompas Hati aktif • Klik untuk mengatur'}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                {/* Rotating Dial with Needle */}
+                <div className="relative w-6 h-6 rounded-full bg-amber-950/90 border border-amber-400 flex items-center justify-center shrink-0 shadow-inner">
+                  <Compass
+                    className="w-4 h-4 text-amber-400 transition-transform duration-200 ease-out"
+                    style={{ transform: `rotate(${compassAngle}deg)` }}
+                  />
+                  <div className="absolute -top-0.5 w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping pointer-events-none" />
+                </div>
+
+                <div className="min-w-0 flex flex-col">
+                  <div className="flex items-center gap-1.5 text-[8.5px] sm:text-[9.5px] font-pixel font-bold text-amber-300">
+                    <span className="text-emerald-400">🧭 {lang === 'en' ? 'COMPASS:' : 'PANDUAN KOMPAS:'}</span>
+                    <span className="truncate">{compassTargetInfo.name}</span>
+                    <span className="text-slate-400">•</span>
+                    <span className="text-amber-100/90 text-[8px] truncate">{compassTargetInfo.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[7.5px] sm:text-[8px] font-pixel text-slate-300">
+                    <span className="text-amber-400 font-bold">
+                      {compassLiveDistance} {lang === 'en' ? 'steps' : 'langkah'}
+                    </span>
+                    <span className="text-slate-500">|</span>
+                    <span className={compassLiveDistance <= 2 ? 'text-emerald-400 font-bold animate-pulse' : 'text-slate-400'}>
+                      {compassLiveDistance <= 2
+                        ? (lang === 'en' ? '✨ TARGET REACHED! Press Space to talk' : '✨ SAMPAI DI TARGET! Tekan Spasi untuk bicara')
+                        : compassLiveDistance <= 6
+                        ? (lang === 'en' ? 'High Resonance! Follow light path' : 'Resonansi Tinggi! Ikuti jalur cahaya emas')
+                        : (lang === 'en' ? 'Scanning frequency... follow needle' : 'Memindai frekuensi... ikuti arah jarum')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick action button: Walk automatically towards target */}
+              <button
+                id="compass-hud-follow-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleGuideToMission(currentMissionData.step);
+                }}
+                className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-pixel text-[8px] sm:text-[9px] font-bold shadow transition flex items-center gap-1 shrink-0 cursor-pointer"
+                title={lang === 'en' ? 'Auto-walk along the compass light path' : 'Jalan otomatis menyusuri jalur cahaya kompas'}
+              >
+                <Sparkles className="w-3 h-3 text-slate-950" />
+                <span>{lang === 'en' ? 'Follow Path' : 'Ikuti Jejak'}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Compass Activation Toast Feedback */}
+          {compassToast && (
+            <div className="mt-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-900/95 via-amber-800/95 to-amber-900/95 border-2 border-amber-300 rounded-xl text-amber-100 font-pixel text-[8.5px] sm:text-[9.5px] shadow-[0_4px_20px_rgba(245,158,11,0.6)] animate-fade-in flex items-center justify-center gap-2 pointer-events-auto">
+              <Compass className="w-3.5 h-3.5 text-amber-300 animate-spin" style={{ animationDuration: '6s' }} />
+              <span>{compassToast}</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -4307,11 +4524,12 @@ export default function App() {
           isCompassActive={isCompassActive}
           onOpenJournal={() => setShowJournal(true)}
           onOpenSettings={() => handleOpenSettings('quest')}
+          onOpenTutorial={() => setShowInGameTutorial(true)}
           isDialogueOpen={!!currentDialogue}
           isSettingsOpen={showSettings}
           onToggleMiniMap={() => setShowMiniMap((prev) => !prev)}
           isMiniMapOpen={showMiniMap}
-          onOpenEnding={() => setShowEnding(true)}
+          onOpenEnding={() => setShowEndingQuiz(true)}
           isGameCompleted={
             isFreeRoamActive ||
             (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)
@@ -4441,6 +4659,7 @@ export default function App() {
             onCaptureMoment={handleCaptureMoment}
             onNavigateToTile={handleMiniMapNavigate}
             onActivateDeveloperMode={handleActivateDeveloperMode}
+            onOpenTutorial={() => setShowInGameTutorial(true)}
           />
         )}
 
@@ -4481,10 +4700,41 @@ export default function App() {
             isOpen={showEnding}
             onRestart={handleRestart}
             onFreeRoam={handleFreeRoam}
+            onOpenQuiz={() => {
+              setShowEnding(false);
+              setShowEndingQuiz(true);
+            }}
             stats={stats}
             branchTag={branchChoice}
             endingType={endingType}
             playerName={playerName}
+          />
+        )}
+
+        {/* Fullscreen Core Game Understanding Quiz Modal (5 Pertanyaan Pilihan Ganda A, B, C) */}
+        {showEndingQuiz && (
+          <EndingQuizModal
+            isOpen={showEndingQuiz}
+            playerName={playerName}
+            onProceedToEnding={() => {
+              setShowEndingQuiz(false);
+              setShowEnding(true);
+            }}
+            onClose={() => setShowEndingQuiz(false)}
+            onFreeRoam={() => {
+              setShowEndingQuiz(false);
+              handleFreeRoam();
+            }}
+          />
+        )}
+
+        {/* In-Game Tutorial Pop Up Screen (Explains Movement, Interactions, and All Action Buttons) */}
+        {showInGameTutorial && (
+          <InGameTutorialModal
+            isOpen={showInGameTutorial}
+            onClose={handleCloseInGameTutorial}
+            initialStep={1}
+            onNavigateToFirstQuest={handleCloseInGameTutorial}
           />
         )}
       </React.Suspense>
@@ -4496,6 +4746,7 @@ export default function App() {
         onOpenControls={() => handleOpenSettings('controls')}
         onOpenAudioSettings={() => handleOpenSettings('audio')}
         onOpenSettings={() => handleOpenSettings('quest')}
+        onOpenTutorial={() => setShowInGameTutorial(true)}
         isSettingsOpen={showSettings}
         initialPlayerName={playerName}
         initialPlayerAvatar={playerAvatar}
@@ -4512,6 +4763,11 @@ export default function App() {
           sound.playMenuSelect();
           setShowPauseMenu(false);
           handleOpenSettings('audio');
+        }}
+        onOpenTutorial={() => {
+          sound.playMenuSelect();
+          setShowPauseMenu(false);
+          setShowInGameTutorial(true);
         }}
         onOpenMainMenu={() => {
           sound.playMenuSelect();

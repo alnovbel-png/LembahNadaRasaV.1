@@ -25,7 +25,7 @@ export interface Particle {
   gravity?: number;
   drag?: number;
   shrink?: boolean;
-  shape?: 'pixel' | 'sparkle' | 'circle' | 'ring';
+  shape?: 'pixel' | 'sparkle' | 'circle' | 'ring' | 'heart' | 'note';
   twinkle?: boolean;
   rotation?: number;
   vRot?: number;
@@ -113,6 +113,7 @@ export class GameRenderer {
   private destinationTarget: { x: number; y: number; anim: number; type: DestinationType } | null = null;
   private hoverTarget: HoverTarget | null = null;
   private currentNpcs: NPC[] = [];
+  private currentZoneStatus: ZoneColorStatus | null = null;
   private shakeIntensity: number = 0;
   private shakeDuration: number = 0;
   private shakeElapsed: number = 0;
@@ -543,6 +544,7 @@ export class GameRenderer {
   ) {
     this.tickCount++;
     this.currentNpcs = npcs || [];
+    this.currentZoneStatus = zoneColorStatus;
     this.isAllMissionsCompleted =
       isMissionCompleted ??
       (zoneColorStatus.plaza &&
@@ -5028,8 +5030,13 @@ export class GameRenderer {
       ctx.lineWidth = 1;
       ctx.stroke();
 
-      // Spinning miniature compass needle
-      const needleAngle = this.tickCount * 0.08;
+      // Miniature compass needle pointing directly toward active quest target
+      let needleAngle = this.tickCount * 0.08;
+      if (this.activeQuestTarget && !this.isAllMissionsCompleted) {
+        const dxTarget = this.activeQuestTarget.targetX - compassX;
+        const dyTarget = this.activeQuestTarget.targetY - compassY;
+        needleAngle = Math.atan2(dyTarget, dxTarget) + Math.sin(this.tickCount * 0.15) * 0.08;
+      }
       ctx.strokeStyle = '#ef4444';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
@@ -7012,6 +7019,12 @@ export class GameRenderer {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(qCenterX + 7, qCenterY - 7, 2, 2);
       }
+    } else if (npc.isResolved) {
+      // -----------------------------------------------------------------------
+      // VISUAL ICON OVERLAY: HAPPINESS LEVEL INDICATOR FOR RESOLVED VILLAGERS
+      // Shows joyful happiness balloon, animated heartbeat/smile, and happiness %
+      // -----------------------------------------------------------------------
+      this.drawNPCHappinessOverlay(npc, nx, ny);
     }
 
     // -----------------------------------------------------------------------
@@ -7079,7 +7092,7 @@ export class GameRenderer {
       ctx.fillRect(bx + 2.5, by - 1, 2, 2);
 
       ctx.restore();
-    } else if (npc.isRoaming) {
+    } else if (npc.isRoaming && !npc.isResolved) {
       // Roaming indicator badge (small compass / footsteps icon indicator)
       const roamPhase = this.tickCount * 0.14 + npc.x * 2;
       const roamBob = Math.sin(roamPhase) * 2;
@@ -7135,6 +7148,239 @@ export class GameRenderer {
     }
   }
 
+  // -----------------------------------------------------------------------
+  // CALCULATE DYNAMIC VILLAGER HAPPINESS LEVEL & STATUS
+  // -----------------------------------------------------------------------
+  public getNPCHappiness(npc: NPC): { level: number; percent: number; statusText: string } {
+    if (typeof npc.happinessLevel === 'number') {
+      const pct = Math.max(0, Math.min(100, Math.round(npc.happinessLevel)));
+      return {
+        level: pct >= 98 ? 5 : pct >= 90 ? 4 : 3,
+        percent: pct,
+        statusText: `${pct}%`,
+      };
+    }
+
+    let pct = 90;
+    if (this.currentZoneStatus) {
+      if (npc.id === 'kiki' && this.currentZoneStatus.plaza) pct += 5;
+      if (npc.id === 'kakek_ranu' && this.currentZoneStatus.bridge) pct += 5;
+      if (npc.id === 'bimo' && this.currentZoneStatus.forest) pct += 5;
+      if (npc.id === 'penjaga_kabut' && this.currentZoneStatus.tower) pct += 5;
+    }
+    if (npc.emotionProfile?.deepEmotion === 'gembira') pct += 5;
+    if (this.isAllMissionsCompleted) pct = 100;
+
+    pct = Math.min(100, pct);
+    return {
+      level: pct >= 98 ? 5 : pct >= 90 ? 4 : 3,
+      percent: pct,
+      statusText: `${pct}%`,
+    };
+  }
+
+  // -----------------------------------------------------------------------
+  // VISUAL ICON OVERLAY: HAPPINESS LEVEL INDICATOR FOR RESOLVED VILLAGERS
+  // Displays dynamic happiness level, animated beating heart / joyful smile,
+  // glowing emotional aura, and emits celebratory particles to bring the village to life!
+  // -----------------------------------------------------------------------
+  private drawNPCHappinessOverlay(npc: NPC, nx: number, ny: number) {
+    const ctx = this.ctx;
+    const hPhase = this.tickCount * 0.08 + npc.x * 2.3;
+    const hBob = Math.sin(hPhase) * 2.5;
+    const hCenterX = nx + 16;
+    // If NPC is chatting, elevate slightly so it does not overlap the chat dots bubble
+    const hCenterY = (npc.isChatting ? ny - 32 : ny - 26) + hBob;
+
+    // Calculate dynamic happiness score & tier
+    const happiness = this.getNPCHappiness(npc);
+    const { percent } = happiness;
+
+    // Periodically emit floating joyful heart / musical note particles from happy villagers
+    if (this.tickCount % 75 === Math.floor((npc.x * 37 + npc.y * 19) % 75)) {
+      const isNote = (this.tickCount + Math.floor(npc.x * 10)) % 2 === 0;
+      const particleColor = percent === 100 ? '#f43f5e' : '#ec4899';
+      this.particles.push({
+        x: hCenterX + (Math.random() - 0.5) * 10,
+        y: hCenterY - 4,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: -0.45 - Math.random() * 0.25,
+        life: 0,
+        maxLife: 70,
+        color: isNote ? '#38bdf8' : particleColor,
+        size: 3,
+        shape: isNote ? 'note' : 'heart',
+      });
+    }
+
+    ctx.save();
+
+    // 1. Soft Pulsating Happiness Halo Glow behind the balloon
+    const glowPulse = 0.28 + Math.sin(hPhase * 1.5) * 0.14;
+    const auraColor =
+      percent === 100
+        ? `rgba(34, 197, 94, ${glowPulse})`
+        : `rgba(244, 63, 94, ${glowPulse})`;
+    ctx.fillStyle = auraColor;
+    ctx.beginPath();
+    ctx.arc(hCenterX, hCenterY, 13.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 2. Drop shadow under balloon
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    ctx.beginPath();
+    ctx.arc(hCenterX, hCenterY + 1.5, 9, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 3. Happiness Crest Body (Circular Balloon)
+    const balloonColor = percent === 100 ? '#10b981' : '#f43f5e';
+    const balloonBorder = percent === 100 ? '#064e3b' : '#881337';
+    ctx.fillStyle = balloonColor;
+    ctx.beginPath();
+    ctx.arc(hCenterX, hCenterY, 8.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Inner glossy specular highlight
+    ctx.fillStyle = percent === 100 ? '#86efac' : '#fecdd3';
+    ctx.beginPath();
+    ctx.arc(hCenterX - 2.5, hCenterY - 2.5, 3.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Downward pointer tail
+    ctx.fillStyle = balloonColor;
+    ctx.beginPath();
+    ctx.moveTo(hCenterX - 3, hCenterY + 6.5);
+    ctx.lineTo(hCenterX + 3, hCenterY + 6.5);
+    ctx.lineTo(hCenterX, hCenterY + 10.5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Dark outline
+    ctx.strokeStyle = balloonBorder;
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.arc(hCenterX, hCenterY, 8.5, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Pointer tail outline
+    ctx.beginPath();
+    ctx.moveTo(hCenterX - 3, hCenterY + 6.5);
+    ctx.lineTo(hCenterX, hCenterY + 10.5);
+    ctx.lineTo(hCenterX + 3, hCenterY + 6.5);
+    ctx.stroke();
+
+    // 4. Central Icon: Beating Pixel Heart or Joyful Smile Expression
+    const showSmile = Math.floor((this.tickCount + npc.x * 15) / 180) % 2 === 1;
+
+    if (showSmile) {
+      // Cheerful pixel smiling face (^‿^)
+      ctx.fillStyle = '#ffffff';
+      // Left eye ^
+      ctx.fillRect(hCenterX - 4, hCenterY - 2, 2, 1);
+      ctx.fillRect(hCenterX - 3, hCenterY - 3, 1, 1);
+      // Right eye ^
+      ctx.fillRect(hCenterX + 2, hCenterY - 2, 2, 1);
+      ctx.fillRect(hCenterX + 2, hCenterY - 3, 1, 1);
+      // Smile curve
+      ctx.fillRect(hCenterX - 2, hCenterY + 1, 4, 1);
+      ctx.fillRect(hCenterX - 3, hCenterY, 1, 1);
+      ctx.fillRect(hCenterX + 2, hCenterY, 1, 1);
+      // Rosy blush cheeks
+      ctx.fillStyle = '#fca5a5';
+      ctx.fillRect(hCenterX - 5, hCenterY, 1, 1);
+      ctx.fillRect(hCenterX + 4, hCenterY, 1, 1);
+    } else {
+      // Beating Pixel Heart
+      ctx.fillStyle = '#ffffff';
+      const hx = Math.round(hCenterX);
+      const hy = Math.round(hCenterY - 1);
+      // Crisp 6x5 pixel heart
+      ctx.fillRect(hx - 3, hy - 2, 2, 2);
+      ctx.fillRect(hx + 1, hy - 2, 2, 2);
+      ctx.fillRect(hx - 4, hy - 1, 8, 2);
+      ctx.fillRect(hx - 3, hy + 1, 6, 1);
+      ctx.fillRect(hx - 2, hy + 2, 4, 1);
+      ctx.fillRect(hx - 1, hy + 3, 2, 1);
+      // White sparkle glint on top-left lobe
+      ctx.fillStyle = '#fef08a';
+      ctx.fillRect(hx - 2, hy - 1, 1, 1);
+    }
+
+    // 5. Upper Tag / Pill: Explicit Happiness Level Indicator (e.g. "♥ 100%" or "♥ 95%")
+    ctx.font = 'bold 7px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const tagText = `${percent}%`;
+    const tagW = ctx.measureText(tagText).width + 12; // room for mini heart + text
+    const tagH = 10;
+    const tagY = hCenterY - 14;
+
+    const rx = Math.floor(hCenterX - tagW / 2);
+    const ry = Math.floor(tagY - tagH / 2);
+
+    // Pill background
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+    ctx.fillRect(rx, ry, tagW, tagH);
+
+    // Pill border
+    ctx.strokeStyle = percent === 100 ? '#fde047' : '#34d399';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(rx, ry, tagW, tagH);
+
+    // Tiny pink mini-heart in pill
+    ctx.fillStyle = '#f43f5e';
+    ctx.fillRect(rx + 2, tagY - 2, 1, 1);
+    ctx.fillRect(rx + 4, tagY - 2, 1, 1);
+    ctx.fillRect(rx + 2, tagY - 1, 3, 1);
+    ctx.fillRect(rx + 3, tagY, 1, 1);
+
+    // Happiness percentage text
+    ctx.fillStyle = percent === 100 ? '#fef08a' : '#4ade80';
+    ctx.fillText(tagText, hCenterX + 2, tagY + 0.5);
+
+    // 6. Roaming Activity Companion Charm (for Kiki, Didi, Prof Kotek)
+    if (npc.isRoaming) {
+      const cx = Math.floor(hCenterX + tagW / 2 + 7);
+      const cy = Math.floor(tagY);
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      if (npc.sprite === 'squirrel') {
+        // Mini envelope
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(cx - 2.5, cy - 2, 5, 4);
+        ctx.fillStyle = '#ef4444';
+        ctx.fillRect(cx - 0.5, cy - 0.5, 1, 1);
+      } else if (npc.sprite === 'chicken_glasses') {
+        // Dual vials
+        ctx.fillStyle = '#22c55e';
+        ctx.fillRect(cx - 2, cy - 2, 2, 4);
+        ctx.fillStyle = '#f97316';
+        ctx.fillRect(cx + 0.5, cy - 2, 2, 4);
+      } else {
+        // Compass core
+        ctx.fillStyle = '#10b981';
+        ctx.fillRect(cx - 1.5, cy - 1.5, 3, 3);
+      }
+    }
+
+    // 7. Twinkling sparkle stars at the sides
+    const spFrame = Math.floor((this.tickCount * 0.12 + npc.y) % 4);
+    ctx.fillStyle = percent === 100 ? '#fde047' : '#ffffff';
+    if (spFrame === 0) {
+      ctx.fillRect(hCenterX + 10, hCenterY - 8, 2, 2);
+    } else if (spFrame === 2) {
+      ctx.fillRect(hCenterX - 11, hCenterY - 7, 2, 2);
+    }
+
+    ctx.restore();
+  }
+
   // Draw the Resonance Compass Auras & Deep Emotions
   private drawResonanceAuras(player: Player, npcs: NPC[]) {
     const ctx = this.ctx;
@@ -7186,6 +7432,90 @@ export class GameRenderer {
       ctx.fill();
     }
     ctx.restore();
+
+    // Guidance Light Trail from Player to Active Quest Target (Resonance Navigation Path)
+    if (this.activeQuestTarget && !this.isAllMissionsCompleted) {
+      const tx = this.activeQuestTarget.targetX;
+      const ty = this.activeQuestTarget.targetY;
+      const distToTarget = Math.hypot(tx - px, ty - py);
+
+      if (distToTarget > 32) {
+        ctx.save();
+        // 1. Ethereal golden resonance trail ray
+        ctx.strokeStyle = 'rgba(250, 204, 21, 0.45)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]);
+        ctx.lineDashOffset = -this.tickCount * 1.5;
+        ctx.beginPath();
+        ctx.moveTo(px, py);
+        ctx.lineTo(tx, ty);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 2. Stepping constellation nodes along the path
+        const nodeSpacing = 32;
+        const totalNodes = Math.min(30, Math.floor(distToTarget / nodeSpacing));
+        const flowOffset = ((this.tickCount * 1.5) % nodeSpacing) / distToTarget;
+
+        for (let i = 1; i <= totalNodes; i++) {
+          const t = Math.min(0.96, (i * nodeSpacing) / distToTarget + flowOffset);
+          const nx = px + (tx - px) * t;
+          const ny = py + (ty - py) * t;
+
+          const nodePulse = Math.sin(this.tickCount * 0.2 + i * 0.4) * 0.35 + 0.65;
+          const starR = 2.4 * nodePulse;
+
+          // Glowing halo
+          ctx.fillStyle = 'rgba(251, 191, 36, 0.35)';
+          ctx.beginPath();
+          ctx.arc(nx, ny, starR * 2.5, 0, Math.PI * 2);
+          ctx.fill();
+
+          // 4-pointed golden sparkle
+          ctx.fillStyle = i % 2 === 0 ? '#fef08a' : '#67e8f9';
+          ctx.beginPath();
+          ctx.moveTo(nx, ny - starR * 1.6);
+          ctx.lineTo(nx + starR * 0.5, ny);
+          ctx.lineTo(nx, ny + starR * 1.6);
+          ctx.lineTo(nx - starR * 0.5, ny);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // 3. Target Celestial Beacon Ring on active mission objective
+        const beaconPulse = Math.sin(this.tickCount * 0.16) * 3;
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(tx, ty, 20 + beaconPulse, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(254, 240, 138, 0.7)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.lineDashOffset = this.tickCount * 0.8;
+        ctx.beginPath();
+        ctx.arc(tx, ty, 26 + beaconPulse, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Overhead objective tag
+        const steps = Math.round(distToTarget / 32);
+        const tagText = `🎯 ${this.activeQuestTarget.label} (${steps} ${this.lang === 'en' ? 'steps' : 'langkah'})`;
+        ctx.font = 'bold 8px "Pixelify Sans", sans-serif';
+        ctx.textAlign = 'center';
+        const tagW = ctx.measureText(tagText).width + 14;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.fillRect(tx - tagW / 2, ty - 44, tagW, 16);
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(tx - tagW / 2, ty - 44, tagW, 16);
+        ctx.fillStyle = '#fde047';
+        ctx.fillText(tagText, tx, ty - 33);
+
+        ctx.restore();
+      }
+    }
 
     // Scan NPCs within resonance radius
     npcs.forEach((npc) => {
@@ -7416,6 +7746,32 @@ export class GameRenderer {
         ctx.beginPath();
         ctx.arc(Math.floor(p.x), Math.floor(p.y), currentSize, 0, Math.PI * 2);
         ctx.stroke();
+        ctx.restore();
+      } else if (p.shape === 'heart') {
+        const px = Math.floor(p.x);
+        const py = Math.floor(p.y);
+        ctx.save();
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = alpha * 0.9;
+        // Floating pixel heart
+        ctx.fillRect(px - 2, py - 2, 2, 2);
+        ctx.fillRect(px + 1, py - 2, 2, 2);
+        ctx.fillRect(px - 3, py - 1, 7, 2);
+        ctx.fillRect(px - 2, py + 1, 5, 2);
+        ctx.fillRect(px - 1, py + 3, 3, 1);
+        ctx.fillRect(px, py + 4, 1, 1);
+        ctx.restore();
+      } else if (p.shape === 'note') {
+        const px = Math.floor(p.x);
+        const py = Math.floor(p.y);
+        ctx.save();
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = alpha * 0.9;
+        // Floating musical note ♪
+        ctx.fillRect(px - 1, py + 1, 3, 2); // note head
+        ctx.fillRect(px + 1, py - 4, 1, 5); // note stem
+        ctx.fillRect(px + 2, py - 4, 2, 1); // note flag
+        ctx.fillRect(px + 3, py - 3, 1, 1);
         ctx.restore();
       } else {
         ctx.fillStyle = p.color;

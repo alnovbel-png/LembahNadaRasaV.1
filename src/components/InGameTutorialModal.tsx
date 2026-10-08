@@ -627,7 +627,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
                   <span className="text-slate-300">Bicara / Interaksi / Lanjut Dialog</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-amber-300 border border-slate-700 font-bold">
-                    SPASI  atau  ENTER
+                    SPASI / ENTER / [E]
                   </span>
                 </div>
 

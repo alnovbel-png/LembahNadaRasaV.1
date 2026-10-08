@@ -488,13 +488,19 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
 
                     {/* Footer Row: Emotion Pill & Open Action */}
                     <div className="pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 mt-auto">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${emotionBadge.bg}`}
                         >
                           <span className={`w-1.5 h-1.5 rounded-full ${emotionBadge.dot}`} />
                           <span>{isResolved ? (lang === 'en' ? 'Harmonious' : 'Harmonis') : emotionBadge.text}</span>
                         </span>
+                        {isResolved && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-950/70 text-rose-300 border border-rose-500/30 flex items-center gap-1 shadow-sm">
+                            <span className="text-rose-400">♥</span>
+                            <span>{live?.happinessLevel ?? 100}%</span>
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-1 text-xs font-bold text-amber-400 group-hover:text-amber-300 group-hover:translate-x-0.5 transition">
@@ -585,10 +591,16 @@ export const PeopleGuideModal: React.FC<PeopleGuideModalProps> = ({
                         {activeProfile.categoryLabel}
                       </span>
                       {activeLiveNpc?.isResolved ? (
-                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                          <span>{lang === 'en' ? '✨ Harmonious & Open Heart' : '✨ Harmonis & Hati Terbuka'}</span>
-                        </span>
+                        <>
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-600 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                            <span>{lang === 'en' ? '✨ Harmonious & Open Heart' : '✨ Harmonis & Hati Terbuka'}</span>
+                          </span>
+                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-950/80 text-rose-300 border border-rose-500/40 flex items-center gap-1 shadow-sm">
+                            <span className="text-rose-400">♥</span>
+                            <span>{lang === 'en' ? 'Happiness' : 'Kebahagiaan'}: {activeLiveNpc?.happinessLevel ?? 100}%</span>
+                          </span>
+                        </>
                       ) : (
                         <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-600 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3 text-amber-400" />

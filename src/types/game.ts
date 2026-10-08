@@ -57,6 +57,7 @@ export interface NPC {
   isChatting?: boolean;
   chatPartnerId?: string;
   chatTopic?: string;
+  happinessLevel?: number;
 }
 
 export interface Item {

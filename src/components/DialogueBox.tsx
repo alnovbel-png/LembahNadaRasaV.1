@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { DialogueNode, ChoiceOption } from '../types/game';
 import { sound } from '../utils/audio';
-import { Eye, MessageCircle, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Eye, MessageCircle, Sparkles, CheckCircle2, AlertTriangle, Compass } from 'lucide-react';
 import { CharacterPortrait } from './CharacterPortrait';
 import { useLanguage } from '../game/localization';
 
@@ -528,10 +528,29 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     {ui.reReadText}
                   </button>
                 </div>
+
+                {/* Heart Compass Active Empathy Guidance Banner */}
+                {isCompassActive && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-amber-500/15 border border-amber-400/40 text-amber-200 text-[8px] sm:text-[8.5px] font-pixel shadow-sm animate-fade-in">
+                    <Compass className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-spin" style={{ animationDuration: '8s' }} />
+                    <span className="leading-tight">
+                      {lang === 'en'
+                        ? 'Heart Compass active: Resonance signals guide you toward empathetic responses.'
+                        : 'Kompas Hati aktif: Resonansi menuntunmu memilih respon yang penuh empati & pengertian.'}
+                    </span>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 gap-1.5">
                   {dialogue.choices.map((choice, index) => {
                     const isSelected = selectedChoiceId === choice.id;
                     const isPreviouslyWrong = (wrongChoiceIdsRef.current[dialogue.id] || []).includes(choice.id);
+                    const isCompassResonating =
+                      isCompassActive &&
+                      !isPreviouslyWrong &&
+                      typeof choice.impactScore === 'number' &&
+                      choice.impactScore > 0;
+
                     let btnStyle =
                       'bg-slate-900/90 hover:bg-amber-950/70 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-100';
 
@@ -544,6 +563,9 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     } else if (isPreviouslyWrong) {
                       btnStyle =
                         'bg-slate-950/70 border border-red-900/60 text-slate-400 hover:text-rose-200 hover:border-red-500/50';
+                    } else if (isCompassResonating) {
+                      btnStyle =
+                        'bg-gradient-to-r from-amber-950/60 via-slate-900/90 to-amber-950/40 border-2 border-amber-400/90 text-amber-100 shadow-[0_0_12px_rgba(245,158,11,0.3)] hover:border-amber-300 hover:shadow-[0_0_16px_rgba(245,158,11,0.5)]';
                     }
 
                     return (
@@ -562,6 +584,8 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                               ? 'bg-emerald-400 text-slate-950 border border-emerald-200'
                               : isPreviouslyWrong
                               ? 'bg-red-950/90 text-rose-300 border border-red-800'
+                              : isCompassResonating
+                              ? 'bg-amber-400 text-slate-950 font-bold border border-amber-200 shadow-sm'
                               : 'bg-slate-800 text-amber-300 border border-slate-600 group-hover:bg-amber-500 group-hover:text-slate-950 group-hover:border-amber-300'
                           }`}
                         >
@@ -570,6 +594,15 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         <span className="flex-1 leading-relaxed">
                           {formatName(choice.text)}
                         </span>
+                        {isCompassResonating && (
+                          <span
+                            title={lang === 'en' ? 'Heart Compass resonance: empathetic choice' : 'Resonansi Kompas Hati: pilihan penuh empati'}
+                            className="text-[7.5px] sm:text-[8px] font-pixel bg-amber-400/20 text-amber-300 border border-amber-400/60 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 ml-1 animate-pulse"
+                          >
+                            <Sparkles className="w-2.5 h-2.5 text-amber-300" />
+                            <span>{lang === 'en' ? 'Resonant ✨' : 'Empati ✨'}</span>
+                          </span>
+                        )}
                         {isPreviouslyWrong && (
                           <span className="text-[8px] bg-red-950/90 text-rose-300 border border-red-600/60 px-1.5 py-0.5 rounded font-bold shrink-0 ml-1">
                             {lang === 'en' ? 'Incorrect ❌' : 'Kurang Tepat ❌'}
