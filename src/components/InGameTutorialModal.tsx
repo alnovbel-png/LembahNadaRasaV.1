@@ -95,16 +95,20 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
     onClose();
   };
 
+  const handleFinishTutorial = () => {
+    sound.playSecretFound();
+    handleClose();
+    if (onNavigateToFirstQuest) {
+      onNavigateToFirstQuest();
+    }
+  };
+
   const handleNextStep = () => {
     if (currentStep < 5) {
       sound.playVoiceBlip();
       setCurrentStep((prev) => prev + 1);
     } else {
-      sound.playSecretFound();
-      handleClose();
-      if (onNavigateToFirstQuest) {
-        onNavigateToFirstQuest();
-      }
+      handleFinishTutorial();
     }
   };
 
@@ -736,7 +740,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
             {(activeTab !== 'steps' || currentStep === 5) && (
               <button
                 id="btn-finish-tutorial"
-                onClick={handleNextStep}
+                onClick={handleFinishTutorial}
                 className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-extrabold text-xs shadow-lg transition flex items-center gap-1.5 cursor-pointer border border-emerald-300"
               >
                 <CheckCircle2 className="w-4 h-4" />

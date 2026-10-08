@@ -281,7 +281,6 @@ export const EndingQuizModal: React.FC<EndingQuizModalProps> = ({
   const scorePercent = Math.round((correctCount / totalQuestions) * 100);
 
   const handleSelectOption = (key: 'A' | 'B' | 'C') => {
-    sound.playVoiceBlip();
     setUserAnswers((prev) => ({ ...prev, [currentQ.id]: key }));
     setShowFeedback((prev) => ({ ...prev, [currentQ.id]: true }));
 
@@ -478,7 +477,7 @@ export const EndingQuizModal: React.FC<EndingQuizModalProps> = ({
                     <button
                       key={option.key}
                       onClick={() => handleSelectOption(option.key)}
-                      className={`w-full p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border-2 text-left transition-all duration-200 flex items-start gap-3.5 cursor-pointer active:scale-[0.99] group ${cardStyle}`}
+                      className={`w-full p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border-2 text-left transition-transform duration-75 transition-colors duration-75 flex items-start gap-3.5 cursor-pointer active:scale-[0.98] group touch-manipulation ${cardStyle}`}
                     >
                       <div
                         className={`w-8 h-8 rounded-lg flex items-center justify-center font-pixel font-bold text-sm shrink-0 border transition ${badgeStyle}`}

@@ -287,7 +287,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   sound.playMenuSelect();
                   setMenuView('play');
                 }}
-                className={`w-full relative h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border-2 transition-all flex items-center cursor-pointer text-center group ${
+                className={`w-full relative h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation ${
                   selectedMainMenuIndex === 0
                     ? 'bg-gradient-to-r from-[#2c1f14] via-[#352518] to-[#2c1f14] border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)] scale-[1.01]'
                     : 'bg-[#231810]/95 border-amber-600/70 hover:border-amber-400'
@@ -331,7 +331,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   if (onOpenSettings) onOpenSettings();
                   else onOpenAudioSettings();
                 }}
-                className={`w-full relative h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border-2 transition-all flex items-center cursor-pointer text-center group ${
+                className={`w-full relative h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation ${
                   selectedMainMenuIndex === 1
                     ? 'bg-gradient-to-r from-[#192434] via-[#212f45] to-[#192434] border-slate-400 shadow-[0_0_18px_rgba(148,163,184,0.35)] scale-[1.01]'
                     : 'bg-[#182130]/95 border-slate-600/80 hover:border-slate-400'
@@ -369,7 +369,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   sound.playMenuSelect();
                   setShowExitModal(true);
                 }}
-                className={`w-full relative h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border-2 transition-all flex items-center cursor-pointer text-center group ${
+                className={`w-full relative h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation ${
                   selectedMainMenuIndex === 2
                     ? 'bg-gradient-to-r from-[#2c1319] via-[#381820] to-[#2c1319] border-red-500 shadow-[0_0_18px_rgba(239,68,68,0.4)] scale-[1.01]'
                     : 'bg-[#241116]/95 border-red-700/80 hover:border-red-500'
@@ -565,7 +565,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 type="button"
                 id="btn-confirm-start-adventure"
                 onClick={handleStart}
-                className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold shadow-[0_0_20px_rgba(245,158,11,0.45)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer group"
+                className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold shadow-[0_0_20px_rgba(245,158,11,0.45)] active:scale-[0.98] transition-transform duration-75 transition-colors duration-75 flex items-center justify-center gap-2 cursor-pointer group touch-manipulation"
               >
                 <Play className="w-3.5 h-3.5 fill-slate-950 text-slate-950 shrink-0" />
                 <span className="font-pixel text-[11px] sm:text-xs tracking-wider truncate">

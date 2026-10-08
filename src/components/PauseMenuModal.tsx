@@ -23,25 +23,25 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
 
   // Menu items list
   const menuItems = [
-    { id: 'resume', label: lang === 'en' ? 'Resume' : 'Lanjutkan', action: onResume },
+    { id: 'resume', label: 'Lanjutkan Permainan', action: onResume },
     ...(onOpenTutorial
       ? [
           {
             id: 'tutorial',
-            label: lang === 'en' ? 'How to Play Tutorial' : 'Tutorial Cara Bermain',
+            label: 'Tutorial Cara Bermain',
             action: onOpenTutorial,
           },
         ]
       : []),
-    { id: 'settings', label: lang === 'en' ? 'Settings' : 'Pengaturan', action: onOpenSettings },
-    { id: 'main-menu', label: lang === 'en' ? 'Main Menu' : 'Menu Utama', action: onOpenMainMenu },
-    { id: 'quit', label: lang === 'en' ? 'Quit Game' : 'Tutup Game', action: () => setShowExitConfirm(true) },
+    { id: 'settings', label: 'Pengaturan', action: onOpenSettings },
+    { id: 'main-menu', label: 'Menu Utama', action: onOpenMainMenu },
+    { id: 'quit', label: 'Tutup Game', action: () => setShowExitConfirm(true) },
   ];
 
   const handleSelect = useCallback(
     (index: number) => {
       sound.playMenuSelect();
-      menuItems[index].action();
+      menuItems[index]?.action();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [onResume, onOpenSettings, onOpenMainMenu, onOpenTutorial]
@@ -109,11 +109,11 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
 
         {!showExitConfirm ? (
           <>
-            {/* Header: PAUSE */}
+            {/* Header: JEDA */}
             <h1
               className="font-pixelify text-4xl sm:text-5xl font-extrabold text-[#ff2e51] tracking-[0.25em] uppercase drop-shadow-[0_2px_14px_rgba(255,46,81,0.65)] select-none pl-2"
             >
-              PAUSE
+              JEDA
             </h1>
 
             {/* Ornamental Divider with Center Star */}
@@ -124,93 +124,42 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
             </div>
 
             {/* Menu Items List */}
-            <div className="flex flex-col items-center gap-3.5 sm:gap-4 my-2">
-              {/* 1. Resume */}
-              <button
-                id="pause-btn-resume"
-                type="button"
-                onClick={() => {
-                  sound.playMenuSelect();
-                  onResume();
-                }}
-                onMouseEnter={() => {
-                  setSelectedIndex(0);
-                  sound.playVoiceBlip();
-                }}
-                className={`font-pixelify text-xl sm:text-2xl font-bold tracking-wide transition-all duration-150 cursor-pointer ${
-                  selectedIndex === 0
-                    ? 'text-white scale-110 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]'
-                    : 'text-[#e9ded1] hover:text-white'
-                }`}
-              >
-                {lang === 'en' ? 'Resume' : 'Lanjutkan'}
-              </button>
+            <div className="flex flex-col items-center gap-3 sm:gap-3.5 my-2 w-full">
+              {menuItems.map((item, index) => {
+                const isSelected = selectedIndex === index;
+                const isQuit = item.id === 'quit';
+                const isResume = item.id === 'resume';
 
-              {/* 2. Pengaturan (Options) */}
-              <button
-                id="pause-btn-settings"
-                type="button"
-                onClick={() => {
-                  sound.playMenuSelect();
-                  onOpenSettings();
-                }}
-                onMouseEnter={() => {
-                  setSelectedIndex(1);
-                  sound.playVoiceBlip();
-                }}
-                className={`font-pixelify text-lg sm:text-xl font-bold tracking-wide transition-all duration-150 cursor-pointer ${
-                  selectedIndex === 1
-                    ? 'text-white scale-110 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]'
-                    : 'text-stone-300 hover:text-white'
-                }`}
-              >
-                {lang === 'en' ? 'Settings' : 'Pengaturan'}
-              </button>
-
-              {/* Aesthetic Gap */}
-              <div className="h-2 sm:h-3" />
-
-              {/* 3. Main Menu */}
-              <button
-                id="pause-btn-main-menu"
-                type="button"
-                onClick={() => {
-                  sound.playMenuSelect();
-                  onOpenMainMenu();
-                }}
-                onMouseEnter={() => {
-                  setSelectedIndex(2);
-                  sound.playVoiceBlip();
-                }}
-                className={`font-pixelify text-lg sm:text-xl font-bold tracking-wide transition-all duration-150 cursor-pointer ${
-                  selectedIndex === 2
-                    ? 'text-white scale-110 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]'
-                    : 'text-stone-300 hover:text-white'
-                }`}
-              >
-                {lang === 'en' ? 'Main Menu' : 'Menu Utama'}
-              </button>
-
-              {/* 4. Quit Game */}
-              <button
-                id="pause-btn-quit"
-                type="button"
-                onClick={() => {
-                  sound.playMenuSelect();
-                  setShowExitConfirm(true);
-                }}
-                onMouseEnter={() => {
-                  setSelectedIndex(3);
-                  sound.playVoiceBlip();
-                }}
-                className={`font-pixelify text-lg sm:text-xl font-bold tracking-wide transition-all duration-150 cursor-pointer ${
-                  selectedIndex === 3
-                    ? 'text-rose-400 scale-110 drop-shadow-[0_0_12px_rgba(244,63,94,0.7)]'
-                    : 'text-stone-400 hover:text-rose-300'
-                }`}
-              >
-                {lang === 'en' ? 'Quit Game' : 'Tutup Game'}
-              </button>
+                return (
+                  <button
+                    key={item.id}
+                    id={`pause-btn-${item.id}`}
+                    type="button"
+                    onClick={() => handleSelect(index)}
+                    onMouseEnter={() => {
+                      if (selectedIndex !== index) {
+                        setSelectedIndex(index);
+                        sound.playVoiceBlip();
+                      }
+                    }}
+                    className={`font-pixelify tracking-wide transition-transform duration-75 cursor-pointer select-none active:scale-95 ${
+                      isResume
+                        ? 'text-xl sm:text-2xl font-bold'
+                        : 'text-lg sm:text-xl font-bold'
+                    } ${
+                      isSelected
+                        ? isQuit
+                          ? 'text-rose-400 scale-105 drop-shadow-[0_0_12px_rgba(244,63,94,0.7)]'
+                          : 'text-white scale-105 drop-shadow-[0_0_12px_rgba(255,255,255,0.7)]'
+                        : isQuit
+                        ? 'text-stone-400 hover:text-rose-300'
+                        : 'text-stone-300 hover:text-white'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                );
+              })}
             </div>
 
             {/* Glowing Bottom Crimson Emblem */}

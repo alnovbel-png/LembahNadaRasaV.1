@@ -167,7 +167,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         onChoiceSelect(choice);
         setFeedbackStatus('idle');
         setSelectedChoiceId(null);
-      }, 1000);
+      }, 160);
     } else {
       // Correct response: Green dialog box, cheerful applause fanfare
       setFeedbackStatus('correct');
@@ -176,7 +176,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         onChoiceSelect(choice);
         setFeedbackStatus('idle');
         setSelectedChoiceId(null);
-      }, 1400);
+      }, 160);
     }
   };
 
@@ -210,11 +210,8 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             if (isTyping) {
               finishTypingInstantly();
             } else {
-              // Only open choices if at least 300ms passed after typing ended to avoid accidental double-space
-              if (Date.now() - typingFinishedTimeRef.current > 300) {
-                sound.playMenuSelect();
-                setShowChoices(true);
-              }
+              sound.playMenuSelect();
+              setShowChoices(true);
             }
           }
         }
@@ -361,7 +358,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center p-3 pointer-events-none">
       <div
-        className={`pointer-events-auto w-full max-w-xl rounded-2xl p-4 sm:p-5 backdrop-blur-md flex flex-col gap-3 font-pixel transition-all duration-300 animate-fade-in-slide-up relative overflow-hidden ${dialogBoxStyle}`}
+        className={`pointer-events-auto w-full max-w-xl rounded-2xl p-4 sm:p-5 backdrop-blur-md flex flex-col gap-3 font-pixel transition-colors duration-100 animate-fade-in-slide-up relative overflow-hidden ${dialogBoxStyle}`}
       >
         {/* Floating Applause & Celebration Overlay */}
         {feedbackStatus === 'correct' && (
@@ -574,7 +571,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         id={`choice-${choice.id}`}
                         onClick={() => handleChoiceClick(choice)}
                         disabled={feedbackStatus !== 'idle'}
-                        className={`w-full text-left px-2.5 py-2 rounded-lg font-pixel text-[9px] sm:text-[10px] transition-all duration-200 ease-out flex items-center gap-2 cursor-pointer active:scale-[0.98] group disabled:cursor-not-allowed ${btnStyle}`}
+                        className={`w-full text-left px-2.5 py-2 rounded-lg font-pixel text-[9px] sm:text-[10px] transition-transform duration-75 flex items-center gap-2 cursor-pointer active:scale-[0.97] group disabled:cursor-not-allowed ${btnStyle}`}
                       >
                         <span
                           className={`rounded px-1.5 py-0.5 text-[9px] font-pixel shrink-0 transition-colors ${
@@ -640,7 +637,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                       sound.playMenuSelect();
                       setShowChoices(true);
                     }}
-                    className="w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[9px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.6)] hover:shadow-[0_0_26px_rgba(245,158,11,0.85)] flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 animate-pulse"
+                    className="w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[9px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.6)] flex items-center justify-center gap-2 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                   >
                     <span>{lang === 'en' ? 'CHOOSE RESPONSE [SPACE]' : 'KLIK PILIH RESPON [SPASI]'}</span>
                     <span className="text-xs">💬 ▶</span>
@@ -671,7 +668,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     onNext();
                   }
                 }}
-                className={`px-3.5 py-1.5 rounded-lg font-pixel font-bold text-[9px] sm:text-[10px] flex items-center gap-1.5 shadow transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-lg font-pixel font-bold text-[9px] sm:text-[10px] flex items-center gap-1.5 shadow transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer ${
                   isEndingDialogue && !isTyping
                     ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.55)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
                     : isRegulationTrigger && !isTyping

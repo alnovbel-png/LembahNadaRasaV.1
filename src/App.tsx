@@ -4260,9 +4260,9 @@ export default function App() {
     };
   }, [zoneStatus, isFreeRoamActive, npcs, clockComponentsCount, nextMissingClockNPC, lang]);
 
-  // Real-time calculation of live distance & compass needle angle pointing to mission target
+  // Real-time calculation of live distance & compass needle angle pointing to mission target (optimized to prevent unnecessary re-renders)
   useEffect(() => {
-    if (!isCompassActive || !compassTargetInfo) return;
+    if (!isCompassActive || !compassTargetInfo || showStartMenu || showPauseMenu) return;
 
     const updateCompassData = () => {
       const p = playerRef.current;
@@ -4273,16 +4273,16 @@ export default function App() {
       const py = p.y + 16;
       const dist = Math.hypot(tx - px, ty - py);
       const steps = Math.max(0, Math.round(dist / 32));
-      const angle = (Math.atan2(ty - py, tx - px) * 180) / Math.PI;
+      const angle = Math.round((Math.atan2(ty - py, tx - px) * 180) / Math.PI);
 
-      setCompassLiveDistance(steps);
-      setCompassAngle(Math.round(angle));
+      setCompassLiveDistance((prev) => (prev !== steps ? steps : prev));
+      setCompassAngle((prev) => (Math.abs(prev - angle) >= 3 ? angle : prev));
     };
 
     updateCompassData();
-    const interval = setInterval(updateCompassData, 150);
+    const interval = setInterval(updateCompassData, 300);
     return () => clearInterval(interval);
-  }, [isCompassActive, compassTargetInfo]);
+  }, [isCompassActive, compassTargetInfo, showStartMenu, showPauseMenu]);
 
   useEffect(() => {
     if (showStartMenu || !hasCompletedIntroTutorial) return;
