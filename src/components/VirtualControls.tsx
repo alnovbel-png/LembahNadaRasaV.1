@@ -346,19 +346,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               </button>
             )}
 
-            {onOpenTutorial && (
-              <button
-                id="top-tutorial-btn"
-                onClick={onOpenTutorial}
-                title={lang === 'en' ? 'Open How to Play Tutorial [H]' : 'Buka Tutorial Cara Bermain [H]'}
-                className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-emerald-500/60 hover:border-emerald-300 hover:bg-slate-900 hover:scale-105 hover:shadow-[0_0_16px_rgba(16,185,129,0.5)] active:scale-95 text-emerald-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1.5 text-xs font-semibold cursor-pointer"
-              >
-                <HelpCircle className="w-4 h-4 text-emerald-400" />
-                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.tutorial}</span>
-                <span className="text-[10px] text-emerald-400/80 font-mono">[H]</span>
-              </button>
-            )}
-
             <button
               id="top-settings-btn"
               onClick={onOpenSettings}

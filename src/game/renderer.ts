@@ -7149,40 +7149,9 @@ export class GameRenderer {
   }
 
   // -----------------------------------------------------------------------
-  // CALCULATE DYNAMIC VILLAGER HAPPINESS LEVEL & STATUS
-  // -----------------------------------------------------------------------
-  public getNPCHappiness(npc: NPC): { level: number; percent: number; statusText: string } {
-    if (typeof npc.happinessLevel === 'number') {
-      const pct = Math.max(0, Math.min(100, Math.round(npc.happinessLevel)));
-      return {
-        level: pct >= 98 ? 5 : pct >= 90 ? 4 : 3,
-        percent: pct,
-        statusText: `${pct}%`,
-      };
-    }
-
-    let pct = 90;
-    if (this.currentZoneStatus) {
-      if (npc.id === 'kiki' && this.currentZoneStatus.plaza) pct += 5;
-      if (npc.id === 'kakek_ranu' && this.currentZoneStatus.bridge) pct += 5;
-      if (npc.id === 'bimo' && this.currentZoneStatus.forest) pct += 5;
-      if (npc.id === 'penjaga_kabut' && this.currentZoneStatus.tower) pct += 5;
-    }
-    if (npc.emotionProfile?.deepEmotion === 'gembira') pct += 5;
-    if (this.isAllMissionsCompleted) pct = 100;
-
-    pct = Math.min(100, pct);
-    return {
-      level: pct >= 98 ? 5 : pct >= 90 ? 4 : 3,
-      percent: pct,
-      statusText: `${pct}%`,
-    };
-  }
-
-  // -----------------------------------------------------------------------
-  // VISUAL ICON OVERLAY: HAPPINESS LEVEL INDICATOR FOR RESOLVED VILLAGERS
-  // Displays dynamic happiness level, animated beating heart / joyful smile,
-  // glowing emotional aura, and emits celebratory particles to bring the village to life!
+  // VISUAL ICON OVERLAY: HAPPINESS CREST FOR RESOLVED VILLAGERS
+  // Displays animated beating heart / joyful smile, glowing emotional aura,
+  // and emits celebratory particles when a villager is healed!
   // -----------------------------------------------------------------------
   private drawNPCHappinessOverlay(npc: NPC, nx: number, ny: number) {
     const ctx = this.ctx;
@@ -7192,14 +7161,9 @@ export class GameRenderer {
     // If NPC is chatting, elevate slightly so it does not overlap the chat dots bubble
     const hCenterY = (npc.isChatting ? ny - 32 : ny - 26) + hBob;
 
-    // Calculate dynamic happiness score & tier
-    const happiness = this.getNPCHappiness(npc);
-    const { percent } = happiness;
-
     // Periodically emit floating joyful heart / musical note particles from happy villagers
     if (this.tickCount % 75 === Math.floor((npc.x * 37 + npc.y * 19) % 75)) {
       const isNote = (this.tickCount + Math.floor(npc.x * 10)) % 2 === 0;
-      const particleColor = percent === 100 ? '#f43f5e' : '#ec4899';
       this.particles.push({
         x: hCenterX + (Math.random() - 0.5) * 10,
         y: hCenterY - 4,
@@ -7207,7 +7171,7 @@ export class GameRenderer {
         vy: -0.45 - Math.random() * 0.25,
         life: 0,
         maxLife: 70,
-        color: isNote ? '#38bdf8' : particleColor,
+        color: isNote ? '#38bdf8' : '#f43f5e',
         size: 3,
         shape: isNote ? 'note' : 'heart',
       });
@@ -7217,11 +7181,7 @@ export class GameRenderer {
 
     // 1. Soft Pulsating Happiness Halo Glow behind the balloon
     const glowPulse = 0.28 + Math.sin(hPhase * 1.5) * 0.14;
-    const auraColor =
-      percent === 100
-        ? `rgba(34, 197, 94, ${glowPulse})`
-        : `rgba(244, 63, 94, ${glowPulse})`;
-    ctx.fillStyle = auraColor;
+    ctx.fillStyle = `rgba(34, 197, 94, ${glowPulse})`;
     ctx.beginPath();
     ctx.arc(hCenterX, hCenterY, 13.5, 0, Math.PI * 2);
     ctx.fill();
@@ -7233,21 +7193,19 @@ export class GameRenderer {
     ctx.fill();
 
     // 3. Happiness Crest Body (Circular Balloon)
-    const balloonColor = percent === 100 ? '#10b981' : '#f43f5e';
-    const balloonBorder = percent === 100 ? '#064e3b' : '#881337';
-    ctx.fillStyle = balloonColor;
+    ctx.fillStyle = '#10b981';
     ctx.beginPath();
     ctx.arc(hCenterX, hCenterY, 8.5, 0, Math.PI * 2);
     ctx.fill();
 
     // Inner glossy specular highlight
-    ctx.fillStyle = percent === 100 ? '#86efac' : '#fecdd3';
+    ctx.fillStyle = '#86efac';
     ctx.beginPath();
     ctx.arc(hCenterX - 2.5, hCenterY - 2.5, 3.2, 0, Math.PI * 2);
     ctx.fill();
 
     // Downward pointer tail
-    ctx.fillStyle = balloonColor;
+    ctx.fillStyle = '#10b981';
     ctx.beginPath();
     ctx.moveTo(hCenterX - 3, hCenterY + 6.5);
     ctx.lineTo(hCenterX + 3, hCenterY + 6.5);
@@ -7256,7 +7214,7 @@ export class GameRenderer {
     ctx.fill();
 
     // Dark outline
-    ctx.strokeStyle = balloonBorder;
+    ctx.strokeStyle = '#064e3b';
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     ctx.arc(hCenterX, hCenterY, 8.5, 0, Math.PI * 2);
@@ -7306,42 +7264,10 @@ export class GameRenderer {
       ctx.fillRect(hx - 2, hy - 1, 1, 1);
     }
 
-    // 5. Upper Tag / Pill: Explicit Happiness Level Indicator (e.g. "♥ 100%" or "♥ 95%")
-    ctx.font = 'bold 7px "Press Start 2P", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const tagText = `${percent}%`;
-    const tagW = ctx.measureText(tagText).width + 12; // room for mini heart + text
-    const tagH = 10;
-    const tagY = hCenterY - 14;
-
-    const rx = Math.floor(hCenterX - tagW / 2);
-    const ry = Math.floor(tagY - tagH / 2);
-
-    // Pill background
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-    ctx.fillRect(rx, ry, tagW, tagH);
-
-    // Pill border
-    ctx.strokeStyle = percent === 100 ? '#fde047' : '#34d399';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(rx, ry, tagW, tagH);
-
-    // Tiny pink mini-heart in pill
-    ctx.fillStyle = '#f43f5e';
-    ctx.fillRect(rx + 2, tagY - 2, 1, 1);
-    ctx.fillRect(rx + 4, tagY - 2, 1, 1);
-    ctx.fillRect(rx + 2, tagY - 1, 3, 1);
-    ctx.fillRect(rx + 3, tagY, 1, 1);
-
-    // Happiness percentage text
-    ctx.fillStyle = percent === 100 ? '#fef08a' : '#4ade80';
-    ctx.fillText(tagText, hCenterX + 2, tagY + 0.5);
-
-    // 6. Roaming Activity Companion Charm (for Kiki, Didi, Prof Kotek)
+    // 5. Roaming Activity Companion Charm (for Kiki, Didi, Prof Kotek)
     if (npc.isRoaming) {
-      const cx = Math.floor(hCenterX + tagW / 2 + 7);
-      const cy = Math.floor(tagY);
+      const cx = Math.floor(hCenterX + 13);
+      const cy = Math.floor(hCenterY - 4);
       ctx.fillStyle = '#1e293b';
       ctx.beginPath();
       ctx.arc(cx, cy, 5.5, 0, Math.PI * 2);
@@ -7369,9 +7295,9 @@ export class GameRenderer {
       }
     }
 
-    // 7. Twinkling sparkle stars at the sides
+    // 6. Twinkling sparkle stars at the sides
     const spFrame = Math.floor((this.tickCount * 0.12 + npc.y) % 4);
-    ctx.fillStyle = percent === 100 ? '#fde047' : '#ffffff';
+    ctx.fillStyle = '#fde047';
     if (spFrame === 0) {
       ctx.fillRect(hCenterX + 10, hCenterY - 8, 2, 2);
     } else if (spFrame === 2) {

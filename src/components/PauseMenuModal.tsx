@@ -23,7 +23,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
 
   // Menu items list
   const menuItems = [
-    { id: 'resume', label: 'Resume', action: onResume },
+    { id: 'resume', label: lang === 'en' ? 'Resume' : 'Lanjutkan', action: onResume },
     ...(onOpenTutorial
       ? [
           {
@@ -143,7 +143,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                     : 'text-[#e9ded1] hover:text-white'
                 }`}
               >
-                Resume
+                {lang === 'en' ? 'Resume' : 'Lanjutkan'}
               </button>
 
               {/* 2. Pengaturan (Options) */}

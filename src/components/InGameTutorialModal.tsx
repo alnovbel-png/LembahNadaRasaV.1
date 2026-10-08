@@ -40,7 +40,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
   onNavigateToFirstQuest,
 }) => {
   const { lang } = useLanguage();
-  const [activeTab, setActiveTab] = useState<'steps' | 'controls' | 'sel_tips'>('steps');
+  const [activeTab, setActiveTab] = useState<'steps' | 'controls'>('steps');
   const [currentStep, setCurrentStep] = useState<number>(initialStep);
   const [dontShowAgain, setDontShowAgain] = useState<boolean>(false);
   const [testedKey, setTestedKey] = useState<string | null>(null);
@@ -194,21 +194,6 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
           >
             <Gamepad2 className="w-3.5 h-3.5" />
             <span>{lang === 'en' ? 'Controls Cheat Sheet' : 'Pintasan Tombol Cepat'}</span>
-          </button>
-
-          <button
-            onClick={() => {
-              sound.playVoiceBlip();
-              setActiveTab('sel_tips');
-            }}
-            className={`px-3 py-1.5 rounded-xl font-bold text-xs transition flex items-center gap-1.5 shrink-0 cursor-pointer ${
-              activeTab === 'sel_tips'
-                ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
-                : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 border border-slate-700'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span>{lang === 'en' ? 'Empathy Mastery Tips' : 'Tips Kunci Empati & PSE'}</span>
           </button>
         </div>
 
@@ -704,67 +689,6 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                   <div className="p-2 rounded bg-slate-900 border border-slate-800">
                     <strong>Menu:</strong> Ketuk tombol ikon Kompas, Jurnal, Peta, atau Pengaturan di bilah atas.
                   </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: EMPATHY MASTERY TIPS */}
-          {activeTab === 'sel_tips' && (
-            <div className="space-y-3.5 animate-fade-in text-xs">
-              <div className="p-3.5 bg-gradient-to-r from-amber-950/50 via-slate-900 to-amber-950/50 border border-amber-500/40 rounded-xl flex items-center gap-3">
-                <div className="p-2.5 bg-amber-500/20 border border-amber-400/40 rounded-xl text-amber-300 shrink-0">
-                  <Lightbulb className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-amber-200">
-                    4 Pilar Menjadi Duta Empati Lembah Nada Rasa
-                  </h4>
-                  <p className="text-[11px] text-slate-300 mt-0.5">
-                    Gunakan panduan ini saat menghadapi pilihan respon dialog agar warga merasa didengarkan dan dihargai.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
-                  <div className="font-bold text-amber-300 flex items-center gap-1.5">
-                    <span>👂</span>
-                    <span>1. Active Listening (Mendengarkan Penuh)</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Jangan langsung memotong ucapan atau menyalahkan warga. Berikan ruang bagi mereka untuk menceritakan apa yang terjadi terlebih dahulu.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
-                  <div className="font-bold text-cyan-300 flex items-center gap-1.5">
-                    <span>❤️</span>
-                    <span>2. Validasi Emosi Mereka</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Katakan: <em>"Wajar jika kamu cemas..."</em> atau <em>"Aku mengerti kamu pasti kaget sekali..."</em>. Mengakui perasaan membuat kemarahan mereda.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
-                  <div className="font-bold text-emerald-300 flex items-center gap-1.5">
-                    <span>🌬️</span>
-                    <span>3. Ajak Menenangkan Diri Terlebih Dahulu</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Saat otak dibanjiri amarah, logika tidak bisa bekerja. Selalu tawarkan latihan napas atau jeda sebelum membahas masalah lebih jauh.
-                  </p>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
-                  <div className="font-bold text-purple-300 flex items-center gap-1.5">
-                    <span>🤝</span>
-                    <span>4. Kolaborasi Mencari Solusi Bersama</span>
-                  </div>
-                  <p className="text-[11px] text-slate-300 leading-relaxed">
-                    Ajak warga menyelesaikan masalah sebagai tim. Bersama-sama, kalian akan memperbaiki salah paham dan memulihkan Lembah Nada Rasa!
-                  </p>
                 </div>
               </div>
             </div>
