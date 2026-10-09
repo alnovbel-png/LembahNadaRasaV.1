@@ -794,33 +794,17 @@ export default function App() {
       const ch = container.clientHeight;
       if (cw <= 0 || ch <= 0) return;
 
-      // Deteksi orientasi vertikal vs horizontal:
-      // Mode mobile vertikal -> Rasio 9:16
-      // Mode mobile horizontal (dan desktop widescreen) -> Rasio 16:9
-      const isVertical = window.innerHeight > window.innerWidth || ch > cw;
-      const TARGET_ASPECT = isVertical ? 9 / 16 : 16 / 9;
-      const containerAspect = cw / ch;
-
-      let renderW: number;
-      let renderH: number;
-
-      if (containerAspect > TARGET_ASPECT) {
-        // Container lebih lebar dari target rasio: fit tinggi, sesuaikan lebar (pillarbox)
-        renderH = ch;
-        renderW = Math.round(ch * TARGET_ASPECT);
-      } else {
-        // Container lebih tinggi dari target rasio: fit lebar, sesuaikan tinggi (letterbox)
-        renderW = cw;
-        renderH = Math.round(cw / TARGET_ASPECT);
-      }
+      // Mode imersif layar penuh: isi seluruh area kontainer tanpa pembatas tepi/letterboxing
+      let renderW = cw;
+      let renderH = ch;
 
       // Pastikan ukuran genap untuk rendering pixel-art tajam tanpa subpixel blur/jitter
       renderW = renderW % 2 === 0 ? renderW : renderW - 1;
       renderH = renderH % 2 === 0 ? renderH : renderH - 1;
 
       // Terapkan dimensi CSS display
-      canvas.style.width = `${renderW}px`;
-      canvas.style.height = `${renderH}px`;
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
 
       // Terapkan resolusi buffer render canvas internal
       canvas.width = renderW;
@@ -4402,20 +4386,16 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans flex items-center justify-center">
-      {/* 2D Pixel Canvas Viewport Container - Centered on Desktop with Arcade/Handheld Frame */}
-      <main className="relative w-full h-full flex items-center justify-center p-0 md:p-3 lg:p-5 select-none overflow-hidden">
+      {/* 2D Pixel Canvas Viewport Container - Immersive Fullscreen Edge-to-Edge */}
+      <main className="relative w-full h-full flex items-center justify-center p-0 select-none overflow-hidden">
         <div
           ref={canvasContainerRef}
-          className={`relative w-full h-full ${
-            isPortrait
-              ? 'sm:max-w-[560px] sm:max-h-[96vh]'
-              : 'md:max-w-5xl lg:max-w-6xl xl:max-w-7xl 2xl:max-w-[1600px] md:max-h-[85vh] lg:max-h-[88vh]'
-          } md:rounded-2xl md:border-2 md:border-slate-800 md:shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-slate-950 overflow-hidden flex items-center justify-center`}
+          className="relative w-full h-full bg-slate-950 overflow-hidden flex items-center justify-center"
         >
           <canvas
             ref={canvasRef}
             id="main-pixel-canvas"
-            className="block max-w-full max-h-full shrink-0 cursor-crosshair"
+            className="block w-full h-full shrink-0 cursor-crosshair"
             onClick={handleCanvasClick}
             onMouseMove={handleCanvasMouseMove}
             onMouseLeave={handleCanvasMouseLeave}
