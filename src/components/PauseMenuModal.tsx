@@ -8,6 +8,7 @@ interface PauseMenuModalProps {
   onOpenSettings: () => void;
   onOpenMainMenu: () => void;
   onOpenTutorial?: () => void;
+  empathyScore?: number;
 }
 
 export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
@@ -16,6 +17,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
   onOpenSettings,
   onOpenMainMenu,
   onOpenTutorial,
+  empathyScore = 0,
 }) => {
   const { lang, ui } = useLanguage();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -23,19 +25,19 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
 
   // Menu items list
   const menuItems = [
-    { id: 'resume', label: 'Lanjutkan Permainan', action: onResume },
+    { id: 'resume', label: lang === 'en' ? 'Resume Game' : 'Lanjutkan Permainan', action: onResume },
     ...(onOpenTutorial
       ? [
           {
             id: 'tutorial',
-            label: 'Tutorial Cara Bermain',
+            label: lang === 'en' ? 'How to Play Tutorial' : 'Tutorial Cara Bermain',
             action: onOpenTutorial,
           },
         ]
       : []),
-    { id: 'settings', label: 'Pengaturan', action: onOpenSettings },
-    { id: 'main-menu', label: 'Menu Utama', action: onOpenMainMenu },
-    { id: 'quit', label: 'Tutup Game', action: () => setShowExitConfirm(true) },
+    { id: 'settings', label: lang === 'en' ? 'Settings (Audio & Controls)' : 'Pengaturan (Audio & Kontrol)', action: onOpenSettings },
+    { id: 'main-menu', label: lang === 'en' ? 'Main Menu' : 'Menu Utama', action: onOpenMainMenu },
+    { id: 'quit', label: lang === 'en' ? 'Quit Game' : 'Tutup Game', action: () => setShowExitConfirm(true) },
   ];
 
   const handleSelect = useCallback(
@@ -117,11 +119,27 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
             </h1>
 
             {/* Ornamental Divider with Center Star */}
-            <div className="flex items-center justify-center gap-2.5 my-5 sm:my-6 px-2">
+            <div className="flex items-center justify-center gap-2.5 my-4 sm:my-5 px-2">
               <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#8a6745] to-[#8a6745]" />
               <span className="text-[#e2a862] text-xs leading-none">✦</span>
               <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#8a6745] to-[#8a6745]" />
             </div>
+
+            {/* Social-Emotional Performance Score Indicator */}
+            <div className="mb-3 px-3 py-1.5 rounded-lg bg-[#1c1319] border border-pink-500/40 shadow-inner flex items-center justify-between gap-2 text-xs">
+              <span className="flex items-center gap-1.5 text-pink-300 font-pixel text-[8.5px]">
+                <span>💖</span>
+                <span>{lang === 'en' ? 'SEL Score:' : 'Skor PSE:'}</span>
+              </span>
+              <span className="font-pixel text-[11px] font-bold text-amber-300">
+                {empathyScore} {lang === 'en' ? 'Pts' : 'Poin'}
+              </span>
+            </div>
+            <p className="text-[8.5px] text-stone-400 font-sans mb-3 text-center">
+              {lang === 'en'
+                ? 'Compass use: -5 • Direct answer: Full Score'
+                : 'Bantuan kompas: -5 • Jawaban mandiri: Skor Utuh'}
+            </p>
 
             {/* Menu Items List */}
             <div className="flex flex-col items-center gap-3 sm:gap-3.5 my-2 w-full">
@@ -189,7 +207,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                   sound.playMenuSelect();
                   onOpenMainMenu();
                 }}
-                className="w-full py-2.5 px-4 rounded-xl border border-amber-500/80 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 font-pixel text-[11px] cursor-pointer transition active:scale-95 shadow-md"
+                className="w-full py-2.5 px-4 rounded-xl border border-amber-500/80 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 font-pixel text-[11px] cursor-pointer transition-transform duration-75 active:scale-95 shadow-md touch-manipulation"
               >
                 {lang === 'en' ? 'RETURN TO MAIN MENU' : 'KEMBALI KE MAIN MENU'}
               </button>
@@ -204,7 +222,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                   } catch {}
                   onOpenMainMenu();
                 }}
-                className="w-full py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-pixel text-[11px] cursor-pointer shadow-md transition active:scale-95"
+                className="w-full py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-pixel text-[11px] cursor-pointer shadow-md transition-transform duration-75 active:scale-95 touch-manipulation"
               >
                 {lang === 'en' ? 'QUIT GAME' : 'KELUAR PERMAINAN'}
               </button>
@@ -216,7 +234,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                   sound.playVoiceBlip();
                   setShowExitConfirm(false);
                 }}
-                className="w-full py-2 px-4 rounded-xl border border-stone-700 bg-stone-900/60 hover:bg-stone-800 text-stone-300 text-xs font-semibold cursor-pointer transition active:scale-95"
+                className="w-full py-2 px-4 rounded-xl border border-stone-700 bg-stone-900/60 hover:bg-stone-800 text-stone-300 text-xs font-semibold cursor-pointer transition-transform duration-75 active:scale-95 touch-manipulation"
               >
                 {lang === 'en' ? 'Cancel / Resume Playing' : 'Batal / Lanjutkan Main'}
               </button>

@@ -151,7 +151,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
 
             <div className="flex justify-between items-center pt-3 border-t border-slate-700/60 text-[11px]">
               <div>
-                <span className="text-slate-400 block">{lang === 'en' ? 'Total Empathy Points:' : 'Total Poin Empati:'}</span>
+                <span className="text-slate-400 block">{lang === 'en' ? 'Total SEL Score (Performance):' : 'Total Skor Sosial Emosional (PSE):'}</span>
                 <span className="font-bold text-amber-400 text-sm">{stats.empathyScore} {lang === 'en' ? 'Pts' : 'Poin'}</span>
               </div>
               <div>

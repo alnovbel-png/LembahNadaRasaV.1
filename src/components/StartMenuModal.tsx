@@ -204,7 +204,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             id="btn-start-language-toggle"
             onClick={toggleLang}
             title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-            className="inline-flex items-center gap-1.5 bg-[#172033]/90 hover:bg-[#202c45] border border-amber-500/70 rounded-full px-2.5 sm:px-3 py-1 transition text-amber-200 cursor-pointer shadow-md active:scale-95"
+            className="inline-flex items-center gap-1.5 bg-[#172033]/90 hover:bg-[#202c45] border border-amber-500/70 rounded-full px-2.5 sm:px-3 py-1 transition-transform duration-75 text-amber-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
           >
             <span className="text-xs">{lang === 'id' ? '🇮🇩 ID' : '🇬🇧 EN'}</span>
             <span className="font-pixel text-[8px] sm:text-[9px] text-amber-300 font-bold uppercase tracking-wider">
@@ -217,7 +217,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             type="button"
             onClick={toggleMute}
             title={isMuted ? (lang === 'en' ? 'Unmute Audio' : 'Nyalakan Audio') : (lang === 'en' ? 'Mute Audio' : 'Matikan Audio')}
-            className="inline-flex items-center gap-1.5 bg-[#10222a]/90 hover:bg-[#18333e] border border-cyan-700/70 rounded-full px-2.5 sm:px-3 py-1 transition text-cyan-200 cursor-pointer shadow-md active:scale-95"
+            className="inline-flex items-center gap-1.5 bg-[#10222a]/90 hover:bg-[#18333e] border border-cyan-700/70 rounded-full px-2.5 sm:px-3 py-1 transition-transform duration-75 text-cyan-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
           >
             {isMuted ? (
               <>
@@ -239,7 +239,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
               id="btn-start-tutorial"
               onClick={onOpenTutorial}
               title={lang === 'en' ? 'How to Play Tutorial' : 'Tutorial Cara Bermain'}
-              className="inline-flex items-center gap-1.5 bg-[#142621]/90 hover:bg-[#1a382e] border border-emerald-500/70 rounded-full px-2.5 sm:px-3 py-1 transition text-emerald-200 cursor-pointer shadow-md active:scale-95"
+              className="inline-flex items-center gap-1.5 bg-[#142621]/90 hover:bg-[#1a382e] border border-emerald-500/70 rounded-full px-2.5 sm:px-3 py-1 transition-transform duration-75 text-emerald-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
             >
               <HelpCircle className="w-3.5 h-3.5 text-emerald-400" />
               <span className="font-pixel text-[8px] sm:text-[9px] text-emerald-300 font-bold uppercase tracking-wider">

@@ -32,6 +32,7 @@ import { findTilePath } from './game/pathfinder';
 import { DialogueBox } from './components/DialogueBox';
 import type { RegulationMode } from './components/EmotionRegulationModal';
 import type { SettingsModalTab } from './components/SettingsModal';
+import type { InfoHubTab } from './components/AdventureInfoHubModal';
 import { VirtualControls } from './components/VirtualControls';
 import { MiniMap } from './components/MiniMap';
 import { StartMenuModal } from './components/StartMenuModal';
@@ -39,6 +40,9 @@ import { PauseMenuModal } from './components/PauseMenuModal';
 import { MissionNotificationModal, MissionStepData } from './components/MissionNotificationModal';
 
 // Code-split heavy modals to significantly shrink initial bundle and boost performance on mobile & low-end devices
+const AdventureInfoHubModal = React.lazy(() =>
+  import('./components/AdventureInfoHubModal').then((m) => ({ default: m.AdventureInfoHubModal }))
+);
 const EmotionRegulationModal = React.lazy(() =>
   import('./components/EmotionRegulationModal').then((m) => ({ default: m.EmotionRegulationModal }))
 );
@@ -312,13 +316,17 @@ export default function App() {
     return 'boy';
   });
   const [isCompassActive, setIsCompassActive] = useState<boolean>(false);
+  const isCompassActiveRef = useRef<boolean>(false);
+  isCompassActiveRef.current = isCompassActive;
   const [currentDialogue, setCurrentDialogue] = useState<DialogueNode | null>(null);
   const [showBreathingMiniGame, setShowBreathingMiniGame] = useState<boolean>(false);
   const [breathingTarget, setBreathingTarget] = useState<string>('Kiki');
   const [regulationInitialMode, setRegulationInitialMode] = useState<RegulationMode>('breathing');
   const [showJournal, setShowJournal] = useState<boolean>(false);
+  const [showInfoHub, setShowInfoHub] = useState<boolean>(false);
+  const [infoHubTab, setInfoHubTab] = useState<InfoHubTab>('pse');
   const [showSettings, setShowSettings] = useState<boolean>(false);
-  const [settingsTab, setSettingsTab] = useState<SettingsModalTab>('quest');
+  const [settingsTab, setSettingsTab] = useState<SettingsModalTab>('audio');
   const [showPauseMenu, setShowPauseMenu] = useState<boolean>(false);
   const showPauseMenuRef = useRef<boolean>(false);
   const [showEnding, setShowEnding] = useState<boolean>(false);
@@ -337,6 +345,10 @@ export default function App() {
   const [showMiniMap, setShowMiniMap] = useState<boolean>(() => !isMobileOrTabletDevice());
   const [developerToast, setDeveloperToast] = useState<string | null>(null);
   const [compassToast, setCompassToast] = useState<string | null>(null);
+  const [scoreToast, setScoreToast] = useState<{
+    delta: number;
+    message: string;
+  } | null>(null);
   const [compassLiveDistance, setCompassLiveDistance] = useState<number>(0);
   const [compassAngle, setCompassAngle] = useState<number>(0);
   const [questHint, setQuestHint] = useState<string>(
@@ -615,8 +627,15 @@ export default function App() {
     []
   );
 
-  // Unified Game Settings Modal Handler
-  const handleOpenSettings = useCallback((tab: SettingsModalTab = 'quest') => {
+  // Pusat Informasi & Petualangan Modal Handler (Skor PSE, Progres Misi, Regulasi, Lencana, Jurnal)
+  const handleOpenInfoHub = useCallback((tab: InfoHubTab = 'pse') => {
+    setInfoHubTab(tab);
+    setShowInfoHub(true);
+    sound.playMenuSelect();
+  }, []);
+
+  // Unified Game Settings Modal Handler (Audio & Controls only)
+  const handleOpenSettings = useCallback((tab: SettingsModalTab = 'audio') => {
     setSettingsTab(tab);
     setShowSettings(true);
     sound.playMenuSelect();
@@ -856,9 +875,9 @@ export default function App() {
   const handleToggleCompass = useCallback(() => {
     setIsCompassActive((prev) => {
       const next = !prev;
+      isCompassActiveRef.current = next;
       if (next) {
         sound.playCompassChime();
-        setStats((s) => ({ ...s, resonanceUses: s.resonanceUses + 1 }));
 
         // Trigger radiant sparkle particles burst from Heart Compass
         if (rendererRef.current && playerRef.current) {
@@ -869,15 +888,16 @@ export default function App() {
 
         setCompassToast(
           lang === 'en'
-            ? '✨ Heart Compass active! Golden light trail & empathy signals guide your mission.'
-            : '✨ Kompas Hati aktif! Jalur cahaya emas & resonansi empati memandu langkah misimu.'
+            ? '🧭 Heart Compass active! In dialogue, it reveals wrong options (-5 SEL Score penalty on response).'
+            : '🧭 Kompas Hati aktif! Saat memilih respon, kompas menandai opsi salah (-5 skor pada respon).'
         );
         setTimeout(() => setCompassToast(null), 3500);
       } else {
+        sound.playMenuSelect();
         setCompassToast(
           lang === 'en'
-            ? 'Heart Compass standby. Press [C] or Heart button to reactivate.'
-            : 'Kompas Hati siaga. Tekan [C] atau tombol Hati untuk mengaktifkan kembali.'
+            ? 'Heart Compass standby. Press [C] or button to reactivate.'
+            : 'Kompas Hati nonaktif. Tekan [C] atau tombol untuk mengaktifkan kembali.'
         );
         setTimeout(() => setCompassToast(null), 2500);
       }
@@ -2235,11 +2255,62 @@ export default function App() {
     (choice: ChoiceOption) => {
       sound.playVoiceBlip();
 
-      // Update empathy points
+      // Bobot dialog: jika tanpa kompas mendapat skor utuh, jika dengan kompas berkurang -5
+      const rawScore = typeof choice.impactScore === 'number' ? choice.impactScore : 10;
+      const wasCompassActive = isCompassActiveRef.current || isCompassActive;
+      const finalScoreDelta = wasCompassActive ? rawScore - 5 : rawScore;
+
+      // Update empathy / SEL performance score
       setStats((s) => ({
         ...s,
-        empathyScore: Math.max(0, s.empathyScore + choice.impactScore),
+        resonanceUses: wasCompassActive ? s.resonanceUses + 1 : s.resonanceUses,
+        empathyScore: Math.max(0, s.empathyScore + finalScoreDelta),
       }));
+
+      // Feedback notifikasi skor performa sosial emosional
+      if (finalScoreDelta > 0) {
+        setScoreToast({
+          delta: finalScoreDelta,
+          message: wasCompassActive
+            ? (lang === 'en'
+                ? `🧭 +${finalScoreDelta} SEL Score (Compass Assisted: -5 from full ${rawScore})`
+                : `🧭 +${finalScoreDelta} Skor PSE (Bantuan Kompas: -5 dari skor utuh ${rawScore})`)
+            : (lang === 'en'
+                ? `💖 +${finalScoreDelta} SEL Score (Full Independent Score!)`
+                : `💖 +${finalScoreDelta} Skor PSE (Skor Utuh Tanpa Bantuan Kompas!)`),
+        });
+        setTimeout(() => setScoreToast(null), 3500);
+      } else if (finalScoreDelta === 0) {
+        setScoreToast({
+          delta: 0,
+          message: wasCompassActive
+            ? (lang === 'en'
+                ? `🧭 +0 SEL Score (Compass Assisted: -5 from ${rawScore})`
+                : `🧭 +0 Skor PSE (Bantuan Kompas: -5 dari skor ${rawScore})`)
+            : (lang === 'en'
+                ? `+0 SEL Score`
+                : `+0 Skor PSE`),
+        });
+        setTimeout(() => setScoreToast(null), 3500);
+      } else {
+        setScoreToast({
+          delta: finalScoreDelta,
+          message: wasCompassActive
+            ? (lang === 'en'
+                ? `⚠️ ${finalScoreDelta} SEL Score (Compass Assisted: -5 from ${rawScore})`
+                : `⚠️ ${finalScoreDelta} Skor PSE (Bantuan Kompas: -5 dari skor ${rawScore})`)
+            : (lang === 'en'
+                ? `⚠️ ${finalScoreDelta} SEL Score (Non-Empathetic Response)`
+                : `⚠️ ${finalScoreDelta} Skor PSE (Respon Kurang Empati)`),
+        });
+        setTimeout(() => setScoreToast(null), 3500);
+      }
+
+      // Selesai menggunakan kompas pada pilihan ini, kembalikan kompas ke status siaga
+      if (wasCompassActive) {
+        setIsCompassActive(false);
+        isCompassActiveRef.current = false;
+      }
 
       // Record branching tag
       if (choice.branchTag) {
@@ -2317,7 +2388,7 @@ export default function App() {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentDialogue, completeIntroTutorial]
+    [currentDialogue, completeIntroTutorial, isCompassActive, lang]
   );
 
   // Add Item to bag
@@ -2983,10 +3054,17 @@ export default function App() {
         }
       }
 
-      // Open Journal - Single dedicated key [J]
+      // Open Info Hub - Single dedicated key [I]
+      if (e.key === 'i' || e.key === 'I' || e.code === 'KeyI') {
+        if (!currentDialogue) {
+          handleOpenInfoHub('pse');
+        }
+      }
+
+      // Open Journal / Info Hub - Dedicated key [J]
       if (e.key === 'j' || e.key === 'J' || e.code === 'KeyJ') {
         if (!currentDialogue) {
-          setShowJournal((prev) => !prev);
+          handleOpenInfoHub('journal');
         }
       }
 
@@ -2995,14 +3073,14 @@ export default function App() {
         setShowMiniMap((prev) => !prev);
       }
 
-      // Open Emotional Regulation Toolkit - Single dedicated key [R]
+      // Open Emotional Regulation in Info Hub - Dedicated key [R]
       if (e.key === 'r' || e.key === 'R' || e.code === 'KeyR') {
         if (!currentDialogue) {
-          handleOpenRegulation('Pemain', 'breathing');
+          handleOpenInfoHub('regulation');
         }
       }
 
-      // Open Unified Settings Menu - Single dedicated key [O]
+      // Open Unified Settings Menu (Audio & Controls) - Dedicated key [O]
       if (e.key === 'o' || e.key === 'O' || e.code === 'KeyO') {
         setShowSettings((prev) => !prev);
       }
@@ -3054,7 +3132,7 @@ export default function App() {
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, [showStartMenu, showSettings, showPauseMenu, currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleCaptureMoment, showJournal, showEnding, showBreathingMiniGame]);
+  }, [showStartMenu, showSettings, showPauseMenu, currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleOpenInfoHub, handleCaptureMoment, showJournal, showInfoHub, showEnding, showBreathingMiniGame]);
 
   // Main 60 FPS Game Loop
   useEffect(() => {
@@ -4363,13 +4441,13 @@ export default function App() {
                 setIsMissionBannerMinimized(false);
               } else {
                 setIsNewMissionUnlock(false);
-                setShowMissionModal(true);
+                handleOpenInfoHub('quests');
               }
             }}
             title={
               isMissionBannerMinimized
                 ? (lang === 'en' ? 'Click to expand mission banner' : 'Klik untuk membuka tab misi')
-                : (lang === 'en' ? 'Click to view complete mission guide' : 'Klik untuk melihat panduan langkah misi lengkap')
+                : (lang === 'en' ? 'Click to view quest progress in Info Hub' : 'Klik untuk melihat progres misi di Pusat Informasi')
             }
             className="bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-200 border-2 sm:border-3 border-amber-600 hover:border-amber-700 rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-[0_6px_20px_rgba(245,158,11,0.45),0_0_0_2px_rgba(255,255,255,0.9)] flex items-center gap-2 sm:gap-3 pointer-events-auto cursor-pointer transition-all active:scale-[0.99] group text-slate-950"
           >
@@ -4511,6 +4589,32 @@ export default function App() {
               <span>{compassToast}</span>
             </div>
           )}
+
+          {/* Social-Emotional Performance Score Toast Notification */}
+          {scoreToast && (
+            <div
+              id="score-change-toast"
+              className={`mt-1.5 px-3 py-1.5 rounded-xl border-2 font-pixel text-[8.5px] sm:text-[9.5px] shadow-[0_4px_20px_rgba(0,0,0,0.6)] animate-fade-in flex items-center justify-between gap-2.5 pointer-events-auto select-none ${
+                scoreToast.delta > 0
+                  ? 'bg-gradient-to-r from-emerald-950/95 via-slate-900/95 to-teal-950/95 border-emerald-400 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.35)]'
+                  : 'bg-gradient-to-r from-rose-950/95 via-slate-900/95 to-red-950/95 border-rose-500 text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.35)]'
+              }`}
+            >
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-sm shrink-0">{scoreToast.delta > 0 ? '💖' : '🧭'}</span>
+                <span className="truncate">{scoreToast.message}</span>
+              </div>
+              <span
+                className={`font-pixel text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-md shrink-0 ${
+                  scoreToast.delta > 0
+                    ? 'bg-emerald-500 text-slate-950'
+                    : 'bg-rose-500 text-slate-950'
+                }`}
+              >
+                {scoreToast.delta > 0 ? `+${scoreToast.delta}` : scoreToast.delta}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
@@ -4522,8 +4626,10 @@ export default function App() {
           onActionPress={handleInteract}
           onCompassToggle={handleToggleCompass}
           isCompassActive={isCompassActive}
-          onOpenJournal={() => setShowJournal(true)}
-          onOpenSettings={() => handleOpenSettings('quest')}
+          empathyScore={stats.empathyScore}
+          onOpenJournal={() => handleOpenInfoHub('journal')}
+          onOpenInfoHub={handleOpenInfoHub}
+          onOpenSettings={() => handleOpenSettings('audio')}
           onOpenTutorial={() => setShowInGameTutorial(true)}
           isDialogueOpen={!!currentDialogue}
           isSettingsOpen={showSettings}
@@ -4534,12 +4640,13 @@ export default function App() {
             isFreeRoamActive ||
             (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)
           }
-          onOpenRegulation={() => handleOpenRegulation('Pemain', 'breathing')}
+          onOpenRegulation={() => handleOpenInfoHub('regulation')}
           onOpenStartMenu={() => {
             sound.playMenuSelect();
             setShowPauseMenu(false);
             setShowSettings(false);
             setShowJournal(false);
+            setShowInfoHub(false);
             setCurrentDialogue(null);
             handleRestart();
           }}
@@ -4575,6 +4682,7 @@ export default function App() {
           onSkipRegulation={handleSkipRegulation}
           onClose={handleDialogueClose}
           isCompassActive={isCompassActive}
+          onToggleCompass={handleToggleCompass}
           playerName={playerName}
           playerAvatar={playerAvatar}
         />
@@ -4627,7 +4735,36 @@ export default function App() {
           />
         )}
 
-        {/* Compass Journal & PSE Dictionary Modal */}
+        {/* Pusat Informasi & Petualangan Modal (Skor PSE, Progres Misi, Regulasi, Lencana, Jurnal) */}
+        {showInfoHub && (
+          <AdventureInfoHubModal
+            isOpen={showInfoHub}
+            onClose={() => setShowInfoHub(false)}
+            initialTab={infoHubTab}
+            stats={stats}
+            quests={getLocalizedQuests(currentQuests, lang)}
+            zoneStatus={zoneStatus}
+            npcs={npcs}
+            items={getLocalizedItems(inventory, lang)}
+            playerName={playerName}
+            clockComponentsCount={clockComponentsCount}
+            onStartRegulation={(mode) => {
+              setShowInfoHub(false);
+              handleOpenRegulation('Pemain', mode);
+            }}
+            onNavigateToTile={handleMiniMapNavigate}
+            onOpenAllBadgesCelebration={() => {
+              setShowInfoHub(false);
+              setShowAllBadgesCelebration(true);
+            }}
+            onOpenEndingCertificate={() => {
+              setShowInfoHub(false);
+              setShowEndingQuiz(true);
+            }}
+          />
+        )}
+
+        {/* Compass Journal & PSE Dictionary Modal (Legacy fallback) */}
         {showJournal && (
           <CompassJournalModal
             isOpen={showJournal}
@@ -4639,26 +4776,13 @@ export default function App() {
           />
         )}
 
-        {/* Unified Settings Modal (Quests, Achievements, Audio, Controls Guide) */}
+        {/* Settings Modal (Audio & Controls Guide only) */}
         {showSettings && (
           <SettingsModal
             isOpen={showSettings}
             onClose={() => setShowSettings(false)}
             initialTab={settingsTab}
-            quests={getLocalizedQuests(currentQuests, lang)}
-            stats={stats}
-            zoneStatus={zoneStatus}
-            npcs={npcs}
-            unlockedBadges={stats.unlockedBadges}
-            empathyScore={stats.empathyScore}
-            isMuted={isMuted}
-            isFreeRoamActive={isFreeRoamActive}
-            onToggleMute={handleToggleMute}
-            onOpenAllBadgesCelebration={() => setShowAllBadgesCelebration(true)}
-            onUnlockAllBadges={handleUnlockAllBadgesTest}
             onCaptureMoment={handleCaptureMoment}
-            onNavigateToTile={handleMiniMapNavigate}
-            onActivateDeveloperMode={handleActivateDeveloperMode}
             onOpenTutorial={() => setShowInGameTutorial(true)}
           />
         )}
@@ -4716,6 +4840,8 @@ export default function App() {
           <EndingQuizModal
             isOpen={showEndingQuiz}
             playerName={playerName}
+            empathyScore={stats.empathyScore}
+            resonanceUses={stats.resonanceUses}
             onProceedToEnding={() => {
               setShowEndingQuiz(false);
               setShowEnding(true);
@@ -4755,6 +4881,7 @@ export default function App() {
       {/* Pause Menu Modal (Resume, Pengaturan, Main Menu, Quit Game) */}
       <PauseMenuModal
         isOpen={showPauseMenu}
+        empathyScore={stats.empathyScore}
         onResume={() => {
           sound.playMenuSelect();
           setShowPauseMenu(false);
@@ -4774,6 +4901,7 @@ export default function App() {
           setShowPauseMenu(false);
           setShowSettings(false);
           setShowJournal(false);
+          setShowInfoHub(false);
           setCurrentDialogue(null);
           handleRestart();
         }}

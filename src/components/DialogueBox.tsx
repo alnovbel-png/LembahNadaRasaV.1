@@ -12,9 +12,23 @@ interface DialogueBoxProps {
   onSkipRegulation?: () => void;
   onClose?: () => void;
   isCompassActive: boolean;
+  onToggleCompass?: () => void;
   playerName?: string;
   playerAvatar?: 'boy' | 'girl' | 'kiko';
 }
+
+export const isChoiceIncorrect = (choice: ChoiceOption): boolean => {
+  if (typeof choice.impactScore === 'number' && choice.impactScore < 0) return true;
+  if (!choice.resultDialogueId) return false;
+  const res = choice.resultDialogueId.toLowerCase();
+  return (
+    res.includes('wrong') ||
+    res.includes('dismiss') ||
+    res.includes('rebuke') ||
+    res.includes('shame') ||
+    res.includes('fixed_feedback')
+  );
+};
 
 export const DialogueBox: React.FC<DialogueBoxProps> = ({
   dialogue,
@@ -23,6 +37,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   onSkipRegulation,
   onClose,
   isCompassActive,
+  onToggleCompass,
   playerName = 'Ezzel',
   playerAvatar = 'boy',
 }) => {
@@ -150,7 +165,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     if (feedbackStatus !== 'idle') return;
     setSelectedChoiceId(choice.id);
 
-    const isWrong = choice.impactScore <= 0 || choice.resultDialogueId.includes('wrong');
+    const isWrong = isChoiceIncorrect(choice);
 
     if (isWrong) {
       // Incorrect response: Record wrong answer ID to highlight on retry
@@ -167,7 +182,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         onChoiceSelect(choice);
         setFeedbackStatus('idle');
         setSelectedChoiceId(null);
-      }, 160);
+      }, 1200);
     } else {
       // Correct response: Green dialog box, cheerful applause fanfare
       setFeedbackStatus('correct');
@@ -176,7 +191,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         onChoiceSelect(choice);
         setFeedbackStatus('idle');
         setSelectedChoiceId(null);
-      }, 160);
+      }, 1300);
     }
   };
 
@@ -184,6 +199,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (feedbackStatus !== 'idle') return;
+
+      // Toggle Compass with C key if in dialogue
+      if ((e.key === 'c' || e.key === 'C' || e.code === 'KeyC') && onToggleCompass) {
+        e.preventDefault();
+        onToggleCompass();
+        return;
+      }
 
       // Escape closes or exits dialogue immediately
       if (e.key === 'Escape') {
@@ -231,7 +253,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogue, isTyping, showChoices, finishTypingInstantly, onNext, onClose, feedbackStatus, isWrongFeedback]);
+  }, [dialogue, isTyping, showChoices, finishTypingInstantly, onNext, onClose, feedbackStatus, isWrongFeedback, onToggleCompass]);
 
   // Character portraits rendering
   const renderPortrait = (type: string) => {
@@ -394,7 +416,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               <span>{lang === 'en' ? 'WONDERFUL! WISE & EMPATHETIC RESPONSE! 🎉' : 'HEBAT SEKALI! JAWABAN BIJAK & PENUH EMPATI! 🎉'}</span>
             </div>
             <span className="text-[8px] bg-emerald-950 text-emerald-200 px-2 py-0.5 rounded font-bold">
-              {lang === 'en' ? '+Empathy Points 👏' : '+Poin Empati 👏'}
+              {lang === 'en' ? 'Empathetic Response 👏' : 'Respon Penuh Empati 👏'}
             </span>
           </div>
         )}
@@ -526,27 +548,12 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   </button>
                 </div>
 
-                {/* Heart Compass Active Empathy Guidance Banner */}
-                {isCompassActive && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-amber-500/15 border border-amber-400/40 text-amber-200 text-[8px] sm:text-[8.5px] font-pixel shadow-sm animate-fade-in">
-                    <Compass className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-spin" style={{ animationDuration: '8s' }} />
-                    <span className="leading-tight">
-                      {lang === 'en'
-                        ? 'Heart Compass active: Resonance signals guide you toward empathetic responses.'
-                        : 'Kompas Hati aktif: Resonansi menuntunmu memilih respon yang penuh empati & pengertian.'}
-                    </span>
-                  </div>
-                )}
-
                 <div className="grid grid-cols-1 gap-1.5">
                   {dialogue.choices.map((choice, index) => {
                     const isSelected = selectedChoiceId === choice.id;
                     const isPreviouslyWrong = (wrongChoiceIdsRef.current[dialogue.id] || []).includes(choice.id);
-                    const isCompassResonating =
-                      isCompassActive &&
-                      !isPreviouslyWrong &&
-                      typeof choice.impactScore === 'number' &&
-                      choice.impactScore > 0;
+                    const isWrongOption = isChoiceIncorrect(choice);
+                    const isCompassFlaggedWrong = isCompassActive && isWrongOption;
 
                     let btnStyle =
                       'bg-slate-900/90 hover:bg-amber-950/70 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-100';
@@ -560,9 +567,9 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     } else if (isPreviouslyWrong) {
                       btnStyle =
                         'bg-slate-950/70 border border-red-900/60 text-slate-400 hover:text-rose-200 hover:border-red-500/50';
-                    } else if (isCompassResonating) {
+                    } else if (isCompassFlaggedWrong) {
                       btnStyle =
-                        'bg-gradient-to-r from-amber-950/60 via-slate-900/90 to-amber-950/40 border-2 border-amber-400/90 text-amber-100 shadow-[0_0_12px_rgba(245,158,11,0.3)] hover:border-amber-300 hover:shadow-[0_0_16px_rgba(245,158,11,0.5)]';
+                        'bg-gradient-to-r from-rose-950/60 via-slate-900/90 to-rose-950/40 border-2 border-rose-500/80 text-rose-200 shadow-[0_0_14px_rgba(244,63,94,0.3)] hover:border-rose-400 hover:text-rose-100';
                     }
 
                     return (
@@ -581,8 +588,8 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                               ? 'bg-emerald-400 text-slate-950 border border-emerald-200'
                               : isPreviouslyWrong
                               ? 'bg-red-950/90 text-rose-300 border border-red-800'
-                              : isCompassResonating
-                              ? 'bg-amber-400 text-slate-950 font-bold border border-amber-200 shadow-sm'
+                              : isCompassFlaggedWrong
+                              ? 'bg-rose-600 text-white font-bold border border-rose-300 shadow-sm'
                               : 'bg-slate-800 text-amber-300 border border-slate-600 group-hover:bg-amber-500 group-hover:text-slate-950 group-hover:border-amber-300'
                           }`}
                         >
@@ -591,16 +598,20 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         <span className="flex-1 leading-relaxed">
                           {formatName(choice.text)}
                         </span>
-                        {isCompassResonating && (
+                        {isCompassFlaggedWrong && (
                           <span
-                            title={lang === 'en' ? 'Heart Compass resonance: empathetic choice' : 'Resonansi Kompas Hati: pilihan penuh empati'}
-                            className="text-[7.5px] sm:text-[8px] font-pixel bg-amber-400/20 text-amber-300 border border-amber-400/60 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 ml-1 animate-pulse"
+                            title={
+                              lang === 'en'
+                                ? 'Heart Compass warning: This response option is incorrect/unwise'
+                                : 'Peringatan Kompas Hati: Opsi respon ini salah/kurang bijak'
+                            }
+                            className="text-[7.5px] sm:text-[8px] font-pixel bg-rose-500/20 text-rose-300 border border-rose-400/80 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 ml-1 animate-pulse"
                           >
-                            <Sparkles className="w-2.5 h-2.5 text-amber-300" />
-                            <span>{lang === 'en' ? 'Resonant ✨' : 'Empati ✨'}</span>
+                            <AlertTriangle className="w-2.5 h-2.5 text-rose-400 shrink-0" />
+                            <span>{lang === 'en' ? 'Wrong Option ❌' : 'Respon Salah ❌'}</span>
                           </span>
                         )}
-                        {isPreviouslyWrong && (
+                        {isPreviouslyWrong && !isCompassFlaggedWrong && (
                           <span className="text-[8px] bg-red-950/90 text-rose-300 border border-red-600/60 px-1.5 py-0.5 rounded font-bold shrink-0 ml-1">
                             {lang === 'en' ? 'Incorrect ❌' : 'Kurang Tepat ❌'}
                           </span>
@@ -620,7 +631,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   <button
                     id="dialogue-finish-typing-btn"
                     onClick={finishTypingInstantly}
-                    className="w-full sm:w-auto px-3 py-1.5 rounded-lg font-pixel text-[9px] bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer shrink-0"
+                    className="w-full sm:w-auto px-3 py-1.5 rounded-lg font-pixel text-[9px] bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center justify-center gap-1.5 transition-transform duration-75 active:scale-95 cursor-pointer shrink-0 touch-manipulation"
                   >
                     <span>{lang === 'en' ? '⚡ Skip Text Animation [Space]' : '⚡ Lewati Animasi Teks [Spasi]'}</span>
                   </button>
@@ -651,7 +662,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 <button
                   id="dialogue-skip-regulation-btn"
                   onClick={onSkipRegulation}
-                  className="px-2.5 py-1.5 rounded-lg font-pixel text-[8px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-855 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-all duration-200 border border-slate-700 cursor-pointer active:scale-95"
+                  className="px-2.5 py-1.5 rounded-lg font-pixel text-[8px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-transform duration-75 border border-slate-700 cursor-pointer active:scale-95 touch-manipulation"
                   title={lang === 'en' ? 'Skip exercise and continue to next conversation' : 'Lewati latihan dan langsung lanjut ke percakapan berikutnya'}
                 >
                   {lang === 'en' ? 'Skip Exercise ▶' : 'Lewati Latihan ▶'}

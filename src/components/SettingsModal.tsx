@@ -7,80 +7,36 @@ import {
   Music,
   Play,
   RotateCcw,
-  Target,
-  Award,
   Gamepad2,
-  CheckCircle2,
-  Clock,
-  Sparkles,
-  Heart,
-  Trophy,
   Camera,
-  BookOpen,
-  Users,
   MessageSquare,
-  ArrowRight,
-  Terminal,
-  KeyRound,
-  ShieldCheck,
-  Lock,
   HelpCircle,
+  BookOpen,
 } from 'lucide-react';
-import { useAudioSettings, BgmPhase, sound } from '../utils/audio';
-import { GameQuest, ZoneColorStatus, NPC, PlayerStats } from '../types/game';
-import { PSE_ACHIEVEMENTS } from '../game/constants';
-import { PeopleGuideModal } from './PeopleGuideModal';
-import { useLanguage, getLocalizedAchievements } from '../game/localization';
+import { useAudioSettings, sound } from '../utils/audio';
+import { useLanguage } from '../game/localization';
 
-export type SettingsModalTab = 'quest' | 'achievements' | 'audio' | 'controls';
+export type SettingsModalTab = 'audio' | 'controls';
 
 export interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: SettingsModalTab;
-  quests?: GameQuest[];
-  zoneStatus?: ZoneColorStatus;
-  stats?: PlayerStats;
-  npcs?: NPC[];
-  unlockedBadges?: string[];
-  empathyScore?: number;
-  playerName?: string;
   isMuted?: boolean;
-  isFreeRoamActive?: boolean;
   onToggleMute?: () => void;
-  onOpenAllBadgesCelebration?: () => void;
-  onUnlockAllBadges?: () => void;
   onCaptureMoment?: () => void;
-  onNavigateToTile?: (tileX: number, tileY: number) => void;
-  onActivateDeveloperMode?: () => void;
   onOpenTutorial?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
-  initialTab = 'quest',
-  quests = [],
-  zoneStatus = { plaza: false, bridge: false, forest: false, tower: false },
-  stats,
-  npcs = [],
-  unlockedBadges,
-  empathyScore,
-  playerName,
-  isFreeRoamActive = false,
-  onOpenAllBadgesCelebration,
-  onUnlockAllBadges,
+  initialTab = 'audio',
   onCaptureMoment,
-  onNavigateToTile,
-  onActivateDeveloperMode,
   onOpenTutorial,
 }) => {
   const { lang, ui, toggleLang } = useLanguage();
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
-  const [showPeopleGuide, setShowPeopleGuide] = useState(false);
-  const [selectedVillagerForGuide, setSelectedVillagerForGuide] = useState<string | null>(null);
-  const [devPin, setDevPin] = useState('');
-  const [devPinError, setDevPinError] = useState<string | null>(null);
 
   const {
     masterVolume,
@@ -118,49 +74,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  const handleDevPinSubmit = () => {
-    if (devPin.trim() === '12345') {
-      setDevPinError(null);
-      sound.playSecretFound();
-      onActivateDeveloperMode?.();
-      onClose();
-    } else {
-      setDevPinError(
-        lang === 'en'
-          ? 'Incorrect PIN! Please enter the correct PIN (12345).'
-          : 'Kode PIN salah! Masukkan kode PIN yang sesuai (12345).'
-      );
-      sound.playMenuSelect();
-    }
-  };
-
   if (!isOpen) return null;
-
-  // Safe fallback extractions
-  const effectiveBadges: string[] =
-    unlockedBadges ?? (stats && Array.isArray(stats.unlockedBadges) ? stats.unlockedBadges : []);
-  const effectiveEmpathy: number =
-    typeof empathyScore === 'number'
-      ? empathyScore
-      : stats && typeof stats.empathyScore === 'number'
-      ? stats.empathyScore
-      : 0;
-  const effectiveNpcs: NPC[] = Array.isArray(npcs) ? npcs : [];
-  const effectiveQuests: GameQuest[] = Array.isArray(quests) ? quests : [];
-  const effectiveZoneStatus: ZoneColorStatus = zoneStatus ?? {
-    plaza: false,
-    bridge: false,
-    forest: false,
-    tower: false,
-  };
 
   const masterPercent = Math.round((masterVolume ?? 0.85) * 100);
   const bgmPercent = Math.round((bgmVolume ?? 0.65) * 100);
   const sfxPercent = Math.round((sfxVolume ?? 0.8) * 100);
   const voicePercent = Math.round((voiceVolume ?? 0.85) * 100);
-  const unlockedCount = effectiveBadges.length;
-  const totalBadges = PSE_ACHIEVEMENTS.length;
-  const badgeProgressPercent = totalBadges > 0 ? Math.round((unlockedCount / totalBadges) * 100) : 0;
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/85 backdrop-blur-sm p-3 animate-backdrop-fade-in">
@@ -214,44 +133,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
 
-        {/* Submenu Grid - Clean 4-Column Layout, Never Covered by Any Horizontal Slider */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-3 sm:p-3.5 bg-slate-950/90 border-b border-slate-800 shrink-0">
-          <button
-            id="settings-tab-quest-btn"
-            onClick={() => setActiveTab('quest')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 hover:scale-[1.03] cursor-pointer text-center ${
-              activeTab === 'quest'
-                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 ring-2 ring-amber-400/50'
-                : 'bg-slate-900/90 hover:bg-slate-800 hover:border-amber-400/50 hover:shadow-[0_0_14px_rgba(245,158,11,0.25)] text-slate-300 hover:text-white border border-slate-800'
-            }`}
-          >
-            <Target className="w-4 h-4 shrink-0" />
-            <span
-              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
-              className="truncate"
-            >
-              {lang === 'en' ? 'Quests & Objectives' : 'Misi & Objektif'}
-            </span>
-          </button>
-
-          <button
-            id="settings-tab-achievements-btn"
-            onClick={() => setActiveTab('achievements')}
-            className={`flex items-center justify-center gap-1.5 sm:gap-2 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 hover:scale-[1.03] cursor-pointer text-center ${
-              activeTab === 'achievements'
-                ? 'bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 ring-2 ring-amber-400/50'
-                : 'bg-slate-900/90 hover:bg-slate-800 hover:border-amber-400/50 hover:shadow-[0_0_14px_rgba(245,158,11,0.25)] text-slate-300 hover:text-white border border-slate-800'
-            }`}
-          >
-            <Award className="w-4 h-4 shrink-0" />
-            <span
-              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
-              className="truncate"
-            >
-              {lang === 'en' ? `Badges (${unlockedCount}/${totalBadges})` : `Pencapaian (${unlockedCount}/${totalBadges})`}
-            </span>
-          </button>
-
+        {/* Submenu Grid - Clean 2-Column Layout for Audio and Controls */}
+        <div className="grid grid-cols-2 gap-2 p-3 sm:p-3.5 bg-slate-950/90 border-b border-slate-800 shrink-0">
           <button
             id="settings-tab-audio-btn"
             onClick={() => setActiveTab('audio')}
@@ -266,8 +149,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               style={{
                 fontFamily: "'Pixelify Sans', sans-serif",
                 fontSize: '13px',
-                textAlign: 'center',
-                textDecorationLine: 'none',
               }}
               className="truncate"
             >
@@ -299,310 +180,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         {/* Tab Content Body with sleek custom scrollbar */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5 custom-scrollbar pr-3 sm:pr-5">
-          {/* TAB 1: MISI & OBJEKTIF */}
-          {activeTab === 'quest' && (
-            <div className="space-y-5">
-              {/* Card Abadikan Momen */}
-              {onCaptureMoment && (
-                <div className="bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border border-amber-400/50 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-amber-500/20 border border-amber-400/40 rounded-xl text-amber-300">
-                      <Camera className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-amber-300 text-xs sm:text-sm">
-                        Abadikan Momen Petualangan
-                      </h4>
-                      <p className="text-[11px] text-slate-300 mt-0.5">
-                        Ambil screenshot pemandangan game saat ini dengan bingkai dekoratif eksklusif Lembah Nada Rasa!
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    id="settings-tab-capture-moment-btn"
-                    onClick={onCaptureMoment}
-                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-xs shrink-0 shadow transition cursor-pointer flex items-center gap-1.5"
-                  >
-                    <Camera className="w-4 h-4" />
-                    <span>Abadikan Sekarang</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Daftar Misi Utama Berurutan */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                    <Target className="w-4 h-4 text-amber-400" />
-                    Alur Misi Utama Kisah (Wajib Berurutan)
-                  </h3>
-                  <span className="text-[10px] text-amber-400/80 bg-amber-950/60 px-2 py-0.5 rounded-full border border-amber-500/30">
-                    Selesaikan 1 per 1
-                  </span>
-                </div>
-                <div className="space-y-3">
-                  {(() => {
-                    const activeQuestIdx = effectiveQuests.findIndex((q) => !q.isCompleted);
-                    return effectiveQuests.map((q, idx) => {
-                      const isActive = idx === activeQuestIdx;
-                      const isLocked = !q.isCompleted && idx > activeQuestIdx;
-
-                      // Preset coordinates for each sequential quest
-                      const questCoords = [
-                        { x: 8, y: 14 },  // Misi 1: Kiki di Alun-Alun
-                        { x: 20, y: 15 }, // Misi 2: Kakek Ranu di Jembatan
-                        { x: 7, y: 5 },   // Misi 3: Bimo di Hutan Sunyi
-                        { x: 29, y: 8 },  // Misi 4: Menara Jam
-                      ][idx] || { x: 11, y: 14 };
-
-                      return (
-                        <div
-                          key={q.id}
-                          className={`p-3.5 rounded-xl border transition ${
-                            q.isCompleted
-                              ? 'bg-slate-950/40 border-emerald-500/40 opacity-90'
-                              : isActive
-                              ? 'bg-gradient-to-r from-amber-500/25 via-amber-400/20 to-amber-500/10 border-2 border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.3)]'
-                              : 'bg-slate-950/40 border-slate-800 opacity-60'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              {q.isCompleted ? (
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                              ) : isActive ? (
-                                <Clock className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
-                              ) : (
-                                <Lock className="w-4 h-4 text-slate-500 shrink-0" />
-                              )}
-                              <h4
-                                className={`text-sm font-bold ${
-                                  q.isCompleted
-                                    ? 'text-slate-400 line-through'
-                                    : isActive
-                                    ? 'text-amber-200'
-                                    : 'text-slate-400'
-                                }`}
-                              >
-                                {q.title}
-                              </h4>
-                            </div>
-                            <span
-                              className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${
-                                q.isCompleted
-                                  ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                                  : isActive
-                                  ? 'bg-amber-500 text-slate-950 font-black border border-amber-300 shadow-sm animate-pulse'
-                                  : 'bg-slate-900 text-slate-500 border border-slate-800'
-                              }`}
-                            >
-                              {q.isCompleted ? '✓ Selesai' : isActive ? '👉 Misi Aktif' : '🔒 Terkunci'}
-                            </span>
-                          </div>
-
-                          <p className={`text-xs mt-1.5 leading-relaxed ${isActive ? 'text-amber-100/90' : 'text-slate-400'}`}>
-                            {q.description}
-                          </p>
-
-                          {isActive && (
-                            <div className="mt-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-amber-950/60 border border-amber-400/40 rounded-lg p-2.5 text-amber-200">
-                              <div className="text-xs font-medium">
-                                💡 <strong>Petunjuk Langkah:</strong> {q.stepHint}
-                              </div>
-                              {onNavigateToTile && (
-                                <button
-                                  onClick={() => {
-                                    onClose();
-                                    onNavigateToTile(questCoords.x, questCoords.y);
-                                  }}
-                                  className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-bold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-                                >
-                                  <span>Tuntun ke Lokasi 🏃</span>
-                                </button>
-                              )}
-                            </div>
-                          )}
-
-                          {isLocked && (
-                            <div className="mt-2 text-[11px] text-slate-500 italic flex items-center gap-1">
-                              <Lock className="w-3 h-3 text-slate-600 shrink-0" />
-                              <span>Selesaikan Misi {idx} terlebih dahulu untuk membuka petualangan ini.</span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              </div>
-
-              {/* Misi Eksplorasi Warga & Hutan */}
-              {effectiveNpcs.length > 0 && (
-                <div className="space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-400" />
-                      Eksplorasi Warga Desa, Hutan, & Sungai
-                    </h3>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <button
-                        id="btn-open-people-guide-from-quest"
-                        onClick={() => {
-                          sound.playMenuSelect();
-                          setSelectedVillagerForGuide(null);
-                          setShowPeopleGuide(true);
-                        }}
-                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-md flex items-center gap-1.5 transition cursor-pointer border border-amber-300/60 active:scale-95"
-                      >
-                        <BookOpen className="w-3.5 h-3.5" />
-                        <span>Buka Panduan Warga (People Guide)</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Banner Info People Guide */}
-                  <div
-                    onClick={() => {
-                      sound.playMenuSelect();
-                      setSelectedVillagerForGuide(null);
-                      setShowPeopleGuide(true);
-                    }}
-                    className="p-3 bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 border border-amber-500/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 cursor-pointer hover:border-amber-400/60 transition"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
-                        <Users className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-slate-200">
-                          Buku Panduan Karakter & Kompas Emosi Warga
-                        </div>
-                        <div className="text-[11px] text-slate-400">
-                          Pelajari 13 profil lengkap warga, dinamika emosi, wawasan PSE, dan tips berdialog.
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-xs text-amber-300 font-bold flex items-center gap-1">
-                      <span>Buka</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 2: PENCAPAIAN / ACHIEVEMENTS */}
-          {activeTab === 'achievements' && (
-            <div className="space-y-5">
-              {/* Header Progress Bar */}
-              <div className="bg-slate-950/70 p-4 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div>
-                  <div className="text-xs text-slate-400 font-medium">Total Skor Empati & Wawasan</div>
-                  <div className="text-xl font-bold text-amber-300 flex items-center gap-2 mt-0.5">
-                    <Heart className="w-5 h-5 text-rose-400 fill-rose-400" />
-                    <span>{effectiveEmpathy} Poin Empati</span>
-                  </div>
-                </div>
-
-                <div className="w-full sm:w-48">
-                  <div className="flex justify-between text-xs text-slate-400 mb-1">
-                    <span>Lencana Terbuka</span>
-                    <span className="font-bold text-amber-400">{unlockedCount} / {totalBadges}</span>
-                  </div>
-                  <div className="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden">
-                    <div
-                      className="bg-amber-400 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${badgeProgressPercent}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* All Badges Unlocked Special Banner & Action */}
-              {unlockedCount === totalBadges && (
-                <div className="bg-gradient-to-r from-amber-950/60 via-amber-900/40 to-slate-950 border-2 border-amber-400 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl p-1.5 bg-amber-500/20 rounded-xl border border-amber-400/50">
-                      👑
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-amber-300 text-sm">
-                        Pencapaian Agung: Seluruh 10 Lencana Terkumpul!
-                      </h4>
-                      <p className="text-xs text-amber-200/80 mt-0.5">
-                        Gelar Duta Besar Empati Paripurna disematkan oleh Nenek Wilis dan seluruh warga desa.
-                      </p>
-                    </div>
-                  </div>
-                  {onOpenAllBadgesCelebration && (
-                    <button
-                      id="settings-open-appreciation-modal-btn"
-                      onClick={() => {
-                        onClose();
-                        onOpenAllBadgesCelebration();
-                      }}
-                      className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 shadow transition cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Trophy className="w-4 h-4" />
-                      <span>Buka Dialog Apresiasi</span>
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Grid of PSE Badges */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {PSE_ACHIEVEMENTS.map((badge) => {
-                  const isUnlocked = effectiveBadges.includes(badge.id);
-                  return (
-                    <div
-                      key={badge.id}
-                      className={`p-3.5 rounded-xl border transition flex flex-col justify-between ${
-                        isUnlocked
-                          ? 'bg-amber-950/20 border-amber-500/50 shadow-md'
-                          : 'bg-slate-950/40 border-slate-800/80 opacity-70'
-                      }`}
-                    >
-                      <div>
-                        <div className="flex items-start justify-between gap-2 mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-2xl">{badge.icon}</span>
-                            <div>
-                              <h4 className={`text-xs font-bold leading-tight ${isUnlocked ? 'text-amber-300' : 'text-slate-300'}`}>
-                                {badge.title}
-                              </h4>
-                              <div className="text-[10px] text-slate-400">
-                                Mentor: {badge.mentor}
-                              </div>
-                            </div>
-                          </div>
-                          <span
-                            className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase shrink-0 ${
-                              isUnlocked
-                                ? 'bg-amber-400/20 text-amber-300 border border-amber-500/40'
-                                : 'bg-slate-800 text-slate-500'
-                            }`}
-                          >
-                            {isUnlocked ? 'Terbuka ✨' : 'Terkunci 🔒'}
-                          </span>
-                        </div>
-
-                        <div className="text-[11px] font-semibold text-emerald-400 mb-1">
-                          Konsep: {badge.concept}
-                        </div>
-                        <p className="text-[11px] text-slate-300 leading-relaxed">
-                          {badge.description}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: AUDIO & EKSPOR OFFLINE */}
+          {/* TAB 1: AUDIO & EFEK SUARA */}
           {activeTab === 'audio' && (
             <div className="space-y-6">
               {/* Master Mute Card */}
@@ -1045,159 +623,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     • <strong>Tombol [KOMPAS / HATI]:</strong> Mengaktifkan Kompas Hati untuk memindai emosi
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    • <strong>Tombol [MENU] Atas:</strong> Satu tombol ringkas untuk Peta, Regulasi, Jurnal, dan Pengaturan
+                    • <strong>Tombol [MENU] Atas:</strong> Satu tombol ringkas untuk Peta, Pusat Informasi, dan Pengaturan
                   </div>
                 </div>
-              </div>
-
-              {/* Mode Developer (PIN Terproteksi: 12345) */}
-              <div
-                id="developer-mode-section"
-                className="bg-gradient-to-br from-slate-950/95 via-slate-900/90 to-amber-950/40 p-4 rounded-xl border-2 border-amber-500/40 shadow-[0_0_20px_rgba(245,158,11,0.12)]"
-              >
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <h3 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
-                    <Terminal className="w-4 h-4 text-amber-400" />
-                    <span>Mode Developer (Akses Khusus)</span>
-                  </h3>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 flex items-center gap-1">
-                    <KeyRound className="w-3 h-3 text-amber-400" />
-                    PIN PROTECTED
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-300 mb-3 leading-relaxed">
-                  Fitur pintasan pengembang & guru: langsung membuka{' '}
-                  <strong className="text-amber-300">Mode Jelajah Bebas (Free Roam)</strong> dengan{' '}
-                  <strong className="text-emerald-300">Pencapaian 100%</strong> (seluruh 10 Lencana PSE) serta{' '}
-                  <strong className="text-emerald-300">Misi Utama 100%</strong> (seluruh 4 wilayah desa pulih).
-                </p>
-
-                {isFreeRoamActive ? (
-                  <div className="p-3 bg-emerald-950/40 border border-emerald-500/50 rounded-lg space-y-2.5">
-                    <div className="flex items-center gap-2 text-emerald-300 font-bold text-xs">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                      <span>Mode Developer & Jelajah Bebas 100% Sedang Aktif!</span>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-300">
-                      <div className="p-1.5 rounded bg-slate-900/70 border border-emerald-900/50 flex items-center justify-between">
-                        <span>Misi Utama:</span>
-                        <span className="font-bold text-emerald-300">100% Selesai (4/4)</span>
-                      </div>
-                      <div className="p-1.5 rounded bg-slate-900/70 border border-emerald-900/50 flex items-center justify-between">
-                        <span>Pencapaian PSE:</span>
-                        <span className="font-bold text-emerald-300">100% (10 Lencana)</span>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      <button
-                        id="dev-mode-enter-world-btn"
-                        onClick={onClose}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer shadow"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>Masuk Langsung ke Jelajah Bebas</span>
-                      </button>
-                      <button
-                        id="dev-mode-reapply-btn"
-                        onClick={() => {
-                          onActivateDeveloperMode?.();
-                          onClose();
-                        }}
-                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>Sinkronkan Ulang 100%</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row items-center gap-3">
-                      <div className="relative">
-                        <input
-                          id="dev-mode-pin-input"
-                          type="password"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          maxLength={5}
-                          value={devPin}
-                          onChange={(e) => {
-                            setDevPin(e.target.value.replace(/\D/g, '').slice(0, 5));
-                            setDevPinError(null);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') handleDevPinSubmit();
-                          }}
-                          placeholder="•••••"
-                          className="w-36 sm:w-44 text-center font-mono text-xl tracking-[0.35em] font-bold bg-slate-900 border-2 border-amber-500/60 rounded-lg px-3 py-2 text-amber-300 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 shadow-inner"
-                        />
-                      </div>
-
-                      <button
-                        id="dev-mode-unlock-btn"
-                        onClick={handleDevPinSubmit}
-                        className="w-full sm:w-auto px-4 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer shadow-[0_0_15px_rgba(245,158,11,0.35)] active:scale-[0.98]"
-                      >
-                        <KeyRound className="w-4 h-4 text-slate-950" />
-                        <span>Buka Mode Developer</span>
-                      </button>
-                    </div>
-
-                    {/* Virtual Numpad for Touchscreen / Mobile ease */}
-                    <div className="pt-1">
-                      <div className="text-[11px] text-slate-400 mb-1.5 flex items-center justify-between">
-                        <span>Papan Tombol Angka:</span>
-                      </div>
-                      <div className="grid grid-cols-6 sm:grid-cols-12 gap-1 max-w-md">
-                        {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((digit) => (
-                          <button
-                            key={digit}
-                            type="button"
-                            onClick={() => {
-                              if (devPin.length < 5) {
-                                setDevPin((prev) => (prev + digit).slice(0, 5));
-                                setDevPinError(null);
-                              }
-                            }}
-                            className="p-1.5 text-center font-mono font-bold text-xs bg-slate-900 hover:bg-slate-800 active:bg-amber-500/30 text-amber-200 border border-slate-700 rounded transition cursor-pointer"
-                          >
-                            {digit}
-                          </button>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDevPin((prev) => prev.slice(0, -1));
-                            setDevPinError(null);
-                          }}
-                          title="Hapus satu angka"
-                          className="p-1.5 text-center font-mono text-xs bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 rounded transition cursor-pointer"
-                        >
-                          ⌫
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setDevPin('');
-                            setDevPinError(null);
-                          }}
-                          title="Kosongkan PIN"
-                          className="p-1.5 text-center font-mono text-[10px] font-bold bg-slate-900 hover:bg-slate-800 text-rose-300 border border-slate-700 rounded transition cursor-pointer"
-                        >
-                          C
-                        </button>
-                      </div>
-                    </div>
-
-                    {devPinError && (
-                      <div className="text-rose-400 text-xs flex items-center gap-1.5 bg-rose-950/50 border border-rose-800/60 p-2 rounded-lg">
-                        <span>⚠️</span>
-                        <span>{devPinError}</span>
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -1218,23 +646,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </button>
         </div>
       </div>
-
-      {/* People Guide Modal (Panduan Warga Desa & Pop-Up Dialog Profil Warga) */}
-      <PeopleGuideModal
-        isOpen={showPeopleGuide}
-        onClose={() => {
-          setShowPeopleGuide(false);
-          setSelectedVillagerForGuide(null);
-        }}
-        npcs={effectiveNpcs}
-        initialSelectedNpcId={selectedVillagerForGuide}
-        onNavigateToTile={(tileX, tileY) => {
-          setShowPeopleGuide(false);
-          setSelectedVillagerForGuide(null);
-          onClose();
-          onNavigateToTile?.(tileX, tileY);
-        }}
-      />
     </div>
   );
 };

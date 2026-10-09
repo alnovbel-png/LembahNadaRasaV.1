@@ -66,7 +66,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
           <button
             id="close-journal-btn"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-rose-950/40 hover:border hover:border-rose-500/50 hover:scale-110 hover:shadow-[0_0_12px_rgba(244,63,94,0.45)] transition-all cursor-pointer"
+            className="text-slate-400 hover:text-white p-1.5 rounded-xl hover:bg-rose-950/40 hover:border hover:border-rose-500/50 active:scale-95 transition-transform duration-75 cursor-pointer touch-manipulation"
           >
             <X className="w-5 h-5" />
           </button>
@@ -77,7 +77,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
           <button
             id="tab-lore"
             onClick={() => setActiveTab('lore')}
-            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
+            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-transform duration-75 active:scale-95 cursor-pointer touch-manipulation ${
               activeTab === 'lore'
                 ? 'border-amber-400/80 text-amber-300 bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.35)]'
                 : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:border-amber-400/60 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)]'
@@ -90,7 +90,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
           <button
             id="tab-lencana"
             onClick={() => setActiveTab('lencana')}
-            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
+            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-transform duration-75 active:scale-95 cursor-pointer touch-manipulation ${
               activeTab === 'lencana'
                 ? 'border-amber-400/80 text-amber-300 bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.35)]'
                 : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:border-amber-400/60 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)]'
@@ -103,7 +103,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
           <button
             id="tab-tas"
             onClick={() => setActiveTab('tas')}
-            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
+            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-transform duration-75 active:scale-95 cursor-pointer touch-manipulation ${
               activeTab === 'tas'
                 ? 'border-amber-400/80 text-amber-300 bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.35)]'
                 : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:border-amber-400/60 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)]'
@@ -116,7 +116,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
           <button
             id="tab-harmoni"
             onClick={() => setActiveTab('harmoni')}
-            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer ${
+            className={`px-3 py-2.5 rounded-xl border flex items-center justify-center gap-2 text-xs font-bold transition-transform duration-75 active:scale-95 cursor-pointer touch-manipulation ${
               activeTab === 'harmoni'
                 ? 'border-amber-400/80 text-amber-300 bg-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.35)]'
                 : 'border-slate-800 bg-slate-900/80 text-slate-400 hover:text-slate-200 hover:border-amber-400/60 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)]'
@@ -664,12 +664,31 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                 </div>
               </div>
 
-              <div className="p-3 bg-emerald-950/30 border border-emerald-500/30 hover:border-emerald-400/60 hover:scale-[1.01] hover:shadow-[0_0_14px_rgba(16,185,129,0.3)] transition-all rounded-xl text-[11px] text-emerald-300">
-                {lang === 'en' ? (
-                  <>Empathy Points Collected: <strong>{stats.empathyScore} Points</strong>. Continue using empathy and understanding to bring peace to the villagers!</>
-                ) : (
-                  <>Poin Empati Terkumpul: <strong>{stats.empathyScore} Poin</strong>. Terus gunakan empati dan pemahaman untuk mendamaikan warga!</>
-                )}
+              <div className="p-3.5 bg-gradient-to-r from-pink-950/40 via-slate-900/80 to-purple-950/40 border border-pink-500/40 hover:border-pink-400/70 hover:shadow-[0_0_16px_rgba(236,72,153,0.3)] transition-transform duration-75 rounded-xl space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-pixel text-pink-300 font-bold text-[10px]">
+                    <span className="text-sm animate-pulse">💖</span>
+                    <span>{lang === 'en' ? 'Social-Emotional (SEL) Performance' : 'Performa Skor Sosial Emosional (PSE)'}</span>
+                  </span>
+                  <span className="font-pixel text-sm font-black text-amber-300">
+                    {stats.empathyScore} <span className="text-[10px] text-pink-300 font-normal">{lang === 'en' ? 'Pts' : 'Poin'}</span>
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  {lang === 'en'
+                    ? 'Dialogue choices carry empathy weights. Selecting responses independently without compass guidance awards the full dialogue score. Exploring surroundings with the compass is free; the -5 point deduction only applies when choosing a response with compass assistance.'
+                    : 'Setiap pilihan dialog memiliki bobot nilai empati. Memilih respon secara mandiri tanpa kompas akan mendapatkan skor utuh. Menggunakan kompas untuk melihat sekitar bebas tanpa potongan skor; pemotongan -5 poin hanya berlaku saat memilih respon dialog dengan bantuan kompas aktif.'}
+                </p>
+                <div className="flex items-center justify-between pt-1 border-t border-slate-800 text-[10.5px] text-slate-400">
+                  <span>
+                    🧭 {lang === 'en' ? 'Compass Guidance Used:' : 'Penggunaan Bantuan Kompas:'}{' '}
+                    <strong className="text-amber-400 font-pixel">{stats.resonanceUses}x</strong>
+                  </span>
+                  <span>
+                    📉 {lang === 'en' ? 'Assistance Deduction:' : 'Total Potongan Kompas:'}{' '}
+                    <strong className="text-rose-400 font-pixel">-{stats.resonanceUses * 5}</strong>
+                  </span>
+                </div>
               </div>
             </div>
           )}

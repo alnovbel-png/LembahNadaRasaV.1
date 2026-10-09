@@ -229,6 +229,8 @@ export interface EndingQuizModalProps {
   onClose?: () => void;
   onFreeRoam?: () => void;
   playerName?: string;
+  empathyScore?: number;
+  resonanceUses?: number;
 }
 
 export const EndingQuizModal: React.FC<EndingQuizModalProps> = ({
@@ -237,6 +239,8 @@ export const EndingQuizModal: React.FC<EndingQuizModalProps> = ({
   onClose,
   onFreeRoam,
   playerName = 'Ezzel',
+  empathyScore,
+  resonanceUses = 0,
 }) => {
   const { lang } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
@@ -633,6 +637,29 @@ export const EndingQuizModal: React.FC<EndingQuizModalProps> = ({
                 </span>
               </div>
             </div>
+
+            {/* Social-Emotional Performance Scorecard */}
+            {typeof empathyScore === 'number' && (
+              <div className="max-w-lg mx-auto w-full p-3.5 rounded-xl bg-gradient-to-r from-pink-950/60 via-slate-900/90 to-pink-950/40 border border-pink-500/50 shadow-[0_0_20px_rgba(236,72,153,0.25)] flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl animate-pulse">💖</span>
+                  <div>
+                    <div className="text-[10px] sm:text-xs font-pixel font-bold text-pink-300">
+                      {lang === 'en' ? 'Social-Emotional (SEL) Score' : 'Skor Sosial Emosional (PSE)'}
+                    </div>
+                    <div className="text-[11px] text-slate-300 mt-0.5">
+                      {lang === 'en'
+                        ? `Earned full score from independent dialog choices${resonanceUses > 0 ? ` (Compass used ${resonanceUses}x, -${resonanceUses * 5} penalty)` : ' (No compass penalty!)'}.`
+                        : `Mendapatkan skor utuh dari pilihan dialog mandiri${resonanceUses > 0 ? ` (Kompas digunakan ${resonanceUses}x, potongan -${resonanceUses * 5})` : ' (Tanpa potongan kompas!)'}.`}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-1 shrink-0 font-pixel">
+                  <span className="text-xl sm:text-2xl font-black text-amber-300">{empathyScore}</span>
+                  <span className="text-xs text-pink-400 font-bold">{lang === 'en' ? 'Pts' : 'Poin'}</span>
+                </div>
+              </div>
+            )}
 
             {/* 5 Core Takeaway Summary List */}
             <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 text-left space-y-2 text-xs">

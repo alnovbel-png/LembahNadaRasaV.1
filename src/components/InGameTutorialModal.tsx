@@ -459,6 +459,15 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                         </p>
                       </div>
                     </div>
+
+                    <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-400/40 text-[11px] text-amber-200 flex items-center gap-2">
+                      <Compass className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>
+                        {lang === 'en'
+                          ? 'Compass Mechanic: Exploring around is free. When choosing dialogue responses with compass active, it marks wrong options only and applies a -5 score deduction.'
+                          : 'Mekanik Kompas: Melihat sekitar gratis tanpa potongan skor. Pengurangan -5 poin hanya berlaku jika kompas aktif saat memilih respon dialog (menandai opsi salah saja).'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -720,7 +729,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
             {activeTab === 'steps' && currentStep > 1 && (
               <button
                 onClick={handlePrevStep}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition flex items-center gap-1.5 cursor-pointer active:scale-95 border border-slate-700"
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs transition-transform duration-75 flex items-center gap-1.5 cursor-pointer active:scale-95 border border-slate-700 touch-manipulation"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>{lang === 'en' ? 'Previous' : 'Sebelumnya'}</span>
@@ -730,7 +739,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
             {activeTab === 'steps' && currentStep < 5 && (
               <button
                 onClick={handleNextStep}
-                className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-95 text-slate-950 font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer border border-amber-300/80"
+                className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-95 text-slate-950 font-bold text-xs shadow-md transition-transform duration-75 flex items-center gap-1.5 cursor-pointer border border-amber-300/80 touch-manipulation"
               >
                 <span>{lang === 'en' ? 'Next Step' : 'Langkah Selanjutnya'}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -741,7 +750,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
               <button
                 id="btn-finish-tutorial"
                 onClick={handleFinishTutorial}
-                className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-extrabold text-xs shadow-lg transition flex items-center gap-1.5 cursor-pointer border border-emerald-300"
+                className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-extrabold text-xs shadow-lg transition-transform duration-75 flex items-center gap-1.5 cursor-pointer border border-emerald-300 touch-manipulation"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 <span>{lang === 'en' ? 'Ready to Play!' : 'Saya Paham & Siap Bermain!'}</span>

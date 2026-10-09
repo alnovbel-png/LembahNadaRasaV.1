@@ -9,8 +9,8 @@ interface VirtualControlsProps {
   onActionPress: () => void;
   onCompassToggle: () => void;
   isCompassActive: boolean;
-  onOpenJournal: () => void;
-  onOpenSettings: () => void;
+  onOpenJournal?: () => void;
+  onOpenSettings: (tab?: string) => void;
   onOpenTutorial?: () => void;
   isDialogueOpen?: boolean;
   isSettingsOpen?: boolean;
@@ -22,6 +22,15 @@ interface VirtualControlsProps {
   onOpenStartMenu?: () => void;
   onOpenPauseMenu?: () => void;
   isPauseOpen?: boolean;
+  empathyScore?: number;
+  onOpenInfoHub?: (tab?: 'pse' | 'quests' | 'regulation' | 'achievements' | 'journal') => void;
+}
+
+export function getPSEPerformanceTier(score: number, lang: 'id' | 'en'): string {
+  if (score >= 250) return lang === 'en' ? 'Master of Harmony 🌟' : 'Duta Harmoni 🌟';
+  if (score >= 150) return lang === 'en' ? 'Empathetic Heart 💖' : 'Empati Bijak 💖';
+  if (score >= 60) return lang === 'en' ? 'Mindful Observer 🌱' : 'Peka Rasa 🌱';
+  return lang === 'en' ? 'Young Explorer 🧭' : 'Penjelajah Belia 🧭';
 }
 
 export const VirtualControls: React.FC<VirtualControlsProps> = ({
@@ -43,6 +52,8 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   onOpenStartMenu,
   onOpenPauseMenu,
   isPauseOpen = false,
+  empathyScore = 0,
+  onOpenInfoHub,
 }) => {
   const { lang, toggleLang, ui } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -240,6 +251,31 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           </span>
         </div>
 
+        {/* Center-Left: Social-Emotional Performance Score (Skor PSE) Badge - Clickable to open Info Hub */}
+        <div
+          id="header-pse-score-badge"
+          onClick={() => onOpenInfoHub?.('pse')}
+          title={
+            lang === 'en'
+              ? `Social-Emotional Score: ${empathyScore} Points (${getPSEPerformanceTier(empathyScore, lang)}) • Click to view full SEL details [I]`
+              : `Skor Sosial Emosional: ${empathyScore} Poin (${getPSEPerformanceTier(empathyScore, lang)}) • Klik untuk rincian skor PSE & info petualangan [I]`
+          }
+          className="bg-slate-950/95 border border-pink-500/70 hover:border-pink-400 hover:bg-slate-900 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 shadow-xl hover:shadow-[0_0_16px_rgba(236,72,153,0.35)] backdrop-blur-md flex items-center gap-1.5 shrink-0 transition-all duration-75 select-none pointer-events-auto cursor-pointer active:scale-95"
+        >
+          <span className="text-xs sm:text-sm animate-pulse">💖</span>
+          <div className="flex flex-col leading-none">
+            <span className="font-pixel text-[6px] sm:text-[7.5px] text-pink-300 font-bold tracking-tight whitespace-nowrap">
+              {lang === 'en' ? 'SEL SCORE' : 'SKOR PSE'}
+            </span>
+            <span className="font-pixel text-[9px] sm:text-[11px] text-amber-300 font-extrabold tracking-tight">
+              {empathyScore}
+            </span>
+          </div>
+          <span className="hidden md:inline-block font-pixel text-[6.5px] sm:text-[7.5px] px-1.5 py-0.5 rounded-md bg-pink-950/80 text-pink-200 border border-pink-500/40 whitespace-nowrap">
+            {getPSEPerformanceTier(empathyScore, lang)}
+          </span>
+        </div>
+
         {/* Center: Compass Toggle Button with Sparkle Feedback (Hidden on Mobile, Visible on Desktop/Tablet) */}
         <div className={`${isSettingsOpen ? 'pointer-events-none' : 'pointer-events-auto'} hidden md:block`}>
           <button
@@ -310,29 +346,55 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               </button>
             )}
 
-            {onOpenRegulation && (
+            {/* UNIFIED PUSAT INFORMASI (Pengganti tombol regulasi, jurnal, misi objektif, dan pencapaian) */}
+            {onOpenInfoHub ? (
               <button
-                id="top-regulation-btn"
-                onClick={onOpenRegulation}
-                title={lang === 'en' ? 'Open Emotion Regulation Studio [R]' : 'Buka Studio Regulasi Emosi & Relaksasi [R]'}
-                className="px-2.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:border-cyan-300 hover:bg-cyan-900/90 text-cyan-300 shadow-md flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-transform duration-75"
+                id="top-info-hub-btn"
+                onClick={() => onOpenInfoHub('pse')}
+                title={
+                  lang === 'en'
+                    ? 'Adventurer Info Center: SEL Score Details, Quests, Regulation, Badges, Journal [I]'
+                    : 'Pusat Informasi: Keterangan Skor PSE, Progres Misi, Regulasi, Lencana & Jurnal [I]'
+                }
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-950/90 via-slate-950 to-pink-950/90 border-2 border-amber-400/80 hover:border-amber-300 hover:bg-slate-900 text-amber-300 hover:text-white shadow-[0_0_16px_rgba(245,158,11,0.3)] flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-all duration-75"
               >
-                <Wind className="w-4 h-4 text-cyan-300" />
-                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.regulation}</span>
-                <span className="text-[10px] text-cyan-400/80 font-mono">[R]</span>
+                <span className="text-sm">📜</span>
+                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>
+                  {lang === 'en' ? 'Info & Progress' : 'Pusat Informasi'}
+                </span>
+                <span className="text-[10px] text-amber-400/90 font-mono bg-slate-950 px-1 py-0.5 rounded border border-amber-500/30">
+                  [I]
+                </span>
               </button>
-            )}
+            ) : (
+              <>
+                {onOpenRegulation && (
+                  <button
+                    id="top-regulation-btn"
+                    onClick={onOpenRegulation}
+                    title={lang === 'en' ? 'Open Emotion Regulation Studio [R]' : 'Buka Studio Regulasi Emosi & Relaksasi [R]'}
+                    className="px-2.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:border-cyan-300 hover:bg-cyan-900/90 text-cyan-300 shadow-md flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-transform duration-75"
+                  >
+                    <Wind className="w-4 h-4 text-cyan-300" />
+                    <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.regulation}</span>
+                    <span className="text-[10px] text-cyan-400/80 font-mono">[R]</span>
+                  </button>
+                )}
 
-            <button
-              id="top-journal-btn"
-              onClick={onOpenJournal}
-              title={lang === 'en' ? 'Open Heart Compass Journal & Bag [J]' : 'Buka Jurnal Kompas Hati & Tas [J]'}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:border-amber-400 hover:bg-slate-900 text-amber-300 shadow-md flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-transform duration-75"
-            >
-              <BookOpen className="w-4 h-4 text-amber-400" />
-              <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.journal}</span>
-              <span className="text-[10px] text-amber-400/80 font-mono">[J]</span>
-            </button>
+                {onOpenJournal && (
+                  <button
+                    id="top-journal-btn"
+                    onClick={onOpenJournal}
+                    title={lang === 'en' ? 'Open Heart Compass Journal & Bag [J]' : 'Buka Jurnal Kompas Hati & Tas [J]'}
+                    className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:border-amber-400 hover:bg-slate-900 text-amber-300 shadow-md flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-transform duration-75"
+                  >
+                    <BookOpen className="w-4 h-4 text-amber-400" />
+                    <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.journal}</span>
+                    <span className="text-[10px] text-amber-400/80 font-mono">[J]</span>
+                  </button>
+                )}
+              </>
+            )}
 
             {isGameCompleted && onOpenEnding && (
               <button
@@ -346,10 +408,11 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               </button>
             )}
 
+            {/* PENGATURAN (Audio & Kontrol Permainan) */}
             <button
               id="top-settings-btn"
-              onClick={onOpenSettings}
-              title={ui.settingsTitle}
+              onClick={() => onOpenSettings()}
+              title={lang === 'en' ? 'Game Settings: Audio & Controls [O]' : 'Pengaturan Game: Audio & Kontrol Permainan [O]'}
               className="px-3 py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-md flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-transform duration-75"
             >
               <Sliders className="w-4 h-4 text-amber-400" />
@@ -362,7 +425,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               id="top-language-toggle-btn"
               onClick={toggleLang}
               title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/60 hover:border-amber-300 hover:bg-slate-900 hover:scale-105 active:scale-95 text-amber-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center gap-1 text-xs font-semibold cursor-pointer"
+              className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/60 hover:border-amber-300 hover:bg-slate-900 active:scale-95 text-amber-300 shadow-lg backdrop-blur-md transition-transform duration-75 flex items-center gap-1 text-xs font-semibold cursor-pointer touch-manipulation"
             >
               <Globe className="w-3.5 h-3.5 text-amber-400" />
               <span className="font-pixel text-[8px] sm:text-[9px] font-bold">
@@ -409,6 +472,43 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
 
             {/* Menu Action Cards */}
             <div className="p-3.5 space-y-2 overflow-y-auto">
+              {/* Card Skor Sosial Emosional (PSE) & Performa */}
+              <div
+                onClick={() => {
+                  if (onOpenInfoHub) {
+                    onOpenInfoHub('pse');
+                    setIsMenuOpen(false);
+                  }
+                }}
+                className={`p-3 rounded-2xl bg-gradient-to-r from-pink-950/70 via-slate-900 to-amber-950/60 border border-pink-500/50 shadow-md flex items-center justify-between ${
+                  onOpenInfoHub ? 'cursor-pointer hover:border-pink-400 active:scale-95 transition-all' : ''
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-pink-500/20 border border-pink-400/50 flex items-center justify-center text-xl shadow-[0_0_12px_rgba(236,72,153,0.3)]">
+                    💖
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-pink-300 font-pixel font-bold">
+                      {lang === 'en' ? 'SEL PERFORMANCE SCORE' : 'SKOR SOSIAL EMOSIONAL'}
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-pixel text-base font-black text-amber-300">
+                        {empathyScore} <span className="text-[10px] text-pink-200 font-sans font-normal">{lang === 'en' ? 'Points' : 'Poin'}</span>
+                      </span>
+                      <span className="text-[9px] font-pixel text-emerald-300 font-bold">
+                        {getPSEPerformanceTier(empathyScore, lang)}
+                      </span>
+                    </div>
+                    <div className="text-[9.5px] text-slate-400 font-sans mt-0.5">
+                      {lang === 'en'
+                        ? '• Compass use: -5 • Direct answer: Full Score'
+                        : '• Bantuan kompas: -5 • Jawaban mandiri: Skor Utuh'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Option 1: Peta Mini Lembah */}
               {onToggleMiniMap && (
                 <button
@@ -416,7 +516,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     onToggleMiniMap();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-amber-400/80 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.3)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-amber-400/80 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300">
@@ -442,59 +542,91 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 </button>
               )}
 
-              {/* Option 2: Studio Regulasi Emosi */}
-              {onOpenRegulation && (
+              {/* Pusat Informasi & Progres (Pengganti tombol regulasi, jurnal, misi objektif, dan pencapaian) */}
+              {onOpenInfoHub ? (
                 <button
                   onClick={() => {
-                    onOpenRegulation();
+                    onOpenInfoHub('pse');
                     setIsMenuOpen(false);
                   }}
-                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-cyan-500/40 hover:border-cyan-300 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(6,182,212,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-950/80 via-slate-800 to-pink-950/80 hover:bg-slate-750 active:bg-slate-700 border-2 border-amber-400/80 hover:border-amber-300 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
-                      <Wind className="w-5 h-5" />
+                    <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-xl text-amber-300">
+                      📜
                     </div>
                     <div>
-                      <div className="font-semibold text-xs text-cyan-200">
-                        {lang === 'en' ? 'Emotion Regulation Studio' : 'Studio Regulasi Emosi'}
+                      <div className="font-bold text-xs text-amber-200">
+                        {lang === 'en' ? 'Adventurer Info Center' : 'Pusat Informasi & Progres'}
                       </div>
-                      <div className="text-[10.5px] text-slate-400">
-                        {lang === 'en' ? 'Balloon breathing, 4-7-8 relaxation & grounding' : 'Latihan napas balon, relaksasi 4-7-8 & grounding'}
+                      <div className="text-[10.5px] text-slate-300">
+                        {lang === 'en'
+                          ? 'SEL score details, quest progress, regulation, badges & journal'
+                          : 'Keterangan skor PSE, progres misi, regulasi, lencana & jurnal'}
                       </div>
                     </div>
                   </div>
-                  <span className="text-[10px] text-cyan-400/80 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
-                    [R]
+                  <span className="text-[10px] text-amber-400 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                    [I]
                   </span>
                 </button>
-              )}
+              ) : (
+                <>
+                  {onOpenRegulation && (
+                    <button
+                      onClick={() => {
+                        onOpenRegulation();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-cyan-500/40 hover:border-cyan-300 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-cyan-500/20 border border-cyan-400/40 flex items-center justify-center text-cyan-300">
+                          <Wind className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-xs text-cyan-200">
+                            {lang === 'en' ? 'Emotion Regulation Studio' : 'Studio Regulasi Emosi'}
+                          </div>
+                          <div className="text-[10.5px] text-slate-400">
+                            {lang === 'en' ? 'Balloon breathing, 4-7-8 relaxation & grounding' : 'Latihan napas balon, relaksasi 4-7-8 & grounding'}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-cyan-400/80 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                        [R]
+                      </span>
+                    </button>
+                  )}
 
-              {/* Option 3: Jurnal Kompas Hati & Tas */}
-              <button
-                onClick={() => {
-                  onOpenJournal();
-                  setIsMenuOpen(false);
-                }}
-                className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-amber-500/40 hover:border-amber-400 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
-                    <BookOpen className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-xs text-amber-200">
-                      {lang === 'en' ? 'Journal & Adventurer Bag' : 'Jurnal & Tas Petualang'}
-                    </div>
-                    <div className="text-[10.5px] text-slate-400">
-                      {lang === 'en' ? 'Village lore, sacred items & empathy insights' : 'Lore cerita desa, barang pusaka & wawasan empati'}
-                    </div>
-                  </div>
-                </div>
-                <span className="text-[10px] text-amber-400/80 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
-                  [J]
-                </span>
-              </button>
+                  {onOpenJournal && (
+                    <button
+                      onClick={() => {
+                        onOpenJournal();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-amber-500/40 hover:border-amber-400 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="font-semibold text-xs text-amber-200">
+                            {lang === 'en' ? 'Journal & Adventurer Bag' : 'Jurnal & Tas Petualang'}
+                          </div>
+                          <div className="text-[10.5px] text-slate-400">
+                            {lang === 'en' ? 'Village lore, sacred items & empathy insights' : 'Lore cerita desa, barang pusaka & wawasan empati'}
+                          </div>
+                        </div>
+                      </div>
+                      <span className="text-[10px] text-amber-400/80 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
+                        [J]
+                      </span>
+                    </button>
+                  )}
+                </>
+              )}
 
               {/* Option 4: Sertifikat Kelulusan (jika tamat) */}
               {isGameCompleted && onOpenEnding && (
@@ -503,7 +635,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     onOpenEnding();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:bg-amber-500/40 border border-amber-400 hover:border-amber-300 hover:scale-[1.02] hover:shadow-[0_0_18px_rgba(245,158,11,0.5)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 active:bg-amber-500/40 border border-amber-400 hover:border-amber-300 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold shadow-[0_0_10px_rgba(245,158,11,0.5)]">
@@ -524,13 +656,13 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 </button>
               )}
 
-              {/* Option 5: Pengaturan Game, Misi & Audio */}
+              {/* Option 5: Pengaturan Game (Audio & Kontrol Permainan Saja) */}
               <button
                 onClick={() => {
                   onOpenSettings();
                   setIsMenuOpen(false);
                 }}
-                className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-amber-400/70 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.3)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
+                className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-amber-400/70 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-slate-700 flex items-center justify-center text-slate-200">
@@ -538,10 +670,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   </div>
                   <div>
                     <div className="font-semibold text-xs text-slate-200">
-                      {lang === 'en' ? 'Settings, Quests & Help' : 'Pengaturan, Misi & Bantuan'}
+                      {lang === 'en' ? 'Settings (Audio & Controls)' : 'Pengaturan (Audio & Kontrol)'}
                     </div>
                     <div className="text-[10.5px] text-slate-400">
-                      {lang === 'en' ? 'Quest list, badges, audio & offline export' : 'Daftar misi, pencapaian lencana, audio & ekspor offline'}
+                      {lang === 'en' ? 'Sound effects, music volume & control keys guide' : 'Volume efek suara, musik latar & panduan kontrol permainan'}
                     </div>
                   </div>
                 </div>
@@ -557,7 +689,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     onOpenTutorial();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-emerald-500/40 hover:border-emerald-300 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(16,185,129,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-emerald-500/40 hover:border-emerald-300 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-300">
@@ -585,7 +717,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     onOpenStartMenu();
                     setIsMenuOpen(false);
                   }}
-                  className="w-full p-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 active:bg-slate-750 border border-amber-500/40 hover:border-amber-400 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
+                  className="w-full p-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 active:bg-slate-750 border border-amber-500/40 hover:border-amber-400 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">
@@ -611,7 +743,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 onClick={() => {
                   toggleLang();
                 }}
-                className="w-full p-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 active:bg-slate-750 border border-amber-500/40 hover:border-amber-400 hover:scale-[1.02] hover:shadow-[0_0_14px_rgba(245,158,11,0.35)] flex items-center justify-between text-left transition-all duration-200 cursor-pointer"
+                className="w-full p-2.5 rounded-xl bg-slate-850 hover:bg-slate-800 active:bg-slate-750 border border-amber-500/40 hover:border-amber-400 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-300">

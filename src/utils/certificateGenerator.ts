@@ -238,8 +238,8 @@ export function generateCertificateDataUrl(data: CertificateData): Promise<strin
     ctx.fillStyle = '#047857';
     ctx.fillText(
       isEn
-        ? `🏆 Empathy Resonance Score: ${data.empathyScore} Points (Distinction)`
-        : `🏆 Nilai Resonansi Empati: ${data.empathyScore} Poin (Predikat Sempurna)`,
+        ? `🏆 Social-Emotional (SEL) Score: ${data.empathyScore} Points (Distinction)`
+        : `🏆 Skor Sosial Emosional (PSE): ${data.empathyScore} Poin (Predikat Sempurna)`,
       640,
       boxY + 136
     );
