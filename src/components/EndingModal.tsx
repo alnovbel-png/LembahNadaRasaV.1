@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Award, RotateCcw, Sparkles, Heart, CheckCircle, Download, Compass, X, Image as ImageIcon, BookOpen } from 'lucide-react';
+import { RotateCcw, Sparkles, CheckCircle, Download, Compass, X, BookOpen } from 'lucide-react';
 import { PlayerStats } from '../types/game';
 import { downloadCertificateAsJpg } from '../utils/certificateGenerator';
 import { useLanguage } from '../game/localization';
@@ -25,7 +25,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
   endingType,
   playerName = 'Ezzel',
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   const [studentName, setStudentName] = useState(playerName);
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadSuccess, setDownloadSuccess] = useState(false);

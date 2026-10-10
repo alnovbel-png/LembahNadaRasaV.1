@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { sound } from '../../utils/audio';
 import { useLanguage, getLocalizedNpcName } from '../../game/localization';
-import { Zap, Sparkles, CheckCircle2, RotateCcw, ArrowLeft, ArrowRight, Heart } from 'lucide-react';
+import { Sparkles, RotateCcw, ArrowLeft, ArrowRight } from 'lucide-react';
 import { CharacterPortrait } from '../CharacterPortrait';
 
 interface ShakeoutAlternatingGameProps {
@@ -329,6 +329,8 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
               className={`py-3.5 px-4 rounded-2xl font-pixel font-bold text-xs sm:text-sm border-2 flex items-center justify-center gap-2 transition-all active:scale-90 cursor-pointer shadow-lg ${
                 nextExpectedSide === 'left'
                   ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border-yellow-300 shadow-[0_0_25px_rgba(168,85,247,0.7)] scale-105 ring-2 ring-yellow-400/50 animate-pulse'
+                  : lastPressedSide === 'left'
+                  ? 'bg-slate-900 border-emerald-400 text-emerald-300 ring-1 ring-emerald-400/40'
                   : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-600'
               }`}
             >
@@ -343,6 +345,8 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
               className={`py-3.5 px-4 rounded-2xl font-pixel font-bold text-xs sm:text-sm border-2 flex items-center justify-center gap-2 transition-all active:scale-90 cursor-pointer shadow-lg ${
                 nextExpectedSide === 'right'
                   ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white border-yellow-300 shadow-[0_0_25px_rgba(168,85,247,0.7)] scale-105 ring-2 ring-yellow-400/50 animate-pulse'
+                  : lastPressedSide === 'right'
+                  ? 'bg-slate-900 border-emerald-400 text-emerald-300 ring-1 ring-emerald-400/40'
                   : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-600'
               }`}
             >

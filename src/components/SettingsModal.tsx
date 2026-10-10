@@ -35,7 +35,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onCaptureMoment,
   onOpenTutorial,
 }) => {
-  const { lang, ui, toggleLang } = useLanguage();
+  const { lang, toggleLang } = useLanguage();
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
 
   const {

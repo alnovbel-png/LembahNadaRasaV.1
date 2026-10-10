@@ -10,7 +10,6 @@ interface EmotionRegulationModalProps {
   onComplete: (mode: RegulationMode) => void;
   targetName?: string;
   initialMode?: RegulationMode;
-  directFullscreen?: boolean;
 }
 
 export const EmotionRegulationModal: React.FC<EmotionRegulationModalProps> = ({
@@ -19,7 +18,6 @@ export const EmotionRegulationModal: React.FC<EmotionRegulationModalProps> = ({
   onComplete,
   targetName = 'Pemain',
   initialMode = 'breathing',
-  directFullscreen = true,
 }) => {
   // Current view state: 'menu' (separate selection menu) or 'fullscreen-game' (fullscreen mini-game)
   const [viewState, setViewState] = useState<'menu' | 'fullscreen-game'>('fullscreen-game');

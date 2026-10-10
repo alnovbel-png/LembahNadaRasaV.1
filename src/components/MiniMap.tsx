@@ -9,12 +9,10 @@ import {
   ZoomIn,
   ZoomOut,
   LocateFixed,
-  RotateCcw,
   Maximize2,
   Minimize2,
   Eye,
   EyeOff,
-  HelpCircle,
 } from 'lucide-react';
 import { NPC, ZoneColorStatus, GameQuest } from '../types/game';
 import { Player } from '../game/renderer';

@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   Compass,
-  Sparkles,
   Footprints,
   MessageCircle,
-  Heart,
   Wind,
   CheckCircle2,
   Clock,
@@ -13,14 +11,10 @@ import {
   ArrowLeft,
   Gamepad2,
   HelpCircle,
-  Lightbulb,
   MousePointer,
   Smartphone,
   Layers,
   MapPin,
-  Smile,
-  ShieldCheck,
-  Eye,
   Award,
 } from 'lucide-react';
 import { sound } from '../utils/audio';
@@ -350,7 +344,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div className="pt-2">
                     {/* Cara Bicara */}
                     <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
                       <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
@@ -380,28 +374,6 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                           {lang === 'en' ? 'button on the right.' : 'di kanan bawah layar.'}
                         </li>
                       </ul>
-                    </div>
-
-                    {/* Mengenal Aura Emosi */}
-                    <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
-                      <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                        <Heart className="w-4 h-4 text-rose-400" />
-                        <span>{lang === 'en' ? 'Emotion Auras above Villagers:' : 'Aura Emosi di Atas Warga:'}</span>
-                      </div>
-                      <div className="space-y-1.5 text-[11px]">
-                        <div className="flex items-center gap-2 p-1.5 rounded bg-rose-950/40 border border-rose-800/40 text-rose-200">
-                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shrink-0" />
-                          <span><strong>Merah Berapi:</strong> Marah, jengkel, atau frustrasi</span>
-                        </div>
-                        <div className="flex items-center gap-2 p-1.5 rounded bg-sky-950/40 border border-sky-800/40 text-sky-200">
-                          <span className="w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse shrink-0" />
-                          <span><strong>Biru Bergetar:</strong> Panik, cemas, atau sedih sendirian</span>
-                        </div>
-                        <div className="flex items-center gap-2 p-1.5 rounded bg-emerald-950/40 border border-emerald-800/40 text-emerald-200">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0" />
-                          <span><strong>Hijau Bersinar:</strong> Tenang, gembira, dan beresolusi</span>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>

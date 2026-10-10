@@ -31,7 +31,7 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
   onNavigateToTarget,
   isNewUnlock = false,
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   if (!isOpen) return null;
 
   const steps = [

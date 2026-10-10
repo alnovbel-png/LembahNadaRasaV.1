@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Camera,
   Download,
@@ -8,14 +8,9 @@ import {
   RefreshCw,
   X,
   Sparkles,
-  Heart,
-  Compass,
-  Award,
-  Share2,
   Palette,
   MapPin,
   Calendar,
-  CheckCircle2,
 } from 'lucide-react';
 import { PlayerStats, ZoneColorStatus } from '../types/game';
 import { sound } from '../utils/audio';
@@ -58,7 +53,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
   zoneStatus,
   onRetake,
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   const defaultQuotes = lang === 'en' ? DEFAULT_QUOTES_EN : DEFAULT_QUOTES_ID;
   const [frameTheme, setFrameTheme] = useState<FrameTheme>('postcard');
   const [caption, setCaption] = useState(defaultQuotes[0]);
@@ -68,7 +63,6 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [compositeUrl, setCompositeUrl] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Sound effect on modal opening
   useEffect(() => {

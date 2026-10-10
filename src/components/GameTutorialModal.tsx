@@ -3,22 +3,15 @@ import {
   X,
   Gamepad2,
   Compass,
-  Heart,
   Sparkles,
   Footprints,
   MousePointerClick,
   MessageSquare,
-  BookOpen,
   ArrowRight,
   ArrowLeft,
-  Check,
   Play,
-  RotateCcw,
   Clock,
   Wind,
-  ShieldCheck,
-  Eye,
-  Smile,
 } from 'lucide-react';
 import { sound } from '../utils/audio';
 import { useLanguage } from '../game/localization';
@@ -36,7 +29,7 @@ export const GameTutorialModal: React.FC<GameTutorialModalProps> = ({
   onCompleteTutorial,
   isInitialGameStart = false,
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [alwaysShowOnStart, setAlwaysShowOnStart] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { DialogueNode, ChoiceOption } from '../types/game';
 import { sound } from '../utils/audio';
-import { Eye, MessageCircle, Sparkles, CheckCircle2, AlertTriangle, Compass } from 'lucide-react';
+import { Eye, MessageCircle, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { CharacterPortrait } from './CharacterPortrait';
 import { useLanguage } from '../game/localization';
 
@@ -91,8 +91,6 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
       dialogue.id.includes('fixed')
     ))
   );
-
-  const hasChoices = Boolean(dialogue.choices && dialogue.choices.length > 0);
 
   // Instantly finish typewriter effect to allow player to read full text before choosing response
   const finishTypingInstantly = useCallback(() => {

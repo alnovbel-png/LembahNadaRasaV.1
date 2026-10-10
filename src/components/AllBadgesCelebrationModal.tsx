@@ -8,7 +8,6 @@ import {
   Compass,
   X,
   Trophy,
-  Star,
   MessageSquareQuote,
   ShieldCheck,
   ChevronRight,
@@ -38,7 +37,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
   onFreeRoam,
   playerName = 'Ezzel',
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   const [activeTab, setActiveTab] = useState<'dialogue' | 'gallery' | 'certificate'>('dialogue');
   const [studentName, setStudentName] = useState(playerName);
   const [isDownloading, setIsDownloading] = useState(false);

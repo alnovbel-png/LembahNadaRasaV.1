@@ -102,9 +102,102 @@ export interface HoverTarget {
   y: number;
 }
 
+// Check whether a tile coordinate is colored, based on the localized restoration around each resolved NPC
+export function isZoneTileColored(
+  c: number,
+  r: number,
+  status: ZoneColorStatus,
+  npcs?: NPC[],
+  isAllMissionsCompleted: boolean = false
+): boolean {
+  // 1. If final mission completed or tower restored, entire world is 100% full color!
+  if (isAllMissionsCompleted || status.tower) {
+    return true;
+  }
+
+  // 2. Check localized restoration radius around each resolved NPC
+  // Area color is restored in pockets specifically around each NPC who has been helped
+  if (npcs && npcs.length > 0) {
+    for (const npc of npcs) {
+      if (!npc.isResolved) continue;
+
+      // Karakter Kiki berkeliling desa untuk mengantar surat setelah misinya selesai.
+      // Wilayah berwarna Alun-Alun dipertahankan tetap di posisinya (Plaza & air mancur) tanpa terpatok pergerakan karakter Kiki.
+      if (npc.id === 'kiki') {
+        const distKikiPostSq = (c - 8) * (c - 8) + (r - 13) * (r - 13);
+        const distFountainSq = (c - 11) * (c - 11) + (r - 14) * (r - 14);
+        const isPlazaSquare = c >= 7 && c <= 14 && r >= 12 && r <= 16;
+        if (distKikiPostSq <= 3.8 * 3.8 || distFountainSq <= 4.0 * 4.0 || isPlazaSquare) {
+          return true;
+        }
+        continue;
+      }
+
+      // Karakter Didi berkeliling desa (patroli rute harmoni) setelah diselesaikan/disapa.
+      // Wilayah berwarna pos Didi (simpang jalur desa 11, 17) dipertahankan tetap di posisinya tanpa terpatok pergerakan karakter Didi.
+      if (npc.id === 'didi_scout' || npc.id === 'didi') {
+        const distDidiPostSq = (c - 11) * (c - 11) + (r - 17) * (r - 17);
+        if (distDidiPostSq <= 3.2 * 3.2) {
+          return true;
+        }
+        continue;
+      }
+
+      const dx = c - npc.x;
+      const dy = r - npc.y;
+      const distSq = dx * dx + dy * dy;
+
+      // Custom organic restoration radius based on each NPC's location (localized, not too big)
+      let radius = 3.5;
+      if (npc.id === 'kakek_ranu') radius = 3.8;   // Wooden bridge & river crossing
+      else if (npc.id === 'bimo') radius = 3.6;         // Forest clearing & grove
+      else if (npc.id === 'kak_citra') radius = 3.5;    // Flower garden & flower cart
+      else if (npc.id === 'kakek_damai') radius = 3.6;  // Riverbank & mindful bonsai garden
+      else if (npc.id === 'pak_joko') radius = 3.8;     // Vegetable patches & farm crops
+      else if (npc.id === 'teguh_woodcutter') radius = 3.6; // Forest cabin & timber logs
+      else if (npc.id === 'sari_fruit') radius = 3.6;   // Apple & orange orchards
+      else if (npc.id === 'jala_fisher') radius = 3.5;  // Fishing pier & southern river
+      else if (npc.id === 'moka_cat') radius = 3.4;     // Reading bench & library area
+      else if (npc.id === 'prof_kotek') radius = 3.4;   // Chicken coop & pasture
+      else if (npc.id === 'didi_scout') radius = 3.2;   // Village pathway network
+
+      if (distSq <= radius * radius) {
+        return true;
+      }
+    }
+  }
+
+  // 3. Zone status explicit coverage:
+  // 3a. If plaza zone is restored, maintain the Plaza & fountain territory in full color
+  if (status.plaza) {
+    const distKikiPostSq = (c - 8) * (c - 8) + (r - 13) * (r - 13);
+    const distFountainSq = (c - 11) * (c - 11) + (r - 14) * (r - 14);
+    const isPlazaSquare = c >= 7 && c <= 14 && r >= 12 && r <= 16;
+    if (distKikiPostSq <= 3.8 * 3.8 || distFountainSq <= 4.0 * 4.0 || isPlazaSquare) {
+      return true;
+    }
+  }
+
+  // 3b. Bridge zone (Jembatan Kayu Ranu: c: 18..24, r: 13..17)
+  if (status.bridge) {
+    if (c >= 18 && c <= 24 && r >= 13 && r <= 17) {
+      return true;
+    }
+  }
+
+  // 3c. Forest zone (Hutan Sunyi Refleksi: c: 4..11, r: 4..9)
+  if (status.forest) {
+    if (c >= 4 && c <= 11 && r >= 4 && r <= 9) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export class GameRenderer {
   public lang: 'id' | 'en' = 'id';
-  private canvas: HTMLCanvasElement;
+  public readonly canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private tickCount: number = 0;
   private particles: Particle[] = [];
@@ -113,7 +206,6 @@ export class GameRenderer {
   private destinationTarget: { x: number; y: number; anim: number; type: DestinationType } | null = null;
   private hoverTarget: HoverTarget | null = null;
   private currentNpcs: NPC[] = [];
-  private currentZoneStatus: ZoneColorStatus | null = null;
   private shakeIntensity: number = 0;
   private shakeDuration: number = 0;
   private shakeElapsed: number = 0;
@@ -131,19 +223,11 @@ export class GameRenderer {
   private lastPlayerY: number = -1;
   private fogRibbonParallaxX: number[] = [0, 0, 0];
   private fogRibbonParallaxY: number[] = [0, 0, 0];
+  private readonly timeOfDayProgress: number = 0.0;
 
-  // Fixed Daytime Atmosphere (Day/Night cycle removed in both fog and free roam modes)
-  private targetTimeOfDay: 'day' | 'night' = 'day';
-  private timeOfDayProgress: number = 0.0;
-
-  public setTimeOfDay(_time: 'day' | 'night', _instant: boolean = false) {
-    this.targetTimeOfDay = 'day';
-    this.timeOfDayProgress = 0.0;
-  }
+  public setTimeOfDay(_time?: 'day' | 'night', _instant: boolean = false) {}
 
   public toggleDayNightCycle(): 'day' | 'night' {
-    this.targetTimeOfDay = 'day';
-    this.timeOfDayProgress = 0.0;
     return 'day';
   }
 
@@ -540,21 +624,16 @@ export class GameRenderer {
     viewportH: number,
     zoom: number = 1.65,
     isMissionCompleted?: boolean,
-    timeOfDay?: 'day' | 'night'
+    _timeOfDay?: 'day' | 'night'
   ) {
     this.tickCount++;
     this.currentNpcs = npcs || [];
-    this.currentZoneStatus = zoneColorStatus;
     this.isAllMissionsCompleted =
       isMissionCompleted ??
       (zoneColorStatus.plaza &&
         zoneColorStatus.bridge &&
         zoneColorStatus.forest &&
         zoneColorStatus.tower);
-
-    // Permanent bright daytime in both Fog Mode and Free Roam Mode (Day/Night cycle removed)
-    this.targetTimeOfDay = 'day';
-    this.timeOfDayProgress = 0.0;
 
     const ctx = this.ctx;
     ctx.save();
@@ -665,7 +744,7 @@ export class GameRenderer {
 
     // 3. Draw NPCs
     npcs.forEach((npc) => {
-      this.drawNPC(npc, isCompassActive, player);
+      this.drawNPC(npc, player);
     });
 
     // Destination target marker on floor
@@ -683,7 +762,7 @@ export class GameRenderer {
     // 4b. Overhead dynamic life: Butterflies & Farmhouse Chimney Smoke
     if (this.isAllMissionsCompleted) {
       // Butterflies fluttering near fruit trees (rest gracefully at dusk/night)
-      freeRoamWorld.renderButterflies(ctx, this.tickCount, this.timeOfDayProgress);
+      freeRoamWorld.renderButterflies(ctx, this.tickCount, 0);
       // Puffy smoke clouds billowing from farmhouse chimney
       freeRoamWorld.renderChimneySmoke(ctx, this.tickCount);
     }
@@ -859,82 +938,8 @@ export class GameRenderer {
   }
 
   // Check whether a tile coordinate is colored, based on the localized restoration around each resolved NPC
-  private isZoneColored(c: number, r: number, status: ZoneColorStatus): boolean {
-    // 1. If final mission completed or tower restored, entire world is 100% full color!
-    if (this.isAllMissionsCompleted || status.tower) {
-      return true;
-    }
-
-    // 2. Check localized restoration radius around each resolved NPC
-    // Area color is restored in pockets specifically around each NPC who has been helped
-    if (this.currentNpcs && this.currentNpcs.length > 0) {
-      for (const npc of this.currentNpcs) {
-        if (!npc.isResolved) continue;
-
-        // Karakter Kiki berkeliling desa untuk mengantar surat setelah misinya selesai.
-        // Wilayah berwarna Alun-Alun dipertahankan tetap di posisinya (Plaza & air mancur) tanpa terpatok pergerakan karakter Kiki.
-        if (npc.id === 'kiki') {
-          const distKikiPostSq = (c - 8) * (c - 8) + (r - 13) * (r - 13);
-          const distFountainSq = (c - 11) * (c - 11) + (r - 14) * (r - 14);
-          const isPlazaSquare = c >= 7 && c <= 14 && r >= 12 && r <= 16;
-          if (distKikiPostSq <= 3.8 * 3.8 || distFountainSq <= 4.0 * 4.0 || isPlazaSquare) {
-            return true;
-          }
-          continue;
-        }
-
-        // Karakter Didi berkeliling desa (patroli rute harmoni) setelah diselesaikan/disapa.
-        // Wilayah berwarna pos Didi (simpang jalur desa 11, 17) dipertahankan tetap di posisinya tanpa terpatok pergerakan karakter Didi.
-        if (npc.id === 'didi_scout' || npc.id === 'didi') {
-          const distDidiPostSq = (c - 11) * (c - 11) + (r - 17) * (r - 17);
-          if (distDidiPostSq <= 3.2 * 3.2) {
-            return true;
-          }
-          continue;
-        }
-
-        const dx = c - npc.x;
-        const dy = r - npc.y;
-        const distSq = dx * dx + dy * dy;
-
-        // Custom organic restoration radius based on each NPC's location (localized, not too big)
-        let radius = 3.5;
-        if (npc.id === 'kakek_ranu') radius = 3.8;   // Wooden bridge & river crossing
-        else if (npc.id === 'bimo') radius = 3.6;         // Forest clearing & grove
-        else if (npc.id === 'kak_citra') radius = 3.5;    // Flower garden & flower cart
-        else if (npc.id === 'kakek_damai') radius = 3.6;  // Riverbank & mindful bonsai garden
-        else if (npc.id === 'pak_joko') radius = 3.8;     // Vegetable patches & farm crops
-        else if (npc.id === 'teguh_woodcutter') radius = 3.6; // Forest cabin & timber logs
-        else if (npc.id === 'sari_fruit') radius = 3.6;   // Apple & orange orchards
-        else if (npc.id === 'jala_fisher') radius = 3.5;  // Fishing pier & southern river
-        else if (npc.id === 'moka_cat') radius = 3.4;     // Reading bench & library area
-        else if (npc.id === 'prof_kotek') radius = 3.4;   // Chicken coop & pasture
-        else if (npc.id === 'didi_scout') radius = 3.2;   // Village pathway network
-
-        if (distSq <= radius * radius) {
-          return true;
-        }
-      }
-    }
-
-    // 2b. If plaza zone is restored, maintain the Plaza & fountain territory in full color
-    if (status.plaza) {
-      const distKikiPostSq = (c - 8) * (c - 8) + (r - 13) * (r - 13);
-      const distFountainSq = (c - 11) * (c - 11) + (r - 14) * (r - 14);
-      const isPlazaSquare = c >= 7 && c <= 14 && r >= 12 && r <= 16;
-      if (distKikiPostSq <= 3.8 * 3.8 || distFountainSq <= 4.0 * 4.0 || isPlazaSquare) {
-        return true;
-      }
-    }
-
-    // 3. Small cozy lantern glow around central spawn point (c=11, r=15)
-    const spawnDx = c - 11;
-    const spawnDy = r - 15;
-    if (spawnDx * spawnDx + spawnDy * spawnDy <= 1.8 * 1.8) {
-      return true;
-    }
-
-    return false;
+  public isZoneColored(c: number, r: number, status: ZoneColorStatus): boolean {
+    return isZoneTileColored(c, r, status, this.currentNpcs, this.isAllMissionsCompleted);
   }
 
   // Helper to draw tile base with subpixel overdraw (+1px) to guarantee no dark hairline seams
@@ -1503,7 +1508,6 @@ export class GameRenderer {
         const cx = fx + 24;
         const cy = fy + 24;
         const cw = 20;
-        const ch = 20;
 
         // Alas pilar tengah bertingkat
         ctx.fillStyle = stoneDark;
@@ -2586,7 +2590,6 @@ export class GameRenderer {
         const logDark = isColored ? '#451a03' : '#0f172a';
         const logBase = isColored ? '#78350f' : '#1e293b';
         const logMid = isColored ? '#92400e' : '#334155';
-        const logLight = isColored ? '#b45309' : '#475569';
         const logCore = isColored ? '#fde047' : '#64748b';
         const chinking = isColored ? '#d6d3d1' : '#334155';
 
@@ -3923,7 +3926,6 @@ export class GameRenderer {
       case TILE.ZEN_WINDOW: {
         // --- PONDOK KAKEK DAMAI: KUMIKO SHOJI TRANSLUCENT SCREEN WINDOW ---
         const woodFrame = isColored ? '#78350f' : '#1e293b';
-        const woodHighlight = isColored ? '#92400e' : '#334155';
         const plasterTone = isColored ? '#fef3c7' : '#334155';
         const bambooTone = isColored ? '#b45309' : '#1e293b';
 
@@ -3968,7 +3970,6 @@ export class GameRenderer {
       case TILE.ZEN_DOOR: {
         // --- PONDOK KAKEK DAMAI: SLIDING CEDAR SCREEN WITH RIVER STONE & GETA ---
         const plasterTone = isColored ? '#fef3c7' : '#334155';
-        const woodFrame = isColored ? '#78350f' : '#1e293b';
         const bambooTone = isColored ? '#b45309' : '#1e293b';
 
         ctx.fillStyle = plasterTone;
@@ -4540,7 +4541,6 @@ export class GameRenderer {
     const SCARF_COLOR = '#ef4444';                           // Vibrant warm red scarf
     const SCARF_SHADOW = '#dc2626';                          // Scarf fold shade
     const TUNIC_COLOR = isGirl ? '#06b6d4' : '#259d88';       // Bright radiant cyan for Ezzy ("baju cerah")
-    const TUNIC_SHADOW = isGirl ? '#0891b2' : '#1b7d6c';      // Tunic shadow
     const TUNIC_HIGHLIGHT = isGirl ? '#67e8f9' : '#34d399';   // Bright tunic highlight
     const BUCKLE_COLOR = '#f4b728';                          // Golden yellow belt buckle
     const BUCKLE_SHADOW = '#d99b16';                         // Buckle shade
@@ -5271,7 +5271,7 @@ export class GameRenderer {
   }
 
   // Draw unique NPCs with distinct expressive sprites, dynamic breathing, and turning animations
-  private drawNPC(npc: NPC, isCompassActive: boolean, player?: Player) {
+  private drawNPC(npc: NPC, player?: Player) {
     const ctx = this.ctx;
     const nx = Math.floor(npc.x * TILE_SIZE);
     const ny = Math.floor(npc.y * TILE_SIZE);
@@ -8158,7 +8158,7 @@ export class GameRenderer {
     camY: number,
     w: number,
     h: number,
-    time: number,
+    _time: number,
     gustMultiplier: number,
     intensity: number,
     deltaPlayerX: number,
@@ -8309,345 +8309,6 @@ export class GameRenderer {
 
       ctx.restore();
     }
-  }
-
-  // Unified Day & Night dynamic lighting pass
-  // Seamlessly transitions the world between day and night in BOTH Fog Mode and Free Roam Mode
-  private renderDayNightLightingPass(
-    ctx: CanvasRenderingContext2D,
-    camX: number,
-    camY: number,
-    w: number,
-    h: number,
-    player: Player,
-    map: number[][],
-    zoneColorStatus: ZoneColorStatus
-  ) {
-    const progress = this.timeOfDayProgress;
-    if (progress <= 0.001) return; // Full daylight, no shadow overlay required
-
-    ctx.save();
-
-    // 1. Dusk / Twilight blush during transition (peaks smoothly around golden hour)
-    const duskIntensity = Math.sin(progress * Math.PI) * 0.24;
-    if (duskIntensity > 0.01) {
-      const duskGrad = ctx.createLinearGradient(0, camY, 0, camY + h);
-      duskGrad.addColorStop(0, `rgba(244, 63, 94, ${duskIntensity * 0.45})`);
-      duskGrad.addColorStop(0.4, `rgba(249, 115, 22, ${duskIntensity * 0.35})`);
-      duskGrad.addColorStop(1, `rgba(124, 58, 237, ${duskIntensity * 0.25})`);
-      ctx.fillStyle = duskGrad;
-      ctx.fillRect(camX, camY, w, h);
-    }
-
-    // 2. Nocturnal darkness overlay with smooth ambient alpha
-    const nightAlpha = progress * (this.isAllMissionsCompleted ? 0.62 : 0.72);
-    if (nightAlpha > 0.01) {
-      const baseNightColor = this.isAllMissionsCompleted ? '10, 15, 30' : '6, 10, 20';
-      ctx.fillStyle = `rgba(${baseNightColor}, ${nightAlpha})`;
-      ctx.fillRect(camX, camY, w, h);
-
-      // 3. Player's warm exploration lantern aura (lights up surroundings at night)
-      const playerCenterX = player.x + 16;
-      const playerCenterY = player.y + 20;
-      const lanternRadius = 82 + Math.sin(this.tickCount * 0.06) * 4;
-
-      const pLight = ctx.createRadialGradient(
-        playerCenterX,
-        playerCenterY,
-        4,
-        playerCenterX,
-        playerCenterY,
-        lanternRadius
-      );
-      pLight.addColorStop(0, `rgba(254, 240, 138, ${0.45 * progress})`);
-      pLight.addColorStop(0.35, `rgba(245, 158, 11, ${0.28 * progress})`);
-      pLight.addColorStop(0.7, `rgba(217, 119, 6, ${0.1 * progress})`);
-      pLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
-
-      ctx.save();
-      ctx.globalCompositeOperation = 'lighter';
-      ctx.fillStyle = pLight;
-      ctx.beginPath();
-      ctx.arc(playerCenterX, playerCenterY, lanternRadius, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Handheld lantern light source
-      const lanternX = playerCenterX + (player.facing === 'left' ? -11 : 11);
-      const lanternY = playerCenterY - 2;
-      const glowSparkle = ctx.createRadialGradient(lanternX, lanternY, 1, lanternX, lanternY, 20);
-      glowSparkle.addColorStop(0, `rgba(255, 255, 255, ${0.75 * progress})`);
-      glowSparkle.addColorStop(0.3, `rgba(253, 224, 71, ${0.5 * progress})`);
-      glowSparkle.addColorStop(1, 'rgba(253, 224, 71, 0)');
-      ctx.fillStyle = glowSparkle;
-      ctx.beginPath();
-      ctx.arc(lanternX, lanternY, 20, 0, Math.PI * 2);
-      ctx.fill();
-
-      // 4. Street Lamps, Village Houses, Grand Clock Tower, and Special Light Sources in viewport
-      const startCol = Math.max(0, Math.floor(camX / TILE_SIZE) - 3);
-      const endCol = Math.min(map[0]?.length ?? 0, Math.ceil((camX + w) / TILE_SIZE) + 3);
-      const startRow = Math.max(0, Math.floor(camY / TILE_SIZE) - 3);
-      const endRow = Math.min(map.length, Math.ceil((camY + h) / TILE_SIZE) + 3);
-
-      for (let r = startRow; r < endRow; r++) {
-        const row = map[r];
-        if (!row) continue;
-        for (let c = startCol; c < endCol; c++) {
-          const tile = row[c];
-
-          // --- A. LAMPU JALAN & ALUN-ALUN (STREET LAMPS) ---
-          // Menyinari jalan setapak desa, rerumputan, dan pagar kayu dengan cahaya hangat keemasan
-          if (tile === TILE.LAMP_POST) {
-            const lx = c * TILE_SIZE + 16;
-            const ly = r * TILE_SIZE + 6;
-            const flicker = Math.sin(this.tickCount * 0.08 + (c * 7 + r * 13)) * 3;
-            const rad = 110 + flicker;
-
-            // Pendaran cahaya tanah yang luas menyinari desa
-            const lampLight = ctx.createRadialGradient(lx, ly + 8, 3, lx, ly + 8, rad);
-            lampLight.addColorStop(0, `rgba(255, 250, 220, ${0.85 * progress})`);
-            lampLight.addColorStop(0.25, `rgba(254, 240, 138, ${0.62 * progress})`);
-            lampLight.addColorStop(0.55, `rgba(245, 158, 11, ${0.30 * progress})`);
-            lampLight.addColorStop(0.85, `rgba(217, 119, 6, ${0.10 * progress})`);
-            lampLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
-            ctx.fillStyle = lampLight;
-            ctx.beginPath();
-            ctx.arc(lx, ly + 8, rad, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Inti lentera kaca yang menyala terang benderang
-            const bulbGlow = ctx.createRadialGradient(lx, ly, 1, lx, ly, 14);
-            bulbGlow.addColorStop(0, `rgba(255, 255, 255, ${0.98 * progress})`);
-            bulbGlow.addColorStop(0.4, `rgba(254, 240, 138, ${0.82 * progress})`);
-            bulbGlow.addColorStop(1, 'rgba(254, 240, 138, 0)');
-            ctx.fillStyle = bulbGlow;
-            ctx.beginPath();
-            ctx.arc(lx, ly, 14, 0, Math.PI * 2);
-            ctx.fill();
-
-          // --- B. RUMAH WARGA (HOUSE WINDOWS & DOORS) ---
-          // Jendela rumah warga bersinar hangat dari dalam dan memancarkan cahaya ke pekarangan/jalan
-          } else if (tile === TILE.HOUSE_WINDOW) {
-            const wx = c * TILE_SIZE + 16;
-            const wy = r * TILE_SIZE + 12;
-            const pulse = Math.sin(this.tickCount * 0.07 + c * 3 + r * 5) * 0.05;
-
-            // Sorot cahaya hangat yang memancar keluar ke pekarangan rumah & jalan desa
-            const windowLight = ctx.createRadialGradient(wx, wy + 4, 3, wx, wy + 16, 75);
-            windowLight.addColorStop(0, `rgba(254, 240, 138, ${(0.82 + pulse) * progress})`);
-            windowLight.addColorStop(0.35, `rgba(245, 158, 11, ${(0.48 + pulse) * progress})`);
-            windowLight.addColorStop(0.7, `rgba(217, 119, 6, ${0.16 * progress})`);
-            windowLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
-            ctx.fillStyle = windowLight;
-            ctx.beginPath();
-            ctx.arc(wx, wy + 16, 75, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Kaca jendela langsung berpendar keemasan menembus kegelapan malam
-            ctx.fillStyle = `rgba(254, 240, 138, ${(0.92 + pulse) * progress})`;
-            ctx.fillRect(c * TILE_SIZE + 10, r * TILE_SIZE + 5, 5, 6);
-            ctx.fillRect(c * TILE_SIZE + 17, r * TILE_SIZE + 5, 5, 6);
-            ctx.fillRect(c * TILE_SIZE + 10, r * TILE_SIZE + 13, 5, 6);
-            ctx.fillRect(c * TILE_SIZE + 17, r * TILE_SIZE + 13, 5, 6);
-
-            // Titik nyala api lentera dalam rumah
-            ctx.fillStyle = `rgba(255, 255, 255, ${(0.78 + pulse) * progress})`;
-            ctx.fillRect(c * TILE_SIZE + 11, r * TILE_SIZE + 6, 3, 4);
-            ctx.fillRect(c * TILE_SIZE + 18, r * TILE_SIZE + 6, 3, 4);
-
-          } else if (tile === TILE.HOUSE_DOOR) {
-            const dx = c * TILE_SIZE + 16;
-            const dy = r * TILE_SIZE + 26;
-            // Cahaya hangat ambang pintu rumah
-            const doorLight = ctx.createRadialGradient(dx, dy, 2, dx, dy + 6, 52);
-            doorLight.addColorStop(0, `rgba(254, 240, 138, ${0.70 * progress})`);
-            doorLight.addColorStop(0.4, `rgba(245, 158, 11, ${0.36 * progress})`);
-            doorLight.addColorStop(1, 'rgba(245, 158, 11, 0)');
-            ctx.fillStyle = doorLight;
-            ctx.beginPath();
-            ctx.arc(dx, dy + 6, 52, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Celah cahaya di bawah daun pintu
-            ctx.fillStyle = `rgba(254, 240, 138, ${0.85 * progress})`;
-            ctx.fillRect(c * TILE_SIZE + 8, r * TILE_SIZE + 27, 16, 3);
-
-          } else if (tile === TILE.HOUSE_WALL) {
-            // Nuansa hangat lembut pada dinding rumah berpenghuni
-            const cx = c * TILE_SIZE + 16;
-            const cy = r * TILE_SIZE + 16;
-            const wallLight = ctx.createRadialGradient(cx, cy, 2, cx, cy, 38);
-            wallLight.addColorStop(0, `rgba(254, 240, 138, ${0.18 * progress})`);
-            wallLight.addColorStop(1, 'rgba(254, 240, 138, 0)');
-            ctx.fillStyle = wallLight;
-            ctx.beginPath();
-            ctx.arc(cx, cy, 38, 0, Math.PI * 2);
-            ctx.fill();
-
-          // --- C. PONDOK HUTAN PAK TEGUH (FOREST CABIN) ---
-          } else if (tile === TILE.FOREST_CABIN_WINDOW || tile === TILE.FOREST_CABIN_DOOR) {
-            const fx = c * TILE_SIZE + 16;
-            const fy = r * TILE_SIZE + 14;
-            const fPulse = Math.sin(this.tickCount * 0.1 + c) * 0.08;
-            const cabinLight = ctx.createRadialGradient(fx, fy, 4, fx, fy + 12, 70);
-            cabinLight.addColorStop(0, `rgba(254, 215, 170, ${(0.85 + fPulse) * progress})`);
-            cabinLight.addColorStop(0.35, `rgba(249, 115, 22, ${(0.50 + fPulse) * progress})`);
-            cabinLight.addColorStop(0.7, `rgba(194, 65, 12, ${0.18 * progress})`);
-            cabinLight.addColorStop(1, 'rgba(194, 65, 12, 0)');
-            ctx.fillStyle = cabinLight;
-            ctx.beginPath();
-            ctx.arc(fx, fy + 12, 70, 0, Math.PI * 2);
-            ctx.fill();
-
-            if (tile === TILE.FOREST_CABIN_WINDOW) {
-              ctx.fillStyle = `rgba(254, 240, 138, ${(0.90 + fPulse) * progress})`;
-              ctx.fillRect(c * TILE_SIZE + 10, r * TILE_SIZE + 7, 12, 10);
-              ctx.fillStyle = `rgba(255, 255, 255, ${0.75 * progress})`;
-              ctx.fillRect(c * TILE_SIZE + 12, r * TILE_SIZE + 9, 8, 6);
-            }
-
-          // --- D. PONDOK KAKEK DAMAI (ZEN MINDFUL TEA HOUSE) ---
-          } else if (tile === TILE.ZEN_WINDOW || tile === TILE.ZEN_DOOR) {
-            const zx = c * TILE_SIZE + 16;
-            const zy = r * TILE_SIZE + 14;
-            const zenLight = ctx.createRadialGradient(zx, zy, 3, zx, zy + 10, 65);
-            zenLight.addColorStop(0, `rgba(254, 243, 199, ${0.80 * progress})`);
-            zenLight.addColorStop(0.4, `rgba(245, 158, 11, ${0.40 * progress})`);
-            zenLight.addColorStop(0.75, `rgba(217, 119, 6, ${0.14 * progress})`);
-            zenLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
-            ctx.fillStyle = zenLight;
-            ctx.beginPath();
-            ctx.arc(zx, zy + 10, 65, 0, Math.PI * 2);
-            ctx.fill();
-
-            if (tile === TILE.ZEN_WINDOW) {
-              ctx.fillStyle = `rgba(254, 240, 138, ${0.85 * progress})`;
-              ctx.fillRect(c * TILE_SIZE + 9, r * TILE_SIZE + 6, 14, 12);
-            }
-
-          // --- E. MENARA JAM DESA (THE GRAND CLOCK TOWER) ---
-          // Jam Harmoni raksasa bersinar megah menerangi puncak menara dan seluruh pelataran alun-alun
-          } else if (tile === TILE.TOWER_CLOCK) {
-            const tx = c * TILE_SIZE + 16;
-            const ty = r * TILE_SIZE + 16;
-            const pulse = Math.sin(this.tickCount * 0.06) * 6;
-            const clockRad = 140 + pulse;
-
-            // Halo cahaya megah keemasan menara jam
-            const clockHalo = ctx.createRadialGradient(tx, ty, 6, tx, ty, clockRad);
-            clockHalo.addColorStop(0, `rgba(255, 255, 250, ${0.98 * progress})`);
-            clockHalo.addColorStop(0.15, `rgba(254, 240, 138, ${0.88 * progress})`);
-            clockHalo.addColorStop(0.4, `rgba(245, 158, 11, ${0.55 * progress})`);
-            clockHalo.addColorStop(0.7, `rgba(217, 119, 6, ${0.22 * progress})`);
-            clockHalo.addColorStop(1, 'rgba(217, 119, 6, 0)');
-            ctx.fillStyle = clockHalo;
-            ctx.beginPath();
-            ctx.arc(tx, ty, clockRad, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Piringan jam bersinar bercahaya
-            ctx.fillStyle = `rgba(254, 252, 232, ${0.95 * progress})`;
-            ctx.beginPath();
-            ctx.arc(tx, ty, 12, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Sinar salib keemasan penunjuk waktu astronomi
-            const rayLen = 32 + Math.sin(this.tickCount * 0.08) * 4;
-            ctx.strokeStyle = `rgba(254, 240, 138, ${0.65 * progress})`;
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.moveTo(tx - rayLen, ty); ctx.lineTo(tx + rayLen, ty);
-            ctx.moveTo(tx, ty - rayLen); ctx.lineTo(tx, ty + rayLen);
-            ctx.stroke();
-
-          } else if (tile === TILE.TOWER_WINDOW) {
-            // Jendela gotik kaca patri menara bersinar keemasan & safir
-            const twx = c * TILE_SIZE + 16;
-            const twy = r * TILE_SIZE + 16;
-            const twLight = ctx.createRadialGradient(twx, twy, 3, twx, twy + 12, 75);
-            twLight.addColorStop(0, `rgba(254, 240, 138, ${0.85 * progress})`);
-            twLight.addColorStop(0.35, `rgba(245, 158, 11, ${0.45 * progress})`);
-            twLight.addColorStop(0.65, `rgba(147, 197, 253, ${0.20 * progress})`);
-            twLight.addColorStop(1, 'rgba(147, 197, 253, 0)');
-            ctx.fillStyle = twLight;
-            ctx.beginPath();
-            ctx.arc(twx, twy + 12, 75, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = `rgba(254, 240, 138, ${0.90 * progress})`;
-            ctx.fillRect(c * TILE_SIZE + 10, r * TILE_SIZE + 8, 12, 16);
-
-          } else if (tile === TILE.TOWER_DOOR) {
-            // Obor gerbang utama menara jam
-            const tdx = c * TILE_SIZE + 16;
-            const tdy = r * TILE_SIZE + 24;
-            const tdLight = ctx.createRadialGradient(tdx, tdy, 3, tdx, tdy + 8, 70);
-            tdLight.addColorStop(0, `rgba(254, 240, 138, ${0.80 * progress})`);
-            tdLight.addColorStop(0.35, `rgba(245, 158, 11, ${0.42 * progress})`);
-            tdLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
-            ctx.fillStyle = tdLight;
-            ctx.beginPath();
-            ctx.arc(tdx, tdy + 8, 70, 0, Math.PI * 2);
-            ctx.fill();
-
-          } else if (tile === TILE.TOWER_WALL) {
-            // Pencahayaan aksen arsitektural batu menara
-            const tcx = c * TILE_SIZE + 16;
-            const tcy = r * TILE_SIZE + 16;
-            const twallLight = ctx.createRadialGradient(tcx, tcy, 2, tcx, tcy, 42);
-            twallLight.addColorStop(0, `rgba(254, 240, 138, ${0.20 * progress})`);
-            twallLight.addColorStop(1, 'rgba(254, 240, 138, 0)');
-            ctx.fillStyle = twallLight;
-            ctx.beginPath();
-            ctx.arc(tcx, tcy, 42, 0, Math.PI * 2);
-            ctx.fill();
-
-          // --- F. LENTERA BATU, AIR MANCUR & SUMUR (SPECIAL LIGHT SOURCES) ---
-          } else if (tile === TILE.STONE_LANTERN) {
-            const sx = c * TILE_SIZE + 16;
-            const sy = r * TILE_SIZE + 16;
-            const sLight = ctx.createRadialGradient(sx, sy, 2, sx, sy, 75);
-            sLight.addColorStop(0, `rgba(254, 240, 138, ${0.85 * progress})`);
-            sLight.addColorStop(0.3, `rgba(245, 158, 11, ${0.50 * progress})`);
-            sLight.addColorStop(0.6, `rgba(167, 139, 250, ${0.25 * progress})`);
-            sLight.addColorStop(1, 'rgba(167, 139, 250, 0)');
-            ctx.fillStyle = sLight;
-            ctx.beginPath();
-            ctx.arc(sx, sy, 75, 0, Math.PI * 2);
-            ctx.fill();
-
-          } else if (tile === TILE.FOUNTAIN) {
-            const fx = c * TILE_SIZE + 16;
-            const fy = r * TILE_SIZE + 16;
-            const fLight = ctx.createRadialGradient(fx, fy, 4, fx, fy, 85);
-            fLight.addColorStop(0, `rgba(165, 243, 252, ${0.65 * progress})`);
-            fLight.addColorStop(0.4, `rgba(56, 189, 248, ${0.35 * progress})`);
-            fLight.addColorStop(0.75, `rgba(99, 102, 241, ${0.15 * progress})`);
-            fLight.addColorStop(1, 'rgba(99, 102, 241, 0)');
-            ctx.fillStyle = fLight;
-            ctx.beginPath();
-            ctx.arc(fx, fy, 85, 0, Math.PI * 2);
-            ctx.fill();
-
-          } else if (tile === TILE.WATER_WELL) {
-            const wx = c * TILE_SIZE + 16;
-            const wy = r * TILE_SIZE + 16;
-            const wLight = ctx.createRadialGradient(wx, wy, 2, wx, wy, 58);
-            wLight.addColorStop(0, `rgba(254, 240, 138, ${0.70 * progress})`);
-            wLight.addColorStop(0.4, `rgba(245, 158, 11, ${0.32 * progress})`);
-            wLight.addColorStop(1, 'rgba(217, 119, 6, 0)');
-            ctx.fillStyle = wLight;
-            ctx.beginPath();
-            ctx.arc(wx, wy, 58, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-      }
-
-      ctx.restore();
-    }
-
-    ctx.restore();
   }
 
   // Draw visual feedback marker when clicking - clearly differentiated by target type!

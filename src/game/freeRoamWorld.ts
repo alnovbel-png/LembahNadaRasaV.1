@@ -42,27 +42,6 @@ export interface Butterfly {
   colorType: 'orange' | 'purple' | 'yellow' | 'cyan';
   phase: number;
 }
-
-export interface Firefly {
-  id: number;
-  baseX: number;
-  baseY: number;
-  radiusX: number;
-  radiusY: number;
-  speed: number;
-  phase: number;
-  pulseSpeed: number;
-  colorType: 'gold' | 'emerald' | 'cyan';
-}
-
-export interface Star {
-  x: number;
-  y: number;
-  size: number;
-  phase: number;
-  speed: number;
-}
-
 export interface Ripple {
   x: number;
   y: number;
@@ -107,64 +86,6 @@ export class FreeRoamWorld {
     { id: 4, centerX: 26.5 * TILE_SIZE, centerY: 3.5 * TILE_SIZE, radiusX: 26, radiusY: 18, speed: 0.032, colorType: 'cyan', phase: 0.9 },
     // North-East orchard path
     { id: 5, centerX: 28.0 * TILE_SIZE, centerY: 4.8 * TILE_SIZE, radiusX: 30, radiusY: 15, speed: 0.038, colorType: 'orange', phase: 4.2 },
-  ];
-
-  // Nocturnal glowing fireflies (Kunang-Kunang Lembah) dancing across nature spots
-  private fireflies: Firefly[] = [
-    // Alun-Alun Plaza & flower beds
-    { id: 1, baseX: 11 * TILE_SIZE, baseY: 14 * TILE_SIZE, radiusX: 20, radiusY: 14, speed: 0.024, phase: 0.2, pulseSpeed: 0.06, colorType: 'gold' },
-    { id: 2, baseX: 12.5 * TILE_SIZE, baseY: 12.8 * TILE_SIZE, radiusX: 24, radiusY: 16, speed: 0.018, phase: 1.5, pulseSpeed: 0.045, colorType: 'emerald' },
-    { id: 3, baseX: 9 * TILE_SIZE, baseY: 15.5 * TILE_SIZE, radiusX: 18, radiusY: 12, speed: 0.022, phase: 3.1, pulseSpeed: 0.055, colorType: 'gold' },
-    { id: 4, baseX: 14 * TILE_SIZE, baseY: 13.5 * TILE_SIZE, radiusX: 22, radiusY: 15, speed: 0.020, phase: 4.4, pulseSpeed: 0.048, colorType: 'cyan' },
-    // Sacred Ancient Oak grove & mossy stones
-    { id: 5, baseX: 4 * TILE_SIZE, baseY: 5 * TILE_SIZE, radiusX: 28, radiusY: 18, speed: 0.019, phase: 0.8, pulseSpeed: 0.04, colorType: 'emerald' },
-    { id: 6, baseX: 5.5 * TILE_SIZE, baseY: 6.5 * TILE_SIZE, radiusX: 22, radiusY: 16, speed: 0.025, phase: 2.3, pulseSpeed: 0.065, colorType: 'cyan' },
-    { id: 7, baseX: 3.2 * TILE_SIZE, baseY: 7.2 * TILE_SIZE, radiusX: 25, radiusY: 15, speed: 0.021, phase: 3.9, pulseSpeed: 0.05, colorType: 'emerald' },
-    // Rustic Windmill & Golden Wheat Field
-    { id: 8, baseX: 14.5 * TILE_SIZE, baseY: 23.5 * TILE_SIZE, radiusX: 26, radiusY: 17, speed: 0.023, phase: 1.1, pulseSpeed: 0.052, colorType: 'gold' },
-    { id: 9, baseX: 16.5 * TILE_SIZE, baseY: 24.8 * TILE_SIZE, radiusX: 24, radiusY: 14, speed: 0.017, phase: 2.7, pulseSpeed: 0.042, colorType: 'gold' },
-    { id: 10, baseX: 12 * TILE_SIZE, baseY: 23 * TILE_SIZE, radiusX: 20, radiusY: 13, speed: 0.026, phase: 4.8, pulseSpeed: 0.058, colorType: 'emerald' },
-    { id: 11, baseX: 10.5 * TILE_SIZE, baseY: 25.5 * TILE_SIZE, radiusX: 25, radiusY: 16, speed: 0.019, phase: 0.5, pulseSpeed: 0.046, colorType: 'gold' },
-    // Riverbank, Wooden Bridge & Fishing Pier
-    { id: 12, baseX: 21 * TILE_SIZE, baseY: 14.5 * TILE_SIZE, radiusX: 22, radiusY: 14, speed: 0.022, phase: 1.9, pulseSpeed: 0.054, colorType: 'cyan' },
-    { id: 13, baseX: 23.5 * TILE_SIZE, baseY: 17.5 * TILE_SIZE, radiusX: 26, radiusY: 16, speed: 0.024, phase: 3.4, pulseSpeed: 0.062, colorType: 'cyan' },
-    { id: 14, baseX: 20 * TILE_SIZE, baseY: 19 * TILE_SIZE, radiusX: 20, radiusY: 12, speed: 0.018, phase: 5.1, pulseSpeed: 0.044, colorType: 'emerald' },
-    { id: 15, baseX: 22.8 * TILE_SIZE, baseY: 11.2 * TILE_SIZE, radiusX: 24, radiusY: 15, speed: 0.021, phase: 0.9, pulseSpeed: 0.048, colorType: 'cyan' },
-    // Pasture Meadow & Livestock Fencing
-    { id: 16, baseX: 17 * TILE_SIZE, baseY: 3.5 * TILE_SIZE, radiusX: 28, radiusY: 18, speed: 0.016, phase: 2.2, pulseSpeed: 0.038, colorType: 'emerald' },
-    { id: 17, baseX: 19 * TILE_SIZE, baseY: 5 * TILE_SIZE, radiusX: 24, radiusY: 15, speed: 0.023, phase: 4.1, pulseSpeed: 0.056, colorType: 'gold' },
-    // Orchard Apple & Orange Trees
-    { id: 18, baseX: 26 * TILE_SIZE, baseY: 22 * TILE_SIZE, radiusX: 22, radiusY: 14, speed: 0.025, phase: 1.4, pulseSpeed: 0.06, colorType: 'gold' },
-    { id: 19, baseX: 28 * TILE_SIZE, baseY: 24 * TILE_SIZE, radiusX: 25, radiusY: 16, speed: 0.020, phase: 3.7, pulseSpeed: 0.05, colorType: 'emerald' },
-    { id: 20, baseX: 27 * TILE_SIZE, baseY: 26 * TILE_SIZE, radiusX: 20, radiusY: 13, speed: 0.022, phase: 5.3, pulseSpeed: 0.046, colorType: 'gold' },
-    // Clock Tower Gardens & Eastern Spire Grove
-    { id: 21, baseX: 29 * TILE_SIZE, baseY: 8 * TILE_SIZE, radiusX: 24, radiusY: 16, speed: 0.019, phase: 0.7, pulseSpeed: 0.044, colorType: 'cyan' },
-    { id: 22, baseX: 30.5 * TILE_SIZE, baseY: 10 * TILE_SIZE, radiusX: 22, radiusY: 14, speed: 0.026, phase: 2.9, pulseSpeed: 0.062, colorType: 'gold' },
-    { id: 23, baseX: 27.5 * TILE_SIZE, baseY: 9.5 * TILE_SIZE, radiusX: 26, radiusY: 17, speed: 0.021, phase: 4.6, pulseSpeed: 0.052, colorType: 'emerald' },
-    { id: 24, baseX: 29 * TILE_SIZE, baseY: 13 * TILE_SIZE, radiusX: 20, radiusY: 13, speed: 0.024, phase: 1.8, pulseSpeed: 0.058, colorType: 'cyan' },
-  ];
-
-  // Celestial twinkling night stars in sky zone
-  private stars: Star[] = [
-    { x: 120, y: 35, size: 1.5, phase: 0.3, speed: 0.04 },
-    { x: 210, y: 55, size: 1.2, phase: 1.6, speed: 0.05 },
-    { x: 295, y: 25, size: 2.0, phase: 2.9, speed: 0.03 },
-    { x: 380, y: 60, size: 1.3, phase: 4.1, speed: 0.06 },
-    { x: 470, y: 40, size: 1.8, phase: 0.8, speed: 0.04 },
-    { x: 550, y: 70, size: 1.2, phase: 2.1, speed: 0.05 },
-    { x: 630, y: 30, size: 2.2, phase: 3.5, speed: 0.035 },
-    { x: 720, y: 65, size: 1.4, phase: 5.0, speed: 0.045 },
-    { x: 810, y: 38, size: 1.7, phase: 1.2, speed: 0.055 },
-    { x: 890, y: 75, size: 1.3, phase: 2.7, speed: 0.04 },
-    { x: 970, y: 45, size: 2.1, phase: 4.3, speed: 0.03 },
-    { x: 1040, y: 60, size: 1.5, phase: 0.5, speed: 0.06 },
-    { x: 160, y: 90, size: 1.2, phase: 1.9, speed: 0.05 },
-    { x: 260, y: 110, size: 1.6, phase: 3.2, speed: 0.04 },
-    { x: 420, y: 95, size: 1.4, phase: 4.8, speed: 0.05 },
-    { x: 590, y: 105, size: 1.9, phase: 0.9, speed: 0.035 },
-    { x: 760, y: 90, size: 1.3, phase: 2.4, speed: 0.05 },
-    { x: 910, y: 115, size: 1.7, phase: 3.8, speed: 0.045 },
-    { x: 1010, y: 95, size: 1.2, phase: 5.2, speed: 0.06 },
   ];
 
   private ripples: Ripple[] = [];

@@ -520,7 +520,7 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
                 handleInhaleRelease();
               }}
               className={`w-full sm:w-84 py-3.5 px-6 rounded-2xl font-pixel font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer select-none touch-none ${
-                phase === 'inhale'
+                phase === 'inhale' || isHoldingButton
                   ? 'bg-amber-400 text-slate-950 scale-105 shadow-[0_0_35px_rgba(245,158,11,0.9)] ring-2 ring-amber-300'
                   : 'bg-gradient-to-r from-cyan-500 via-sky-400 to-amber-400 hover:from-cyan-400 hover:to-amber-300 active:scale-95 text-slate-950 shadow-[0_0_25px_rgba(6,182,212,0.6)] hover:shadow-[0_0_35px_rgba(6,182,212,0.85)]'
               }`}

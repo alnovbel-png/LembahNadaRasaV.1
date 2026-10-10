@@ -4,16 +4,12 @@ import {
   CheckCircle2,
   XCircle,
   Sparkles,
-  HelpCircle,
   ArrowRight,
   ArrowLeft,
   RotateCcw,
   BookOpen,
-  Heart,
-  Clock,
   Compass,
   X,
-  ChevronRight,
   Lightbulb,
 } from 'lucide-react';
 import { sound } from '../utils/audio';

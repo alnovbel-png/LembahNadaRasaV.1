@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { GameRenderer, Player } from './game/renderer';
+import { GameRenderer, Player, isZoneTileColored } from './game/renderer';
 import {
   generateMapLayout,
   isTileSolid,
@@ -40,6 +40,9 @@ import { PauseMenuModal } from './components/PauseMenuModal';
 import { MissionNotificationModal, MissionStepData } from './components/MissionNotificationModal';
 
 // Code-split heavy modals to significantly shrink initial bundle and boost performance on mobile & low-end devices
+const PSEScoreModal = React.lazy(() =>
+  import('./components/PSEScoreModal').then((m) => ({ default: m.PSEScoreModal }))
+);
 const AdventureInfoHubModal = React.lazy(() =>
   import('./components/AdventureInfoHubModal').then((m) => ({ default: m.AdventureInfoHubModal }))
 );
@@ -67,8 +70,8 @@ const InGameTutorialModal = React.lazy(() =>
 const EndingQuizModal = React.lazy(() =>
   import('./components/EndingQuizModal').then((m) => ({ default: m.EndingQuizModal }))
 );
-import { Sparkles, Compass, ChevronDown, ChevronUp, Minus } from 'lucide-react';
-import { isMobileOrTabletDevice, useIsPortrait, useIsMobileOrTablet } from './utils/device';
+import { Sparkles, Compass, ChevronDown, Minus } from 'lucide-react';
+import { isMobileOrTabletDevice, useIsPortrait } from './utils/device';
 import { PSE_ACHIEVEMENTS } from './game/constants';
 import {
   useLanguage,
@@ -76,7 +79,6 @@ import {
   getLocalizedQuests,
   getLocalizedItems,
   getLocalizedMissionStepData,
-  getLocalizedAchievements,
 } from './game/localization';
 
 // Calculate camera zoom to guarantee the protagonist and world are framed at the exact
@@ -101,7 +103,6 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
   const isPortrait = useIsPortrait();
-  const isMobile = useIsMobileOrTablet();
 
   // Dynamic zoom ref for responsive rendering & precise click translation
   const [gameZoom, setGameZoom] = useState<number>(() => getGameZoom(800, 600));
@@ -302,7 +303,7 @@ export default function App() {
   });
 
   // Active UI states
-  const { lang, ui, toggleLang, setLang } = useLanguage();
+  const { lang } = useLanguage();
   const [showStartMenu, setShowStartMenu] = useState<boolean>(true);
   const [playerName, setPlayerName] = useState<string>(() => {
     const saved = localStorage.getItem('lembah_player_name');
@@ -324,7 +325,8 @@ export default function App() {
   const [regulationInitialMode, setRegulationInitialMode] = useState<RegulationMode>('breathing');
   const [showJournal, setShowJournal] = useState<boolean>(false);
   const [showInfoHub, setShowInfoHub] = useState<boolean>(false);
-  const [infoHubTab, setInfoHubTab] = useState<InfoHubTab>('pse');
+  const [infoHubTab, setInfoHubTab] = useState<InfoHubTab>('quests');
+  const [showPSEScoreModal, setShowPSEScoreModal] = useState<boolean>(false);
   const [showSettings, setShowSettings] = useState<boolean>(false);
   const [settingsTab, setSettingsTab] = useState<SettingsModalTab>('audio');
   const [showPauseMenu, setShowPauseMenu] = useState<boolean>(false);
@@ -341,9 +343,7 @@ export default function App() {
   }, [isFreeRoamActive]);
   const [endingType, setEndingType] = useState<'perfect' | 'resilient'>('perfect');
   const [branchChoice, setBranchChoice] = useState<string>('empathy_first');
-  const [isMuted, setIsMuted] = useState<boolean>(() => sound.isMuted);
   const [showMiniMap, setShowMiniMap] = useState<boolean>(() => !isMobileOrTabletDevice());
-  const [developerToast, setDeveloperToast] = useState<string | null>(null);
   const [compassToast, setCompassToast] = useState<string | null>(null);
   const [scoreToast, setScoreToast] = useState<{
     delta: number;
@@ -351,9 +351,6 @@ export default function App() {
   } | null>(null);
   const [compassLiveDistance, setCompassLiveDistance] = useState<number>(0);
   const [compassAngle, setCompassAngle] = useState<number>(0);
-  const [questHint, setQuestHint] = useState<string>(
-    'Pusaka Kompas Hati terjatuh di depanmu! Tekan [C] atau tombol Kompas untuk menggunakannya.'
-  );
   // In-Game Tutorial Modal state shown after character selection
   const [showInGameTutorial, setShowInGameTutorial] = useState<boolean>(false);
   const showInGameTutorialRef = useRef<boolean>(false);
@@ -374,7 +371,6 @@ export default function App() {
   const [showCaptureMoment, setShowCaptureMoment] = useState<boolean>(false);
   const [screenshotDataUrl, setScreenshotDataUrl] = useState<string | null>(null);
   const [capturedLocationName, setCapturedLocationName] = useState<string>('Alun-alun & Air Mancur Desa');
-  const [showCameraFlash, setShowCameraFlash] = useState<boolean>(false);
 
   // Helper to determine location for screenshot metadata
   const getCurrentLocationName = useCallback((): string => {
@@ -392,8 +388,6 @@ export default function App() {
   // Action to capture current game area screenshot
   const handleCaptureMoment = useCallback(() => {
     sound.playCameraShutter();
-    setShowCameraFlash(true);
-    setTimeout(() => setShowCameraFlash(false), 300);
 
     // If Settings is open, close it so player can review their photo
     setShowSettings(false);
@@ -561,21 +555,25 @@ export default function App() {
     );
 
     // 7. Tampilkan notifikasi visual toast di layar
-    setDeveloperToast(
+    setCompassToast(
       '🚀 MODE DEVELOPER AKTIF: Mode Jelajah Bebas Terbuka! Misi Utama 100% & Pencapaian 100% Terbuka Penuh.'
     );
     setTimeout(() => {
-      setDeveloperToast(null);
+      setCompassToast(null);
     }, 5000);
   }, []);
 
-  // Sync mute state with sound system
+  // Expose developer helpers for testing & inspection in browser console
   useEffect(() => {
-    const unsub = sound.subscribe(() => {
-      setIsMuted(sound.isMuted);
-    });
-    return unsub;
-  }, []);
+    (window as unknown as { __activateDeveloperMode?: () => void; __unlockAllBadgesTest?: () => void }).__activateDeveloperMode =
+      handleActivateDeveloperMode;
+    (window as unknown as { __activateDeveloperMode?: () => void; __unlockAllBadgesTest?: () => void }).__unlockAllBadgesTest =
+      handleUnlockAllBadgesTest;
+    return () => {
+      delete (window as unknown as { __activateDeveloperMode?: () => void; __unlockAllBadgesTest?: () => void }).__activateDeveloperMode;
+      delete (window as unknown as { __activateDeveloperMode?: () => void; __unlockAllBadgesTest?: () => void }).__unlockAllBadgesTest;
+    };
+  }, [handleActivateDeveloperMode, handleUnlockAllBadgesTest]);
 
   // Handler for starting the game adventure directly into the story from opening menu
   const handleStartGame = useCallback((name: string, avatar: 'boy' | 'girl') => {
@@ -591,6 +589,10 @@ export default function App() {
 
     sound.unlockAudio();
     sound.playCompassChime();
+    const startCol = Math.floor((playerRef.current.x + 16) / TILE_SIZE);
+    const startRow = Math.floor((playerRef.current.y + 16) / TILE_SIZE);
+    const isStartColored = isZoneTileColored(startCol, startRow, zoneStatus, npcs, isFreeRoamActive);
+    sound.setBgmPhase(isStartColored ? 'restored' : 'fog', true);
     setShowStartMenu(false);
 
     // Setelah memilih karakter, pemain bertemu dengan pop up screen tutorial in game
@@ -627,10 +629,16 @@ export default function App() {
     []
   );
 
-  // Pusat Informasi & Petualangan Modal Handler (Skor PSE, Progres Misi, Regulasi, Lencana, Jurnal)
-  const handleOpenInfoHub = useCallback((tab: InfoHubTab = 'pse') => {
+  // Pusat Informasi & Petualangan Modal Handler (Progres Misi, Regulasi, Lencana, Jurnal)
+  const handleOpenInfoHub = useCallback((tab: InfoHubTab = 'quests') => {
     setInfoHubTab(tab);
     setShowInfoHub(true);
+    sound.playMenuSelect();
+  }, []);
+
+  // Dedicated Skor Sosial Emosional (PSE) Modal Handler
+  const handleOpenPSEScore = useCallback(() => {
+    setShowPSEScoreModal(true);
     sound.playMenuSelect();
   }, []);
 
@@ -888,12 +896,6 @@ export default function App() {
       return next;
     });
   }, [lang]);
-
-  // Toggle Sound
-  const handleToggleMute = useCallback(() => {
-    const muted = sound.toggleMute();
-    setIsMuted(muted);
-  }, []);
 
   // Check collision against map tiles & bridge obstacle
   // ignoreDecorative: if true, allows passing through decorative elements (trees, plants, benches)
@@ -2490,13 +2492,12 @@ export default function App() {
       setInventory((prev) => {
         if (prev.some((i) => i.id === newItem.id)) return prev;
         sound.playSecretFound();
-        // Trigger haptic-like screen shake when discovering major items/secrets
-        rendererRef.current?.triggerScreenShake(5, 14);
-        setQuestHint(
+        setCompassToast(
           lang === 'en'
             ? `🌟 Acquired Clock Component: ${newItem.name}!`
             : `🌟 Mendapatkan Komponen Jam: ${newItem.name}!`
         );
+        setTimeout(() => setCompassToast(null), 4000);
         return [...prev, newItem];
       });
     }
@@ -3041,7 +3042,14 @@ export default function App() {
       // Open Info Hub - Single dedicated key [I]
       if (e.key === 'i' || e.key === 'I' || e.code === 'KeyI') {
         if (!currentDialogue) {
-          handleOpenInfoHub('pse');
+          handleOpenInfoHub('quests');
+        }
+      }
+
+      // Open PSE Score - Dedicated key [P]
+      if (e.key === 'p' || e.key === 'P' || e.code === 'KeyP') {
+        if (!currentDialogue) {
+          handleOpenPSEScore();
         }
       }
 
@@ -3116,7 +3124,7 @@ export default function App() {
       window.removeEventListener('keyup', handleKeyUp);
       window.removeEventListener('blur', handleWindowBlur);
     };
-  }, [showStartMenu, showSettings, showPauseMenu, currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleOpenInfoHub, handleCaptureMoment, showJournal, showInfoHub, showEnding, showBreathingMiniGame]);
+  }, [showStartMenu, showSettings, showPauseMenu, currentDialogue, handleInteract, handleToggleCompass, handleOpenRegulation, handleOpenInfoHub, handleOpenPSEScore, handleCaptureMoment, showJournal, showInfoHub, showPSEScoreModal, showEnding, showBreathingMiniGame]);
 
   // Main 60 FPS Game Loop
   useEffect(() => {
@@ -3270,14 +3278,10 @@ export default function App() {
         }
 
         // Adaptive BGM check as player walks across zones
-        if (stepCounterRef.current % 28 === 0 && !sound.isRestoringTransition) {
+        if (stepCounterRef.current % 14 === 0 && !sound.isRestoringTransition) {
           const col = Math.floor((p.x + 16) / TILE_SIZE);
           const row = Math.floor((p.y + 16) / TILE_SIZE);
-          let isRestored = false;
-          if (col >= 25 && row <= 12) isRestored = zoneStatus.tower;
-          else if (col >= 20 && row >= 12 && row <= 20) isRestored = zoneStatus.bridge;
-          else if (col <= 16 && row <= 10) isRestored = zoneStatus.forest;
-          else isRestored = zoneStatus.plaza;
+          const isRestored = isZoneTileColored(col, row, zoneStatus, npcs, isFreeRoamActive);
           sound.setBgmPhase(isRestored ? 'restored' : 'fog');
         }
 
@@ -3532,14 +3536,10 @@ export default function App() {
             }
 
             // Adaptive BGM check as player walks across zones
-            if (stepCounterRef.current % 28 === 0 && !sound.isRestoringTransition) {
+            if (stepCounterRef.current % 14 === 0 && !sound.isRestoringTransition) {
               const col = Math.floor((p.x + 16) / TILE_SIZE);
               const row = Math.floor((p.y + 16) / TILE_SIZE);
-              let isRestored = false;
-              if (col >= 25 && row <= 12) isRestored = zoneStatus.tower;
-              else if (col >= 20 && row >= 12 && row <= 20) isRestored = zoneStatus.bridge;
-              else if (col <= 16 && row <= 10) isRestored = zoneStatus.forest;
-              else isRestored = zoneStatus.plaza;
+              const isRestored = isZoneTileColored(col, row, zoneStatus, npcs, isFreeRoamActive);
               sound.setBgmPhase(isRestored ? 'restored' : 'fog');
             }
           } else {
@@ -3830,6 +3830,14 @@ export default function App() {
         }
       }
 
+      // Periodic adaptive BGM check (every ~24 frames) to ensure player's current zone BGM stays perfectly synchronized
+      if (rendererRef.current && rendererRef.current.tickCount % 24 === 0 && !sound.isRestoringTransition) {
+        const curCol = Math.floor((p.x + 16) / TILE_SIZE);
+        const curRow = Math.floor((p.y + 16) / TILE_SIZE);
+        const isCurrentTileColored = isZoneTileColored(curCol, curRow, zoneStatus, npcs, isFreeRoamActive);
+        sound.setBgmPhase(isCurrentTileColored ? 'restored' : 'fog');
+      }
+
       // Camera positioning (centers on player with clamping, accounting for dynamic gameZoom)
       const mapTotalW = MAP_COLS * TILE_SIZE;
       const mapTotalH = MAP_ROWS * TILE_SIZE;
@@ -3948,6 +3956,7 @@ export default function App() {
 
   // Restart game for replayability
   const handleRestart = () => {
+    sound.setBgmPhase('fog', true);
     setZoneStatus({
       plaza: false,
       bridge: false,
@@ -4254,11 +4263,6 @@ export default function App() {
     });
   }, [quests, clockComponentsCount, nextMissingClockNPC, lang]);
 
-  // Sync hint string for other systems
-  useEffect(() => {
-    setQuestHint(currentMissionData.hint);
-  }, [currentMissionData.hint]);
-
   // Auto celebratory popup when completing previous step and unlocking next sequential mission
   // Active Mission Target details for Heart Compass live navigation mechanic
   const compassTargetInfo = useMemo(() => {
@@ -4375,14 +4379,10 @@ export default function App() {
 
     const col = Math.floor((playerRef.current.x + 16) / TILE_SIZE);
     const row = Math.floor((playerRef.current.y + 16) / TILE_SIZE);
-    let isZoneRestored = false;
-    if (col >= 25 && row <= 12) isZoneRestored = zoneStatus.tower;
-    else if (col >= 20 && row >= 12 && row <= 20) isZoneRestored = zoneStatus.bridge;
-    else if (col <= 16 && row <= 10) isZoneRestored = zoneStatus.forest;
-    else isZoneRestored = zoneStatus.plaza;
+    const isZoneRestored = isZoneTileColored(col, row, zoneStatus, npcs, isFreeRoamActive);
 
     sound.setBgmPhase(isZoneRestored ? 'restored' : 'fog');
-  }, [zoneStatus, isFreeRoamActive]);
+  }, [zoneStatus, isFreeRoamActive, npcs]);
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans flex items-center justify-center">
@@ -4607,6 +4607,7 @@ export default function App() {
           onCompassToggle={handleToggleCompass}
           isCompassActive={isCompassActive}
           empathyScore={stats.empathyScore}
+          onOpenPSEScore={handleOpenPSEScore}
           onOpenJournal={() => handleOpenInfoHub('journal')}
           onOpenInfoHub={handleOpenInfoHub}
           onOpenSettings={() => handleOpenSettings('audio')}
@@ -4627,6 +4628,7 @@ export default function App() {
             setShowSettings(false);
             setShowJournal(false);
             setShowInfoHub(false);
+            setShowPSEScoreModal(false);
             setCurrentDialogue(null);
             handleRestart();
           }}
@@ -4709,13 +4711,24 @@ export default function App() {
                   setCurrentDialogue(afterNode);
                 }
               } else {
-                setQuestHint(lang === 'en' ? '🌟 Regulation Complete! Your mind is clear, calm, and ready to explore.' : '🌟 Latihan Regulasi Selesai! Pikiranmu jernih, tenang, dan siap berpetualang.');
+                setCompassToast(lang === 'en' ? '🌟 Regulation Complete! Mind is clear, calm, and ready to explore.' : '🌟 Latihan Regulasi Selesai! Pikiranmu jernih, tenang, dan siap berpetualang.');
+                setTimeout(() => setCompassToast(null), 4000);
               }
             }}
           />
         )}
 
-        {/* Pusat Informasi & Petualangan Modal (Skor PSE, Progres Misi, Regulasi, Lencana, Jurnal) */}
+        {/* Dedicated Social-Emotional Learning Score (Skor PSE) Modal */}
+        {showPSEScoreModal && (
+          <PSEScoreModal
+            isOpen={showPSEScoreModal}
+            onClose={() => setShowPSEScoreModal(false)}
+            stats={stats}
+            playerName={playerName}
+          />
+        )}
+
+        {/* Pusat Informasi & Petualangan Modal (Progres Misi, Regulasi, Lencana, Jurnal) */}
         {showInfoHub && (
           <AdventureInfoHubModal
             isOpen={showInfoHub}
@@ -4849,10 +4862,8 @@ export default function App() {
       <StartMenuModal
         isOpen={showStartMenu}
         onStartGame={handleStartGame}
-        onOpenControls={() => handleOpenSettings('controls')}
         onOpenAudioSettings={() => handleOpenSettings('audio')}
         onOpenSettings={() => handleOpenSettings('quest')}
-        onOpenTutorial={() => setShowInGameTutorial(true)}
         isSettingsOpen={showSettings}
         initialPlayerName={playerName}
         initialPlayerAvatar={playerAvatar}
@@ -4882,6 +4893,7 @@ export default function App() {
           setShowSettings(false);
           setShowJournal(false);
           setShowInfoHub(false);
+          setShowPSEScoreModal(false);
           setCurrentDialogue(null);
           handleRestart();
         }}
@@ -4892,7 +4904,7 @@ export default function App() {
         isOpen={showMissionModal && hasCompletedIntroTutorial && !showStartMenu && !currentDialogue}
         onClose={() => setShowMissionModal(false)}
         mission={currentMissionData}
-        onNavigateToTarget={(tx, ty) => {
+        onNavigateToTarget={() => {
           handleGuideToMission(currentMissionData.step);
         }}
         isNewUnlock={isNewMissionUnlock}

@@ -32,6 +32,10 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
     font-family: 'Pixelify Sans', cursive, sans-serif;
   }
 
+  .font-jakarta {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
   /* Sleek custom scrollbars so they never overlap content */
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;

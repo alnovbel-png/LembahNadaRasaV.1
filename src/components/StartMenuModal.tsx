@@ -7,7 +7,6 @@ import {
   Play,
   ArrowLeft,
   RotateCcw,
-  HelpCircle,
 } from 'lucide-react';
 import { sound, useAudioSettings } from '../utils/audio';
 import { CharacterPortrait } from './CharacterPortrait';
@@ -18,10 +17,8 @@ export type MenuView = 'main' | 'play';
 interface StartMenuModalProps {
   isOpen: boolean;
   onStartGame: (name: string, avatar: 'boy' | 'girl') => void;
-  onOpenControls: () => void;
   onOpenAudioSettings: () => void;
   onOpenSettings?: () => void;
-  onOpenTutorial?: () => void;
   isSettingsOpen?: boolean;
   initialPlayerName?: string;
   initialPlayerAvatar?: 'boy' | 'girl';
@@ -30,10 +27,8 @@ interface StartMenuModalProps {
 export const StartMenuModal: React.FC<StartMenuModalProps> = ({
   isOpen,
   onStartGame,
-  onOpenControls,
   onOpenAudioSettings,
   onOpenSettings,
-  onOpenTutorial,
   isSettingsOpen = false,
   initialPlayerName = 'Ezzel',
   initialPlayerAvatar = 'boy',
@@ -231,22 +226,6 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
               </>
             )}
           </button>
-
-          {/* Tutorial Button */}
-          {onOpenTutorial && (
-            <button
-              type="button"
-              id="btn-start-tutorial"
-              onClick={onOpenTutorial}
-              title={lang === 'en' ? 'How to Play Tutorial' : 'Tutorial Cara Bermain'}
-              className="inline-flex items-center gap-1.5 bg-[#142621]/90 hover:bg-[#1a382e] border border-emerald-500/70 rounded-full px-2.5 sm:px-3 py-1 transition-transform duration-75 text-emerald-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
-            >
-              <HelpCircle className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="font-pixel text-[8px] sm:text-[9px] text-emerald-300 font-bold uppercase tracking-wider">
-                {lang === 'en' ? 'Tutorial' : 'Cara Bermain'}
-              </span>
-            </button>
-          )}
         </div>
       </div>
 
@@ -266,16 +245,6 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
         {/* =================================================================== */}
         {menuView === 'main' && (
           <div className="w-full max-w-[460px] sm:max-w-[500px] md:max-w-[520px] bg-[#121626]/95 border-2 border-amber-500/90 rounded-[22px] sm:rounded-[24px] shadow-[0_0_40px_rgba(245,158,11,0.2)] p-4 sm:p-5 flex flex-col gap-2.5 sm:gap-3 animate-fade-in-slide-up">
-            {/* Header: MENU UTAMA */}
-            <div className="text-center pt-0.5 pb-0.5">
-              <span
-                style={{ fontSize: '12px', textDecorationLine: 'none' }}
-                className="font-pixel text-amber-400 text-[12px] no-underline tracking-[0.2em] font-bold"
-              >
-                {ui.mainMenu}
-              </span>
-            </div>
-
             {/* Menu Buttons Stack */}
             <div className="flex flex-col gap-2 sm:gap-2.5 my-0.5">
               {/* 1. PLAY BUTTON */}
@@ -573,20 +542,6 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 </span>
               </button>
             </div>
-
-            {/* In-Game Tutorial Link */}
-            {onOpenTutorial && (
-              <div className="text-center pt-0.5">
-                <button
-                  type="button"
-                  onClick={onOpenTutorial}
-                  className="text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2 flex items-center justify-center gap-1.5 mx-auto transition cursor-pointer"
-                >
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  <span>{lang === 'en' ? 'New player? Open How to Play Tutorial' : 'Baru bermain? Buka Tutorial Cara Bermain'}</span>
-                </button>
-              </div>
-            )}
 
             {/* Bottom Card Footer */}
             <div className="w-full pt-1.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-slate-400 text-[10px] font-sans">

@@ -19,7 +19,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
   onOpenTutorial,
   empathyScore = 0,
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
   const [showExitConfirm, setShowExitConfirm] = useState<boolean>(false);
 
@@ -35,7 +35,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
           },
         ]
       : []),
-    { id: 'settings', label: lang === 'en' ? 'Settings (Audio & Controls)' : 'Pengaturan (Audio & Kontrol)', action: onOpenSettings },
+    { id: 'settings', label: lang === 'en' ? 'Settings' : 'Pengaturan', action: onOpenSettings },
     { id: 'main-menu', label: lang === 'en' ? 'Main Menu' : 'Menu Utama', action: onOpenMainMenu },
     { id: 'quit', label: lang === 'en' ? 'Quit Game' : 'Tutup Game', action: () => setShowExitConfirm(true) },
   ];
@@ -162,7 +162,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
                     }}
                     className={`font-pixelify tracking-wide transition-transform duration-75 cursor-pointer select-none active:scale-95 ${
                       isResume
-                        ? 'text-xl sm:text-2xl font-bold'
+                        ? 'text-[20px] font-bold'
                         : 'text-lg sm:text-xl font-bold'
                     } ${
                       isSelected

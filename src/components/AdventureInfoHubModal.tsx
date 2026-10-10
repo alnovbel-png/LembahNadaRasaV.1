@@ -7,24 +7,18 @@ import {
   Wind,
   CheckCircle2,
   Clock,
-  Lock,
-  Sparkles,
-  Compass,
-  Heart,
-  Eye,
-  ShieldCheck,
-  ChevronRight,
   ArrowRight,
   Play,
-  RotateCcw,
-  Zap,
+  Download,
+  Loader2,
 } from 'lucide-react';
 import { GameQuest, ZoneColorStatus, NPC, PlayerStats, Item } from '../types/game';
 import { PSE_ACHIEVEMENTS } from '../game/constants';
 import { sound } from '../utils/audio';
 import { useLanguage, getLocalizedAchievements } from '../game/localization';
+import { generateGameTranscriptPdf } from '../utils/dialoguePdfGenerator';
 
-export type InfoHubTab = 'pse' | 'quests' | 'regulation' | 'achievements' | 'journal';
+export type InfoHubTab = 'quests' | 'regulation' | 'achievements' | 'journal';
 
 export interface AdventureInfoHubModalProps {
   isOpen: boolean;
@@ -43,55 +37,10 @@ export interface AdventureInfoHubModalProps {
   onOpenEndingCertificate?: () => void;
 }
 
-export function getPSETierDetails(score: number, lang: 'id' | 'en') {
-  if (score >= 250) {
-    return {
-      tier: lang === 'en' ? 'Master of Harmony' : 'Duta Harmoni',
-      badge: '🌟',
-      color: 'text-amber-300 border-amber-400 bg-amber-950/80',
-      description:
-        lang === 'en'
-          ? 'Exceptional emotional maturity. Capable of deep active listening, self-regulation, and creating peaceful consensus in any conflict.'
-          : 'Kematangan emosional luar biasa. Mampu mendengarkan aktif dengan tulus, menguasai regulasi diri yang tenang, serta membangun kesepakatan damai di tengah konflik warga.',
-    };
-  }
-  if (score >= 150) {
-    return {
-      tier: lang === 'en' ? 'Empathetic Heart' : 'Empati Bijak',
-      badge: '💖',
-      color: 'text-pink-300 border-pink-400 bg-pink-950/80',
-      description:
-        lang === 'en'
-          ? 'Deeply aware of feelings beneath the surface. Values independent understanding and offers soothing compassion.'
-          : 'Peka terhadap emosi di balik kata-kata kasar warga. Menghargai pemahaman mandiri dan selalu mengedepankan kata-kata yang menyejukkan hati.',
-    };
-  }
-  if (score >= 60) {
-    return {
-      tier: lang === 'en' ? 'Mindful Observer' : 'Peka Rasa',
-      badge: '🌱',
-      color: 'text-emerald-300 border-emerald-400 bg-emerald-950/80',
-      description:
-        lang === 'en'
-          ? 'Growing in emotional literacy. Beginning to see beneath harsh outbursts and notice others’ unspoken vulnerabilities.'
-          : 'Mulai memahami literasi emosi. Mampu melihat bahwa teriakan atau amarah warga seringkali berakar dari kelelahan, rasa takut, atau butuh didengarkan.',
-    };
-  }
-  return {
-    tier: lang === 'en' ? 'Young Explorer' : 'Penjelajah Belia',
-    badge: '🧭',
-    color: 'text-cyan-300 border-cyan-400 bg-cyan-950/80',
-    description:
-      lang === 'en'
-        ? 'Embarking on the journey of social-emotional learning. Every dialogue and regulation exercise nurtures your inner heart strength.'
-        : 'Langkah awal perjalanan sosial-emosional. Setiap dialog bijak dan latihan menenangkan diri akan mengasah kepekaan kalbumu.',
-  };
-}
-
 export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
   isOpen,
   onClose,
-  initialTab = 'pse',
+  initialTab = 'quests',
   stats = {
     empathyScore: 20,
     resonanceUses: 0,
@@ -101,17 +50,36 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
   },
   quests = [],
   zoneStatus = { plaza: false, bridge: false, forest: false, tower: false },
-  npcs = [],
   items = [],
   playerName = 'Ezzel',
   clockComponentsCount = 0,
   onStartRegulation,
   onNavigateToTile,
-  onOpenAllBadgesCelebration,
   onOpenEndingCertificate,
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   const [activeTab, setActiveTab] = useState<InfoHubTab>(initialTab);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pdfSuccess, setPdfSuccess] = useState(false);
+
+  const handleDownloadTranscriptPdf = async () => {
+    if (isGeneratingPdf) return;
+    setIsGeneratingPdf(true);
+    setPdfSuccess(false);
+    sound.playMenuSelect();
+    try {
+      await generateGameTranscriptPdf(playerName);
+      setPdfSuccess(true);
+      sound.playSuccessFanfare();
+      setTimeout(() => {
+        setPdfSuccess(false);
+      }, 5000);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -132,8 +100,6 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
 
   if (!isOpen) return null;
 
-  const empathyScore = stats.empathyScore || 0;
-  const tierInfo = getPSETierDetails(empathyScore, lang);
   const unlockedBadges = stats.unlockedBadges || [];
   const localizedBadges = getLocalizedAchievements(PSE_ACHIEVEMENTS, lang);
 
@@ -196,8 +162,8 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
               </h2>
               <p className="text-[10px] sm:text-[11px] text-slate-400 font-sans">
                 {lang === 'en'
-                  ? 'SEL Empathy Performance • Quest Progress • Emotion Regulation • Badges • Journal'
-                  : 'Skor Keterangan PSE • Progres Misi • Studio Regulasi • Lencana • Jurnal Hati'}
+                  ? 'Quest Progress • Emotion Regulation Studio • Badges • Heart Journal'
+                  : 'Progres Misi • Studio Regulasi • Lencana • Jurnal Hati'}
               </p>
             </div>
           </div>
@@ -212,21 +178,9 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
         </div>
 
         {/* =========================================================================
-            UNIFIED 5-TAB NAVIGATION (PENGGANTI TOMBOL STANDALONE)
+            UNIFIED 4-TAB NAVIGATION (MISI, REGULASI, LENCANA, JURNAL)
             ========================================================================= */}
-        <div className="grid grid-cols-5 p-1.5 sm:p-2 bg-slate-950/90 border-b border-slate-800 gap-1 sm:gap-1.5 shrink-0 text-center font-pixel text-[8px] sm:text-[9.5px] md:text-[10.5px]">
-          {/* TAB 1: SKOR PSE */}
-          <button
-            onClick={() => handleTabClick('pse')}
-            className={`px-2 py-2 rounded-xl flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer font-bold ${
-              activeTab === 'pse'
-                ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md ring-2 ring-pink-400/50'
-                : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-pink-300 border border-slate-800'
-            }`}
-          >
-            <span className="text-sm">💖</span>
-            <span className="truncate">{lang === 'en' ? 'SEL Score' : 'Skor PSE'}</span>
-          </button>
+        <div className="grid grid-cols-4 p-1.5 sm:p-2 bg-slate-950/90 border-b border-slate-800 gap-1 sm:gap-1.5 shrink-0 text-center font-pixel text-[8px] sm:text-[9.5px] md:text-[10.5px]">
 
           {/* TAB 2: PROGRES MISI */}
           <button
@@ -286,150 +240,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
             ========================================================================= */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
           {/* =====================================================================
-              TAB 1: SKOR PSE & KETERANGAN LENGKAP SOSIAL EMOSIONAL
-              ===================================================================== */}
-          {activeTab === 'pse' && (
-            <div className="space-y-5 animate-in fade-in duration-200">
-              {/* HERO SCORE CARD */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-pink-950/60 via-slate-900 to-purple-950/60 border-2 border-pink-500/50 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-4 text-center sm:text-left">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-pink-500/20 border-2 border-pink-400 flex items-center justify-center text-3xl sm:text-4xl shadow-[0_0_20px_rgba(236,72,153,0.4)] shrink-0">
-                    {tierInfo.badge}
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-center sm:justify-start gap-2">
-                      <span className="font-pixel text-[10px] text-pink-300 uppercase tracking-wider font-bold">
-                        {lang === 'en' ? 'Current SEL Performance Tier' : 'Tingkat Kemampuan PSE Saat Ini'}
-                      </span>
-                    </div>
-                    <h3 className="font-pixel text-lg sm:text-xl font-black text-amber-300">
-                      {tierInfo.tier}
-                    </h3>
-                    <p className="text-xs text-slate-300 mt-1 max-w-lg leading-relaxed">
-                      {tierInfo.description}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-950/90 border border-pink-500/40 text-center shrink-0 min-w-[140px]">
-                  <span className="text-[10px] text-pink-200 font-pixel block">
-                    {lang === 'en' ? 'Total SEL Score' : 'Total Skor PSE'}
-                  </span>
-                  <span className="font-pixel text-2xl sm:text-3xl font-extrabold text-amber-300 block">
-                    {empathyScore}
-                  </span>
-                  <span className="text-[9px] text-slate-400 font-pixel">
-                    {lang === 'en' ? 'Empathy Points' : 'Poin Empati'}
-                  </span>
-                </div>
-              </div>
-
-              {/* RINCIAN MEKANIK PEROLEHAN SKOR & PENGURANGAN KOMPAS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                {/* Aturan Skor Respon Dialog Mandiri vs Kompas */}
-                <div className="p-4 rounded-xl bg-slate-950/70 border border-amber-500/40 space-y-2">
-                  <div className="flex items-center gap-2 text-amber-300 font-pixel font-bold text-xs">
-                    <Compass className="w-4 h-4 text-amber-400" />
-                    <span>{lang === 'en' ? 'Dialogue Response Scoring Rules' : 'Aturan Skor Respon Dialog'}</span>
-                  </div>
-                  <ul className="text-slate-300 space-y-1.5 text-[11px] leading-relaxed">
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-emerald-400 font-bold shrink-0">✓</span>
-                      <span>
-                        <strong>{lang === 'en' ? 'Independent Response:' : 'Respon Mandiri:'}</strong>{' '}
-                        {lang === 'en'
-                          ? 'Choosing wisely without compass assistance awards the full dialogue score (+10 to +20 points).'
-                          : 'Memilih respon tanpa kompas memberikan skor utuh dari dialog tersebut (+10 s/d +20 poin).'}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-rose-400 font-bold shrink-0">🧭</span>
-                      <span>
-                        <strong>{lang === 'en' ? 'With Compass Active:' : 'Dengan Bantuan Kompas:'}</strong>{' '}
-                        {lang === 'en'
-                          ? 'Compass marks incorrect options only. Applying this assistance deducts -5 points from your response reward.'
-                          : 'Kompas menandai opsi yang salah saja. Memilih respon saat kompas aktif dipotong -5 poin karena menggunakan bantuan.'}
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-1.5">
-                      <span className="text-cyan-400 font-bold shrink-0">🗺️</span>
-                      <span>
-                        <strong>{lang === 'en' ? 'World Exploration:' : 'Melihat Sekitar di Peta:'}</strong>{' '}
-                        {lang === 'en'
-                          ? 'Using the compass to explore the village and find directions is 100% free with no score deduction.'
-                          : 'Menyalakan kompas untuk melihat arah dan menjelajah desa sepenuhnya gratis tanpa pengurangan skor.'}
-                      </span>
-                    </li>
-                  </ul>
-                </div>
-
-                {/* Log Pemotongan & Penggunaan Kompas */}
-                <div className="p-4 rounded-xl bg-slate-950/70 border border-pink-500/40 space-y-2">
-                  <div className="flex items-center gap-2 text-pink-300 font-pixel font-bold text-xs">
-                    <Sparkles className="w-4 h-4 text-pink-400" />
-                    <span>{lang === 'en' ? 'Compass Assistance History' : 'Riwayat Bantuan Kompas'}</span>
-                  </div>
-                  <div className="space-y-2 text-[11px] text-slate-300">
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
-                      <span>{lang === 'en' ? 'Assisted Responses Chosen:' : 'Respon Terbantu Kompas:'}</span>
-                      <strong className="text-amber-400 font-pixel text-sm">{stats.resonanceUses}x</strong>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
-                      <span>{lang === 'en' ? 'Total Assistance Deduction:' : 'Total Potongan Skor Kompas:'}</span>
-                      <strong className="text-rose-400 font-pixel text-sm">-{stats.resonanceUses * 5} Poin</strong>
-                    </div>
-                    <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
-                      <span>{lang === 'en' ? 'Calm Sessions Mastered:' : 'Sesi Relaksasi Mandiri:'}</span>
-                      <strong className="text-cyan-300 font-pixel text-sm">+{stats.calmTechniquesMastered * 25} Poin</strong>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 5 PILAR KOMPETENSI SOSIAL EMOSIONAL (CASEL) */}
-              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
-                <h4 className="font-pixel text-xs text-amber-300 font-bold flex items-center gap-1.5">
-                  <span>🏛️</span>
-                  <span>{lang === 'en' ? '5 Pillars of CASEL Competencies' : '5 Pilar Kompetensi Sosial-Emosional (CASEL)'}</span>
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-slate-300 text-[11px]">
-                  <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                    <strong className="text-amber-300 block mb-0.5">1. Kesadaran Diri</strong>
-                    <p className="text-slate-400 text-[10px] leading-relaxed">
-                      Mengenali emosi sendiri (marah, sedih, cemas) dan memahami apa yang memicunya.
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                    <strong className="text-cyan-300 block mb-0.5">2. Manajemen Diri</strong>
-                    <p className="text-slate-400 text-[10px] leading-relaxed">
-                      Mampu menenangkan diri melalui teknik relaksasi sebelum merespon atau bertindak gegabah.
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                    <strong className="text-emerald-300 block mb-0.5">3. Kesadaran Sosial</strong>
-                    <p className="text-slate-400 text-[10px] leading-relaxed">
-                      Empati mendalam untuk memahami perspektif dan beban perasaan yang dialami orang lain.
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">
-                    <strong className="text-pink-300 block mb-0.5">4. Keterampilan Relasi</strong>
-                    <p className="text-slate-400 text-[10px] leading-relaxed">
-                      Mendengarkan aktif, berkomunikasi dengan penuh kelembutan, dan menyelesaikan konflik bersama.
-                    </p>
-                  </div>
-                  <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 sm:col-span-2 md:col-span-2">
-                    <strong className="text-purple-300 block mb-0.5">5. Pengambilan Keputusan Bertanggung Jawab</strong>
-                    <p className="text-slate-400 text-[10px] leading-relaxed">
-                      Memilih solusi yang adil, tidak egois, dan menjaga keharmonisan bersama di masyarakat.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* =====================================================================
-              TAB 2: PROGRES MISI & CERITA DESA
+              TAB 1: PROGRES MISI & CERITA DESA
               ===================================================================== */}
           {activeTab === 'quests' && (
             <div className="space-y-4 animate-in fade-in duration-200">
@@ -567,6 +378,56 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                   ))}
                 </div>
               </div>
+
+              {/* TOMBOL GENERATE DOKUMEN NASKAH DIALOG & INTERAKSI (PDF) */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-950/80 via-slate-900 to-amber-950/80 border-2 border-amber-500/70 shadow-[0_4px_20px_rgba(245,158,11,0.2)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-xl shrink-0 text-amber-300 shadow-inner">
+                    📄
+                  </div>
+                  <div>
+                    <h4 className="font-pixel text-xs sm:text-sm font-bold text-amber-300 flex items-center gap-2">
+                      <span>{lang === 'en' ? 'Game Dialogue & Interactions Script (PDF)' : 'Dokumen Naskah Dialog & Interaksi Lengkap (PDF)'}</span>
+                      <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40 font-normal">
+                        PDF
+                      </span>
+                    </h4>
+                    <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
+                      {lang === 'en'
+                        ? 'Download official document containing every dialogue line from 13 NPCs, thoughts, empathy choices, and interactions with objects and animals.'
+                        : 'Unduh dokumen lengkap berisi seluruh kalimat dari 13 NPC, gelembung isi hati, opsi pilihan respon empati (PSE), serta interaksi dengan benda dan satwa.'}
+                    </p>
+                    {pdfSuccess && (
+                      <p className="text-[11px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1.5 animate-in fade-in">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{lang === 'en' ? 'PDF successfully downloaded!' : 'Dokumen PDF berhasil diunduh ke perangkatmu!'}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleDownloadTranscriptPdf}
+                  disabled={isGeneratingPdf}
+                  className={`w-full sm:w-auto px-4 py-2.5 rounded-xl font-pixel text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-95 shadow-md ${
+                    isGeneratingPdf
+                      ? 'bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-700'
+                      : 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 border border-amber-300/80 shadow-[0_0_15px_rgba(245,158,11,0.4)]'
+                  }`}
+                >
+                  {isGeneratingPdf ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
+                      <span>{lang === 'en' ? 'Generating PDF...' : 'Menyiapkan PDF...'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      <span>{lang === 'en' ? 'Download PDF Document' : 'Unduh Dokumen PDF'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           )}
 
@@ -594,12 +455,6 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {/* 1. PERNAPASAN BINTANG */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/70 to-slate-900 border border-cyan-500/50 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">⭐</span>
-                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-500/40 font-pixel">
-                      Ritme 4-7-8
-                    </span>
-                  </div>
                   <h4 className="font-pixel text-sm text-cyan-200 font-bold">
                     {lang === 'en' ? 'Star Breathing Technique' : 'Pernapasan Bintang'}
                   </h4>
@@ -620,13 +475,10 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
 
                 {/* 2. GROUNDING 5-4-3-2-1 */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-teal-950/70 to-slate-900 border border-teal-500/50 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">👁️</span>
-                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-teal-950 text-teal-300 border border-teal-500/40 font-pixel">
-                      Panca Indra
-                    </span>
-                  </div>
-                  <h4 className="font-pixel text-sm text-teal-200 font-bold">
+                  <h4
+                    className="font-pixel text-[12px] text-teal-200 font-bold"
+                    style={{ fontSize: '12px' }}
+                  >
                     {lang === 'en' ? '5-4-3-2-1 Sensory Grounding' : 'Grounding Panca Indra 5-4-3-2-1'}
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
@@ -646,13 +498,10 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
 
                 {/* 3. METODE STOP */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/70 to-slate-900 border border-indigo-500/50 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">🛑</span>
-                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 font-pixel">
-                      Jeda Sejenak
-                    </span>
-                  </div>
-                  <h4 className="font-pixel text-sm text-indigo-200 font-bold">
+                  <h4
+                    className="font-pixel text-[13px] text-indigo-200 font-bold"
+                    style={{ fontSize: '13px' }}
+                  >
                     {lang === 'en' ? 'S.T.O.P. Mindful Pause' : 'Metode S.T.O.P. (Jeda Bijak)'}
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
@@ -672,12 +521,6 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
 
                 {/* 4. GOYANG RILEKS SHAKE-OUT */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/70 to-slate-900 border border-amber-500/50 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl">💃</span>
-                    <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-950 text-amber-300 border border-amber-500/40 font-pixel">
-                      Kinetik Tubuh
-                    </span>
-                  </div>
                   <h4 className="font-pixel text-sm text-amber-200 font-bold">
                     {lang === 'en' ? 'Somatic Shake-Out' : 'Goyang Rileks Shake-Out'}
                   </h4>

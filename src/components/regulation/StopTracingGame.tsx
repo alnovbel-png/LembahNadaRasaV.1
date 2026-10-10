@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { sound } from '../../utils/audio';
 import { useLanguage, getLocalizedNpcName } from '../../game/localization';
-import { ShieldAlert, Sparkles, CheckCircle2, RotateCcw, Clock, Snowflake, Award } from 'lucide-react';
+import { ShieldAlert, Sparkles, RotateCcw, Clock, Snowflake } from 'lucide-react';
 
 interface StopTracingGameProps {
   targetName: string;

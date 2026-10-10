@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { sound } from '../../utils/audio';
 import { useLanguage, getLocalizedNpcName } from '../../game/localization';
-import { Eye, Search, Sparkles, CheckCircle2, RotateCcw, Clock, ShieldCheck } from 'lucide-react';
+import { Eye, Sparkles, RotateCcw, Clock } from 'lucide-react';
 
 interface HiddenObject {
   id: string;

@@ -3,7 +3,6 @@ import { PSE_ACHIEVEMENTS } from '../game/constants';
 import { Item, ZoneColorStatus, PlayerStats } from '../types/game';
 import { BookOpen, Compass, Sparkles, X, CheckCircle2, Lock, Award, Trophy, ScrollText } from 'lucide-react';
 import { useLanguage, getLocalizedAchievements, getLocalizedItems } from '../game/localization';
-import { sound } from '../utils/audio';
 
 interface CompassJournalModalProps {
   isOpen: boolean;
@@ -22,7 +21,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
   stats,
   onOpenAllBadgesCelebration,
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   const [activeTab, setActiveTab] = useState<'lore' | 'lencana' | 'tas' | 'harmoni'>('lore');
 
   if (!isOpen) return null;

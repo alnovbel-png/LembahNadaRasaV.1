@@ -21,9 +21,9 @@ interface VirtualControlsProps {
   onOpenRegulation?: () => void;
   onOpenStartMenu?: () => void;
   onOpenPauseMenu?: () => void;
-  isPauseOpen?: boolean;
   empathyScore?: number;
-  onOpenInfoHub?: (tab?: 'pse' | 'quests' | 'regulation' | 'achievements' | 'journal') => void;
+  onOpenPSEScore?: () => void;
+  onOpenInfoHub?: (tab?: 'quests' | 'regulation' | 'achievements' | 'journal') => void;
 }
 
 export function getPSEPerformanceTier(score: number, lang: 'id' | 'en'): string {
@@ -51,8 +51,8 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   onOpenRegulation,
   onOpenStartMenu,
   onOpenPauseMenu,
-  isPauseOpen = false,
   empathyScore = 0,
+  onOpenPSEScore,
   onOpenInfoHub,
 }) => {
   const { lang, toggleLang, ui } = useLanguage();
@@ -246,34 +246,48 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           }`}
         >
           <span className="text-xs sm:text-sm transition-transform duration-200 group-hover:rotate-12">🧭</span>
-          <span className="font-pixel text-[8.5px] sm:text-[10px] text-amber-400 group-hover:text-amber-300 font-bold tracking-tight whitespace-nowrap">
+          <span
+            className="text-amber-400 group-hover:text-amber-300 font-bold tracking-tight whitespace-nowrap"
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontWeight: 'bold',
+              fontSize: '15px',
+            }}
+          >
             {ui.brandTitle}
           </span>
         </div>
 
-        {/* Center-Left: Social-Emotional Performance Score (Skor PSE) Badge - Clickable to open Info Hub */}
+        {/* Center-Left: Social-Emotional Performance Score (Skor PSE) Badge - Clickable to open PSE Score Modal */}
         <div
           id="header-pse-score-badge"
-          onClick={() => onOpenInfoHub?.('pse')}
+          onClick={() => {
+            if (onOpenPSEScore) onOpenPSEScore();
+            else onOpenInfoHub?.('quests');
+          }}
           title={
             lang === 'en'
-              ? `Social-Emotional Score: ${empathyScore} Points (${getPSEPerformanceTier(empathyScore, lang)}) • Click to view full SEL details [I]`
-              : `Skor Sosial Emosional: ${empathyScore} Poin (${getPSEPerformanceTier(empathyScore, lang)}) • Klik untuk rincian skor PSE & info petualangan [I]`
+              ? `Social-Emotional Score: ${empathyScore} Points • Click to view SEL Score details`
+              : `Skor Sosial Emosional: ${empathyScore} Poin • Klik untuk melihat rincian skor PSE`
           }
           className="bg-slate-950/95 border border-pink-500/70 hover:border-pink-400 hover:bg-slate-900 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 shadow-xl hover:shadow-[0_0_16px_rgba(236,72,153,0.35)] backdrop-blur-md flex items-center gap-1.5 shrink-0 transition-all duration-75 select-none pointer-events-auto cursor-pointer active:scale-95"
         >
           <span className="text-xs sm:text-sm animate-pulse">💖</span>
           <div className="flex flex-col leading-none">
-            <span className="font-pixel text-[6px] sm:text-[7.5px] text-pink-300 font-bold tracking-tight whitespace-nowrap">
-              {lang === 'en' ? 'SEL SCORE' : 'SKOR PSE'}
+            <span
+              className="text-pink-300 font-bold tracking-tight whitespace-nowrap"
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: '12.5px',
+                lineHeight: '14px',
+              }}
+            >
+              {lang === 'en' ? 'SEL Score' : 'Skor PSE'}
             </span>
-            <span className="font-pixel text-[9px] sm:text-[11px] text-amber-300 font-extrabold tracking-tight">
+            <span className="font-pixel text-[9px] sm:text-[11px] text-amber-300 font-extrabold tracking-tight text-center">
               {empathyScore}
             </span>
           </div>
-          <span className="hidden md:inline-block font-pixel text-[6.5px] sm:text-[7.5px] px-1.5 py-0.5 rounded-md bg-pink-950/80 text-pink-200 border border-pink-500/40 whitespace-nowrap">
-            {getPSEPerformanceTier(empathyScore, lang)}
-          </span>
         </div>
 
         {/* Center: Compass Toggle Button with Sparkle Feedback (Hidden on Mobile, Visible on Desktop/Tablet) */}
@@ -300,7 +314,14 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
             ) : (
               <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             )}
-            <span className="font-pixel text-[8px] sm:text-[9px] whitespace-nowrap">
+            <span
+              className="whitespace-nowrap font-bold"
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontWeight: 'bold',
+                fontSize: '12px',
+              }}
+            >
               {isCompassActive ? ui.activeResonance : ui.heartCompass}
             </span>
             <span className="hidden xl:inline text-[10px] text-slate-400 font-mono">
@@ -341,25 +362,25 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   style={{ backgroundColor: '#000000' }}
                   className="w-4 h-4 text-amber-400 rounded-sm"
                 />
-                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.map}</span>
+                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ui.map}</span>
                 <span className="text-[10px] text-slate-400 font-mono">[M]</span>
               </button>
             )}
 
-            {/* UNIFIED PUSAT INFORMASI (Pengganti tombol regulasi, jurnal, misi objektif, dan pencapaian) */}
+            {/* UNIFIED PUSAT INFORMASI (Misi, regulasi, pencapaian, dan jurnal) */}
             {onOpenInfoHub ? (
               <button
                 id="top-info-hub-btn"
-                onClick={() => onOpenInfoHub('pse')}
+                onClick={() => onOpenInfoHub('quests')}
                 title={
                   lang === 'en'
-                    ? 'Adventurer Info Center: SEL Score Details, Quests, Regulation, Badges, Journal [I]'
-                    : 'Pusat Informasi: Keterangan Skor PSE, Progres Misi, Regulasi, Lencana & Jurnal [I]'
+                    ? 'Adventurer Info Center: Quests, Regulation, Badges, Journal [I]'
+                    : 'Pusat Informasi: Progres Misi, Regulasi, Lencana & Jurnal [I]'
                 }
                 className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-950/90 via-slate-950 to-pink-950/90 border-2 border-amber-400/80 hover:border-amber-300 hover:bg-slate-900 text-amber-300 hover:text-white shadow-[0_0_16px_rgba(245,158,11,0.3)] flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-all duration-75"
               >
                 <span className="text-sm">📜</span>
-                <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>
+                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                   {lang === 'en' ? 'Info & Progress' : 'Pusat Informasi'}
                 </span>
                 <span className="text-[10px] text-amber-400/90 font-mono bg-slate-950 px-1 py-0.5 rounded border border-amber-500/30">
@@ -376,7 +397,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     className="px-2.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:border-cyan-300 hover:bg-cyan-900/90 text-cyan-300 shadow-md flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-transform duration-75"
                   >
                     <Wind className="w-4 h-4 text-cyan-300" />
-                    <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.regulation}</span>
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ui.regulation}</span>
                     <span className="text-[10px] text-cyan-400/80 font-mono">[R]</span>
                   </button>
                 )}
@@ -389,7 +410,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:border-amber-400 hover:bg-slate-900 text-amber-300 shadow-md flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-transform duration-75"
                   >
                     <BookOpen className="w-4 h-4 text-amber-400" />
-                    <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.journal}</span>
+                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ui.journal}</span>
                     <span className="text-[10px] text-amber-400/80 font-mono">[J]</span>
                   </button>
                 )}
@@ -416,7 +437,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               className="px-3 py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-md flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-transform duration-75"
             >
               <Sliders className="w-4 h-4 text-amber-400" />
-              <span style={{ fontFamily: "'Pixelify Sans', sans-serif" }}>{ui.settings}</span>
+              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ui.settings}</span>
               <span className="text-[10px] text-slate-400 font-mono">[O]</span>
             </button>
 
@@ -475,13 +496,16 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               {/* Card Skor Sosial Emosional (PSE) & Performa */}
               <div
                 onClick={() => {
-                  if (onOpenInfoHub) {
-                    onOpenInfoHub('pse');
+                  if (onOpenPSEScore) {
+                    onOpenPSEScore();
+                    setIsMenuOpen(false);
+                  } else if (onOpenInfoHub) {
+                    onOpenInfoHub('quests');
                     setIsMenuOpen(false);
                   }
                 }}
                 className={`p-3 rounded-2xl bg-gradient-to-r from-pink-950/70 via-slate-900 to-amber-950/60 border border-pink-500/50 shadow-md flex items-center justify-between ${
-                  onOpenInfoHub ? 'cursor-pointer hover:border-pink-400 active:scale-95 transition-all' : ''
+                  onOpenPSEScore || onOpenInfoHub ? 'cursor-pointer hover:border-pink-400 active:scale-95 transition-all' : ''
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -546,7 +570,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               {onOpenInfoHub ? (
                 <button
                   onClick={() => {
-                    onOpenInfoHub('pse');
+                    onOpenInfoHub('quests');
                     setIsMenuOpen(false);
                   }}
                   className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-950/80 via-slate-800 to-pink-950/80 hover:bg-slate-750 active:bg-slate-700 border-2 border-amber-400/80 hover:border-amber-300 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"

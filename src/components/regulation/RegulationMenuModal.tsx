@@ -11,7 +11,6 @@ import {
   Play,
   ArrowRight,
   ShieldCheck,
-  RotateCcw,
 } from 'lucide-react';
 
 export type RegulationMode = 'breathing' | 'grounding' | 'stop' | 'shakeout';
@@ -45,7 +44,7 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
   onSelectMode,
   targetName = 'Pemain',
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   if (!isOpen) return null;
 
   const isSelfPractice = targetName === 'Pemain' || targetName === 'Karakter Utama';

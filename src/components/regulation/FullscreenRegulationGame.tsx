@@ -10,7 +10,6 @@ import {
   ArrowLeft,
   X,
   RotateCcw,
-  CheckCircle2,
   Award,
   ListOrdered,
 } from 'lucide-react';
@@ -37,7 +36,7 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
   onClose,
   onComplete,
 }) => {
-  const { lang, ui } = useLanguage();
+  const { lang } = useLanguage();
   const localizedTarget =
     targetName === 'Pemain' || targetName === 'Karakter Utama'
       ? (lang === 'en' ? 'Player' : 'Pemain')
