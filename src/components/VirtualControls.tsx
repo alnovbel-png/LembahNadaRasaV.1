@@ -249,7 +249,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           <span
             className="text-amber-400 group-hover:text-amber-300 font-bold tracking-tight whitespace-nowrap"
             style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "'Pixelify Sans', cursive, sans-serif",
               fontWeight: 'bold',
               fontSize: '15px',
             }}
@@ -258,7 +258,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           </span>
         </div>
 
-        {/* Center-Left: Social-Emotional Performance Score (Skor PSE) Badge - Clickable to open PSE Score Modal */}
+        {/* Social-Emotional Performance Score (Skor PSE) Badge - Positioned cleanly below Lembah Nada Rasa */}
         <div
           id="header-pse-score-badge"
           onClick={() => {
@@ -270,64 +270,26 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               ? `Social-Emotional Score: ${empathyScore} Points • Click to view SEL Score details`
               : `Skor Sosial Emosional: ${empathyScore} Poin • Klik untuk melihat rincian skor PSE`
           }
-          className="bg-slate-950/95 border border-pink-500/70 hover:border-pink-400 hover:bg-slate-900 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 shadow-xl hover:shadow-[0_0_16px_rgba(236,72,153,0.35)] backdrop-blur-md flex items-center gap-1.5 shrink-0 transition-all duration-75 select-none pointer-events-auto cursor-pointer active:scale-95"
+          className="absolute left-0 top-[38px] sm:top-[44px] bg-slate-950/95 border border-pink-500/70 hover:border-pink-400 hover:bg-slate-900 rounded-xl px-2.5 sm:px-3 py-1 sm:py-1.5 shadow-xl hover:shadow-[0_0_16px_rgba(236,72,153,0.35)] backdrop-blur-md flex items-center gap-2 shrink-0 transition-all duration-75 select-none pointer-events-auto cursor-pointer active:scale-95"
         >
           <span className="text-xs sm:text-sm animate-pulse">💖</span>
-          <div className="flex flex-col leading-none">
+          <div className="flex flex-col items-center justify-center leading-none">
             <span
               className="text-pink-300 font-bold tracking-tight whitespace-nowrap"
               style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: '12.5px',
-                lineHeight: '14px',
+                fontFamily: 'Galindo, cursive, sans-serif',
+                fontSize: '11px',
               }}
             >
               {lang === 'en' ? 'SEL Score' : 'Skor PSE'}
             </span>
-            <span className="font-pixel text-[9px] sm:text-[11px] text-amber-300 font-extrabold tracking-tight text-center">
+            <span
+              className="font-pixel text-amber-300 font-extrabold tracking-tight text-center leading-none mt-0.5"
+              style={{ fontSize: '22px' }}
+            >
               {empathyScore}
             </span>
           </div>
-        </div>
-
-        {/* Center: Compass Toggle Button with Sparkle Feedback (Hidden on Mobile, Visible on Desktop/Tablet) */}
-        <div className={`${isSettingsOpen ? 'pointer-events-none' : 'pointer-events-auto'} hidden md:block`}>
-          <button
-            id="toggle-resonance-btn"
-            onClick={onCompassToggle}
-            disabled={isSettingsOpen}
-            title={ui.toggleResonance}
-            className={`relative px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-xl border shadow-lg backdrop-blur-md transition hidden md:flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
-              isCompassActive
-                ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.7)] font-bold ring-2 ring-amber-300/60'
-                : 'bg-slate-950/90 text-amber-300 border-amber-500/40 hover:bg-slate-900'
-            }`}
-          >
-            {isCompassActive && (
-              <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 pointer-events-none">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400" />
-              </span>
-            )}
-            {isCompassActive ? (
-              <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950 animate-pulse" />
-            ) : (
-              <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            )}
-            <span
-              className="whitespace-nowrap font-bold"
-              style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontWeight: 'bold',
-                fontSize: '12px',
-              }}
-            >
-              {isCompassActive ? ui.activeResonance : ui.heartCompass}
-            </span>
-            <span className="hidden xl:inline text-[10px] text-slate-400 font-mono">
-              [C]
-            </span>
-          </button>
         </div>
 
         {/* Right: Unified Single Button on Mobile (and Desktop buttons on large screens) */}
@@ -347,12 +309,49 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
 
           {/* Desktop Toolbar (lg+ screens) */}
           <div className="hidden lg:flex items-center gap-1.5 sm:gap-2">
+            {/* Tombol Resonansi Kompas Hati - Berdampingan dengan tombol aksi sebelah kanan */}
+            <button
+              id="toggle-resonance-btn"
+              onClick={onCompassToggle}
+              disabled={isSettingsOpen}
+              title={ui.toggleResonance}
+              className={`group relative px-2.5 py-1.5 group-hover:px-3 rounded-xl border shadow-lg backdrop-blur-md transition-all duration-200 flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 ${
+                isCompassActive
+                  ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_20px_rgba(245,158,11,0.7)] font-bold ring-2 ring-amber-300/60'
+                  : 'bg-slate-950/90 text-amber-300 border-amber-500/40 hover:bg-slate-900'
+              }`}
+            >
+              {isCompassActive && (
+                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5 pointer-events-none">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-300 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400" />
+                </span>
+              )}
+              {isCompassActive ? (
+                <Sparkles className="w-4 h-4 text-slate-950 animate-pulse shrink-0" />
+              ) : (
+                <Compass className="w-4 h-4 shrink-0" />
+              )}
+              <span
+                className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap font-bold inline-block"
+                style={{
+                  fontFamily: 'Galindo, cursive, sans-serif',
+                  fontWeight: 'bold',
+                  fontSize: '12px',
+                }}
+              >
+                {isCompassActive ? ui.activeResonance : ui.heartCompass}
+              </span>
+              <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 hidden xl:inline text-[10px] text-slate-400 font-mono">
+                [C]
+              </span>
+            </button>
             {onToggleMiniMap && (
               <button
                 id="top-map-toggle-btn"
                 onClick={onToggleMiniMap}
                 title={isMiniMapOpen ? (lang === 'en' ? 'Hide Mini Map [M]' : 'Sembunyikan Peta Mini [M]') : (lang === 'en' ? 'Open Mini Map [M]' : 'Buka Peta Mini [M]')}
-                className={`px-2.5 py-1.5 rounded-xl border shadow-md flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-transform duration-75 ${
+                className={`group px-2.5 py-1.5 group-hover:px-3 rounded-xl border shadow-md flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-all duration-200 ${
                   isMiniMapOpen
                     ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.6)]'
                     : 'bg-slate-950/90 border-slate-700 hover:border-amber-400/60 hover:bg-slate-900 text-slate-300'
@@ -360,10 +359,17 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               >
                 <MapIcon
                   style={{ backgroundColor: '#000000' }}
-                  className="w-4 h-4 text-amber-400 rounded-sm"
+                  className="w-4 h-4 text-amber-400 rounded-sm shrink-0"
                 />
-                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ui.map}</span>
-                <span className="text-[10px] text-slate-400 font-mono">[M]</span>
+                <span
+                  className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap inline-block"
+                  style={{ fontFamily: 'Galindo, cursive, sans-serif' }}
+                >
+                  {ui.map}
+                </span>
+                <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 text-[10px] text-slate-400 font-mono">
+                  [M]
+                </span>
               </button>
             )}
 
@@ -377,13 +383,18 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     ? 'Adventurer Info Center: Quests, Regulation, Badges, Journal [I]'
                     : 'Pusat Informasi: Progres Misi, Regulasi, Lencana & Jurnal [I]'
                 }
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-950/90 via-slate-950 to-pink-950/90 border-2 border-amber-400/80 hover:border-amber-300 hover:bg-slate-900 text-amber-300 hover:text-white shadow-[0_0_16px_rgba(245,158,11,0.3)] flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-all duration-75"
+                className="group px-2.5 py-1.5 group-hover:px-3 rounded-xl bg-gradient-to-r from-amber-950/90 via-slate-950 to-pink-950/90 border-2 border-amber-400/80 hover:border-amber-300 hover:bg-slate-900 text-amber-300 hover:text-white shadow-[0_0_16px_rgba(245,158,11,0.3)] flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-all duration-200"
               >
-                <span className="text-sm">📜</span>
-                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                <span className="w-4 h-4 rounded-full border-[1.5px] border-amber-300 bg-amber-400/20 text-amber-300 flex items-center justify-center font-serif italic font-bold text-[11px] leading-none shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)] select-none">
+                  i
+                </span>
+                <span
+                  className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap inline-block"
+                  style={{ fontFamily: 'Galindo, cursive, sans-serif' }}
+                >
                   {lang === 'en' ? 'Info & Progress' : 'Pusat Informasi'}
                 </span>
-                <span className="text-[10px] text-amber-400/90 font-mono bg-slate-950 px-1 py-0.5 rounded border border-amber-500/30">
+                <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 text-[10px] text-amber-400/90 font-mono bg-slate-950 px-1 py-0.5 rounded border border-amber-500/30">
                   [I]
                 </span>
               </button>
@@ -394,11 +405,18 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     id="top-regulation-btn"
                     onClick={onOpenRegulation}
                     title={lang === 'en' ? 'Open Emotion Regulation Studio [R]' : 'Buka Studio Regulasi Emosi & Relaksasi [R]'}
-                    className="px-2.5 py-1.5 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:border-cyan-300 hover:bg-cyan-900/90 text-cyan-300 shadow-md flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-transform duration-75"
+                    className="group px-2.5 py-1.5 group-hover:px-3 rounded-xl bg-cyan-950/90 border border-cyan-400/60 hover:border-cyan-300 hover:bg-cyan-900/90 text-cyan-300 shadow-md flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-all duration-200"
                   >
-                    <Wind className="w-4 h-4 text-cyan-300" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ui.regulation}</span>
-                    <span className="text-[10px] text-cyan-400/80 font-mono">[R]</span>
+                    <Wind className="w-4 h-4 text-cyan-300 shrink-0" />
+                    <span
+                      className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap inline-block"
+                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {ui.regulation}
+                    </span>
+                    <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 text-[10px] text-cyan-400/80 font-mono">
+                      [R]
+                    </span>
                   </button>
                 )}
 
@@ -407,11 +425,18 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                     id="top-journal-btn"
                     onClick={onOpenJournal}
                     title={lang === 'en' ? 'Open Heart Compass Journal & Bag [J]' : 'Buka Jurnal Kompas Hati & Tas [J]'}
-                    className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:border-amber-400 hover:bg-slate-900 text-amber-300 shadow-md flex items-center gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-transform duration-75"
+                    className="group px-2.5 py-1.5 group-hover:px-3 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:border-amber-400 hover:bg-slate-900 text-amber-300 shadow-md flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-all duration-200"
                   >
-                    <BookOpen className="w-4 h-4 text-amber-400" />
-                    <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ui.journal}</span>
-                    <span className="text-[10px] text-amber-400/80 font-mono">[J]</span>
+                    <BookOpen className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span
+                      className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap inline-block"
+                      style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                    >
+                      {ui.journal}
+                    </span>
+                    <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 text-[10px] text-amber-400/80 font-mono">
+                      [J]
+                    </span>
                   </button>
                 )}
               </>
@@ -422,10 +447,12 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 id="top-ending-btn"
                 onClick={onOpenEnding}
                 title={lang === 'en' ? 'Open Graduation Certificate & Epilogue' : 'Buka Sertifikat Kelulusan & Menu Akhir Kisah'}
-                className="px-2.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 border border-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.6)] font-bold flex items-center gap-1.5 text-xs cursor-pointer active:scale-95 transition-transform duration-75"
+                className="group px-2.5 py-1.5 group-hover:px-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 border border-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.6)] font-bold flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs cursor-pointer active:scale-95 transition-all duration-200"
               >
-                <Award className="w-4 h-4 text-slate-950" />
-                <span>{ui.certificate}</span>
+                <Award className="w-4 h-4 text-slate-950 shrink-0" />
+                <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap inline-block">
+                  {ui.certificate}
+                </span>
               </button>
             )}
 
@@ -434,11 +461,18 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               id="top-settings-btn"
               onClick={() => onOpenSettings()}
               title={lang === 'en' ? 'Game Settings: Audio & Controls [O]' : 'Pengaturan Game: Audio & Kontrol Permainan [O]'}
-              className="px-3 py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-md flex items-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-transform duration-75"
+              className="group px-2.5 py-1.5 group-hover:px-3 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-md flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-all duration-200"
             >
-              <Sliders className="w-4 h-4 text-amber-400" />
-              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{ui.settings}</span>
-              <span className="text-[10px] text-slate-400 font-mono">[O]</span>
+              <Sliders className="w-4 h-4 text-amber-400 shrink-0" />
+              <span
+                className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap inline-block"
+                style={{ fontFamily: 'Galindo, cursive, sans-serif' }}
+              >
+                {ui.settings}
+              </span>
+              <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 text-[10px] text-slate-400 font-mono">
+                [O]
+              </span>
             </button>
 
             {/* Language Switcher Button */}
@@ -446,10 +480,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               id="top-language-toggle-btn"
               onClick={toggleLang}
               title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-              className="px-2.5 py-1.5 rounded-xl bg-slate-950/90 border border-amber-500/60 hover:border-amber-300 hover:bg-slate-900 active:scale-95 text-amber-300 shadow-lg backdrop-blur-md transition-transform duration-75 flex items-center gap-1 text-xs font-semibold cursor-pointer touch-manipulation"
+              className="group px-2.5 py-1.5 group-hover:px-3 rounded-xl bg-slate-950/90 border border-amber-500/60 hover:border-amber-300 hover:bg-slate-900 active:scale-95 text-amber-300 shadow-lg backdrop-blur-md transition-all duration-200 flex items-center justify-center gap-0 group-hover:gap-1 text-xs font-semibold cursor-pointer touch-manipulation"
             >
-              <Globe className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-pixel text-[8px] sm:text-[9px] font-bold">
+              <Globe className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-[40px] group-hover:opacity-100 transition-all duration-200 whitespace-nowrap font-pixel text-[8px] sm:text-[9px] font-bold">
                 {lang === 'id' ? 'ID' : 'EN'}
               </span>
             </button>
@@ -576,8 +610,10 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   className="w-full p-2.5 rounded-xl bg-gradient-to-r from-amber-950/80 via-slate-800 to-pink-950/80 hover:bg-slate-750 active:bg-slate-700 border-2 border-amber-400/80 hover:border-amber-300 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-xl text-amber-300">
-                      📜
+                    <div className="w-9 h-9 rounded-lg bg-amber-500/20 border border-amber-400/60 flex items-center justify-center text-amber-300">
+                      <span className="w-5 h-5 rounded-full border-2 border-amber-300 bg-amber-400/20 text-amber-300 flex items-center justify-center font-serif italic font-bold text-sm leading-none shadow-[0_0_8px_rgba(245,158,11,0.5)] select-none">
+                        i
+                      </span>
                     </div>
                     <div>
                       <div className="font-bold text-xs text-amber-200">

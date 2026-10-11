@@ -194,14 +194,17 @@ export const MissionNotificationModal: React.FC<MissionNotificationModalProps> =
               {mission.step <= 4 ? (lang === 'en' ? `Mission ${mission.step} Target:` : `Target Misi ${mission.step}:`) : (lang === 'en' ? 'Mission Status:' : 'Status Misi:')}
             </span>
             <p
-              style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
-              className="text-[10px] sm:text-[13px] text-slate-900 font-semibold leading-snug sm:leading-relaxed break-words"
+              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '12px' }}
+              className="text-slate-900 font-semibold leading-snug sm:leading-relaxed break-words"
             >
               {mission.hint}
             </p>
             <div className="text-[8px] sm:text-[9px] text-amber-800 bg-amber-50 rounded-lg p-1 sm:p-1.5 border border-amber-200 flex items-center gap-1 mt-0.5">
               <span className="text-amber-700 font-bold shrink-0">{lang === 'en' ? 'Hint:' : 'Petunjuk:'}</span>
-              <span className="text-[8px] sm:text-[9px] leading-snug">
+              <span
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 'bold', fontSize: '12px' }}
+                className="leading-snug"
+              >
                 {mission.step <= 4 ? (
                   lang === 'en' ? (
                     <>Follow the golden arrow towards {targetCharacter.name}.</>

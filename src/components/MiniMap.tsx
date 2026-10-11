@@ -1156,7 +1156,13 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                       : 'text-amber-400'
                   }`}
                 />
-                <span className="font-pixel text-[8px] text-amber-300 font-bold tracking-tight">
+                <span
+                  style={{
+                    fontFamily: 'Galindo, cursive, sans-serif',
+                    fontSize: '14px',
+                  }}
+                  className="text-amber-300 font-bold tracking-tight"
+                >
                   {lang === 'en' ? 'MAP' : 'PETA'}
                 </span>
 
@@ -1244,7 +1250,13 @@ export const MiniMap: React.FC<MiniMapProps> = ({
                       : 'text-amber-400'
                   }`}
                 />
-                <span className="font-pixel text-[8.5px] text-amber-300 font-bold tracking-tight">
+                <span
+                  style={{
+                    fontFamily: 'Galindo, cursive, sans-serif',
+                    fontSize: '14px',
+                  }}
+                  className="text-amber-300 font-bold tracking-tight"
+                >
                   {lang === 'en' ? 'WORLD MAP' : 'PETA DUNIA'}
                 </span>
               </div>

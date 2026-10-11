@@ -4337,7 +4337,7 @@ export default function App() {
       {!showStartMenu && hasCompletedIntroTutorial && !currentDialogue && (
         <div
           id="quest-tracker-banner"
-          className={`fixed top-13 sm:top-14 md:top-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-all duration-300 animate-fade-in-slide-down ${
+          className={`fixed top-21 sm:top-20 md:top-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-all duration-300 animate-fade-in-slide-down ${
             isMissionBannerMinimized
               ? 'w-auto max-w-fit'
               : 'w-[94%] sm:w-[90%] max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-3xl'
@@ -4376,9 +4376,9 @@ export default function App() {
             {/* Instruction Text */}
             <p
               style={{
-                fontFamily: 'Plus Jakarta Sans',
-                fontWeight: 'bold',
-                lineHeight: '18px',
+                fontFamily: 'Galindo, cursive, sans-serif',
+                fontWeight: 'normal',
+                lineHeight: '16px',
                 fontSize: '13px',
                 color: '#460000',
                 textAlign: 'justify',

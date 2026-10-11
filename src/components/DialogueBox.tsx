@@ -77,39 +77,34 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   const processedThought = dialogue.thoughtBubble ? formatName(dialogue.thoughtBubble) : undefined;
 
   // Special Story Narrator Prologue (teks perkalimat muncul dengan fade & tombol lanjut)
+  // Split dialogue into sentences based on punctuation (. ! ? ...)
+  const sentences = useMemo(() => {
+    const text = processedFullText.trim();
+    if (!text) return [];
+    // Match sentence ending with punctuation (. ! ?) or end of string, including trailing quotes
+    const matches = text.match(/[^.!?]+(?:[.!?]+["'”’\)]*|$)/g);
+    if (!matches) return [text];
+    const cleaned = matches.map((s) => s.trim()).filter((s) => s.length > 0);
+    return cleaned.length > 0 ? cleaned : [text];
+  }, [processedFullText]);
+
+  const [sentenceIndex, setSentenceIndex] = useState(0);
+
+  // Special Story Narrator Prologue check
   const isNarratorPrologue = Boolean(
     dialogue.id === 'intro_start' ||
     dialogue.speaker?.includes('Narator') ||
     dialogue.speaker?.includes('Narrator')
   );
 
-  const [narratorSentenceIndex, setNarratorSentenceIndex] = useState(0);
-
-  // Split processed text into sentences based on punctuation (. ! ? ...)
-  const narratorSentences = useMemo(() => {
-    if (!isNarratorPrologue) return [];
-    const text = processedFullText.trim();
-    // Match sentence ending with punctuation or end of text
-    const matches = text.match(/[^.!?]+(?:[.!?]+|$)/g);
-    if (!matches) return [text];
-    const cleaned = matches.map((s) => s.trim()).filter((s) => s.length > 0);
-    return cleaned.length > 0 ? cleaned : [text];
-  }, [isNarratorPrologue, processedFullText]);
-
-  // Reset sentence index whenever dialogue.id changes
+  // Reset sentence index and choices view whenever dialogue.id changes
   useEffect(() => {
-    setNarratorSentenceIndex(0);
+    setSentenceIndex(0);
+    setShowChoices(false);
   }, [dialogue.id]);
 
-  const handleNextNarratorSentence = useCallback(() => {
-    if (narratorSentenceIndex < narratorSentences.length - 1) {
-      sound.playMenuSelect();
-      setNarratorSentenceIndex((prev) => prev + 1);
-    } else {
-      sound.playMenuSelect();
-      onNext();
-    }
-  }, [narratorSentenceIndex, narratorSentences.length, onNext]);
+  const currentSentence = sentences[sentenceIndex] || processedFullText;
+  const isLastSentence = sentenceIndex >= sentences.length - 1;
 
   // Track wrong answers for the current dialogue session to highlight them
   const wrongChoiceIdsRef = useRef<Record<string, string[]>>({});
@@ -136,18 +131,47 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     ))
   );
 
-  // Instantly finish typewriter effect to allow player to read full text before choosing response
+  // Instantly finish typewriter effect to allow player to read current sentence immediately
   const finishTypingInstantly = useCallback(() => {
     if (typewriterIntervalRef.current) {
       clearInterval(typewriterIntervalRef.current);
       typewriterIntervalRef.current = null;
     }
-    setDisplayedText(processedFullText);
+    setDisplayedText(currentSentence);
     setIsTyping(false);
     typingFinishedTimeRef.current = Date.now();
-  }, [processedFullText]);
+  }, [currentSentence]);
 
-  // Typewriter effect (teks bergulir) - scrolls text first, player then clicks Pilih Respon
+  // Handler to advance sentence by sentence or reveal choices / next dialogue
+  const handleNextSentence = useCallback(() => {
+    if (isTyping) {
+      finishTypingInstantly();
+      return;
+    }
+    if (sentenceIndex < sentences.length - 1) {
+      sound.playMenuSelect();
+      setSentenceIndex((prev) => prev + 1);
+    } else {
+      if (isWrongFeedback) {
+        onNext();
+      } else if (dialogue.choices && dialogue.choices.length > 0) {
+        sound.playMenuSelect();
+        setShowChoices(true);
+      } else {
+        onNext();
+      }
+    }
+  }, [
+    isTyping,
+    finishTypingInstantly,
+    sentenceIndex,
+    sentences.length,
+    isWrongFeedback,
+    dialogue.choices,
+    onNext,
+  ]);
+
+  // Typewriter effect (teks bergulir per kalimat)
   useEffect(() => {
     if (typewriterIntervalRef.current) {
       clearInterval(typewriterIntervalRef.current);
@@ -156,19 +180,18 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
     if (isNarratorPrologue) {
       setIsTyping(false);
-      setDisplayedText(processedFullText);
+      setDisplayedText(currentSentence);
       return;
     }
 
     setDisplayedText('');
     setIsTyping(true);
-    setShowChoices(false);
     setFeedbackStatus('idle');
     setSelectedChoiceId(null);
     typingFinishedTimeRef.current = 0;
 
     let index = 0;
-    const fullText = processedFullText;
+    const fullText = currentSentence;
 
     typewriterIntervalRef.current = setInterval(() => {
       if (index < fullText.length) {
@@ -193,7 +216,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         typewriterIntervalRef.current = null;
       }
     };
-  }, [dialogue.id, processedFullText]);
+  }, [dialogue.id, sentenceIndex, currentSentence, isNarratorPrologue]);
 
   // Handle immediate text skip or exit
   const handleExitOrSkip = () => {
@@ -252,7 +275,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
       if (isNarratorPrologue) {
         if (e.code === 'Space' || e.key === 'Enter') {
           e.preventDefault();
-          handleNextNarratorSentence();
+          handleNextSentence();
           return;
         }
       }
@@ -286,24 +309,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         } else {
           if (e.code === 'Space' || e.key === 'Enter') {
             e.preventDefault();
-            if (isTyping) {
-              finishTypingInstantly();
-            } else {
-              sound.playMenuSelect();
-              setShowChoices(true);
-            }
+            handleNextSentence();
           }
         }
       } else {
         if (e.code === 'Space' || e.key === 'Enter') {
           e.preventDefault();
-          if (isWrongFeedback) {
-            onNext();
-          } else if (isTyping) {
-            finishTypingInstantly();
-          } else {
-            onNext();
-          }
+          handleNextSentence();
         }
       }
     };
@@ -312,16 +324,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
     dialogue,
-    isTyping,
     showChoices,
-    finishTypingInstantly,
+    handleNextSentence,
     onNext,
     onClose,
     feedbackStatus,
-    isWrongFeedback,
     onToggleCompass,
     isNarratorPrologue,
-    handleNextNarratorSentence,
   ]);
 
   // Character portraits rendering
@@ -472,8 +481,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
   // Standalone cinematic presentation for Story Narrator: Text appears sentence-by-sentence with fade effect
   if (isNarratorPrologue) {
-    const currentSentence = narratorSentences[narratorSentenceIndex] || processedFullText;
-    const isLastSentence = narratorSentenceIndex >= narratorSentences.length - 1;
+    const narratorSentence = sentences[sentenceIndex] || processedFullText;
 
     return (
       <div className="fixed inset-0 z-40 flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-md backdrop-filter transition-all duration-500 animate-fade-in pointer-events-auto">
@@ -488,32 +496,32 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             <span>{lang === 'en' ? 'STORY PROLOGUE' : 'PROLOG CERITA'}</span>
             <span className="text-amber-500">•</span>
             <span className="text-amber-200">
-              {narratorSentenceIndex + 1} / {narratorSentences.length}
+              {sentenceIndex + 1} / {sentences.length}
             </span>
           </div>
 
           {/* Smooth Fade-in Sentence Text (one sentence at a time, keyed by index) */}
           <div
-            key={narratorSentenceIndex}
+            key={sentenceIndex}
             className="min-h-[72px] sm:min-h-[82px] flex items-center justify-center animate-fade-in duration-500 px-2 sm:px-3 select-text"
           >
             <p
-              style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+              style={{ fontFamily: 'Galindo, cursive, sans-serif' }}
               className="text-[13.5px] sm:text-[15px] leading-relaxed text-amber-50 font-medium tracking-wide"
             >
-              "{currentSentence}"
+              "{narratorSentence}"
             </p>
           </div>
 
           {/* Sentence progress dots */}
           <div className="flex items-center gap-1.5 py-0.5">
-            {narratorSentences.map((_, idx) => (
+            {sentences.map((_, idx) => (
               <span
                 key={idx}
                 className={`transition-all duration-300 rounded-full ${
-                  idx === narratorSentenceIndex
+                  idx === sentenceIndex
                     ? 'w-5 h-1.5 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]'
-                    : idx < narratorSentenceIndex
+                    : idx < sentenceIndex
                     ? 'w-1.5 h-1.5 bg-amber-400/60'
                     : 'w-1.5 h-1.5 bg-slate-700'
                 }`}
@@ -528,7 +536,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             </span>
             <button
               id="narrator-continue-btn"
-              onClick={handleNextNarratorSentence}
+              onClick={handleNextSentence}
               className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-pixel text-[9px] sm:text-[10px] font-bold shadow-[0_3px_15px_rgba(245,158,11,0.4)] active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer hover:shadow-[0_4px_20px_rgba(245,158,11,0.6)]"
             >
               <span>{isLastSentence ? (lang === 'en' ? 'Continue' : 'Lanjut') : (lang === 'en' ? 'Continue' : 'Lanjut')}</span>
@@ -713,10 +721,41 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               </div>
             )}
 
-            {/* Spoken Text with retro pixel font */}
-            <p className="font-pixel text-[10px] sm:text-[11px] leading-[1.8] text-slate-100 min-h-[48px] tracking-wide break-words">
+            {/* Sentence Progress Indicator when there are multiple sentences */}
+            {sentences.length > 1 && (
+              <div className="flex items-center justify-between text-[8px] sm:text-[8.5px] font-pixel text-slate-400 pb-0.5">
+                <span className="text-amber-300/90 font-bold">
+                  {lang === 'en'
+                    ? `Sentence ${sentenceIndex + 1} of ${sentences.length}`
+                    : `Kalimat ${sentenceIndex + 1} dari ${sentences.length}`}
+                </span>
+                <div className="flex items-center gap-1">
+                  {sentences.map((_, idx) => (
+                    <span
+                      key={idx}
+                      className={`transition-all duration-300 rounded-full ${
+                        idx === sentenceIndex
+                          ? 'w-4 h-1.5 bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.8)]'
+                          : idx < sentenceIndex
+                          ? 'w-1.5 h-1.5 bg-amber-400/60'
+                          : 'w-1.5 h-1.5 bg-slate-700'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Spoken Text with Galindo */}
+            <p
+              style={{
+                fontFamily: 'Galindo, cursive, sans-serif',
+                fontSize: '16.5px',
+              }}
+              className="text-slate-100 min-h-[46px] tracking-normal break-words select-text"
+            >
               {displayedText}
-              {isTyping && <span className="inline-block w-2 h-3 bg-amber-400 ml-1 animate-pulse" />}
+              {isTyping && <span className="inline-block w-2 h-3.5 bg-amber-400 ml-1.5 animate-pulse align-middle" />}
             </p>
 
             {isTyping && (
@@ -852,6 +891,30 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     <span>{lang === 'en' ? '⚡ Skip Text Animation [Space]' : '⚡ Lewati Animasi Teks [Spasi]'}</span>
                   </button>
                 </div>
+              ) : !isLastSentence ? (
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-slate-900/80 border border-amber-500/40 rounded-xl p-2 sm:p-2.5 animate-fade-in shadow-xs">
+                  <div className="flex items-center gap-1.5 text-slate-300 font-pixel text-[8px] sm:text-[9px]">
+                    <span className="text-amber-400 font-bold">
+                      {lang === 'en'
+                        ? `Sentence ${sentenceIndex + 1} of ${sentences.length}`
+                        : `Kalimat ${sentenceIndex + 1} dari ${sentences.length}`}
+                    </span>
+                    <span className="text-slate-500">•</span>
+                    <span>
+                      {lang === 'en'
+                        ? 'Click Continue to read the next sentence'
+                        : 'Klik Lanjut untuk membaca kalimat berikutnya'}
+                    </span>
+                  </div>
+                  <button
+                    id="dialogue-next-sentence-btn"
+                    onClick={handleNextSentence}
+                    className="w-full sm:w-auto px-4 py-1.5 rounded-xl font-pixel font-bold text-[9px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)] flex items-center justify-center gap-1.5 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+                  >
+                    <span>{lang === 'en' ? 'CONTINUE [SPACE]' : 'LANJUT [SPASI]'}</span>
+                    <span className="text-xs">▶</span>
+                  </button>
+                </div>
               ) : (
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-amber-950/30 border border-amber-500/40 rounded-xl p-2 sm:p-2.5 animate-fade-in">
                   <div className="flex items-center gap-1.5 text-amber-200 font-pixel text-[8px] sm:text-[9px]">
@@ -873,59 +936,69 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               )
             )
           ) : (
-            <div className="flex justify-end items-center gap-2">
-              {isRegulationTrigger && !isTyping && onSkipRegulation && (
+            <div className="flex justify-between items-center gap-2">
+              {sentences.length > 1 ? (
+                <div className="flex items-center gap-1.5 text-slate-400 font-pixel text-[8px] sm:text-[9px]">
+                  <span className="text-amber-300 font-bold">
+                    {sentenceIndex + 1}/{sentences.length}
+                  </span>
+                  <span className="text-slate-500">•</span>
+                  <span>
+                    {!isLastSentence
+                      ? (lang === 'en' ? 'Next sentence available' : 'Ada kalimat berikutnya')
+                      : (lang === 'en' ? 'End of dialogue' : 'Akhir percakapan')}
+                  </span>
+                </div>
+              ) : <div />}
+
+              <div className="flex items-center gap-2">
+                {isRegulationTrigger && !isTyping && onSkipRegulation && (
+                  <button
+                    id="dialogue-skip-regulation-btn"
+                    onClick={onSkipRegulation}
+                    className="px-2.5 py-1.5 rounded-lg font-pixel text-[8px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-transform duration-75 border border-slate-700 cursor-pointer active:scale-95 touch-manipulation"
+                    title={lang === 'en' ? 'Skip exercise and continue to next conversation' : 'Lewati latihan dan langsung lanjut ke percakapan berikutnya'}
+                  >
+                    {lang === 'en' ? 'Skip Exercise ▶' : 'Lewati Latihan ▶'}
+                  </button>
+                )}
                 <button
-                  id="dialogue-skip-regulation-btn"
-                  onClick={onSkipRegulation}
-                  className="px-2.5 py-1.5 rounded-lg font-pixel text-[8px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-transform duration-75 border border-slate-700 cursor-pointer active:scale-95 touch-manipulation"
-                  title={lang === 'en' ? 'Skip exercise and continue to next conversation' : 'Lewati latihan dan langsung lanjut ke percakapan berikutnya'}
+                  id="dialogue-next-btn"
+                  onClick={handleNextSentence}
+                  className={`px-3.5 py-1.5 rounded-lg font-pixel font-bold text-[9px] sm:text-[10px] flex items-center gap-1.5 shadow transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer ${
+                    isEndingDialogue && !isTyping && isLastSentence
+                      ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.55)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
+                      : isRegulationTrigger && !isTyping && isLastSentence
+                      ? 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 border border-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.55)] hover:shadow-[0_0_30px_rgba(6,182,212,0.85)]'
+                      : isWrongFeedback && isLastSentence
+                      ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.65)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
+                      : 'bg-amber-400 hover:bg-amber-300 text-slate-950 hover:shadow-[0_0_20px_rgba(245,158,11,0.65)]'
+                  }`}
                 >
-                  {lang === 'en' ? 'Skip Exercise ▶' : 'Lewati Latihan ▶'}
+                  <span>
+                    {isWrongFeedback && isLastSentence
+                      ? (lang === 'en' ? 'TRY CHOOSING AGAIN [SPACE]' : 'COBA PILIH LAGI [SPASI]')
+                      : isTyping
+                      ? (lang === 'en' ? 'SKIP EFFECT' : 'LEWATI EFEK')
+                      : !isLastSentence
+                      ? (lang === 'en' ? 'CONTINUE [SPACE]' : 'LANJUT [SPASI]')
+                      : isEndingDialogue
+                      ? (lang === 'en' ? 'FINISH & VIEW CERTIFICATE [SPACE]' : 'SELESAIKAN & LIHAT SERTIFIKAT [SPASI]')
+                      : isRegulationTrigger
+                      ? (lang === 'en' ? 'START EXERCISE WITH KIKI [SPACE]' : 'MULAI LATIHAN BERSAMA KIKI [SPASI]')
+                      : (lang === 'en' ? 'CONTINUE [SPACE]' : 'LANJUT [SPASI]')}
+                  </span>
+                  <span className="text-xs">
+                    {isEndingDialogue && !isTyping && isLastSentence
+                      ? '🏆'
+                      : isRegulationTrigger && !isTyping && isLastSentence
+                      ? '🧘'
+                      : isWrongFeedback && isLastSentence
+                      ? '↩'
+                      : '▶'}
+                  </span>
                 </button>
-              )}
-              <button
-                id="dialogue-next-btn"
-                onClick={() => {
-                  if (isWrongFeedback) {
-                    onNext();
-                  } else if (isTyping) {
-                    finishTypingInstantly();
-                  } else {
-                    onNext();
-                  }
-                }}
-                className={`px-3.5 py-1.5 rounded-lg font-pixel font-bold text-[9px] sm:text-[10px] flex items-center gap-1.5 shadow transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer ${
-                  isEndingDialogue && !isTyping
-                    ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.55)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
-                    : isRegulationTrigger && !isTyping
-                    ? 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 border border-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.55)] hover:shadow-[0_0_30px_rgba(6,182,212,0.85)]'
-                    : isWrongFeedback
-                    ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.65)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
-                    : 'bg-amber-400 hover:bg-amber-300 text-slate-950 hover:shadow-[0_0_20px_rgba(245,158,11,0.65)]'
-                }`}
-              >
-                <span>
-                  {isWrongFeedback
-                    ? (lang === 'en' ? 'TRY CHOOSING AGAIN [SPACE]' : 'COBA PILIH LAGI [SPASI]')
-                    : isTyping
-                    ? (lang === 'en' ? 'SKIP EFFECT' : 'LEWATI EFEK')
-                    : isEndingDialogue
-                    ? (lang === 'en' ? 'FINISH & VIEW CERTIFICATE [SPACE]' : 'SELESAIKAN & LIHAT SERTIFIKAT [SPASI]')
-                    : isRegulationTrigger
-                    ? (lang === 'en' ? 'START EXERCISE WITH KIKI [SPACE]' : 'MULAI LATIHAN BERSAMA KIKI [SPASI]')
-                    : (lang === 'en' ? 'CONTINUE [SPACE]' : 'LANJUT [SPASI]')}
-                </span>
-                <span className="text-xs">
-                  {isEndingDialogue && !isTyping
-                    ? '🏆'
-                    : isRegulationTrigger && !isTyping
-                    ? '🧘'
-                    : isWrongFeedback
-                    ? '↩'
-                    : '▶'}
-                </span>
-              </button>
+              </div>
             </div>
           )}
         </div>
