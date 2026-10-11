@@ -159,23 +159,41 @@ export function renderTexturedTile(
         // River Waterfall Top Crest & Cascading Curtain
         ctx.fillStyle = '#334155';
         ctx.fillRect(x, y, 6, 2); // Rock weir shelf
-        ctx.fillStyle = isBridgeRestored ? '#38bdf8' : '#475569';
-        ctx.fillRect(x, y + 2, 6, 4); // Cascading water body
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(x + 1, y + 2, 2, 4); // Whitewater torrent stream
-        ctx.fillRect(x + 4, y + 3, 2, 3);
-        if (col === 22) {
+        if (isBridgeRestored) {
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(x, y + 2, 6, 4); // Cascading water body
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x + 1, y + 2, 2, 4); // Whitewater torrent stream
+          ctx.fillRect(x + 4, y + 3, 2, 3);
+        } else {
+          // Mode Kabut: Tebing cadas batu hening (tidak mengalir)
           ctx.fillStyle = '#1e293b';
+          ctx.fillRect(x, y + 2, 6, 4);
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(x + 1, y + 2, 2, 4);
+        }
+        if (col === 22) {
+          ctx.fillStyle = '#0f172a';
           ctx.fillRect(x + 5, y + 3, 2, 2); // Center crag boulder
         }
       } else if (row === 12 && (col === 22 || col === 23)) {
         // River Waterfall Plunge Basin & Churning Foam Pool
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(x, y, 6, 3); // Churning white impact froth
-        ctx.fillStyle = isBridgeRestored ? '#7dd3fc' : '#64748b';
-        ctx.fillRect(x + 1, y + 3, 4, 2); // Impact pool ripple
-        ctx.fillStyle = isBridgeRestored ? '#0284c7' : '#334155';
-        ctx.fillRect(x, y + 5, 6, 1); // Downstream reach
+        if (isBridgeRestored) {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, y, 6, 3); // Churning white impact froth
+          ctx.fillStyle = '#7dd3fc';
+          ctx.fillRect(x + 1, y + 3, 4, 2); // Impact pool ripple
+          ctx.fillStyle = '#0284c7';
+          ctx.fillRect(x, y + 5, 6, 1); // Downstream reach
+        } else {
+          // Mode Kabut: Kolam tenang berair hening tanpa deburan busa
+          ctx.fillStyle = '#090d16';
+          ctx.fillRect(x, y, 6, 4);
+          ctx.fillStyle = '#0f172a';
+          ctx.fillRect(x + 1, y + 1, 4, 3);
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(x, y + 4, 6, 2);
+        }
       }
       break;
     }

@@ -9338,157 +9338,231 @@ export class GameRenderer {
     // =========================================================================
     // 2. ACCELERATING UPPER RIVER LIP (y: 366..374)
     // =========================================================================
-    // Deep river water surging forward toward the cascade brink
-    ctx.fillStyle = waterDeep;
-    ctx.fillRect(704, 366, 64, 4);
-    ctx.fillStyle = waterMid;
-    ctx.fillRect(705, 369, 62, 3);
-    ctx.fillStyle = waterBright;
-    ctx.fillRect(706, 371, 60, 2);
+    // 2. ACCELERATING UPPER RIVER LIP (y: 366..374)
+    // =========================================================================
+    if (isRestored) {
+      // Deep river water surging forward toward the cascade brink
+      ctx.fillStyle = waterDeep;
+      ctx.fillRect(704, 366, 64, 4);
+      ctx.fillStyle = waterMid;
+      ctx.fillRect(705, 369, 62, 3);
+      ctx.fillStyle = waterBright;
+      ctx.fillRect(706, 371, 60, 2);
 
-    // Accelerating whitewater comb over the crest edge
-    for (let px = 706; px <= 764; px += 4) {
-      const tooth = Math.sin(this.tickCount * 0.25 + px * 0.4) > 0 ? 3 : 2;
-      ctx.fillStyle = waterFoam;
-      ctx.fillRect(px, 372, 3, tooth);
-      ctx.fillStyle = waterIce;
-      ctx.fillRect(px, 372 + tooth, 3, 1);
+      // Accelerating whitewater comb over the crest edge
+      for (let px = 706; px <= 764; px += 4) {
+        const tooth = Math.sin(this.tickCount * 0.25 + px * 0.4) > 0 ? 3 : 2;
+        ctx.fillStyle = waterFoam;
+        ctx.fillRect(px, 372, 3, tooth);
+        ctx.fillStyle = waterIce;
+        ctx.fillRect(px, 372 + tooth, 3, 1);
+      }
+    } else {
+      // MODE KABUT: Air sungai tenang di hulu tertahan oleh bibir batuan cadas (tidak tumpah mengalir)
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(704, 366, 64, 4);
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(705, 369, 62, 3);
+      ctx.fillStyle = rockMid;
+      ctx.fillRect(706, 371, 60, 3);
+      ctx.fillStyle = rockDark;
+      ctx.fillRect(706, 373, 60, 1);
     }
 
     // =========================================================================
-    // 3. VERTICAL CASCADING WATERFALL CURTAIN (y: 374..408)
+    // 3. VERTICAL WATERFALL SECTION / CLIFF FACE (y: 374..408)
     // =========================================================================
-    // Deep dark backing curtain shadow
-    ctx.fillStyle = waterDeep;
-    ctx.fillRect(704, 374, 64, 34);
-
-    // Left Chute: x = 706..731 (width 25px)
-    // Right Chute: x = 741..766 (width 25px)
-    // Divided by the center crag boulder at x = 732..740
-    const chutes = [
-      { startX: 706, endX: 731, id: 'left' },
-      { startX: 741, endX: 766, id: 'right' },
-    ];
-
-    chutes.forEach((chute) => {
-      // 1. Mid-tone rushing water body
-      ctx.fillStyle = waterMid;
-      ctx.fillRect(chute.startX, 374, chute.endX - chute.startX, 34);
-
-      // 2. Animated vertical torrent ribbons (each 3-5px wide)
-      const chuteW = chute.endX - chute.startX;
-      const numRibbons = Math.floor(chuteW / 4);
-
-      for (let r = 0; r < numRibbons; r++) {
-        const rx = chute.startX + r * 4;
-        // Animated flow offset moving downward at high speed
-        const speed = (r % 2 === 0 ? 3.8 : 4.6);
-        const flowOffset = (this.tickCount * speed + r * 11) % 34;
-
-        // Bright energetic cyan water stream
-        ctx.fillStyle = waterBright;
-        ctx.fillRect(rx, 374, 3, 34);
-
-        // Ice cyan highlights
-        ctx.fillStyle = waterIce;
-        const hlY = (374 + flowOffset) % 34 + 374;
-        ctx.fillRect(rx, hlY, 2, 8);
-
-        // Pure white foaming crests cascading down
-        ctx.fillStyle = waterFoam;
-        const foamY1 = (374 + flowOffset * 1.3) % 34 + 374;
-        const foamY2 = (374 + flowOffset * 0.7 + 16) % 34 + 374;
-        ctx.fillRect(rx + 1, foamY1, 2, 4);
-        ctx.fillRect(rx, foamY2, 2, 3);
-      }
-    });
-
-    // Central crag boulder: x = 731..741, y = 384..400
-    // Protrudes straight out of the falling water, breaking the curtain
-    ctx.fillStyle = rockDark;
-    ctx.fillRect(731, 384, 11, 16);
-    ctx.fillStyle = rockMid;
-    ctx.fillRect(732, 385, 9, 14);
-    ctx.fillStyle = rockLight;
-    ctx.fillRect(733, 386, 7, 6);
-    ctx.fillStyle = rockHighlight;
-    ctx.fillRect(734, 387, 3, 2);
-
     if (isRestored) {
+      // Deep dark backing curtain shadow
+      ctx.fillStyle = waterDeep;
+      ctx.fillRect(704, 374, 64, 34);
+
+      // Left Chute: x = 706..731 (width 25px)
+      // Right Chute: x = 741..766 (width 25px)
+      // Divided by the center crag boulder at x = 732..740
+      const chutes = [
+        { startX: 706, endX: 731, id: 'left' },
+        { startX: 741, endX: 766, id: 'right' },
+      ];
+
+      chutes.forEach((chute) => {
+        // 1. Mid-tone rushing water body
+        ctx.fillStyle = waterMid;
+        ctx.fillRect(chute.startX, 374, chute.endX - chute.startX, 34);
+
+        // 2. Animated vertical torrent ribbons (each 3-5px wide)
+        const chuteW = chute.endX - chute.startX;
+        const numRibbons = Math.floor(chuteW / 4);
+
+        for (let r = 0; r < numRibbons; r++) {
+          const rx = chute.startX + r * 4;
+          // Animated flow offset moving downward at high speed
+          const speed = (r % 2 === 0 ? 3.8 : 4.6);
+          const flowOffset = (this.tickCount * speed + r * 11) % 34;
+
+          // Bright energetic cyan water stream
+          ctx.fillStyle = waterBright;
+          ctx.fillRect(rx, 374, 3, 34);
+
+          // Ice cyan highlights
+          ctx.fillStyle = waterIce;
+          const hlY = (374 + flowOffset) % 34 + 374;
+          ctx.fillRect(rx, hlY, 2, 8);
+
+          // Pure white foaming crests cascading down
+          ctx.fillStyle = waterFoam;
+          const foamY1 = (374 + flowOffset * 1.3) % 34 + 374;
+          const foamY2 = (374 + flowOffset * 0.7 + 16) % 34 + 374;
+          ctx.fillRect(rx + 1, foamY1, 2, 4);
+          ctx.fillRect(rx, foamY2, 2, 3);
+        }
+      });
+
+      // Central crag boulder: x = 731..741, y = 384..400
+      ctx.fillStyle = rockDark;
+      ctx.fillRect(731, 384, 11, 16);
+      ctx.fillStyle = rockMid;
+      ctx.fillRect(732, 385, 9, 14);
+      ctx.fillStyle = rockLight;
+      ctx.fillRect(733, 386, 7, 6);
+      ctx.fillStyle = rockHighlight;
+      ctx.fillRect(734, 387, 3, 2);
+
       // Velvet green moss on rock crown
       ctx.fillStyle = mossDark;
       ctx.fillRect(732, 385, 7, 3);
       ctx.fillStyle = mossLight;
       ctx.fillRect(733, 385, 5, 1);
-    }
 
-    // Water crashing violently onto the top and sides of the center boulder
-    // Foaming rooster-tail V-crest
-    ctx.fillStyle = waterFoam;
-    ctx.fillRect(730, 383, 13, 2);
-    ctx.fillRect(729, 385, 3, 10);
-    ctx.fillRect(741, 385, 3, 10);
-    ctx.fillStyle = waterIce;
-    ctx.fillRect(728, 386, 2, 8);
-    ctx.fillRect(743, 386, 2, 8);
+      // Water crashing violently onto the top and sides of the center boulder
+      ctx.fillStyle = waterFoam;
+      ctx.fillRect(730, 383, 13, 2);
+      ctx.fillRect(729, 385, 3, 10);
+      ctx.fillRect(741, 385, 3, 10);
+      ctx.fillStyle = waterIce;
+      ctx.fillRect(728, 386, 2, 8);
+      ctx.fillRect(743, 386, 2, 8);
+    } else {
+      // MODE KABUT: Air terjun TIDAK mengalir - tebing cadas batu ngarai tampak kering dan hening
+      ctx.fillStyle = rockDark;
+      ctx.fillRect(704, 374, 64, 34);
+
+      // Lapisan dinding batu ngarai alami (Natural layered basalt & shale cliff strata)
+      ctx.fillStyle = rockMid;
+      ctx.fillRect(706, 376, 58, 7);
+      ctx.fillRect(708, 385, 54, 8);
+      ctx.fillRect(706, 396, 58, 8);
+
+      // Garis kontur cadas & retakan batuan vertikal (Rock fissures & texture)
+      ctx.fillStyle = rockLight;
+      ctx.fillRect(712, 377, 10, 2);
+      ctx.fillRect(748, 378, 12, 2);
+      ctx.fillRect(720, 388, 14, 2);
+      ctx.fillRect(754, 398, 9, 2);
+
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(714, 376, 2, 26);
+      ctx.fillRect(726, 382, 3, 22);
+      ctx.fillRect(750, 378, 2, 24);
+      ctx.fillRect(760, 386, 2, 18);
+
+      // Batuan dingin statis (tanpa aliran air)
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(708, 383, 18, 3);
+      ctx.fillRect(746, 395, 18, 3);
+
+      // Central crag boulder berdiri sunyi di dinding tebing kering
+      ctx.fillStyle = rockDark;
+      ctx.fillRect(731, 384, 11, 16);
+      ctx.fillStyle = rockMid;
+      ctx.fillRect(732, 385, 9, 14);
+      ctx.fillStyle = rockLight;
+      ctx.fillRect(733, 386, 7, 6);
+      ctx.fillStyle = rockHighlight;
+      ctx.fillRect(734, 387, 3, 2);
+    }
 
     // =========================================================================
     // 4. PLUNGE BASIN & CHURNING FOAM POOL (y: 408..424)
     // =========================================================================
-    // Dark deep basin base
-    ctx.fillStyle = waterDeep;
-    ctx.fillRect(702, 408, 68, 16);
+    if (isRestored) {
+      // Dark deep basin base
+      ctx.fillStyle = waterDeep;
+      ctx.fillRect(702, 408, 68, 16);
 
-    // Boiling white froth blanket where the torrent strikes the basin
-    ctx.fillStyle = isRestored ? 'rgba(255, 255, 255, 0.95)' : 'rgba(226, 232, 240, 0.90)';
-    ctx.fillRect(704, 408, 64, 5);
+      // Boiling white froth blanket where the torrent strikes the basin
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.fillRect(704, 408, 64, 5);
 
-    // Pulsating frothing churn crests
-    for (let px = 704; px <= 766; px += 3) {
-      const bob = Math.sin(this.tickCount * 0.22 + px * 0.35) * 2.2;
+      // Pulsating frothing churn crests
+      for (let px = 704; px <= 766; px += 3) {
+        const bob = Math.sin(this.tickCount * 0.22 + px * 0.35) * 2.2;
+        ctx.fillStyle = waterFoam;
+        ctx.fillRect(px, 411 + bob, 3, 3);
+        ctx.fillStyle = waterIce;
+        ctx.fillRect(px, 414 + bob, 3, 2);
+      }
+
+      // Concentric expanding impact shockwave ripples in the plunge pool
+      const poolCenters = [
+        { x: 718, delay: 0 },
+        { x: 752, delay: 0.5 },
+      ];
+      poolCenters.forEach((pc) => {
+        const pulse1 = (this.tickCount * 0.045 + pc.delay) % 1;
+        const pulse2 = (this.tickCount * 0.045 + pc.delay + 0.5) % 1;
+
+        ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - pulse1) * 0.85})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.ellipse(pc.x, 414, 6 + pulse1 * 16, 2.5 + pulse1 * 4.5, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.strokeStyle = `rgba(186, 230, 253, ${(1 - pulse2) * 0.75})`;
+        ctx.beginPath();
+        ctx.ellipse(pc.x, 414, 6 + pulse2 * 16, 2.5 + pulse2 * 4.5, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+
+      // Swirling eddy foam pockets near the rock corners
+      const eddyLeft = Math.sin(this.tickCount * 0.15) * 2;
+      const eddyRight = Math.cos(this.tickCount * 0.15) * 2;
       ctx.fillStyle = waterFoam;
-      ctx.fillRect(px, 411 + bob, 3, 3);
-      ctx.fillStyle = waterIce;
-      ctx.fillRect(px, 414 + bob, 3, 2);
+      ctx.fillRect(704 + eddyLeft, 415, 4, 2);
+      ctx.fillRect(764 + eddyRight, 415, 4, 2);
+    } else {
+      // MODE KABUT: Kolam tenang berair hening & gelap, tanpa hantaman deburan air terjun
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(702, 408, 68, 16);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(704, 410, 64, 12);
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(708, 413, 54, 4);
+      ctx.fillRect(714, 419, 42, 3);
+      // Pantulan air hening halus
+      ctx.fillStyle = 'rgba(71, 85, 105, 0.35)';
+      ctx.fillRect(712, 414, 20, 1);
+      ctx.fillRect(742, 416, 18, 1);
     }
-
-    // Concentric expanding impact shockwave ripples in the plunge pool
-    const poolCenters = [
-      { x: 718, delay: 0 },
-      { x: 752, delay: 0.5 },
-    ];
-    poolCenters.forEach((pc) => {
-      const pulse1 = (this.tickCount * 0.045 + pc.delay) % 1;
-      const pulse2 = (this.tickCount * 0.045 + pc.delay + 0.5) % 1;
-
-      ctx.strokeStyle = `rgba(255, 255, 255, ${(1 - pulse1) * 0.85})`;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.ellipse(pc.x, 414, 6 + pulse1 * 16, 2.5 + pulse1 * 4.5, 0, 0, Math.PI * 2);
-      ctx.stroke();
-
-      ctx.strokeStyle = `rgba(186, 230, 253, ${(1 - pulse2) * 0.75})`;
-      ctx.beginPath();
-      ctx.ellipse(pc.x, 414, 6 + pulse2 * 16, 2.5 + pulse2 * 4.5, 0, 0, Math.PI * 2);
-      ctx.stroke();
-    });
-
-    // Swirling eddy foam pockets near the rock corners
-    const eddyLeft = Math.sin(this.tickCount * 0.15) * 2;
-    const eddyRight = Math.cos(this.tickCount * 0.15) * 2;
-    ctx.fillStyle = waterFoam;
-    ctx.fillRect(704 + eddyLeft, 415, 4, 2);
-    ctx.fillRect(764 + eddyRight, 415, 4, 2);
 
     // =========================================================================
     // 5. DOWNSTREAM RIVER FLOW TOWARDS BRIDGE (y: 424..444)
     // =========================================================================
-    // Surface current streaks carrying oxygenated whitewater southward to the bridge
-    for (let cy = 424; cy <= 442; cy += 4) {
-      const flowShift = Math.sin(this.tickCount * 0.08 + cy * 0.25) * 3;
-      ctx.fillStyle = isRestored ? 'rgba(125, 211, 252, 0.45)' : 'rgba(71, 85, 105, 0.40)';
-      ctx.fillRect(712 + flowShift, cy, 18, 1);
-      ctx.fillRect(742 - flowShift, cy + 2, 16, 1);
+    if (isRestored) {
+      // Surface current streaks carrying oxygenated whitewater southward to the bridge
+      for (let cy = 424; cy <= 442; cy += 4) {
+        const flowShift = Math.sin(this.tickCount * 0.08 + cy * 0.25) * 3;
+        ctx.fillStyle = 'rgba(125, 211, 252, 0.45)';
+        ctx.fillRect(712 + flowShift, cy, 18, 1);
+        ctx.fillRect(742 - flowShift, cy + 2, 16, 1);
+      }
+    } else {
+      // Arus air sungai tenang di mode kabut
+      for (let cy = 426; cy <= 440; cy += 6) {
+        ctx.fillStyle = 'rgba(30, 41, 59, 0.40)';
+        ctx.fillRect(714, cy, 16, 1);
+        ctx.fillRect(742, cy + 2, 14, 1);
+      }
     }
 
     // =========================================================================
@@ -9501,6 +9575,12 @@ export class GameRenderer {
    * Dedicated Particle Simulation for Waterfall Spray, Mist, Plunging Streaks, Foam, and Rainbow
    */
   private updateAndDrawWaterfallParticles(isRestored: boolean) {
+    if (!isRestored) {
+      if (this.waterfallParticles.length > 0) {
+        this.waterfallParticles = [];
+      }
+      return;
+    }
     const ctx = this.ctx;
 
     // --- 1. SPAWN PARTICLES ---

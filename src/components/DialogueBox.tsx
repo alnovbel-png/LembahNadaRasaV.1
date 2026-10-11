@@ -1,7 +1,17 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { DialogueNode, ChoiceOption } from '../types/game';
 import { sound } from '../utils/audio';
-import { Eye, MessageCircle, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
+import {
+  Eye,
+  MessageCircle,
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
+  Compass,
+  BookOpen,
+  Target,
+  User,
+} from 'lucide-react';
 import { CharacterPortrait } from './CharacterPortrait';
 import { useLanguage } from '../game/localization';
 
@@ -360,7 +370,55 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     dialogue.speakerRole?.includes('Penunjuk Misi')
   );
 
-  // Dynamic styling based on quiz feedback status
+  // Focus sequence check: 4 core prologue steps before mission dialogue
+  const isIntroPrologue = Boolean(
+    dialogue.id === 'intro_start' ||
+    dialogue.id === 'intro_start_2' ||
+    dialogue.id === 'intro_start_3' ||
+    dialogue.id === 'kiki_wait' ||
+    dialogue.id?.startsWith('intro_start')
+  );
+
+  const introStep =
+    dialogue.id === 'intro_start'
+      ? {
+          step: 1,
+          total: 4,
+          icon: BookOpen,
+          badgeId: 'PROLOG CERITA • NARATOR',
+          badgeEn: 'STORY PROLOGUE • NARRATOR',
+          color: 'amber' as const,
+        }
+      : dialogue.id === 'intro_start_2'
+      ? {
+          step: 2,
+          total: 4,
+          icon: User,
+          badgeId: `PANGGILAN PETUALANG • ${formatName('Ezzel')}`,
+          badgeEn: `CALL OF ADVENTURE • ${formatName('Ezzel')}`,
+          color: 'cyan' as const,
+        }
+      : dialogue.id === 'intro_start_3'
+      ? {
+          step: 3,
+          total: 4,
+          icon: Compass,
+          badgeId: 'PUSAKA LEMBAH • PESAN KOMPAS HATI',
+          badgeEn: 'VALLEY RELIC • HEART COMPASS MESSAGE',
+          color: 'yellow' as const,
+        }
+      : dialogue.id === 'kiki_wait'
+      ? {
+          step: 4,
+          total: 4,
+          icon: Target,
+          badgeId: 'PETUNJUK AWAL • MISI PERTAMA',
+          badgeEn: 'FIRST CLUE • INITIAL GUIDANCE',
+          color: 'emerald' as const,
+        }
+      : null;
+
+  // Dynamic styling based on quiz feedback status & intro focus mode
   let dialogBoxStyle =
     'bg-slate-950/95 border-2 border-amber-400/90 hover:border-amber-300 shadow-[0_12px_45px_rgba(0,0,0,0.85)] hover:shadow-[0_12px_55px_rgba(245,158,11,0.25)] text-slate-100';
 
@@ -370,15 +428,35 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   } else if (feedbackStatus === 'correct') {
     dialogBoxStyle =
       'bg-emerald-950/95 border-4 border-emerald-400 shadow-[0_0_55px_rgba(52,211,153,0.95),0_0_0_2px_rgba(167,243,208,0.8)] text-emerald-100';
+  } else if (introStep) {
+    if (introStep.color === 'amber') {
+      dialogBoxStyle =
+        'bg-gradient-to-b from-slate-950 via-slate-900 to-amber-950/95 border-3 sm:border-4 border-amber-400 shadow-[0_0_65px_rgba(245,158,11,0.55),0_0_0_2px_rgba(251,191,36,0.6)] text-amber-50';
+    } else if (introStep.color === 'cyan') {
+      dialogBoxStyle =
+        'bg-gradient-to-b from-slate-950 via-slate-900 to-cyan-950/95 border-3 sm:border-4 border-cyan-400 shadow-[0_0_65px_rgba(6,182,212,0.55),0_0_0_2px_rgba(103,232,249,0.6)] text-cyan-50';
+    } else if (introStep.color === 'yellow') {
+      dialogBoxStyle =
+        'bg-gradient-to-b from-slate-950 via-slate-900 to-amber-950/95 border-3 sm:border-4 border-yellow-300 shadow-[0_0_75px_rgba(234,179,8,0.65),0_0_0_2px_rgba(253,224,71,0.7)] text-amber-50';
+    } else {
+      dialogBoxStyle =
+        'bg-gradient-to-b from-slate-950 via-slate-900 to-emerald-950/95 border-3 sm:border-4 border-emerald-400 shadow-[0_0_65px_rgba(16,185,129,0.55),0_0_0_2px_rgba(110,231,183,0.6)] text-emerald-50';
+    }
   } else if (isMissionNotice) {
     dialogBoxStyle =
       'bg-gradient-to-b from-slate-950 via-slate-900 to-amber-950/90 border-3 border-amber-400 shadow-[0_12px_45px_rgba(245,158,11,0.4),0_0_0_2px_rgba(254,240,138,0.6)] text-slate-100';
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center p-3 pointer-events-none">
+    <div
+      className={`fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-4 pointer-events-none transition-all duration-500 ${
+        isIntroPrologue ? 'bg-slate-950/75 backdrop-blur-md backdrop-filter' : 'bg-transparent'
+      }`}
+    >
       <div
-        className={`pointer-events-auto w-full max-w-xl rounded-2xl p-4 sm:p-5 backdrop-blur-md flex flex-col gap-3 font-pixel transition-colors duration-100 animate-fade-in-slide-up relative overflow-hidden ${dialogBoxStyle}`}
+        className={`pointer-events-auto w-full max-w-xl rounded-2xl p-4 sm:p-5 backdrop-blur-md flex flex-col gap-3 font-pixel transition-all duration-300 animate-fade-in-slide-up relative overflow-hidden ${
+          isIntroPrologue ? 'scale-[1.01] sm:scale-105 ring-2 ring-white/10' : ''
+        } ${dialogBoxStyle}`}
       >
         {/* Floating Applause & Celebration Overlay */}
         {feedbackStatus === 'correct' && (
@@ -419,8 +497,31 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           </div>
         )}
 
-        {/* Mission Notice Banner for Children (when not showing quiz feedback) */}
-        {isMissionNotice && feedbackStatus === 'idle' && (
+        {/* Cinematic Intro Focus Stage Banner (Narator, Ezzel, Kompas, Petunjuk Awal) */}
+        {introStep && feedbackStatus === 'idle' && (
+          <div
+            className={`px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-md border animate-fade-in ${
+              introStep.color === 'amber'
+                ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 border-amber-200 shadow-[0_0_25px_rgba(245,158,11,0.5)]'
+                : introStep.color === 'cyan'
+                ? 'bg-gradient-to-r from-cyan-400 via-sky-300 to-cyan-400 text-slate-950 border-cyan-200 shadow-[0_0_25px_rgba(6,182,212,0.5)]'
+                : introStep.color === 'yellow'
+                ? 'bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-300 text-slate-950 border-yellow-100 shadow-[0_0_30px_rgba(234,179,8,0.6)]'
+                : 'bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 text-slate-950 border-emerald-200 shadow-[0_0_25px_rgba(16,185,129,0.5)]'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <introStep.icon className="w-4 h-4 text-slate-950 shrink-0 animate-bounce" />
+              <span>{lang === 'en' ? introStep.badgeEn : introStep.badgeId}</span>
+            </div>
+            <span className="text-[8.5px] bg-slate-950 text-white px-2 py-0.5 rounded-md font-bold shrink-0 tracking-wider">
+              {introStep.step} / {introStep.total}
+            </span>
+          </div>
+        )}
+
+        {/* Mission Notice Banner for Children (when not showing quiz feedback or intro) */}
+        {isMissionNotice && !introStep && feedbackStatus === 'idle' && (
           <div className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-slate-950 px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-md border border-amber-500">
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-slate-950 animate-bounce" />

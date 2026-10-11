@@ -349,8 +349,6 @@ export default function App() {
     delta: number;
     message: string;
   } | null>(null);
-  const [compassLiveDistance, setCompassLiveDistance] = useState<number>(0);
-  const [compassAngle, setCompassAngle] = useState<number>(0);
   // In-Game Tutorial Modal state shown after character selection
   const [showInGameTutorial, setShowInGameTutorial] = useState<boolean>(false);
   const showInGameTutorialRef = useRef<boolean>(false);
@@ -1476,11 +1474,13 @@ export default function App() {
     const waterfallX = 736;
     const waterfallY = 400;
     if (Math.hypot(waterfallX - px, waterfallY - py) < 85) {
-      sound.playWaterfallSplash();
-      rendererRef.current?.triggerScreenShake(3, 10);
-      rendererRef.current?.addSparkle(waterfallX, waterfallY + 10, '#38bdf8', 10);
-      setCurrentDialogue(GAME_DIALOGUES.free_roam_waterfall);
-      return;
+      if (zoneStatus.bridge || isFreeRoamActive) {
+        sound.playWaterfallSplash();
+        rendererRef.current?.triggerScreenShake(3, 10);
+        rendererRef.current?.addSparkle(waterfallX, waterfallY + 10, '#38bdf8', 10);
+        setCurrentDialogue(GAME_DIALOGUES.free_roam_waterfall);
+        return;
+      }
     }
 
     // Check nearest NPC
@@ -4264,91 +4264,6 @@ export default function App() {
   }, [quests, clockComponentsCount, nextMissingClockNPC, lang]);
 
   // Auto celebratory popup when completing previous step and unlocking next sequential mission
-  // Active Mission Target details for Heart Compass live navigation mechanic
-  const compassTargetInfo = useMemo(() => {
-    if (
-      isFreeRoamActive ||
-      (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)
-    ) {
-      return null;
-    }
-    let targetNpcId = 'kiki';
-    let targetName = 'Kiki';
-    let targetLocation = lang === 'en' ? 'Melody Plaza (West of Fountain)' : 'Alun-Alun Nada (Barat Air Mancur)';
-    let targetTileX = 8;
-    let targetTileY = 14;
-
-    if (!zoneStatus.plaza) {
-      targetNpcId = 'kiki';
-      targetName = 'Kiki';
-      targetLocation = lang === 'en' ? 'Melody Plaza (West of Fountain)' : 'Alun-Alun Nada (Barat Air Mancur)';
-      const npc = npcs.find((n) => n.id === 'kiki');
-      targetTileX = npc?.x ?? 8;
-      targetTileY = npc?.y ?? 14;
-    } else if (!zoneStatus.bridge) {
-      targetNpcId = 'kakek_ranu';
-      targetName = 'Kakek Ranu';
-      targetLocation = lang === 'en' ? 'Wooden River Bridge (East)' : 'Jembatan Kayu Sungai (Timur)';
-      const npc = npcs.find((n) => n.id === 'kakek_ranu');
-      targetTileX = npc?.x ?? 20;
-      targetTileY = npc?.y ?? 15;
-    } else if (!zoneStatus.forest) {
-      targetNpcId = 'bimo';
-      targetName = 'Bimo';
-      targetLocation = lang === 'en' ? 'Silent Forest Clearing (North)' : 'Hutan Sunyi (Utara)';
-      const npc = npcs.find((n) => n.id === 'bimo');
-      targetTileX = npc?.x ?? 7;
-      targetTileY = npc?.y ?? 6;
-    } else if (!zoneStatus.tower) {
-      if (clockComponentsCount < 12 && nextMissingClockNPC) {
-        targetNpcId = nextMissingClockNPC.npcId;
-        targetName = nextMissingClockNPC.hintName;
-        targetLocation = nextMissingClockNPC.zone;
-        const npc = npcs.find((n) => n.id === nextMissingClockNPC.npcId);
-        targetTileX = npc?.x ?? nextMissingClockNPC.targetCoords.x;
-        targetTileY = npc?.y ?? nextMissingClockNPC.targetCoords.y;
-      } else {
-        targetNpcId = 'penjaga_kabut';
-        targetName = lang === 'en' ? 'Grandma Wilis' : 'Nenek Wilis';
-        targetLocation = lang === 'en' ? 'Clock Tower Summit (Northeast)' : 'Puncak Menara Jam (Timur Laut)';
-        const npc = npcs.find((n) => n.id === 'penjaga_kabut');
-        targetTileX = npc?.x ?? 29;
-        targetTileY = npc?.y ?? 8;
-      }
-    }
-
-    return {
-      npcId: targetNpcId,
-      name: targetName,
-      location: targetLocation,
-      tileX: targetTileX,
-      tileY: targetTileY,
-    };
-  }, [zoneStatus, isFreeRoamActive, npcs, clockComponentsCount, nextMissingClockNPC, lang]);
-
-  // Real-time calculation of live distance & compass needle angle pointing to mission target (optimized to prevent unnecessary re-renders)
-  useEffect(() => {
-    if (!isCompassActive || !compassTargetInfo || showStartMenu || showPauseMenu) return;
-
-    const updateCompassData = () => {
-      const p = playerRef.current;
-      if (!p) return;
-      const tx = compassTargetInfo.tileX * TILE_SIZE + 16;
-      const ty = compassTargetInfo.tileY * TILE_SIZE + 16;
-      const px = p.x + 16;
-      const py = p.y + 16;
-      const dist = Math.hypot(tx - px, ty - py);
-      const steps = Math.max(0, Math.round(dist / 32));
-      const angle = Math.round((Math.atan2(ty - py, tx - px) * 180) / Math.PI);
-
-      setCompassLiveDistance((prev) => (prev !== steps ? steps : prev));
-      setCompassAngle((prev) => (Math.abs(prev - angle) >= 3 ? angle : prev));
-    };
-
-    updateCompassData();
-    const interval = setInterval(updateCompassData, 300);
-    return () => clearInterval(interval);
-  }, [isCompassActive, compassTargetInfo, showStartMenu, showPauseMenu]);
 
   useEffect(() => {
     if (showStartMenu || !hasCompletedIntroTutorial) return;
@@ -4384,13 +4299,27 @@ export default function App() {
     sound.setBgmPhase(isZoneRestored ? 'restored' : 'fog');
   }, [zoneStatus, isFreeRoamActive, npcs]);
 
+  // Check if current dialogue is within the 4-step prologue before the first village mission
+  const isIntroDialogue = Boolean(
+    currentDialogue &&
+      (currentDialogue.id === 'intro_start' ||
+        currentDialogue.id === 'intro_start_2' ||
+        currentDialogue.id === 'intro_start_3' ||
+        currentDialogue.id === 'kiki_wait' ||
+        currentDialogue.id?.startsWith('intro_start'))
+  );
+
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-slate-950 font-sans flex items-center justify-center">
       {/* 2D Pixel Canvas Viewport Container - Immersive Fullscreen Edge-to-Edge */}
       <main className="relative w-full h-full flex items-center justify-center p-0 select-none overflow-hidden">
         <div
           ref={canvasContainerRef}
-          className="relative w-full h-full bg-slate-950 overflow-hidden flex items-center justify-center"
+          className={`relative w-full h-full bg-slate-950 overflow-hidden flex items-center justify-center transition-all duration-500 ${
+            isIntroDialogue
+              ? 'filter blur-[10px] sm:blur-[14px] brightness-75 scale-[1.02]'
+              : ''
+          }`}
         >
           <canvas
             ref={canvasRef}
@@ -4504,63 +4433,6 @@ export default function App() {
               )}
             </button>
           </div>
-
-          {/* Dynamic Compass Guidance HUD when isCompassActive */}
-          {isCompassActive && !currentMissionData.isCompleted && compassTargetInfo && (
-            <div
-              id="compass-guidance-hud"
-              onClick={handleToggleCompass}
-              className="mt-1.5 bg-slate-950/95 border-2 border-amber-400/90 rounded-xl px-2.5 sm:px-3 py-1.5 shadow-[0_4px_20px_rgba(245,158,11,0.5)] flex items-center justify-between gap-2 text-amber-200 pointer-events-auto cursor-pointer hover:border-amber-300 transition-all active:scale-[0.99] animate-fade-in"
-              title={lang === 'en' ? 'Heart Compass active • Click to toggle' : 'Kompas Hati aktif • Klik untuk mengatur'}
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                {/* Rotating Dial with Needle */}
-                <div className="relative w-6 h-6 rounded-full bg-amber-950/90 border border-amber-400 flex items-center justify-center shrink-0 shadow-inner">
-                  <Compass
-                    className="w-4 h-4 text-amber-400 transition-transform duration-200 ease-out"
-                    style={{ transform: `rotate(${compassAngle}deg)` }}
-                  />
-                  <div className="absolute -top-0.5 w-1.5 h-1.5 bg-rose-500 rounded-full animate-ping pointer-events-none" />
-                </div>
-
-                <div className="min-w-0 flex flex-col">
-                  <div className="flex items-center gap-1.5 text-[8.5px] sm:text-[9.5px] font-pixel font-bold text-amber-300">
-                    <span className="text-emerald-400">🧭 {lang === 'en' ? 'COMPASS:' : 'PANDUAN KOMPAS:'}</span>
-                    <span className="truncate">{compassTargetInfo.name}</span>
-                    <span className="text-slate-400">•</span>
-                    <span className="text-amber-100/90 text-[8px] truncate">{compassTargetInfo.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-[7.5px] sm:text-[8px] font-pixel text-slate-300">
-                    <span className="text-amber-400 font-bold">
-                      {compassLiveDistance} {lang === 'en' ? 'steps' : 'langkah'}
-                    </span>
-                    <span className="text-slate-500">|</span>
-                    <span className={compassLiveDistance <= 2 ? 'text-emerald-400 font-bold animate-pulse' : 'text-slate-400'}>
-                      {compassLiveDistance <= 2
-                        ? (lang === 'en' ? '✨ TARGET REACHED! Press Space to talk' : '✨ SAMPAI DI TARGET! Tekan Spasi untuk bicara')
-                        : compassLiveDistance <= 6
-                        ? (lang === 'en' ? 'High Resonance! Follow light path' : 'Resonansi Tinggi! Ikuti jalur cahaya emas')
-                        : (lang === 'en' ? 'Scanning frequency... follow needle' : 'Memindai frekuensi... ikuti arah jarum')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Quick action button: Walk automatically towards target */}
-              <button
-                id="compass-hud-follow-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleGuideToMission(currentMissionData.step);
-                }}
-                className="px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-pixel text-[8px] sm:text-[9px] font-bold shadow transition flex items-center gap-1 shrink-0 cursor-pointer"
-                title={lang === 'en' ? 'Auto-walk along the compass light path' : 'Jalan otomatis menyusuri jalur cahaya kompas'}
-              >
-                <Sparkles className="w-3 h-3 text-slate-950" />
-                <span>{lang === 'en' ? 'Follow Path' : 'Ikuti Jejak'}</span>
-              </button>
-            </div>
-          )}
 
           {/* Compass Activation Toast Feedback */}
           {compassToast && (
