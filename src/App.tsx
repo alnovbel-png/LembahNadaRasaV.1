@@ -70,7 +70,7 @@ const InGameTutorialModal = React.lazy(() =>
 const EndingQuizModal = React.lazy(() =>
   import('./components/EndingQuizModal').then((m) => ({ default: m.EndingQuizModal }))
 );
-import { Sparkles, Compass, ChevronDown, Minus } from 'lucide-react';
+import { Compass, ChevronDown, Minus } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait } from './utils/device';
 import { PSE_ACHIEVEMENTS } from './game/constants';
 import {

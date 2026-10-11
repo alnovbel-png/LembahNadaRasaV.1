@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { DialogueNode, ChoiceOption } from '../types/game';
 import { sound } from '../utils/audio';
 import {
@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Compass,
-  BookOpen,
   Target,
   User,
 } from 'lucide-react';
@@ -77,6 +76,41 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   const processedFullText = formatName(dialogue.text);
   const processedThought = dialogue.thoughtBubble ? formatName(dialogue.thoughtBubble) : undefined;
 
+  // Special Story Narrator Prologue (teks perkalimat muncul dengan fade & tombol lanjut)
+  const isNarratorPrologue = Boolean(
+    dialogue.id === 'intro_start' ||
+    dialogue.speaker?.includes('Narator') ||
+    dialogue.speaker?.includes('Narrator')
+  );
+
+  const [narratorSentenceIndex, setNarratorSentenceIndex] = useState(0);
+
+  // Split processed text into sentences based on punctuation (. ! ? ...)
+  const narratorSentences = useMemo(() => {
+    if (!isNarratorPrologue) return [];
+    const text = processedFullText.trim();
+    // Match sentence ending with punctuation or end of text
+    const matches = text.match(/[^.!?]+(?:[.!?]+|$)/g);
+    if (!matches) return [text];
+    const cleaned = matches.map((s) => s.trim()).filter((s) => s.length > 0);
+    return cleaned.length > 0 ? cleaned : [text];
+  }, [isNarratorPrologue, processedFullText]);
+
+  // Reset sentence index whenever dialogue.id changes
+  useEffect(() => {
+    setNarratorSentenceIndex(0);
+  }, [dialogue.id]);
+
+  const handleNextNarratorSentence = useCallback(() => {
+    if (narratorSentenceIndex < narratorSentences.length - 1) {
+      sound.playMenuSelect();
+      setNarratorSentenceIndex((prev) => prev + 1);
+    } else {
+      sound.playMenuSelect();
+      onNext();
+    }
+  }, [narratorSentenceIndex, narratorSentences.length, onNext]);
+
   // Track wrong answers for the current dialogue session to highlight them
   const wrongChoiceIdsRef = useRef<Record<string, string[]>>({});
   const typewriterIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -118,6 +152,12 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     if (typewriterIntervalRef.current) {
       clearInterval(typewriterIntervalRef.current);
       typewriterIntervalRef.current = null;
+    }
+
+    if (isNarratorPrologue) {
+      setIsTyping(false);
+      setDisplayedText(processedFullText);
+      return;
     }
 
     setDisplayedText('');
@@ -208,6 +248,15 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (feedbackStatus !== 'idle') return;
 
+      // Special Story Narrator keydown: Space or Enter advances sentence
+      if (isNarratorPrologue) {
+        if (e.code === 'Space' || e.key === 'Enter') {
+          e.preventDefault();
+          handleNextNarratorSentence();
+          return;
+        }
+      }
+
       // Toggle Compass with C key if in dialogue
       if ((e.key === 'c' || e.key === 'C' || e.code === 'KeyC') && onToggleCompass) {
         e.preventDefault();
@@ -261,7 +310,19 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [dialogue, isTyping, showChoices, finishTypingInstantly, onNext, onClose, feedbackStatus, isWrongFeedback, onToggleCompass]);
+  }, [
+    dialogue,
+    isTyping,
+    showChoices,
+    finishTypingInstantly,
+    onNext,
+    onClose,
+    feedbackStatus,
+    isWrongFeedback,
+    onToggleCompass,
+    isNarratorPrologue,
+    handleNextNarratorSentence,
+  ]);
 
   // Character portraits rendering
   const renderPortrait = (type: string) => {
@@ -380,16 +441,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   );
 
   const introStep =
-    dialogue.id === 'intro_start'
-      ? {
-          step: 1,
-          total: 4,
-          icon: BookOpen,
-          badgeId: 'PROLOG CERITA • NARATOR',
-          badgeEn: 'STORY PROLOGUE • NARRATOR',
-          color: 'amber' as const,
-        }
-      : dialogue.id === 'intro_start_2'
+    dialogue.id === 'intro_start_2'
       ? {
           step: 2,
           total: 4,
@@ -418,6 +470,76 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         }
       : null;
 
+  // Standalone cinematic presentation for Story Narrator: Text appears sentence-by-sentence with fade effect
+  if (isNarratorPrologue) {
+    const currentSentence = narratorSentences[narratorSentenceIndex] || processedFullText;
+    const isLastSentence = narratorSentenceIndex >= narratorSentences.length - 1;
+
+    return (
+      <div className="fixed inset-0 z-40 flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-md backdrop-filter transition-all duration-500 animate-fade-in pointer-events-auto">
+        <div className="w-[92%] sm:w-[86%] max-w-md sm:max-w-lg bg-gradient-to-b from-slate-950/92 via-slate-900/90 to-amber-950/35 border border-amber-400/35 rounded-2xl p-5 sm:p-6 shadow-[0_12px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(245,158,11,0.15)] flex flex-col items-center text-center gap-4 relative overflow-hidden animate-fade-in">
+          {/* Subtle decorative glowing corner aura */}
+          <div className="absolute -top-12 -left-12 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute -bottom-12 -right-12 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
+
+          {/* Elegant prologue header tag */}
+          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-pixel text-[8.5px] sm:text-[9.5px] tracking-wider shadow-xs">
+            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '6s' }} />
+            <span>{lang === 'en' ? 'STORY PROLOGUE' : 'PROLOG CERITA'}</span>
+            <span className="text-amber-500">•</span>
+            <span className="text-amber-200">
+              {narratorSentenceIndex + 1} / {narratorSentences.length}
+            </span>
+          </div>
+
+          {/* Smooth Fade-in Sentence Text (one sentence at a time, keyed by index) */}
+          <div
+            key={narratorSentenceIndex}
+            className="min-h-[72px] sm:min-h-[82px] flex items-center justify-center animate-fade-in duration-500 px-2 sm:px-3 select-text"
+          >
+            <p
+              style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}
+              className="text-[13.5px] sm:text-[15px] leading-relaxed text-amber-50 font-medium tracking-wide"
+            >
+              "{currentSentence}"
+            </p>
+          </div>
+
+          {/* Sentence progress dots */}
+          <div className="flex items-center gap-1.5 py-0.5">
+            {narratorSentences.map((_, idx) => (
+              <span
+                key={idx}
+                className={`transition-all duration-300 rounded-full ${
+                  idx === narratorSentenceIndex
+                    ? 'w-5 h-1.5 bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.8)]'
+                    : idx < narratorSentenceIndex
+                    ? 'w-1.5 h-1.5 bg-amber-400/60'
+                    : 'w-1.5 h-1.5 bg-slate-700'
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Minimalist Continue / Lanjut action bar */}
+          <div className="flex items-center justify-between w-full pt-2 border-t border-slate-800/80">
+            <span className="text-[8px] sm:text-[9px] text-slate-500 font-pixel">
+              {lang === 'en' ? 'Press Space / Enter' : 'Tekan Spasi / Enter'}
+            </span>
+            <button
+              id="narrator-continue-btn"
+              onClick={handleNextNarratorSentence}
+              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-pixel text-[9px] sm:text-[10px] font-bold shadow-[0_3px_15px_rgba(245,158,11,0.4)] active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer hover:shadow-[0_4px_20px_rgba(245,158,11,0.6)]"
+            >
+              <span>{isLastSentence ? (lang === 'en' ? 'Continue' : 'Lanjut') : (lang === 'en' ? 'Continue' : 'Lanjut')}</span>
+              <span className="text-[11px] leading-none">➔</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // Dynamic styling based on quiz feedback status & intro focus mode
   let dialogBoxStyle =
     'bg-slate-950/95 border-2 border-amber-400/90 hover:border-amber-300 shadow-[0_12px_45px_rgba(0,0,0,0.85)] hover:shadow-[0_12px_55px_rgba(245,158,11,0.25)] text-slate-100';
@@ -429,10 +551,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     dialogBoxStyle =
       'bg-emerald-950/95 border-4 border-emerald-400 shadow-[0_0_55px_rgba(52,211,153,0.95),0_0_0_2px_rgba(167,243,208,0.8)] text-emerald-100';
   } else if (introStep) {
-    if (introStep.color === 'amber') {
-      dialogBoxStyle =
-        'bg-gradient-to-b from-slate-950 via-slate-900 to-amber-950/95 border-3 sm:border-4 border-amber-400 shadow-[0_0_65px_rgba(245,158,11,0.55),0_0_0_2px_rgba(251,191,36,0.6)] text-amber-50';
-    } else if (introStep.color === 'cyan') {
+    if (introStep.color === 'cyan') {
       dialogBoxStyle =
         'bg-gradient-to-b from-slate-950 via-slate-900 to-cyan-950/95 border-3 sm:border-4 border-cyan-400 shadow-[0_0_65px_rgba(6,182,212,0.55),0_0_0_2px_rgba(103,232,249,0.6)] text-cyan-50';
     } else if (introStep.color === 'yellow') {
@@ -501,9 +620,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         {introStep && feedbackStatus === 'idle' && (
           <div
             className={`px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-md border animate-fade-in ${
-              introStep.color === 'amber'
-                ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 text-slate-950 border-amber-200 shadow-[0_0_25px_rgba(245,158,11,0.5)]'
-                : introStep.color === 'cyan'
+              introStep.color === 'cyan'
                 ? 'bg-gradient-to-r from-cyan-400 via-sky-300 to-cyan-400 text-slate-950 border-cyan-200 shadow-[0_0_25px_rgba(6,182,212,0.5)]'
                 : introStep.color === 'yellow'
                 ? 'bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-300 text-slate-950 border-yellow-100 shadow-[0_0_30px_rgba(234,179,8,0.6)]'
