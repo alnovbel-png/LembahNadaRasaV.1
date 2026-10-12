@@ -453,13 +453,15 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                {/* 1. PERNAPASAN BINTANG */}
+                {/* 1. TEKNIK NAPAS BALON (SESUAI DENGAN DIALOG KIKI & MINIGAME) */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/70 to-slate-900 border border-cyan-500/50 space-y-2.5">
                   <h4 className="font-pixel text-sm text-cyan-200 font-bold">
-                    {lang === 'en' ? 'Star Breathing Technique' : 'Pernapasan Bintang'}
+                    {lang === 'en' ? 'Calm Balloon Breathing (4-4-4)' : 'Teknik Napas Balon (4-4-4)'}
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Tarik napas dalam 4 detik, tahan 7 detik, dan hembuskan perlahan 8 detik untuk memperlambat detak jantung saat panik.
+                    {lang === 'en'
+                      ? 'Inhale for 4 seconds as a gentle balloon expands in your belly, hold for 4 seconds, and exhale slowly for 4 seconds to calm your heart rate and clear racing thoughts.'
+                      : 'Tarik napas perlahan lewat hidung 4 detik (bayangkan balon mengembang di perut), tahan 4 detik di zona tenang, lalu hembuskan perlahan 4 detik untuk meredakan kecemasan seketika.'}
                   </p>
                   <button
                     onClick={() => {
@@ -469,7 +471,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     className="w-full py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-pixel text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-md"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{lang === 'en' ? 'Start Star Breathing' : 'Mulai Latihan Napas'}</span>
+                    <span>{lang === 'en' ? 'Start Balloon Breathing' : 'Mulai Napas Balon'}</span>
                   </button>
                 </div>
 

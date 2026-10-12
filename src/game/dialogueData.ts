@@ -425,7 +425,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kakek Ranu',
     speakerRole: 'Tukang Kayu & Penjaga Jembatan',
     portrait: 'old_man',
-    text: 'Jembatan kayu sudah terbuka! Sekarang seberangilah dan temui Bimo di hutan. Sampaikan bahwa Kakek tidak marah padanya.',
+    text: 'Jembatan kayu sudah terbuka! Sekarang temuilah Bimo di daerah dekat hutan di barat laut. Sampaikan bahwa Kakek tidak marah padanya.',
     thoughtBubble: 'Bimo anak yang baik dan berbakat, bentakan kakek pasti membuatnya sangat takut...',
     emotionAura: 'tenang',
   },
@@ -505,7 +505,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kakek Ranu',
     speakerRole: 'Tukang Kayu Desa',
     portrait: 'old_man',
-    text: 'Terima kasih telah mendengar hatiku, Ezzel. Terimalah kunci jembatan ini. Tolong temui muridku, Bimo, di seberang jembatan. Sampaikan bahwa Kakek tidak marah padanya. Kakek sangat menunggunya pulang!',
+    text: 'Terima kasih telah mendengar hatiku, Ezzel. Terimalah kunci jembatan ini. Tolong temui muridku, Bimo, di daerah dekat hutan. Sampaikan bahwa Kakek tidak marah padanya. Kakek sangat menunggunya pulang!',
   },
 
   ranu_path_logic: {
@@ -521,7 +521,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Kakek Ranu',
     speakerRole: 'Tukang Kayu Desa',
     portrait: 'old_man',
-    text: 'Baiklah, jembatan kubuka untuk kalian! Bawalah surat izin ini. Tolong cari muridku, Bimo, di seberang jembatan. Katakan padanya bahwa Kakek tidak marah dan menunggunya pulang.',
+    text: 'Baiklah, jembatan kubuka untuk kalian! Bawalah surat izin ini. Tolong cari muridku, Bimo, di daerah dekat hutan. Katakan padanya bahwa Kakek tidak marah dan menunggunya pulang.',
     triggerColorRestoreZone: 'bridge',
     triggerQuestProgress: 'quest_bridge',
     givesItem: 'item_bridge_pass',

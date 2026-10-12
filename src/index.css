@@ -206,3 +206,142 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
     animation: applauseFloat 1.2s ease-out forwards;
   }
 }
+
+/* =========================================================================
+   Mobile Horizontal / Landscape Phone Support (Child-friendly UI)
+   Only active on mobile devices held horizontally (landscape + height <= 520px).
+   Desktop and tablet views remain completely untouched.
+   ========================================================================= */
+@media (orientation: landscape) and (max-height: 520px) {
+  /* Kotak Misi (Quest Tracker Banner) */
+  #quest-tracker-banner {
+    top: 40px !important;
+    max-width: 94% !important;
+    width: auto !important;
+  }
+
+  #quest-tracker-banner > div:first-child {
+    flex-wrap: nowrap !important;
+    padding: 3px 8px !important;
+    gap: 6px !important;
+    border-radius: 12px !important;
+    min-height: 32px !important;
+    max-height: 38px !important;
+    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4), 0 0 0 1.5px rgba(255, 255, 255, 0.9) !important;
+  }
+
+  #quest-tracker-banner p {
+    font-size: 11px !important;
+    line-height: 14px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    max-width: min(380px, 45vw) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    flex: 1 1 auto !important;
+  }
+
+  #banner-guide-button {
+    padding: 3px 8px !important;
+    font-size: 8px !important;
+    height: 26px !important;
+    margin-left: 0 !important;
+  }
+
+  #banner-minimize-btn {
+    padding: 3px !important;
+    height: 26px !important;
+    width: 26px !important;
+  }
+
+  /* Kotak Dialog (Dialogue Box) */
+  .dialogue-modal-backdrop {
+    padding: 6px 12px !important;
+    align-items: center !important;
+  }
+
+  .dialogue-card-container {
+    padding: 8px 14px !important;
+    gap: 6px !important;
+    max-height: 94vh !important;
+    max-width: 680px !important;
+    border-radius: 14px !important;
+    overflow-y: auto !important;
+  }
+
+  .dialogue-top-banner {
+    padding: 3px 8px !important;
+    font-size: 8px !important;
+  }
+
+  .dialogue-header {
+    padding-bottom: 4px !important;
+  }
+
+  .dialogue-middle-row {
+    gap: 8px !important;
+  }
+
+  .dialogue-portrait-wrapper .w-16.h-16,
+  .dialogue-portrait-wrapper > div {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .dialogue-card-container #dialogue-speech-text {
+    font-size: 13.5px !important;
+    line-height: 1.45 !important;
+    min-height: 36px !important;
+    padding: 6px 10px !important;
+  }
+
+  .dialogue-choices-grid {
+    gap: 4px !important;
+  }
+
+  .dialogue-choice-btn {
+    padding: 4px 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .dialogue-choice-btn span[style*="fontFamily"] {
+    font-size: 12.5px !important;
+    line-height: 15px !important;
+    text-align: left !important;
+  }
+
+  .dialogue-bottom-bar {
+    margin-top: 2px !important;
+    padding-top: 4px !important;
+  }
+
+  .dialogue-action-btn {
+    padding: 4px 10px !important;
+    font-size: 8.5px !important;
+    min-height: 28px !important;
+  }
+
+  .narrator-backdrop {
+    padding: 8px !important;
+  }
+
+  .narrator-modal-box {
+    padding: 10px 16px !important;
+    gap: 6px !important;
+    max-height: 94vh !important;
+    max-width: 540px !important;
+  }
+
+  .narrator-modal-box .min-h-\[72px\],
+  .narrator-modal-box .min-h-\[82px\] {
+    min-height: 38px !important;
+  }
+
+  .narrator-modal-box p {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+  }
+}
+

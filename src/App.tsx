@@ -1684,32 +1684,6 @@ export default function App() {
         return;
       }
 
-      // 3d. Check if clicking on the Forest Cabin (c: 9..13, r: 2..4)
-      const cabinDoorX = 11 * TILE_SIZE + 16;
-      const cabinDoorY = 4 * TILE_SIZE + 16;
-      if (Math.hypot(cabinDoorX - worldX, cabinDoorY - worldY) < 36) {
-        if (Math.hypot(cabinDoorX - px, cabinDoorY - py) < 65) {
-          sound.playSecretFound();
-          rendererRef.current?.addSparkle(cabinDoorX, cabinDoorY, '#f59e0b', 8);
-          setCurrentDialogue(GAME_DIALOGUES.forest_cabin_examine);
-          targetPosRef.current = null;
-          rendererRef.current?.clearDestination();
-        } else {
-          // Walk up to porch in front of the door (c=11, r=5)
-          const walkX = 11 * TILE_SIZE + 16;
-          const walkY = 5 * TILE_SIZE + 16;
-          targetPosRef.current = {
-            x: walkX,
-            y: walkY,
-            targetType: 'cabin',
-            minDistSoFar: Math.hypot(walkX - px, walkY - py),
-            stuckFrames: 0,
-          };
-          rendererRef.current?.setDestination(walkX, walkY, 'examine');
-          rendererRef.current?.addSparkle(cabinDoorX, cabinDoorY, '#f59e0b', 8);
-        }
-        return;
-      }
 
       // 3d-2. Check if clicking on the River Waterfall (c: 21..24, r: 11..13, center x: 736, y: 400)
       const wfX = 736;
@@ -2212,6 +2186,7 @@ export default function App() {
           return;
         }
       }
+
 
       // Default terrain: clear hover badge, set walking cursor
       rendererRef.current?.setHover(null);
@@ -2972,7 +2947,7 @@ export default function App() {
         Boolean(target?.isContentEditable);
 
       // 1. Tampilan pemilihan karakter, tutorial in-game, kuis akhir, dan saat mengetik nama:
-      // Matikan fungsi kontrol permainan agar tidak muncul konflik dengan kontrol permainan
+      // Matikan fungsi kontrol luar agar tidak bentrok
       if (showStartMenu || showInGameTutorial || showEndingQuiz || isTypingInInput) {
         keysPressed.current = {};
         return;
@@ -3382,9 +3357,9 @@ export default function App() {
                 processDialogueTriggers(node);
                 setCurrentDialogue(node);
               }
-            } else if (reachedTarget.targetType === 'cabin') {
+            } else if (reachedTarget.targetType === 'cabin' || reachedTarget.targetType === 'teguh_cabin') {
               sound.playSecretFound();
-              rendererRef.current?.addSparkle(11 * TILE_SIZE + 16, 4 * TILE_SIZE + 16, '#f59e0b', 8);
+              rendererRef.current?.addSparkle(11 * TILE_SIZE + 16, 4 * TILE_SIZE + 16, '#f59e0b', 20);
               setCurrentDialogue(GAME_DIALOGUES.forest_cabin_examine);
             } else if (reachedTarget.targetType === 'tree') {
               sound.playSecretFound();
@@ -3837,6 +3812,7 @@ export default function App() {
         const isCurrentTileColored = isZoneTileColored(curCol, curRow, zoneStatus, npcs, isFreeRoamActive);
         sound.setBgmPhase(isCurrentTileColored ? 'restored' : 'fog');
       }
+
 
       // Camera positioning (centers on player with clamping, accounting for dynamic gameZoom)
       const mapTotalW = MAP_COLS * TILE_SIZE;
@@ -4469,6 +4445,7 @@ export default function App() {
           )}
         </div>
       )}
+
 
       {/* Virtual Controls for Mobile & Desktop Toolbar */}
       {!showStartMenu && (

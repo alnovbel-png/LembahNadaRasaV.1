@@ -7499,66 +7499,249 @@ export class GameRenderer {
           ctx.setLineDash([]);
         }
 
-        // Emotional iceberg indicator above NPC
-        ctx.font = '8px "Plus Jakarta Sans", sans-serif';
-        ctx.textAlign = 'center';
-
-        const emotionNameEn: Record<string, string> = {
-          marah: 'ANGER',
-          cemas: 'ANXIETY',
-          sedih: 'SADNESS',
-          tenang: 'CALM',
-          gembira: 'JOY',
-          kecewa: 'DISAPPOINTMENT',
-          takut: 'FEAR',
-          haru: 'TOUCHED',
-        };
-        const surfaceEmotionStr = this.lang === 'en'
-          ? (emotionNameEn[npc.emotionProfile.surfaceEmotion] || npc.emotionProfile.surfaceEmotion.toUpperCase())
-          : npc.emotionProfile.surfaceEmotion.toUpperCase();
-        const deepEmotionStr = this.lang === 'en'
-          ? (emotionNameEn[npc.emotionProfile.deepEmotion] || npc.emotionProfile.deepEmotion.toUpperCase())
-          : npc.emotionProfile.deepEmotion.toUpperCase();
-
-        const surfaceLabel = isResolved
-          ? (this.lang === 'en' ? `Surface: ${surfaceEmotionStr} (RELIEVED & HARMONIOUS)` : `Luar: ${surfaceEmotionStr} (LEGA & HARMONIS)`)
-          : (this.lang === 'en' ? `Surface: ${surfaceEmotionStr}` : `Luar: ${surfaceEmotionStr}`);
-        const deepLabel = isResolved
-          ? (this.lang === 'en' ? `Inner: ${deepEmotionStr} (PEACEFUL & GRATEFUL)` : `Hati: ${deepEmotionStr} (DAMAI & BERSYUKUR)`)
-          : (this.lang === 'en' ? `Inner: ${deepEmotionStr}` : `Hati: ${deepEmotionStr}`);
-
-        // Tag background
-        const tagW = isResolved ? 150 : 116;
-        const tagH = isResolved ? 36 : 28;
-        const tagY = isResolved ? ny - 55 : ny - 45;
-
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
-        ctx.fillRect(nx - tagW / 2, tagY, tagW, tagH);
-        ctx.strokeStyle = isResolved ? '#22c55e' : auraColor;
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(nx - tagW / 2, tagY, tagW, tagH);
-
-        if (isResolved) {
-          // Mini title badge
-          ctx.font = '7px "Press Start 2P", monospace';
-          ctx.fillStyle = '#fef08a';
-          ctx.fillText(this.lang === 'en' ? '✨ OPEN HEART ✨' : '✨ HATI TERBUKA ✨', nx, tagY + 9);
-
-          ctx.font = '8px "Plus Jakarta Sans", sans-serif';
-          ctx.fillStyle = '#4ade80';
-          ctx.fillText(surfaceLabel, nx, tagY + 20);
-          ctx.fillStyle = '#fde047';
-          ctx.fillText(deepLabel, nx, tagY + 31);
-        } else {
-          // Surface emotion
-          ctx.fillStyle = auraColor;
-          ctx.fillText(surfaceLabel, nx, tagY + 11);
-          // Deep hidden emotion
-          ctx.fillStyle = deepColor;
-          ctx.fillText(deepLabel, nx, tagY + 23);
-        }
+        // Emotional iceberg indicator above NPC (Redesigned with custom badges, hand-drawn icons, and Galindo font)
+        this.drawEmotionalIcebergTag(npc, nx, ny, isResolved, auraColor, deepColor);
       }
     });
+  }
+
+  private drawRoundedRectPath(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    r: number
+  ) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  private drawEmotionalIcebergTag(
+    npc: NPC,
+    nx: number,
+    ny: number,
+    isResolved: boolean,
+    auraColor: string,
+    deepColor: string
+  ) {
+    const ctx = this.ctx;
+    ctx.save();
+
+    const emotionNameEn: Record<string, string> = {
+      marah: 'ANGER',
+      cemas: 'ANXIETY',
+      sedih: 'SADNESS',
+      tenang: 'CALM',
+      gembira: 'JOY',
+      kecewa: 'DISAPPOINTMENT',
+      takut: 'FEAR',
+      haru: 'TOUCHED',
+    };
+
+    const isSurfaceGembira = npc.emotionProfile.surfaceEmotion === 'gembira';
+    const isDeepTenang = npc.emotionProfile.deepEmotion === 'tenang';
+
+    const surfaceEmotionStr = this.lang === 'en'
+      ? (emotionNameEn[npc.emotionProfile.surfaceEmotion] || npc.emotionProfile.surfaceEmotion.toUpperCase())
+      : npc.emotionProfile.surfaceEmotion.toUpperCase();
+    const deepEmotionStr = this.lang === 'en'
+      ? (emotionNameEn[npc.emotionProfile.deepEmotion] || npc.emotionProfile.deepEmotion.toUpperCase())
+      : npc.emotionProfile.deepEmotion.toUpperCase();
+
+    // Floating bobbing effect for lively RPG atmosphere
+    const floatY = Math.sin(this.tickCount * 0.08) * 2;
+    const tagW = isResolved ? 152 : 142;
+    const tagH = isResolved ? 48 : 45;
+    const tagX = nx - tagW / 2;
+    const tagY = ny - 62 + floatY;
+
+    // 1. Soft glowing drop shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+    ctx.shadowBlur = 8;
+    ctx.shadowOffsetY = 3;
+
+    // 2. Card background gradient
+    this.drawRoundedRectPath(ctx, tagX, tagY, tagW, tagH, 7);
+    const bgGrad = ctx.createLinearGradient(tagX, tagY, tagX, tagY + tagH);
+    bgGrad.addColorStop(0, 'rgba(15, 23, 42, 0.96)');
+    bgGrad.addColorStop(0.5, 'rgba(17, 24, 39, 0.95)');
+    bgGrad.addColorStop(1, 'rgba(30, 41, 59, 0.94)');
+    ctx.fillStyle = bgGrad;
+    ctx.fill();
+
+    // Pointer notch triangle pointing to character
+    ctx.beginPath();
+    ctx.moveTo(nx - 5, tagY + tagH);
+    ctx.lineTo(nx, tagY + tagH + 5);
+    ctx.lineTo(nx + 5, tagY + tagH);
+    ctx.closePath();
+    ctx.fill();
+
+    // Reset shadow
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+
+    // 3. Card border
+    if (isResolved) {
+      ctx.strokeStyle = '#22c55e';
+      ctx.lineWidth = 1.6;
+    } else if (isSurfaceGembira && isDeepTenang) {
+      // Warm sunset amber to vibrant emerald gradient border
+      const strokeGrad = ctx.createLinearGradient(tagX, tagY, tagX, tagY + tagH);
+      strokeGrad.addColorStop(0, '#f97316'); // Radiant orange
+      strokeGrad.addColorStop(1, '#22c55e'); // Emerald calm
+      ctx.strokeStyle = strokeGrad;
+      ctx.lineWidth = 1.6;
+    } else {
+      const strokeGrad = ctx.createLinearGradient(tagX, tagY, tagX, tagY + tagH);
+      strokeGrad.addColorStop(0, auraColor);
+      strokeGrad.addColorStop(1, deepColor);
+      ctx.strokeStyle = strokeGrad;
+      ctx.lineWidth = 1.4;
+    }
+    this.drawRoundedRectPath(ctx, tagX, tagY, tagW, tagH, 7);
+    ctx.stroke();
+
+    // Stroke the pointer notch
+    ctx.beginPath();
+    ctx.moveTo(nx - 5, tagY + tagH);
+    ctx.lineTo(nx, tagY + tagH + 5);
+    ctx.lineTo(nx + 5, tagY + tagH);
+    ctx.stroke();
+
+    // 4. Header title & mini custom hand-drawn icon
+    const headerY = tagY + 8;
+    // Hand-drawn mini diamond / heart emblem (no external icon)
+    ctx.fillStyle = isResolved ? '#fef08a' : '#f59e0b';
+    ctx.beginPath();
+    ctx.moveTo(nx - 46, headerY - 3.5);
+    ctx.lineTo(nx - 43, headerY);
+    ctx.lineTo(nx - 46, headerY + 3.5);
+    ctx.lineTo(nx - 49, headerY);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.textAlign = 'center';
+    if (isResolved) {
+      ctx.font = 'bold 7px "Galindo", cursive, sans-serif';
+      ctx.fillStyle = '#fef08a';
+      ctx.fillText(this.lang === 'en' ? '✨ OPEN HEART ✨' : '✨ HATI TERBUKA ✨', nx, headerY + 2.5);
+    } else {
+      ctx.font = 'bold 6.5px "Press Start 2P", monospace';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText(this.lang === 'en' ? 'KOMPAS HATI' : 'KOMPAS HATI', nx, headerY + 2);
+    }
+
+    // 5. Row 1: Surface Emotion (Luar: GEMBIRA)
+    const rowW = tagW - 8;
+    const rowX = tagX + 4;
+    const rowH = 13;
+    const row1Y = tagY + 14;
+
+    this.drawRoundedRectPath(ctx, rowX, row1Y, rowW, rowH, 3.5);
+    ctx.fillStyle = isSurfaceGembira ? 'rgba(249, 115, 22, 0.18)' : auraColor.replace('1)', '0.14)');
+    ctx.fill();
+    ctx.strokeStyle = isSurfaceGembira ? 'rgba(249, 115, 22, 0.45)' : auraColor.replace('1)', '0.35)');
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // Hand-drawn mini sun icon for Gembira / Surface
+    const icon1X = rowX + 7;
+    const icon1Y = row1Y + rowH / 2;
+    if (isSurfaceGembira) {
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(icon1X, icon1Y, 2.4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 0.9;
+      ctx.beginPath();
+      ctx.moveTo(icon1X - 3.8, icon1Y); ctx.lineTo(icon1X - 2.8, icon1Y);
+      ctx.moveTo(icon1X + 2.8, icon1Y); ctx.lineTo(icon1X + 3.8, icon1Y);
+      ctx.moveTo(icon1X, icon1Y - 3.8); ctx.lineTo(icon1X, icon1Y - 2.8);
+      ctx.moveTo(icon1X, icon1Y + 2.8); ctx.lineTo(icon1X, icon1Y + 3.8);
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = auraColor;
+      ctx.beginPath();
+      ctx.arc(icon1X, icon1Y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 7.5px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = isSurfaceGembira ? '#fed7aa' : '#cbd5e1';
+    const prefix1 = this.lang === 'en' ? 'Surface:' : 'Luar:';
+    ctx.fillText(prefix1, rowX + 14, row1Y + 9.5);
+    const p1W = ctx.measureText(prefix1).width;
+
+    ctx.font = 'bold 8.5px "Galindo", cursive, sans-serif';
+    ctx.fillStyle = isSurfaceGembira ? '#fb923c' : auraColor;
+    ctx.fillText(surfaceEmotionStr, rowX + 17 + p1W, row1Y + 9.5);
+
+    if (isResolved) {
+      ctx.font = '7px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#86efac';
+      ctx.fillText(this.lang === 'en' ? '(RELIEVED)' : '(LEGA)', rowX + rowW - 32, row1Y + 9.5);
+    }
+
+    // 6. Row 2: Deep Emotion (Hati: TENANG)
+    const row2Y = row1Y + rowH + 2;
+
+    this.drawRoundedRectPath(ctx, rowX, row2Y, rowW, rowH, 3.5);
+    ctx.fillStyle = isDeepTenang ? 'rgba(34, 197, 94, 0.18)' : deepColor.replace('1)', '0.14)');
+    ctx.fill();
+    ctx.strokeStyle = isDeepTenang ? 'rgba(34, 197, 94, 0.45)' : deepColor.replace('1)', '0.35)');
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // Hand-drawn mini calm heart icon for Tenang / Deep
+    const icon2X = rowX + 7;
+    const icon2Y = row2Y + rowH / 2;
+    if (isDeepTenang) {
+      ctx.fillStyle = '#4ade80';
+      ctx.beginPath();
+      const hx = icon2X;
+      const hy = icon2Y - 1.5;
+      ctx.moveTo(hx, hy + 1);
+      ctx.bezierCurveTo(hx - 2.5, hy - 2, hx - 4, hy + 1, hx, hy + 4);
+      ctx.bezierCurveTo(hx + 4, hy + 1, hx + 2.5, hy - 2, hx, hy + 1);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = deepColor;
+      ctx.beginPath();
+      ctx.arc(icon2X, icon2Y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 7.5px "Plus Jakarta Sans", sans-serif';
+    ctx.fillStyle = isDeepTenang ? '#a7f3d0' : '#cbd5e1';
+    const prefix2 = this.lang === 'en' ? 'Inner:' : 'Hati:';
+    ctx.fillText(prefix2, rowX + 14, row2Y + 9.5);
+    const p2W = ctx.measureText(prefix2).width;
+
+    ctx.font = 'bold 8.5px "Galindo", cursive, sans-serif';
+    ctx.fillStyle = isDeepTenang ? '#34d399' : deepColor;
+    ctx.fillText(deepEmotionStr, rowX + 17 + p2W, row2Y + 9.5);
+
+    if (isResolved) {
+      ctx.font = '7px "Plus Jakarta Sans", sans-serif';
+      ctx.fillStyle = '#fde047';
+      ctx.fillText(this.lang === 'en' ? '(PEACEFUL)' : '(DAMAI)', rowX + rowW - 32, row2Y + 9.5);
+    }
+
+    ctx.restore();
   }
 
   private getEmotionColor(emotion: EmotionType): string {

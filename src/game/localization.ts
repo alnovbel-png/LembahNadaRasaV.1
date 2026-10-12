@@ -1065,7 +1065,7 @@ export const GAME_DIALOGUES_EN: Record<string, DialogueNodeOverride> = {
   ranu_path_empathy_3: {
     speaker: 'Grandpa Ranu',
     speakerRole: 'Village Carpenter',
-    text: 'Thank you for listening to my heart, Ezzel. Take this bridge key. Please meet my apprentice, Bimo, across the bridge. Tell him Grandpa is not angry at him. Grandpa is eagerly waiting for him to come home!',
+    text: 'Thank you for listening to my heart, Ezzel. Take this bridge key. Please meet my apprentice, Bimo, near the forest area. Tell him Grandpa is not angry at him. Grandpa is eagerly waiting for him to come home!',
   },
   ranu_path_logic: {
     speaker: 'Grandpa Ranu',
@@ -1075,7 +1075,7 @@ export const GAME_DIALOGUES_EN: Record<string, DialogueNodeOverride> = {
   ranu_path_logic_2: {
     speaker: 'Grandpa Ranu',
     speakerRole: 'Village Carpenter',
-    text: 'Very well! Your honesty and goodwill deserve respect. I will lower the bridge planks. Take this Bridge Pass and stay safe in the forest ahead!',
+    text: 'Very well! Your honesty and goodwill deserve respect. I will lower the bridge planks. Take this Bridge Pass and please find my apprentice, Bimo, near the forest area. Tell him Grandpa is not angry!',
   },
   ranu_resolved: {
     speaker: 'Grandpa Ranu',
@@ -2021,7 +2021,7 @@ export function getLocalizedQuests(quests: GameQuest[], lang: GameLanguage): Gam
     quest_bimo: {
       title: 'Mission 3: Gear Trail in the Silent Forest',
       description: 'Step 3: Bimo is hiding in the northwest forest. Help him overcome guilt and shame so he returns the sacred clock gear.',
-      stepHint: 'Cross the bridge to the Silent Forest in the northwest. Meet Bimo behind the lush trees.',
+      stepHint: 'Head to the Silent Forest in the northwest. Meet Bimo behind the lush trees near the forest.',
     },
     quest_tower: {
       title: 'Mission 4: Gather 12 Clock Pieces & Light Up Tower',

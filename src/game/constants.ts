@@ -857,7 +857,7 @@ export const INITIAL_QUESTS: GameQuest[] = [
     targetNPC: 'bimo',
     description: 'Bimo bersembunyi di Hutan Sunyi memeluk Roda Gigi Emas Jam karena takut dimusuhi akibat salah paham. Kuatkan hatinya dengan Growth Mindset dan luruskan prasangkanya agar ia menyerahkan Roda Gigi Emas Jam.',
     isCompleted: false,
-    stepHint: 'Seberangi jembatan ke Hutan Sunyi di barat laut. Temui Bimo di balik pohon dan luruskan salah paham agar ia menyerahkan Roda Gigi Emas Jam.',
+    stepHint: 'Pergi ke daerah dekat Hutan Sunyi di barat laut. Temui Bimo di balik pohon dan luruskan salah paham agar ia menyerahkan Roda Gigi Emas Jam.',
   },
   {
     id: 'quest_tower',

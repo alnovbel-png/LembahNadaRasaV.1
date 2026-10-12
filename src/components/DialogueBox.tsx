@@ -850,7 +850,15 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         >
                           {index + 1}
                         </span>
-                        <span className="flex-1 leading-relaxed">
+                        <span
+                          style={{
+                            fontFamily: 'Galindo, cursive, sans-serif',
+                            fontSize: '14px',
+                            lineHeight: '16px',
+                            textAlign: 'justify',
+                          }}
+                          className="flex-1"
+                        >
                           {formatName(choice.text)}
                         </span>
                         {isCompassFlaggedWrong && (
