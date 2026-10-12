@@ -212,115 +212,136 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
    Only active on mobile devices held horizontally (landscape + height <= 520px).
    Desktop and tablet views remain completely untouched.
    ========================================================================= */
-@media (orientation: landscape) and (max-height: 520px) {
-  /* Kotak Misi (Quest Tracker Banner) */
+/* Kotak Misi on mobile mode: always keep quest button as an icon directly below the menu button */
+@media (max-width: 1023px) {
   #quest-tracker-banner {
-    top: 40px !important;
-    max-width: 94% !important;
+    top: 48px !important;
+    right: 8px !important;
+    left: auto !important;
+    transform: none !important;
     width: auto !important;
+    max-width: none !important;
   }
 
   #quest-tracker-banner > div:first-child {
-    flex-wrap: nowrap !important;
-    padding: 3px 8px !important;
-    gap: 6px !important;
-    border-radius: 12px !important;
-    min-height: 32px !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
     max-height: 38px !important;
-    box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4), 0 0 0 1.5px rgba(255, 255, 255, 0.9) !important;
-  }
-
-  #quest-tracker-banner p {
-    font-size: 11px !important;
-    line-height: 14px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    max-width: min(380px, 45vw) !important;
-    margin: 0 !important;
     padding: 0 !important;
-    border: none !important;
-    flex: 1 1 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  #quest-tracker-banner {
+    top: 56px !important;
+    right: 16px !important;
   }
 
-  #banner-guide-button {
-    padding: 3px 8px !important;
-    font-size: 8px !important;
-    height: 26px !important;
-    margin-left: 0 !important;
+  #quest-tracker-banner > div:first-child {
+    width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  #quest-tracker-banner {
+    top: 44px !important;
+    right: 8px !important;
+    left: auto !important;
+    transform: none !important;
+    width: auto !important;
+    max-width: none !important;
   }
 
-  #banner-minimize-btn {
-    padding: 3px !important;
-    height: 26px !important;
-    width: 26px !important;
+  #quest-tracker-banner > div:first-child {
+    width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 !important;
   }
 
-  /* Kotak Dialog (Dialogue Box) */
+  /* Kotak Dialog (Dialogue Box) Mobile Landscape UX Optimization */
   .dialogue-modal-backdrop {
     padding: 6px 12px !important;
     align-items: center !important;
+    justify-content: center !important;
   }
 
   .dialogue-card-container {
-    padding: 8px 14px !important;
-    gap: 6px !important;
+    padding: 7px 12px !important;
+    gap: 4px !important;
     max-height: 94vh !important;
-    max-width: 680px !important;
+    max-width: 580px !important;
     border-radius: 14px !important;
     overflow-y: auto !important;
   }
 
   .dialogue-top-banner {
-    padding: 3px 8px !important;
-    font-size: 8px !important;
+    padding: 2px 7px !important;
+    font-size: 7.5px !important;
+    border-radius: 8px !important;
+  }
+
+  .dialogue-top-banner svg {
+    width: 12px !important;
+    height: 12px !important;
   }
 
   .dialogue-header {
-    padding-bottom: 4px !important;
+    padding-bottom: 3px !important;
   }
 
   .dialogue-middle-row {
-    gap: 8px !important;
+    gap: 7px !important;
   }
 
   .dialogue-portrait-wrapper .w-16.h-16,
   .dialogue-portrait-wrapper > div {
-    width: 44px !important;
-    height: 44px !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 8px !important;
   }
 
   .dialogue-card-container #dialogue-speech-text {
-    font-size: 13.5px !important;
-    line-height: 1.45 !important;
-    min-height: 36px !important;
-    padding: 6px 10px !important;
+    font-size: 11.5px !important;
+    line-height: 1.35 !important;
+    min-height: 26px !important;
+    padding: 0 !important;
   }
 
   .dialogue-choices-grid {
-    gap: 4px !important;
+    gap: 3px !important;
   }
 
   .dialogue-choice-btn {
-    padding: 4px 8px !important;
-    border-radius: 10px !important;
+    padding: 3px 6px !important;
+    border-radius: 8px !important;
   }
 
   .dialogue-choice-btn span[style*="fontFamily"] {
-    font-size: 12.5px !important;
-    line-height: 15px !important;
+    font-size: 10.5px !important;
+    line-height: 13px !important;
     text-align: left !important;
   }
 
   .dialogue-bottom-bar {
-    margin-top: 2px !important;
-    padding-top: 4px !important;
+    margin-top: 1px !important;
+    padding-top: 3px !important;
   }
 
   .dialogue-action-btn {
-    padding: 4px 10px !important;
-    font-size: 8.5px !important;
-    min-height: 28px !important;
+    padding: 3px 8px !important;
+    font-size: 8px !important;
+    min-height: 26px !important;
+    height: 26px !important;
+    border-radius: 8px !important;
   }
 
   .narrator-backdrop {
@@ -343,5 +364,306 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
     font-size: 13px !important;
     line-height: 1.4 !important;
   }
+
+  /* Start Menu Modal Responsive Optimizations in Mobile Landscape */
+  .start-menu-modal-root {
+    padding: 6px 12px !important;
+    justify-content: space-between !important;
+  }
+
+  .start-menu-topbar {
+    margin-bottom: 2px !important;
+  }
+
+  .start-menu-title {
+    margin-bottom: 4px !important;
+  }
+
+  .start-menu-title h1 {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+
+  .start-menu-card {
+    max-width: 360px !important;
+    padding: 8px 12px !important;
+    gap: 5px !important;
+    border-radius: 14px !important;
+  }
+
+  .start-menu-btn {
+    height: 34px !important;
+    border-radius: 10px !important;
+  }
+
+  .start-menu-btn-icon {
+    left: 10px !important;
+  }
+
+  .start-menu-btn-icon svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .start-menu-btn-title {
+    font-size: 10px !important;
+    line-height: 1.1 !important;
+  }
+
+  .start-menu-btn-sub {
+    font-size: 7px !important;
+    margin-top: 1px !important;
+  }
+
+  .start-menu-footer {
+    padding-top: 2px !important;
+    font-size: 7.5px !important;
+  }
+
+  /* Play View (Pilih Karakter & Nama Panggilan) Landscape UX Optimization */
+  .start-menu-play-card {
+    max-width: 520px !important;
+    padding: 8px 14px !important;
+    gap: 5px !important;
+    border-radius: 16px !important;
+  }
+
+  .start-menu-play-header {
+    padding: 0 !important;
+    margin-bottom: 1px !important;
+  }
+
+  .start-menu-play-header span {
+    font-size: 9px !important;
+  }
+
+  .start-menu-play-columns {
+    display: grid !important;
+    grid-template-columns: 1.05fr 1fr !important;
+    gap: 12px !important;
+    align-items: center !important;
+  }
+
+  .start-menu-play-avatars-col {
+    gap: 3px !important;
+  }
+
+  .start-menu-play-avatars-col span.font-pixel {
+    font-size: 7.5px !important;
+  }
+
+  .start-menu-avatar-grid {
+    gap: 6px !important;
+  }
+
+  .start-menu-avatar-btn {
+    padding: 4px 5px !important;
+    gap: 2px !important;
+    border-radius: 9px !important;
+  }
+
+  .start-menu-avatar-portrait {
+    width: 32px !important;
+    height: 32px !important;
+    margin: 1px 0 !important;
+  }
+
+  .start-menu-avatar-portrait svg {
+    padding: 0 !important;
+  }
+
+  .start-menu-avatar-btn span.font-pixel {
+    font-size: 8px !important;
+  }
+
+  .start-menu-avatar-btn span.font-sans {
+    font-size: 7px !important;
+  }
+
+  .start-menu-play-nickname-col {
+    gap: 5px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+
+  .start-menu-play-nickname-col label {
+    font-size: 7.5px !important;
+  }
+
+  .start-menu-play-nickname-col input {
+    padding: 4px 8px !important;
+    font-size: 9px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+  }
+
+  .start-menu-play-actions {
+    padding-top: 1px !important;
+    gap: 5px !important;
+  }
+
+  .start-menu-play-actions button#btn-back-to-main {
+    padding: 4px 8px !important;
+    font-size: 8px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+  }
+
+  .start-menu-play-actions button#btn-confirm-start-adventure {
+    padding: 4px 10px !important;
+    font-size: 8.5px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Mission Notification Modal Mobile Landscape UX Optimization */
+  #mission-notification-overlay {
+    padding: 6px 12px !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #mission-notification-card {
+    max-width: 520px !important;
+    max-height: 94vh !important;
+    padding: 8px 12px !important;
+    gap: 4px !important;
+    border-radius: 14px !important;
+    border-width: 2.5px !important;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.45) !important;
+  }
+
+  .mission-modal-top-row {
+    padding-bottom: 3px !important;
+  }
+
+  .mission-badge-tag {
+    font-size: 8px !important;
+    padding: 1px 6px !important;
+  }
+
+  .mission-badge-step {
+    font-size: 8.5px !important;
+    padding: 1px 6px !important;
+  }
+
+  .mission-modal-close-btn {
+    width: 22px !important;
+    height: 22px !important;
+    border-width: 1.5px !important;
+  }
+
+  .mission-modal-close-btn svg {
+    width: 11px !important;
+    height: 11px !important;
+  }
+
+  .mission-modal-title {
+    font-size: 11px !important;
+    line-height: 1.2 !important;
+  }
+
+  .mission-modal-location {
+    font-size: 8px !important;
+    margin-top: 0 !important;
+  }
+
+  .mission-modal-stepper-box {
+    padding: 3px 6px !important;
+    border-radius: 10px !important;
+  }
+
+  .mission-modal-stepper-heading {
+    font-size: 7px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .mission-modal-stepper-heading span:last-child {
+    font-size: 6.5px !important;
+    padding: 0 4px !important;
+  }
+
+  .mission-modal-steps-grid {
+    gap: 4px !important;
+  }
+
+  .mission-modal-step-item {
+    padding: 2px 3px !important;
+    border-radius: 6px !important;
+  }
+
+  .mission-modal-step-item span.font-black {
+    font-size: 7px !important;
+  }
+
+  .mission-modal-step-item span.font-sans {
+    font-size: 6.5px !important;
+    margin-top: 0 !important;
+  }
+
+  .mission-modal-content-box {
+    padding: 4px 8px !important;
+    gap: 8px !important;
+    border-radius: 10px !important;
+  }
+
+  .mission-modal-char-col {
+    min-width: 48px !important;
+    max-width: 56px !important;
+    gap: 2px !important;
+  }
+
+  .mission-modal-char-avatar {
+    padding: 2px !important;
+    border-radius: 8px !important;
+  }
+
+  .mission-modal-char-avatar svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  .mission-modal-char-name {
+    font-size: 7.5px !important;
+    line-height: 1.1 !important;
+  }
+
+  .mission-modal-text-col {
+    gap: 2px !important;
+  }
+
+  .mission-modal-hint-text {
+    font-size: 9.5px !important;
+    line-height: 1.25 !important;
+  }
+
+  .mission-modal-tip-box {
+    padding: 2px 6px !important;
+    font-size: 7.5px !important;
+    margin-top: 1px !important;
+  }
+
+  .mission-modal-tip-box span {
+    font-size: 8.5px !important;
+    line-height: 1.2 !important;
+  }
+
+  .mission-modal-actions-row {
+    padding-top: 2px !important;
+    gap: 6px !important;
+  }
+
+  .mission-modal-btn {
+    min-height: 28px !important;
+    height: 28px !important;
+    padding: 2px 8px !important;
+    border-radius: 8px !important;
+  }
+
+  .mission-modal-btn span {
+    font-size: 8.5px !important;
+  }
 }
+
 

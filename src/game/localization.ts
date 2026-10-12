@@ -44,7 +44,7 @@ export const UI_TEXT = {
     reset: 'Reset',
     tipNote: '💡 Nama {name} otomatis tertera di dialog warga dan sertifikat!',
     startButton: 'MULAI SEBAGAI {name}',
-    enterTip: 'Tekan tombol di atas atau tekan [ENTER] untuk masuk',
+    enterTip: 'Tekan tombol di atas atau tekan ENTER untuk masuk',
 
     // Start Menu Actions
     mainMenu: 'MENU UTAMA',
@@ -54,7 +54,7 @@ export const UI_TEXT = {
     gameOptions: 'OPSI GAME & AKSESIBILITAS',
     exit: 'KELUAR',
     closeGame: 'TUTUP PERMAINAN',
-    pressEnterToSelect: 'Tekan Tombol [ENTER] untuk Memilih',
+    pressEnterToSelect: 'Tekan Tombol ENTER untuk Memilih',
     exitConfirmTitle: 'Konfirmasi Keluar Permainan',
     exitConfirmDesc: 'Apakah kamu yakin ingin menutup jendela permainan ini? Progres tersimpan otomatis di perangkatmu.',
     cancel: 'Batal',
@@ -276,7 +276,7 @@ export const UI_TEXT = {
     reset: 'Reset',
     tipNote: '💡 The name {name} will automatically appear in villager dialogues and certificates!',
     startButton: 'START AS {name}',
-    enterTip: 'Click above or press [ENTER] to start',
+    enterTip: 'Click above or press ENTER to start',
 
     // Start Menu Actions
     mainMenu: 'MAIN MENU',
@@ -286,7 +286,7 @@ export const UI_TEXT = {
     gameOptions: 'GAME OPTIONS & ACCESSIBILITY',
     exit: 'EXIT',
     closeGame: 'CLOSE GAME',
-    pressEnterToSelect: 'Press [ENTER] to Select',
+    pressEnterToSelect: 'Press ENTER to Select',
     exitConfirmTitle: 'Confirm Exit Game',
     exitConfirmDesc: 'Are you sure you want to close this game window? Progress is automatically saved on your device.',
     cancel: 'Cancel',

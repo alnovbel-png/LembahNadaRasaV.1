@@ -872,52 +872,6 @@ export const INITIAL_QUESTS: GameQuest[] = [
 // Initial items
 export const INITIAL_ITEMS: Item[] = [];
 
-// Educational SEL Knowledge Nuggets (Kamus Cerdas Emosi)
-export const SEL_GLOSSARY = [
-  {
-    title: 'Otak Siaga vs Otak Bijak',
-    concept: 'Amigdala & Korteks Prefrontal',
-    explanation: 'Saat kita panik atau marah besar, "Si Penjaga Siaga" (Amigdala) membunyikan alarm bahaya. Agar "Si Pemikir Bijak" (Korteks) bisa bekerja lagi, kita butuh napas perlahan dan ketenangan.',
-    icon: '🧠',
-  },
-  {
-    title: 'Gunung Es Emosi (Iceberg Emotion)',
-    concept: 'Emosi Lapisan Luar vs Dalam',
-    explanation: 'Marah seringkali hanya puncak gunung es yang terlihat di permukaan air. Di dasarnya, tersembunyi rasa kecewa, takut, sedih, atau merasa tidak dihargai.',
-    icon: '🧊',
-  },
-  {
-    title: 'Rumus Pesan-Aku (I-Message)',
-    concept: 'Komunikasi Asertif Tanpa Menuduh',
-    explanation: 'Alih-alih menuduh "Kamu selalu bikin salah!", katakan: "Aku merasa cemas ketika roda gigi hilang, karena kita butuh jam ini berbunyi tepat waktu. Bisakah kita cari bersama?"',
-    icon: '💬',
-  },
-  {
-    title: 'Teknik Napas Balon 4-4-4',
-    concept: 'Regulasi Fisiologis Mandiri',
-    explanation: 'Tarik napas 4 detik (bayangkan meniup balon besar di perut), tahan 4 detik, hembuskan perlahan 4 detik. Tubuh langsung memberi sinyal aman ke otak!',
-    icon: '🎈',
-  },
-  {
-    title: 'Jangkar Indera 5-4-3-2-1',
-    concept: 'Teknik Grounding Sensori',
-    explanation: 'Saat pikiran melayang atau terseret cemas, amati 5 benda terlihat, sentuh 4 tekstur, dengar 3 suara, hirup 2 aroma, dan rasakan 1 kebaikan diri untuk membumikan kesadaran.',
-    icon: '👁️',
-  },
-  {
-    title: 'Rem Darurat S-T-O-P',
-    concept: 'Stop, Take Breath, Observe, Proceed',
-    explanation: 'Jeda 1 menit sebelum bereaksi: Berhenti sejenak (Stop), Tarik napas (Take breath), Amati detak dan sensasi tubuh (Observe), lalu Lanjutkan dengan respon terbijak (Proceed).',
-    icon: '🛑',
-  },
-  {
-    title: 'Goyang Lepas Ketegangan',
-    concept: 'Somatic Release & Regulasi Kinestetik',
-    explanation: 'Hewan di alam liar mengguncangkan tubuh setelah lolos dari bahaya untuk membuang kelebihan hormon stres (kortisol). Goyang tangan dan bahu melonggarkan otot kaku.',
-    icon: '⚡',
-  },
-];
-
 // Achievements for completing optional PSE mentorships and explorations
 export const PSE_ACHIEVEMENTS: PSEAchievement[] = [
   {

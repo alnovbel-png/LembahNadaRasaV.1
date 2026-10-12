@@ -1149,56 +1149,6 @@ class SoundSystem {
     }
   }
 
-  // Realistic wooden door open SFX (latch click + warm creak + gentle chime)
-  public playDoorOpen() {
-    if (this.isMuted || this.sfxVolume <= 0.001) return;
-    this.initCtx();
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime;
-    try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(220, t);
-      osc.frequency.exponentialRampToValueAtTime(360, t + 0.14);
-      gain.gain.setValueAtTime(0.09 * this.sfxVolume, t);
-      gain.gain.linearRampToValueAtTime(0.001, t + 0.16);
-      osc.connect(gain);
-      gain.connect(this.masterSfxGain || this.ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.17);
-
-      setTimeout(() => {
-        this.playTone(587.33, 'sine', 0.22, 0.05, 0, false);
-      }, 70);
-    } catch {
-      // fallback
-    }
-  }
-
-  // Wooden door close SFX
-  public playDoorClose() {
-    if (this.isMuted || this.sfxVolume <= 0.001) return;
-    this.initCtx();
-    if (!this.ctx) return;
-    const t = this.ctx.currentTime;
-    try {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(320, t);
-      osc.frequency.exponentialRampToValueAtTime(160, t + 0.12);
-      gain.gain.setValueAtTime(0.1 * this.sfxVolume, t);
-      gain.gain.linearRampToValueAtTime(0.001, t + 0.14);
-      osc.connect(gain);
-      gain.connect(this.masterSfxGain || this.ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.15);
-    } catch {
-      // fallback
-    }
-  }
-
   // Realistic synthesized applause (handclaps) & joyful cheer chords
   public playApplause() {
     if (this.isMuted || this.sfxVolume <= 0.001) return;

@@ -1,16 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { DialogueNode, ChoiceOption } from '../types/game';
 import { sound } from '../utils/audio';
-import {
-  Eye,
-  MessageCircle,
-  Sparkles,
-  CheckCircle2,
-  AlertTriangle,
-  Compass,
-  Target,
-  User,
-} from 'lucide-react';
 import { CharacterPortrait } from './CharacterPortrait';
 import { useLanguage } from '../game/localization';
 
@@ -25,6 +15,71 @@ interface DialogueBoxProps {
   playerName?: string;
   playerAvatar?: 'boy' | 'girl' | 'kiko';
 }
+
+// Handcrafted SVG pixel icons - No external icon packages, harmonious warm palette
+const IconEye: React.FC<{ className?: string }> = ({ className = 'w-3.5 h-3.5' }) => (
+  <svg viewBox="0 0 16 16" fill="none" className={className}>
+    <path d="M1 8C2.5 4.5 5.5 3 8 3C10.5 3 13.5 4.5 15 8C13.5 11.5 10.5 13 8 13C5.5 13 2.5 11.5 1 8Z" stroke="#818cf8" strokeWidth="1.5" strokeLinejoin="round" />
+    <circle cx="8" cy="8" r="2.5" fill="#4338ca" stroke="#c7d2fe" strokeWidth="1" />
+    <circle cx="9" cy="7" r="0.8" fill="#ffffff" />
+  </svg>
+);
+
+const IconMessage: React.FC<{ className?: string }> = ({ className = 'w-3 h-3' }) => (
+  <svg viewBox="0 0 16 16" fill="none" className={className}>
+    <path d="M2 3.5C2 2.67 2.67 2 3.5 2H12.5C13.33 2 14 2.67 14 3.5V9.5C14 10.33 13.33 11 12.5 11H5L2 14V3.5Z" fill="#f59e0b" stroke="#78350f" strokeWidth="1.2" strokeLinejoin="round" />
+    <circle cx="5.5" cy="6.5" r="0.8" fill="#78350f" />
+    <circle cx="8" cy="6.5" r="0.8" fill="#78350f" />
+    <circle cx="10.5" cy="6.5" r="0.8" fill="#78350f" />
+  </svg>
+);
+
+const IconSparkles: React.FC<{ className?: string; style?: React.CSSProperties }> = ({ className = 'w-3.5 h-3.5', style }) => (
+  <svg viewBox="0 0 16 16" fill="none" className={className} style={style}>
+    <path d="M8 1L9.2 5.8L14 7L9.2 8.2L8 13L6.8 8.2L2 7L6.8 5.8L8 1Z" fill="#fbbf24" stroke="#d97706" strokeWidth="0.8" />
+    <circle cx="13" cy="3" r="1.2" fill="#fef08a" />
+    <circle cx="3" cy="12" r="1" fill="#fef08a" />
+  </svg>
+);
+
+const IconCheckCircle: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 16 16" fill="none" className={className}>
+    <circle cx="8" cy="8" r="7" fill="#10b981" stroke="#047857" strokeWidth="1.5" />
+    <path d="M4.5 8.2L7 10.7L11.5 5.5" stroke="#022c22" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+const IconAlert: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 16 16" fill="none" className={className}>
+    <path d="M8 1.5L14.5 13H1.5L8 1.5Z" fill="#eab308" stroke="#713f12" strokeWidth="1.5" strokeLinejoin="round" />
+    <line x1="8" y1="6" x2="8" y2="9.5" stroke="#451a03" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="8" cy="11.5" r="0.8" fill="#451a03" />
+  </svg>
+);
+
+const IconUser: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 16 16" fill="none" className={className}>
+    <circle cx="8" cy="5" r="3" fill="#38bdf8" stroke="#0369a1" strokeWidth="1.2" />
+    <path d="M2.5 13.5C2.5 11 5 9.5 8 9.5C11 9.5 13.5 11 13.5 13.5" stroke="#0369a1" strokeWidth="1.5" strokeLinecap="round" fill="#7dd3fc" />
+  </svg>
+);
+
+const IconCompassBadge: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 16 16" fill="none" className={className}>
+    <circle cx="8" cy="8" r="6.5" fill="#fef08a" stroke="#ca8a04" strokeWidth="1.5" />
+    <polygon points="8,3 10,7.5 8,7" fill="#dc2626" />
+    <polygon points="8,13 6,8.5 8,9" fill="#2563eb" />
+    <polygon points="8,7 10,7.5 8,9 6,8.5" fill="#eab308" />
+  </svg>
+);
+
+const IconTarget: React.FC<{ className?: string }> = ({ className = 'w-4 h-4' }) => (
+  <svg viewBox="0 0 16 16" fill="none" className={className}>
+    <circle cx="8" cy="8" r="6.5" stroke="#059669" strokeWidth="1.5" fill="#a7f3d0" />
+    <circle cx="8" cy="8" r="3.5" stroke="#047857" strokeWidth="1.2" fill="#34d399" />
+    <circle cx="8" cy="8" r="1.2" fill="#064e3b" />
+  </svg>
+);
 
 export const isChoiceIncorrect = (choice: ChoiceOption): boolean => {
   if (typeof choice.impactScore === 'number' && choice.impactScore < 0) return true;
@@ -76,12 +131,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
   const processedFullText = formatName(dialogue.text);
   const processedThought = dialogue.thoughtBubble ? formatName(dialogue.thoughtBubble) : undefined;
 
-  // Special Story Narrator Prologue (teks perkalimat muncul dengan fade & tombol lanjut)
-  // Split dialogue into sentences based on punctuation (. ! ? ...)
+  // Special Story Narrator Prologue
   const sentences = useMemo(() => {
     const text = processedFullText.trim();
     if (!text) return [];
-    // Match sentence ending with punctuation (. ! ?) or end of string, including trailing quotes
     const matches = text.match(/[^.!?]+(?:[.!?]+["'”’\)]*|$)/g);
     if (!matches) return [text];
     const cleaned = matches.map((s) => s.trim()).filter((s) => s.length > 0);
@@ -142,7 +195,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     typingFinishedTimeRef.current = Date.now();
   }, [currentSentence]);
 
-  // Handler to advance sentence by sentence or reveal choices / next dialogue
+  // Handle advancing to next sentence or next dialogue node
   const handleNextSentence = useCallback(() => {
     if (isTyping) {
       finishTypingInstantly();
@@ -239,7 +292,6 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     const isWrong = isChoiceIncorrect(choice);
 
     if (isWrong) {
-      // Incorrect response: Record wrong answer ID to highlight on retry
       if (!wrongChoiceIdsRef.current[dialogue.id]) {
         wrongChoiceIdsRef.current[dialogue.id] = [];
       }
@@ -249,73 +301,61 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
       setFeedbackStatus('wrong');
       sound.playQuizWrong();
+
       setTimeout(() => {
-        onChoiceSelect(choice);
         setFeedbackStatus('idle');
         setSelectedChoiceId(null);
-      }, 1200);
+        onChoiceSelect(choice);
+      }, 1600);
     } else {
-      // Correct response: Green dialog box, cheerful applause fanfare
       setFeedbackStatus('correct');
       sound.playApplause();
+
       setTimeout(() => {
-        onChoiceSelect(choice);
         setFeedbackStatus('idle');
         setSelectedChoiceId(null);
-      }, 1300);
+        onChoiceSelect(choice);
+      }, 1800);
     }
   };
 
-  // Keyboard navigation for dialogue
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (feedbackStatus !== 'idle') return;
-
-      // Special Story Narrator keydown: Space or Enter advances sentence
-      if (isNarratorPrologue) {
-        if (e.code === 'Space' || e.key === 'Enter') {
-          e.preventDefault();
-          handleNextSentence();
-          return;
-        }
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
       }
 
-      // Toggle Compass with C key if in dialogue
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleExitOrSkip();
+        return;
+      }
+
       if ((e.key === 'c' || e.key === 'C' || e.code === 'KeyC') && onToggleCompass) {
         e.preventDefault();
         onToggleCompass();
         return;
       }
 
-      // Escape closes or exits dialogue immediately
-      if (e.key === 'Escape') {
+      if (e.key === ' ' || e.key === 'Enter') {
         e.preventDefault();
-        if (onClose) {
-          onClose();
-        } else {
-          onNext();
+        if (isTyping) {
+          finishTypingInstantly();
+        } else if (!showChoices) {
+          handleNextSentence();
         }
         return;
       }
 
-      if (dialogue.choices && dialogue.choices.length > 0) {
-        if (showChoices) {
-          // Number keys 1, 2, 3, 4, 5
-          const num = parseInt(e.key);
-          if (num >= 1 && num <= dialogue.choices.length) {
-            handleChoiceClick(dialogue.choices[num - 1]);
-            return;
-          }
-        } else {
-          if (e.code === 'Space' || e.key === 'Enter') {
-            e.preventDefault();
-            handleNextSentence();
-          }
-        }
-      } else {
-        if (e.code === 'Space' || e.key === 'Enter') {
+      if (showChoices && dialogue.choices && dialogue.choices.length > 0) {
+        const num = parseInt(e.key, 10);
+        if (!isNaN(num) && num >= 1 && num <= dialogue.choices.length) {
           e.preventDefault();
-          handleNextSentence();
+          handleChoiceClick(dialogue.choices[num - 1]);
         }
       }
     };
@@ -323,10 +363,12 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
-    dialogue,
+    isTyping,
     showChoices,
+    finishTypingInstantly,
     handleNextSentence,
-    onNext,
+    dialogue,
+    dialogue.choices,
     onClose,
     feedbackStatus,
     onToggleCompass,
@@ -373,36 +415,24 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               className="w-14 h-14"
               style={{ imageRendering: 'pixelated', shapeRendering: 'crispEdges' }}
             >
-              {/* Ground shadow & stone ring */}
               <ellipse cx="16" cy="28" rx="9" ry="3" fill="rgba(0,0,0,0.5)" />
               <rect x="12" y="26" width="8" height="3" fill="#475569" />
               <rect x="14" y="25" width="4" height="2" fill="#64748b" />
-
-              {/* Wooden post */}
               <rect x="14" y="7" width="4" height="20" fill="#78350f" />
               <rect x="14" y="7" width="1" height="20" fill="#451a03" />
               <rect x="17" y="7" width="1" height="20" fill="#b45309" />
-              {/* Post top pyramid cap & iron pin */}
               <polygon points="13,7 19,7 16,4" fill="#92400e" />
               <rect x="15" y="3" width="2" height="2" fill="#0f172a" />
-
-              {/* Upper wooden arrow sign (pointing left) */}
               <polygon points="5,10 9,7 21,7 21,13 9,13" fill="#d97706" />
               <polygon points="5,10 9,7 21,7 21,8 9,8" fill="#fde047" />
               <polygon points="5,10 9,12 21,12 21,13 9,13" fill="#78350f" />
-              {/* Iron bolts & carved symbol */}
               <rect x="14" y="9" width="4" height="2" fill="#0f172a" />
               <rect x="8" y="9" width="3" height="2" fill="#15803d" />
-
-              {/* Lower wooden arrow sign (pointing right) */}
               <polygon points="11,15 23,15 27,18 23,21 11,21" fill="#b45309" />
               <polygon points="11,15 23,15 27,18 23,16 11,16" fill="#f59e0b" />
               <polygon points="11,20 23,20 27,18 23,21 11,21" fill="#451a03" />
-              {/* Iron bolts & carved symbol */}
               <rect x="14" y="17" width="4" height="2" fill="#0f172a" />
               <rect x="20" y="17" width="3" height="2" fill="#eab308" />
-
-              {/* Hanging mini lantern on scroll bracket */}
               <path d="M 18,6 L 24,6 L 24,9" stroke="#0f172a" strokeWidth="1" fill="none" />
               <rect x="23" y="9" width="3" height="4" fill="#fef08a" />
               <rect x="22" y="8" width="5" height="1" fill="#78350f" />
@@ -440,7 +470,6 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
     dialogue.speakerRole?.includes('Penunjuk Misi')
   );
 
-  // Focus sequence check: 4 core prologue steps before mission dialogue
   const isIntroPrologue = Boolean(
     dialogue.id === 'intro_start' ||
     dialogue.id === 'intro_start_2' ||
@@ -454,7 +483,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
       ? {
           step: 2,
           total: 4,
-          icon: User,
+          icon: IconUser,
           badgeId: `PANGGILAN PETUALANG • ${formatName('Ezzel')}`,
           badgeEn: `CALL OF ADVENTURE • ${formatName('Ezzel')}`,
           color: 'cyan' as const,
@@ -463,7 +492,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
       ? {
           step: 3,
           total: 4,
-          icon: Compass,
+          icon: IconCompassBadge,
           badgeId: 'PUSAKA LEMBAH • PESAN KOMPAS HATI',
           badgeEn: 'VALLEY RELIC • HEART COMPASS MESSAGE',
           color: 'yellow' as const,
@@ -472,27 +501,26 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
       ? {
           step: 4,
           total: 4,
-          icon: Target,
+          icon: IconTarget,
           badgeId: 'PETUNJUK AWAL • MISI PERTAMA',
           badgeEn: 'FIRST CLUE • INITIAL GUIDANCE',
           color: 'emerald' as const,
         }
       : null;
 
-  // Standalone cinematic presentation for Story Narrator: Text appears sentence-by-sentence with fade effect
+  // Standalone cinematic presentation for Story Narrator
   if (isNarratorPrologue) {
     const narratorSentence = sentences[sentenceIndex] || processedFullText;
 
     return (
-      <div className="fixed inset-0 z-40 flex items-center justify-center p-4 sm:p-6 bg-slate-950/75 backdrop-blur-md backdrop-filter transition-all duration-500 animate-fade-in pointer-events-auto">
-        <div className="w-[92%] sm:w-[86%] max-w-md sm:max-w-lg bg-gradient-to-b from-slate-950/92 via-slate-900/90 to-amber-950/35 border border-amber-400/35 rounded-2xl p-5 sm:p-6 shadow-[0_12px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(245,158,11,0.15)] flex flex-col items-center text-center gap-4 relative overflow-hidden animate-fade-in">
-          {/* Subtle decorative glowing corner aura */}
+      <div className="dialogue-modal-backdrop narrator-backdrop fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-6 bg-slate-950/75 backdrop-blur-md backdrop-filter transition-all duration-500 animate-fade-in pointer-events-auto">
+        <div className="dialogue-card-container narrator-modal-box w-[92%] sm:w-[86%] max-w-md sm:max-w-lg bg-gradient-to-b from-slate-950/92 via-slate-900/90 to-amber-950/35 border border-amber-400/35 rounded-2xl p-4 sm:p-6 shadow-[0_12px_45px_rgba(0,0,0,0.85),0_0_35px_rgba(245,158,11,0.15)] flex flex-col items-center text-center gap-3 sm:gap-4 relative overflow-hidden animate-fade-in">
           <div className="absolute -top-12 -left-12 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
           <div className="absolute -bottom-12 -right-12 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
-          {/* Elegant prologue header tag */}
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-pixel text-[8.5px] sm:text-[9.5px] tracking-wider shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '6s' }} />
+          {/* Prologue header tag */}
+          <div className="dialogue-top-banner flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-pixel text-[8px] sm:text-[9.5px] tracking-wider shadow-xs">
+            <IconSparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '6s' }} />
             <span>{lang === 'en' ? 'STORY PROLOGUE' : 'PROLOG CERITA'}</span>
             <span className="text-amber-500">•</span>
             <span className="text-amber-200">
@@ -500,14 +528,14 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             </span>
           </div>
 
-          {/* Smooth Fade-in Sentence Text (one sentence at a time, keyed by index) */}
+          {/* Smooth Fade-in Sentence Text */}
           <div
             key={sentenceIndex}
-            className="min-h-[72px] sm:min-h-[82px] flex items-center justify-center animate-fade-in duration-500 px-2 sm:px-3 select-text"
+            className="min-h-[50px] sm:min-h-[76px] flex items-center justify-center animate-fade-in duration-500 px-2 sm:px-3 select-text"
           >
             <p
               style={{ fontFamily: 'Galindo, cursive, sans-serif' }}
-              className="text-[13.5px] sm:text-[15px] leading-relaxed text-amber-50 font-medium tracking-wide"
+              className="text-[12.5px] sm:text-[15px] leading-relaxed text-amber-50 font-medium tracking-wide"
             >
               "{narratorSentence}"
             </p>
@@ -529,18 +557,18 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             ))}
           </div>
 
-          {/* Minimalist Continue / Lanjut action bar */}
-          <div className="flex items-center justify-between w-full pt-2 border-t border-slate-800/80">
-            <span className="text-[8px] sm:text-[9px] text-slate-500 font-pixel">
-              {lang === 'en' ? 'Press Space / Enter' : 'Tekan Spasi / Enter'}
+          {/* Minimalist Continue action bar */}
+          <div className="dialogue-bottom-bar flex items-center justify-between w-full pt-1.5 sm:pt-2 border-t border-slate-800/80">
+            <span className="text-[7.5px] sm:text-[9px] text-slate-500 font-pixel">
+              {lang === 'en' ? 'Press Space or Enter' : 'Tekan Spasi atau Enter'}
             </span>
             <button
               id="narrator-continue-btn"
               onClick={handleNextSentence}
-              className="px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-pixel text-[9px] sm:text-[10px] font-bold shadow-[0_3px_15px_rgba(245,158,11,0.4)] active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer hover:shadow-[0_4px_20px_rgba(245,158,11,0.6)]"
+              className="dialogue-action-btn px-3.5 sm:px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-pixel text-[8.5px] sm:text-[10px] font-bold shadow-[0_3px_15px_rgba(245,158,11,0.4)] active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer hover:shadow-[0_4px_20px_rgba(245,158,11,0.6)]"
             >
-              <span>{isLastSentence ? (lang === 'en' ? 'Continue' : 'Lanjut') : (lang === 'en' ? 'Continue' : 'Lanjut')}</span>
-              <span className="text-[11px] leading-none">➔</span>
+              <span>{lang === 'en' ? 'Continue' : 'Lanjut'}</span>
+              <span className="text-[10px] leading-none">➔</span>
             </button>
           </div>
         </div>
@@ -576,16 +604,18 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
   return (
     <div
-      className={`fixed inset-0 z-40 flex items-center justify-center p-3 sm:p-4 pointer-events-none transition-all duration-500 ${
+      id="dialogue-backdrop-root"
+      className={`dialogue-modal-backdrop fixed inset-0 z-40 flex items-center justify-center p-2.5 sm:p-4 pointer-events-none transition-all duration-500 ${
         isIntroPrologue ? 'bg-slate-950/75 backdrop-blur-md backdrop-filter' : 'bg-transparent'
       }`}
     >
       <div
-        className={`pointer-events-auto w-full max-w-xl rounded-2xl p-4 sm:p-5 backdrop-blur-md flex flex-col gap-3 font-pixel transition-all duration-300 animate-fade-in-slide-up relative overflow-hidden ${
+        id="dialogue-main-card"
+        className={`dialogue-card-container pointer-events-auto w-full max-w-xl rounded-2xl p-3 sm:p-5 backdrop-blur-md flex flex-col gap-2.5 sm:gap-3 font-pixel transition-all duration-300 animate-fade-in-slide-up relative overflow-hidden ${
           isIntroPrologue ? 'scale-[1.01] sm:scale-105 ring-2 ring-white/10' : ''
         } ${dialogBoxStyle}`}
       >
-        {/* Floating Applause & Celebration Overlay */}
+        {/* Floating Celebration Overlay */}
         {feedbackStatus === 'correct' && (
           <div className="absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden z-30">
             <div className="flex gap-4 text-3xl sm:text-4xl animate-applause-float">
@@ -600,34 +630,34 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
         {/* Quiz Feedback Banner: Wrong Answer */}
         {feedbackStatus === 'wrong' && (
-          <div className="bg-red-600 text-white px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-bold flex items-center justify-between shadow-lg border border-red-300 animate-pulse">
+          <div className="dialogue-top-banner bg-red-600 text-white px-3 py-1.5 rounded-xl font-pixel text-[8.5px] sm:text-[10px] font-bold flex items-center justify-between shadow-lg border border-red-300 animate-pulse">
             <div className="flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-yellow-300 shrink-0" />
+              <IconAlert className="w-4 h-4 text-yellow-300 shrink-0" />
               <span>{lang === 'en' ? 'RESPONSE NEEDS MORE CARE — LET US RETHINK' : 'JAWABAN KURANG TEPAT — MARI COBA PIKIRKAN LAGI'}</span>
             </div>
-            <span className="text-[8px] bg-red-950 text-rose-200 px-2 py-0.5 rounded font-bold">
+            <span className="text-[7.5px] sm:text-[8px] bg-red-950 text-rose-200 px-2 py-0.5 rounded font-bold">
               {lang === 'en' ? 'Notice Their Feelings' : 'Perhatikan Perasaannya'}
             </span>
           </div>
         )}
 
-        {/* Quiz Feedback Banner: Correct Answer & Applause */}
+        {/* Quiz Feedback Banner: Correct Answer */}
         {feedbackStatus === 'correct' && (
-          <div className="bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 text-slate-950 px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-lg border border-emerald-200">
+          <div className="dialogue-top-banner bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 text-slate-950 px-3 py-1.5 rounded-xl font-pixel text-[8.5px] sm:text-[10px] font-black flex items-center justify-between shadow-lg border border-emerald-200">
             <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-slate-950 shrink-0 animate-bounce" />
-              <span>{lang === 'en' ? 'WONDERFUL! WISE & EMPATHETIC RESPONSE! 🎉' : 'HEBAT SEKALI! JAWABAN BIJAK & PENUH EMPATI! 🎉'}</span>
+              <IconCheckCircle className="w-4 h-4 text-slate-950 shrink-0 animate-bounce" />
+              <span>{lang === 'en' ? 'WONDERFUL! WISE & EMPATHETIC RESPONSE!' : 'HEBAT SEKALI! JAWABAN BIJAK & PENUH EMPATI!'}</span>
             </div>
-            <span className="text-[8px] bg-emerald-950 text-emerald-200 px-2 py-0.5 rounded font-bold">
-              {lang === 'en' ? 'Empathetic Response 👏' : 'Respon Penuh Empati 👏'}
+            <span className="text-[7.5px] sm:text-[8px] bg-emerald-950 text-emerald-200 px-2 py-0.5 rounded font-bold">
+              {lang === 'en' ? 'Empathetic Response' : 'Respon Penuh Empati'}
             </span>
           </div>
         )}
 
-        {/* Cinematic Intro Focus Stage Banner (Narator, Ezzel, Kompas, Petunjuk Awal) */}
+        {/* Cinematic Intro Focus Stage Banner */}
         {introStep && feedbackStatus === 'idle' && (
           <div
-            className={`px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-md border animate-fade-in ${
+            className={`dialogue-top-banner px-3 py-1.5 rounded-xl font-pixel text-[8.5px] sm:text-[10px] font-black flex items-center justify-between shadow-md border animate-fade-in ${
               introStep.color === 'cyan'
                 ? 'bg-gradient-to-r from-cyan-400 via-sky-300 to-cyan-400 text-slate-950 border-cyan-200 shadow-[0_0_25px_rgba(6,182,212,0.5)]'
                 : introStep.color === 'yellow'
@@ -639,30 +669,30 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               <introStep.icon className="w-4 h-4 text-slate-950 shrink-0 animate-bounce" />
               <span>{lang === 'en' ? introStep.badgeEn : introStep.badgeId}</span>
             </div>
-            <span className="text-[8.5px] bg-slate-950 text-white px-2 py-0.5 rounded-md font-bold shrink-0 tracking-wider">
+            <span className="text-[8px] sm:text-[8.5px] bg-slate-950 text-white px-2 py-0.5 rounded-md font-bold shrink-0 tracking-wider">
               {introStep.step} / {introStep.total}
             </span>
           </div>
         )}
 
-        {/* Mission Notice Banner for Children (when not showing quiz feedback or intro) */}
+        {/* Mission Notice Banner */}
         {isMissionNotice && !introStep && feedbackStatus === 'idle' && (
-          <div className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-slate-950 px-3 py-1.5 rounded-xl font-pixel text-[9px] sm:text-[10px] font-black flex items-center justify-between shadow-md border border-amber-500">
+          <div className="dialogue-top-banner bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 text-slate-950 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl font-pixel text-[8.5px] sm:text-[10px] font-black flex items-center justify-between shadow-md border border-amber-500">
             <div className="flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-slate-950 animate-bounce" />
+              <IconSparkles className="w-3.5 h-3.5 text-slate-950 animate-bounce" />
               <span>{ui.missionGuidanceHeader}</span>
             </div>
-            <span className="text-[8px] bg-slate-950 text-amber-300 px-2 py-0.5 rounded font-bold">
+            <span className="text-[7.5px] sm:text-[8px] bg-slate-950 text-amber-300 px-2 py-0.5 rounded font-bold">
               {ui.missionGuidanceSub}
             </span>
           </div>
         )}
 
         {/* Header: Speaker & Role */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-          <div className="flex items-center gap-2">
+        <div className="dialogue-header flex items-center justify-between border-b border-slate-800 pb-1.5 sm:pb-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <span
-              className={`font-pixel text-[11px] sm:text-xs font-bold tracking-wider ${
+              className={`font-pixel text-[10px] sm:text-xs font-bold tracking-wider ${
                 feedbackStatus === 'wrong'
                   ? 'text-rose-300'
                   : feedbackStatus === 'correct'
@@ -674,15 +704,15 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             >
               {processedSpeaker}
             </span>
-            <span className="font-pixel text-[8px] sm:text-[9px] bg-slate-800/90 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">
+            <span className="font-pixel text-[7.5px] sm:text-[9px] bg-slate-800/90 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">
               {processedRole}
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {dialogue.emotionAura && (
-              <div className="flex items-center gap-1 text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-pixel hover:scale-105 hover:shadow-[0_0_10px_rgba(245,158,11,0.35)] transition-all">
-                <Sparkles className="w-3 h-3 text-amber-400" />
+              <div className="flex items-center gap-1 text-[7.5px] sm:text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-pixel hover:scale-105 hover:shadow-[0_0_10px_rgba(245,158,11,0.35)] transition-all">
+                <IconSparkles className="w-3 h-3 text-amber-400" />
                 <span>AURA: {dialogue.emotionAura.toUpperCase()}</span>
               </div>
             )}
@@ -690,7 +720,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               id="dialogue-header-close-btn"
               onClick={handleExitOrSkip}
               disabled={feedbackStatus !== 'idle'}
-              className="px-2 py-0.5 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-500/50 text-[8px] sm:text-[9px] font-pixel transition-all duration-200 hover:scale-105 hover:shadow-[0_0_12px_rgba(244,63,94,0.45)] active:scale-95 flex items-center gap-1 cursor-pointer disabled:opacity-40"
+              className="px-2 py-0.5 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-500/50 text-[7.5px] sm:text-[9px] font-pixel transition-all duration-200 hover:scale-105 hover:shadow-[0_0_12px_rgba(244,63,94,0.45)] active:scale-95 flex items-center gap-1 cursor-pointer disabled:opacity-40"
               title="Tutup / Lewati Dialog (ESC)"
             >
               <span>{isTyping ? ui.skip : ui.closeEsc}</span>
@@ -700,21 +730,21 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         </div>
 
         {/* Middle: Portrait + Dialogue text */}
-        <div className="flex gap-3 items-start">
-          <div className="shrink-0 transition-transform duration-200 hover:scale-105 hover:rotate-1">
+        <div className="dialogue-middle-row flex gap-2.5 sm:gap-3 items-start">
+          <div className="dialogue-portrait-wrapper shrink-0 transition-transform duration-200 hover:scale-105">
             {renderPortrait(dialogue.portrait)}
           </div>
 
-          <div className="flex-1 flex flex-col gap-2">
+          <div className="flex-1 flex flex-col gap-1.5 sm:gap-2 min-w-0">
             {/* Thought bubble if resonance is active */}
             {processedThought && isCompassActive && (
-              <div className="bg-indigo-950/90 border border-indigo-500/50 rounded-lg p-2 text-indigo-200 flex items-start gap-2 shadow-inner hover:scale-[1.015] hover:shadow-[0_0_14px_rgba(99,102,241,0.35)] transition-all duration-200">
-                <Eye className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <span className="font-pixel text-[8px] sm:text-[9px] text-indigo-300 block uppercase tracking-wider">
+              <div className="bg-indigo-950/90 border border-indigo-500/50 rounded-lg p-1.5 sm:p-2 text-indigo-200 flex items-start gap-1.5 sm:gap-2 shadow-inner hover:scale-[1.015] hover:shadow-[0_0_14px_rgba(99,102,241,0.35)] transition-all duration-200">
+                <IconEye className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
+                <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                  <span className="font-pixel text-[7.5px] sm:text-[9px] text-indigo-300 block uppercase tracking-wider">
                     {ui.innerHeartVoice}
                   </span>
-                  <p className="font-pixel text-[9px] sm:text-[10px] leading-relaxed italic text-indigo-100">
+                  <p className="font-pixel text-[8.5px] sm:text-[10px] leading-relaxed italic text-indigo-100 break-words">
                     "{processedThought}"
                   </p>
                 </div>
@@ -723,7 +753,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
             {/* Sentence Progress Indicator when there are multiple sentences */}
             {sentences.length > 1 && (
-              <div className="flex items-center justify-between text-[8px] sm:text-[8.5px] font-pixel text-slate-400 pb-0.5">
+              <div className="flex items-center justify-between text-[7.5px] sm:text-[8.5px] font-pixel text-slate-400 pb-0.5">
                 <span className="text-amber-300/90 font-bold">
                   {lang === 'en'
                     ? `Sentence ${sentenceIndex + 1} of ${sentences.length}`
@@ -748,11 +778,12 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
             {/* Spoken Text with Galindo */}
             <p
+              id="dialogue-speech-text"
               style={{
                 fontFamily: 'Galindo, cursive, sans-serif',
-                fontSize: '16.5px',
+                fontSize: '15px',
               }}
-              className="text-slate-100 min-h-[46px] tracking-normal break-words select-text"
+              className="text-slate-100 min-h-[40px] sm:min-h-[46px] tracking-normal break-words select-text leading-snug sm:leading-normal"
             >
               {displayedText}
               {isTyping && <span className="inline-block w-2 h-3.5 bg-amber-400 ml-1.5 animate-pulse align-middle" />}
@@ -762,7 +793,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               <button
                 id="dialogue-fast-forward-btn"
                 onClick={finishTypingInstantly}
-                className="self-end text-[8px] font-pixel text-amber-400 hover:text-amber-200 bg-slate-900/80 hover:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/30 hover:border-amber-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all duration-200 flex items-center gap-1 cursor-pointer"
+                className="self-end text-[7.5px] sm:text-[8px] font-pixel text-amber-400 hover:text-amber-200 bg-slate-900/80 hover:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/30 hover:border-amber-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all duration-200 flex items-center gap-1 cursor-pointer"
               >
                 <span>{ui.showAllText}</span>
               </button>
@@ -771,10 +802,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         </div>
 
         {/* Choices or Next Button */}
-        <div className="mt-1 pt-2 border-t border-slate-800/80">
+        <div className="dialogue-bottom-bar mt-1 pt-1.5 sm:pt-2 border-t border-slate-800/80">
           {dialogue.choices && dialogue.choices.length > 0 ? (
             showChoices ? (
-              <div className="flex flex-col gap-2 animate-fade-in-slide-up">
+              <div className="flex flex-col gap-1.5 sm:gap-2 animate-fade-in-slide-up">
                 <div className="flex items-center justify-between">
                   <span
                     className={`font-pixel text-[8px] sm:text-[9px] font-semibold flex items-center gap-1.5 ${
@@ -785,7 +816,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         : 'text-amber-400'
                     }`}
                   >
-                    <MessageCircle className="w-3 h-3" />
+                    <IconMessage className="w-3 h-3" />
                     {(wrongChoiceIdsRef.current[dialogue.id]?.length ?? 0) > 0
                       ? (lang === 'en'
                           ? `Try choosing a wiser response (1-${dialogue.choices.length} or click):`
@@ -796,14 +827,14 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   </span>
                   <button
                     onClick={() => setShowChoices(false)}
-                    className="text-[8px] sm:text-[9px] font-pixel text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
+                    className="text-[7.5px] sm:text-[9px] font-pixel text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
                     title="Kembali membaca ucapan karakter"
                   >
                     {ui.reReadText}
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 gap-1.5">
+                <div className="dialogue-choices-grid grid grid-cols-1 gap-1 sm:gap-1.5">
                   {dialogue.choices.map((choice, index) => {
                     const isSelected = selectedChoiceId === choice.id;
                     const isPreviouslyWrong = (wrongChoiceIdsRef.current[dialogue.id] || []).includes(choice.id);
@@ -833,10 +864,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         id={`choice-${choice.id}`}
                         onClick={() => handleChoiceClick(choice)}
                         disabled={feedbackStatus !== 'idle'}
-                        className={`w-full text-left px-2.5 py-2 rounded-lg font-pixel text-[9px] sm:text-[10px] transition-transform duration-75 flex items-center gap-2 cursor-pointer active:scale-[0.97] group disabled:cursor-not-allowed ${btnStyle}`}
+                        className={`dialogue-choice-btn w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg font-pixel text-[8.5px] sm:text-[10px] transition-transform duration-75 flex items-center gap-2 cursor-pointer active:scale-[0.97] group disabled:cursor-not-allowed ${btnStyle}`}
                       >
                         <span
-                          className={`rounded px-1.5 py-0.5 text-[9px] font-pixel shrink-0 transition-colors ${
+                          className={`rounded px-1.5 py-0.5 text-[8.5px] font-pixel shrink-0 transition-colors ${
                             isSelected && feedbackStatus === 'wrong'
                               ? 'bg-red-500 text-white border border-red-300'
                               : isSelected && feedbackStatus === 'correct'
@@ -853,9 +884,8 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         <span
                           style={{
                             fontFamily: 'Galindo, cursive, sans-serif',
-                            fontSize: '14px',
-                            lineHeight: '16px',
-                            textAlign: 'justify',
+                            fontSize: '13px',
+                            lineHeight: '15px',
                           }}
                           className="flex-1"
                         >
@@ -865,18 +895,18 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                           <span
                             title={
                               lang === 'en'
-                                ? 'Heart Compass warning: This response option is incorrect/unwise'
-                                : 'Peringatan Kompas Hati: Opsi respon ini salah/kurang bijak'
+                                ? 'Heart Compass warning: This response option is incorrect or unwise'
+                                : 'Peringatan Kompas Hati: Opsi respon ini salah atau kurang bijak'
                             }
-                            className="text-[7.5px] sm:text-[8px] font-pixel bg-rose-500/20 text-rose-300 border border-rose-400/80 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 ml-1 animate-pulse"
+                            className="text-[7px] sm:text-[8px] font-pixel bg-rose-500/20 text-rose-300 border border-rose-400/80 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 ml-1 animate-pulse"
                           >
-                            <AlertTriangle className="w-2.5 h-2.5 text-rose-400 shrink-0" />
-                            <span>{lang === 'en' ? 'Wrong Option ❌' : 'Respon Salah ❌'}</span>
+                            <IconAlert className="w-2.5 h-2.5 text-rose-400 shrink-0" />
+                            <span>{lang === 'en' ? 'Wrong Option' : 'Respon Salah'}</span>
                           </span>
                         )}
                         {isPreviouslyWrong && !isCompassFlaggedWrong && (
-                          <span className="text-[8px] bg-red-950/90 text-rose-300 border border-red-600/60 px-1.5 py-0.5 rounded font-bold shrink-0 ml-1">
-                            {lang === 'en' ? 'Incorrect ❌' : 'Kurang Tepat ❌'}
+                          <span className="text-[7px] sm:text-[8px] bg-red-950/90 text-rose-300 border border-red-600/60 px-1.5 py-0.5 rounded font-bold shrink-0 ml-1">
+                            {lang === 'en' ? 'Incorrect' : 'Kurang Tepat'}
                           </span>
                         )}
                       </button>
@@ -894,13 +924,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   <button
                     id="dialogue-finish-typing-btn"
                     onClick={finishTypingInstantly}
-                    className="w-full sm:w-auto px-3 py-1.5 rounded-lg font-pixel text-[9px] bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center justify-center gap-1.5 transition-transform duration-75 active:scale-95 cursor-pointer shrink-0 touch-manipulation"
+                    className="dialogue-action-btn w-full sm:w-auto px-3 py-1.5 rounded-lg font-pixel text-[8.5px] sm:text-[9px] bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center justify-center gap-1.5 transition-transform duration-75 active:scale-95 cursor-pointer shrink-0 touch-manipulation"
                   >
-                    <span>{lang === 'en' ? '⚡ Skip Text Animation [Space]' : '⚡ Lewati Animasi Teks [Spasi]'}</span>
+                    <span>{lang === 'en' ? '⚡ Skip Text Animation' : '⚡ Lewati Animasi Teks'}</span>
                   </button>
                 </div>
               ) : !isLastSentence ? (
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-slate-900/80 border border-amber-500/40 rounded-xl p-2 sm:p-2.5 animate-fade-in shadow-xs">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-slate-900/80 border border-amber-500/40 rounded-xl p-1.5 sm:p-2.5 animate-fade-in shadow-xs">
                   <div className="flex items-center gap-1.5 text-slate-300 font-pixel text-[8px] sm:text-[9px]">
                     <span className="text-amber-400 font-bold">
                       {lang === 'en'
@@ -917,16 +947,16 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   <button
                     id="dialogue-next-sentence-btn"
                     onClick={handleNextSentence}
-                    className="w-full sm:w-auto px-4 py-1.5 rounded-xl font-pixel font-bold text-[9px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)] flex items-center justify-center gap-1.5 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+                    className="dialogue-action-btn w-full sm:w-auto px-4 py-1.5 rounded-xl font-pixel font-bold text-[8.5px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)] flex items-center justify-center gap-1.5 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                   >
-                    <span>{lang === 'en' ? 'CONTINUE [SPACE]' : 'LANJUT [SPASI]'}</span>
+                    <span>{lang === 'en' ? 'CONTINUE' : 'LANJUT'}</span>
                     <span className="text-xs">▶</span>
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-amber-950/30 border border-amber-500/40 rounded-xl p-2 sm:p-2.5 animate-fade-in">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-amber-950/30 border border-amber-500/40 rounded-xl p-1.5 sm:p-2.5 animate-fade-in">
                   <div className="flex items-center gap-1.5 text-amber-200 font-pixel text-[8px] sm:text-[9px]">
-                    <MessageCircle className="w-3.5 h-3.5 text-amber-400 shrink-0 animate-bounce" />
+                    <IconMessage className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                     <span>{lang === 'en' ? 'Finished reading. Click button to choose your response:' : 'Teks selesai dibaca. Klik tombol untuk memilih respon tanggapanmu:'}</span>
                   </div>
                   <button
@@ -935,9 +965,9 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                       sound.playMenuSelect();
                       setShowChoices(true);
                     }}
-                    className="w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[9px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.6)] flex items-center justify-center gap-2 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+                    className="dialogue-action-btn w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[8.5px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.6)] flex items-center justify-center gap-2 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                   >
-                    <span>{lang === 'en' ? 'CHOOSE RESPONSE [SPACE]' : 'KLIK PILIH RESPON [SPASI]'}</span>
+                    <span>{lang === 'en' ? 'CHOOSE RESPONSE' : 'KLIK PILIH RESPON'}</span>
                     <span className="text-xs">💬 ▶</span>
                   </button>
                 </div>
@@ -964,7 +994,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   <button
                     id="dialogue-skip-regulation-btn"
                     onClick={onSkipRegulation}
-                    className="px-2.5 py-1.5 rounded-lg font-pixel text-[8px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-transform duration-75 border border-slate-700 cursor-pointer active:scale-95 touch-manipulation"
+                    className="dialogue-action-btn px-2.5 py-1.5 rounded-lg font-pixel text-[7.5px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-transform duration-75 border border-slate-700 cursor-pointer active:scale-95 touch-manipulation"
                     title={lang === 'en' ? 'Skip exercise and continue to next conversation' : 'Lewati latihan dan langsung lanjut ke percakapan berikutnya'}
                   >
                     {lang === 'en' ? 'Skip Exercise ▶' : 'Lewati Latihan ▶'}
@@ -973,7 +1003,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 <button
                   id="dialogue-next-btn"
                   onClick={handleNextSentence}
-                  className={`px-3.5 py-1.5 rounded-lg font-pixel font-bold text-[9px] sm:text-[10px] flex items-center gap-1.5 shadow transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer ${
+                  className={`dialogue-action-btn px-3.5 py-1.5 rounded-lg font-pixel font-bold text-[8.5px] sm:text-[10px] flex items-center gap-1.5 shadow transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer ${
                     isEndingDialogue && !isTyping && isLastSentence
                       ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.55)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
                       : isRegulationTrigger && !isTyping && isLastSentence
@@ -985,16 +1015,16 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 >
                   <span>
                     {isWrongFeedback && isLastSentence
-                      ? (lang === 'en' ? 'TRY CHOOSING AGAIN [SPACE]' : 'COBA PILIH LAGI [SPASI]')
+                      ? (lang === 'en' ? 'TRY CHOOSING AGAIN' : 'COBA PILIH LAGI')
                       : isTyping
                       ? (lang === 'en' ? 'SKIP EFFECT' : 'LEWATI EFEK')
                       : !isLastSentence
-                      ? (lang === 'en' ? 'CONTINUE [SPACE]' : 'LANJUT [SPASI]')
+                      ? (lang === 'en' ? 'CONTINUE' : 'LANJUT')
                       : isEndingDialogue
-                      ? (lang === 'en' ? 'FINISH & VIEW CERTIFICATE [SPACE]' : 'SELESAIKAN & LIHAT SERTIFIKAT [SPASI]')
+                      ? (lang === 'en' ? 'FINISH & VIEW CERTIFICATE' : 'SELESAIKAN & LIHAT SERTIFIKAT')
                       : isRegulationTrigger
-                      ? (lang === 'en' ? 'START EXERCISE WITH KIKI [SPACE]' : 'MULAI LATIHAN BERSAMA KIKI [SPASI]')
-                      : (lang === 'en' ? 'CONTINUE [SPACE]' : 'LANJUT [SPASI]')}
+                      ? (lang === 'en' ? 'START EXERCISE WITH KIKI' : 'MULAI LATIHAN BERSAMA KIKI')
+                      : (lang === 'en' ? 'CONTINUE' : 'LANJUT')}
                   </span>
                   <span className="text-xs">
                     {isEndingDialogue && !isTyping && isLastSentence

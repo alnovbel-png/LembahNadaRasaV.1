@@ -1,13 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Compass,
-  Volume2,
-  VolumeX,
-  Check,
-  Play,
-  ArrowLeft,
-  RotateCcw,
-} from 'lucide-react';
 import { sound, useAudioSettings } from '../utils/audio';
 import { CharacterPortrait } from './CharacterPortrait';
 import { useLanguage } from '../game/localization';
@@ -36,7 +27,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
   const { isMuted, toggleMute } = useAudioSettings();
   const { lang, toggleLang, ui } = useLanguage();
   const [menuView, setMenuView] = useState<MenuView>('main');
-  const [selectedMainMenuIndex, setSelectedMainMenuIndex] = useState<number>(0); // 0: Play, 1: Setting, 2: Keluar
+  const [selectedMainMenuIndex, setSelectedMainMenuIndex] = useState<number>(0);
   const [playerName, setPlayerName] = useState<string>(initialPlayerName);
   const [playerAvatar, setPlayerAvatar] = useState<'boy' | 'girl'>(initialPlayerAvatar);
   const [showExitModal, setShowExitModal] = useState<boolean>(false);
@@ -51,7 +42,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
     setPlayerAvatar(initialPlayerAvatar === 'girl' ? 'girl' : 'boy');
   }, [initialPlayerName, initialPlayerAvatar]);
 
-  // Whenever StartMenuModal is opened or re-opened (e.g. from Pause Menu), ALWAYS show the Main Menu view first
+  // Whenever StartMenuModal is opened, reset to Main Menu view
   useEffect(() => {
     if (isOpen) {
       setMenuView('main');
@@ -76,7 +67,6 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
     sound.playMenuSelect();
     setPlayerAvatar(avatar);
     const curr = playerName.trim();
-    // Auto-update name if currently matching another default name
     if (
       !curr ||
       curr === 'Ezzel' ||
@@ -103,7 +93,6 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
         return;
       }
 
-      // If typing in input box, only intercept Enter and Escape
       const activeEl = document.activeElement;
       const isInputActive = activeEl && activeEl.tagName === 'INPUT';
 
@@ -178,32 +167,40 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
   const currentDisplayNickname = playerName.trim() || getDefaultNameForAvatar(playerAvatar);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-between bg-[#0a0d18]/80 backdrop-blur-[2px] p-3 sm:p-5 md:p-6 overflow-y-auto animate-backdrop-fade-in select-none">
-      {/* =================================================================== */}
-      {/* 1. TOP BAR: Compact & well-proportioned for 16:9 displays */}
-      {/* =================================================================== */}
-      <div className="w-full flex items-center justify-between z-20 max-w-5xl mx-auto px-2">
-        {/* Left: RPG SOSIAL-EMOSIONAL & MINDFULNESS (Moved to replace official text) */}
-        <div className="inline-flex items-center gap-1.5 bg-[#251b14]/90 border border-amber-600/70 rounded-full px-2.5 sm:px-3 py-1 shadow-md">
-          <Compass className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-          <span className="font-pixel text-[8px] sm:text-[9px] text-amber-300 font-bold tracking-wider">
+    <div
+      id="start-menu-backdrop"
+      className="fixed inset-0 z-50 flex flex-col justify-between bg-[#0a0d18]/85 backdrop-blur-[2px] p-2 sm:p-5 md:p-6 overflow-y-auto animate-backdrop-fade-in select-none start-menu-modal-root"
+    >
+      {/* 1. TOP BAR */}
+      <div className="w-full flex items-center justify-between z-20 max-w-5xl mx-auto px-1 sm:px-2 shrink-0 start-menu-topbar">
+        {/* Left: RPG SOSIAL-EMOSIONAL Badge */}
+        <div className="inline-flex items-center gap-1.5 bg-[#251b14]/90 border border-amber-600/70 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 shadow-md">
+          {/* Handcrafted Compass Icon */}
+          <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="8" r="7" stroke="#d97706" strokeWidth="1.2" fill="#1e130c" />
+            <circle cx="8" cy="8" r="5" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="1.5 1.5" />
+            <polygon points="8,2.5 9.8,7.2 8,6.2 6.2,7.2" fill="#ef4444" />
+            <polygon points="8,13.5 9.8,8.8 8,9.8 6.2,8.8" fill="#38bdf8" />
+            <circle cx="8" cy="8" r="1.3" fill="#fef08a" />
+          </svg>
+          <span className="font-pixel text-[7px] sm:text-[9px] text-amber-300 font-bold tracking-wider">
             {ui.genreBadge}
           </span>
         </div>
 
-        {/* Right: Language Selector & Sound Toggle Buttons */}
-        <div className="flex items-center gap-2">
+        {/* Right: Language & Sound Buttons */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Language Toggle Button */}
           <button
             type="button"
             id="btn-start-language-toggle"
             onClick={toggleLang}
             title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-            className="inline-flex items-center gap-1.5 bg-[#172033]/90 hover:bg-[#202c45] border border-amber-500/70 rounded-full px-2.5 sm:px-3 py-1 transition-transform duration-75 text-amber-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
+            className="inline-flex items-center gap-1 bg-[#172033]/90 hover:bg-[#202c45] border border-amber-500/70 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 transition-transform duration-75 text-amber-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
           >
-            <span className="text-xs">{lang === 'id' ? '🇮🇩 ID' : '🇬🇧 EN'}</span>
-            <span className="font-pixel text-[8px] sm:text-[9px] text-amber-300 font-bold uppercase tracking-wider">
-              {lang === 'id' ? 'Bahasa Indonesia' : 'English'}
+            <span className="text-[10px] sm:text-xs">{lang === 'id' ? '🇮🇩' : '🇬🇧'}</span>
+            <span className="font-pixel text-[7px] sm:text-[9px] text-amber-300 font-bold uppercase tracking-wider">
+              {lang === 'id' ? 'ID' : 'EN'}
             </span>
           </button>
 
@@ -212,41 +209,47 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             type="button"
             onClick={toggleMute}
             title={isMuted ? (lang === 'en' ? 'Unmute Audio' : 'Nyalakan Audio') : (lang === 'en' ? 'Mute Audio' : 'Matikan Audio')}
-            className="inline-flex items-center gap-1.5 bg-[#10222a]/90 hover:bg-[#18333e] border border-cyan-700/70 rounded-full px-2.5 sm:px-3 py-1 transition-transform duration-75 text-cyan-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
+            className="inline-flex items-center gap-1 bg-[#10222a]/90 hover:bg-[#18333e] border border-cyan-700/70 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 transition-transform duration-75 text-cyan-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
           >
             {isMuted ? (
               <>
-                <VolumeX className="w-3 h-3 text-red-400" />
-                <span className="font-pixel text-[8px] sm:text-[9px] text-red-300">{ui.soundMute}</span>
+                {/* Handcrafted Muted Speaker Icon */}
+                <svg className="w-3 h-3 text-red-400 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M3 5.5H5.5L9 2.5V13.5L5.5 10.5H3C2.45 10.5 2 10.05 2 9.5V6.5C2 5.95 2.45 5.5 3 5.5Z" />
+                  <line x1="11" y1="5.5" x2="14.5" y2="10.5" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round" />
+                  <line x1="14.5" y1="5.5" x2="11" y2="10.5" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                <span className="font-pixel text-[7px] sm:text-[9px] text-red-300">{ui.soundMute}</span>
               </>
             ) : (
               <>
-                <Volume2 className="w-3 h-3 text-cyan-400" />
-                <span className="font-pixel text-[8px] sm:text-[9px] text-cyan-200">{ui.soundOn}</span>
+                {/* Handcrafted Sound Speaker Icon */}
+                <svg className="w-3 h-3 text-cyan-400 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M3 5.5H5.5L9 2.5V13.5L5.5 10.5H3C2.45 10.5 2 10.05 2 9.5V6.5C2 5.95 2.45 5.5 3 5.5Z" />
+                  <path d="M11 5C11.8 5.8 12.3 6.8 12.3 8C12.3 9.2 11.8 10.2 11 11" stroke="#38bdf8" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+                  <path d="M12.8 3.5C14 4.8 14.7 6.3 14.7 8C14.7 9.7 14 11.2 12.8 12.5" stroke="#38bdf8" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+                </svg>
+                <span className="font-pixel text-[7px] sm:text-[9px] text-cyan-200">{ui.soundOn}</span>
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* =================================================================== */}
-      {/* 2. CENTER CONTENT: Sized to preserve generous 16:9 whitespace */}
-      {/* =================================================================== */}
-      <div className="w-full flex flex-col items-center justify-center my-auto py-2 z-10">
-        {/* Game Title: Proportionate size without overwhelming the vertical space */}
-        <div className="text-center mb-2.5 sm:mb-3.5">
-          <h1 className="font-pixel text-xl sm:text-2xl md:text-3xl text-amber-400 drop-shadow-[0_3px_0_#000] tracking-wider leading-snug">
+      {/* 2. CENTER CONTENT */}
+      <div className="w-full flex flex-col items-center justify-center my-auto py-1 sm:py-2 z-10">
+        {/* Game Title: Balanced and compact on mobile */}
+        <div className="text-center mb-1.5 sm:mb-3.5 start-menu-title">
+          <h1 className="font-pixel text-xs sm:text-2xl md:text-3xl text-amber-400 drop-shadow-[0_2px_0_#000] tracking-wider leading-snug">
             {ui.gameTitle}
           </h1>
         </div>
 
-        {/* =================================================================== */}
-        {/* VIEW 1: MENU UTAMA (16:9 proportion, sleek buttons, clean whitespace) */}
-        {/* =================================================================== */}
+        {/* VIEW 1: MENU UTAMA */}
         {menuView === 'main' && (
-          <div className="w-full max-w-[460px] sm:max-w-[500px] md:max-w-[520px] bg-[#121626]/95 border-2 border-amber-500/90 rounded-[22px] sm:rounded-[24px] shadow-[0_0_40px_rgba(245,158,11,0.2)] p-4 sm:p-5 flex flex-col gap-2.5 sm:gap-3 animate-fade-in-slide-up">
+          <div className="w-full max-w-[290px] sm:max-w-[460px] md:max-w-[500px] bg-[#121626]/95 border-2 border-amber-500/90 rounded-2xl sm:rounded-[24px] shadow-[0_0_35px_rgba(245,158,11,0.2)] p-2.5 sm:p-5 flex flex-col gap-1.5 sm:gap-3 animate-fade-in-slide-up start-menu-card">
             {/* Menu Buttons Stack */}
-            <div className="flex flex-col gap-2 sm:gap-2.5 my-0.5">
+            <div className="flex flex-col gap-1.5 sm:gap-2.5 my-0.5">
               {/* 1. PLAY BUTTON */}
               <button
                 type="button"
@@ -256,15 +259,15 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   sound.playMenuSelect();
                   setMenuView('play');
                 }}
-                className={`w-full relative h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation ${
+                className={`w-full relative h-10 sm:h-[58px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation start-menu-btn ${
                   selectedMainMenuIndex === 0
                     ? 'bg-gradient-to-r from-[#2c1f14] via-[#352518] to-[#2c1f14] border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)] scale-[1.01]'
                     : 'bg-[#231810]/95 border-amber-600/70 hover:border-amber-400'
                 }`}
               >
-                {/* Pixel Play Icon on left */}
-                <div className="absolute left-4 sm:left-6 flex items-center justify-center pointer-events-none">
-                  <svg className="w-6 h-6 sm:w-7 sm:h-7 text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" viewBox="0 0 24 24" fill="currentColor">
+                {/* Handcrafted Pixel Play Icon */}
+                <div className="absolute left-3 sm:left-6 flex items-center justify-center pointer-events-none start-menu-btn-icon">
+                  <svg className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="5" y="4" width="2" height="16" fill="#f59e0b" />
                     <rect x="7" y="5" width="2" height="14" fill="#fbbf24" />
                     <rect x="9" y="6" width="2" height="12" fill="#fbbf24" />
@@ -281,10 +284,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
 
                 {/* Centered Text */}
                 <div className="w-full flex flex-col items-center justify-center">
-                  <span className="font-pixel text-sm sm:text-base md:text-lg text-white font-bold tracking-wider">
+                  <span className="font-pixel text-[11px] sm:text-base md:text-lg text-white font-bold tracking-wider start-menu-btn-title">
                     {ui.play}
                   </span>
-                  <span className="font-pixel text-[9px] sm:text-[10px] text-amber-400 tracking-wider mt-0.5">
+                  <span className="font-pixel text-[7px] sm:text-[10px] text-amber-400 tracking-wider mt-0.5 start-menu-btn-sub">
                     {ui.startAdventure}
                   </span>
                 </div>
@@ -300,30 +303,26 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   if (onOpenSettings) onOpenSettings();
                   else onOpenAudioSettings();
                 }}
-                className={`w-full relative h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation ${
+                className={`w-full relative h-10 sm:h-[58px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation start-menu-btn ${
                   selectedMainMenuIndex === 1
                     ? 'bg-gradient-to-r from-[#192434] via-[#212f45] to-[#192434] border-slate-400 shadow-[0_0_18px_rgba(148,163,184,0.35)] scale-[1.01]'
                     : 'bg-[#182130]/95 border-slate-600/80 hover:border-slate-400'
                 }`}
               >
-                {/* Pixel Gear Icon on left */}
-                <div className="absolute left-4 sm:left-6 flex items-center justify-center pointer-events-none">
-                  <svg className="w-6 h-6 sm:w-7 sm:h-7 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.2">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                {/* Handcrafted Settings Gear Icon */}
+                <div className="absolute left-3 sm:left-6 flex items-center justify-center pointer-events-none start-menu-btn-icon">
+                  <svg className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-slate-300 group-hover:text-amber-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
                   </svg>
                 </div>
 
                 {/* Centered Text */}
                 <div className="w-full flex flex-col items-center justify-center">
-                  <span className="font-pixel text-sm sm:text-base md:text-lg text-[#cbd5e1] group-hover:text-white font-bold tracking-wider">
+                  <span className="font-pixel text-[11px] sm:text-base md:text-lg text-[#cbd5e1] group-hover:text-white font-bold tracking-wider start-menu-btn-title">
                     {ui.settings}
                   </span>
-                  <span className="font-pixel text-[9px] sm:text-[10px] text-[#94a3b8] tracking-wider mt-0.5">
+                  <span className="font-pixel text-[7px] sm:text-[10px] text-[#94a3b8] tracking-wider mt-0.5 start-menu-btn-sub">
                     {ui.gameOptions}
                   </span>
                 </div>
@@ -338,15 +337,15 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   sound.playMenuSelect();
                   setShowExitModal(true);
                 }}
-                className={`w-full relative h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation ${
+                className={`w-full relative h-10 sm:h-[58px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation start-menu-btn ${
                   selectedMainMenuIndex === 2
                     ? 'bg-gradient-to-r from-[#2c1319] via-[#381820] to-[#2c1319] border-red-500 shadow-[0_0_18px_rgba(239,68,68,0.4)] scale-[1.01]'
                     : 'bg-[#241116]/95 border-red-700/80 hover:border-red-500'
                 }`}
               >
-                {/* Pixel Exit Icon on left */}
-                <div className="absolute left-4 sm:left-6 flex items-center justify-center pointer-events-none">
-                  <svg className="w-6 h-6 sm:w-7 sm:h-7 text-red-400" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                {/* Handcrafted Exit Door Icon */}
+                <div className="absolute left-3 sm:left-6 flex items-center justify-center pointer-events-none start-menu-btn-icon">
+                  <svg className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-red-400 group-hover:text-red-300 transition-colors" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                     <polyline points="16 17 21 12 16 7" />
                     <line x1="21" y1="12" x2="9" y2="12" />
@@ -355,10 +354,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
 
                 {/* Centered Text */}
                 <div className="w-full flex flex-col items-center justify-center">
-                  <span className="font-pixel text-sm sm:text-base md:text-lg text-[#f87171] font-bold tracking-wider">
+                  <span className="font-pixel text-[11px] sm:text-base md:text-lg text-[#f87171] font-bold tracking-wider start-menu-btn-title">
                     {ui.exit}
                   </span>
-                  <span className="font-pixel text-[9px] sm:text-[10px] text-[#ef4444]/90 tracking-wider mt-0.5">
+                  <span className="font-pixel text-[7px] sm:text-[10px] text-[#ef4444]/90 tracking-wider mt-0.5 start-menu-btn-sub">
                     {ui.closeGame}
                   </span>
                 </div>
@@ -366,222 +365,238 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             </div>
 
             {/* Bottom Card Footer */}
-            <div className="w-full pt-2 sm:pt-2.5 mt-0.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-slate-400 text-[10px] sm:text-[11px] font-sans">
+            <div className="w-full pt-1.5 sm:pt-2.5 mt-0.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-slate-400 text-[8px] sm:text-[11px] font-sans start-menu-footer">
               <div className="flex items-center gap-1.5">
-                <div className="w-3.5 h-3.5 rounded-full border border-emerald-400/80 flex items-center justify-center shrink-0">
+                <div className="w-3 h-3 rounded-full border border-emerald-400/80 flex items-center justify-center shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 </div>
                 <span>{ui.safeBrowserNote}</span>
               </div>
               <div className="flex items-center gap-1 text-slate-400">
-                <span>{lang === 'en' ? 'Press' : 'Tekan Tombol'}</span>
-                <span className="font-pixel text-amber-400 font-bold text-[10px]">[ENTER]</span>
+                <span>{lang === 'en' ? 'Press' : 'Tekan'}</span>
+                <span className="font-pixel text-amber-400 font-bold text-[7px] sm:text-[9px] bg-amber-950/70 border border-amber-600/60 px-1 py-0.5 rounded">
+                  ENTER
+                </span>
                 <span>{lang === 'en' ? 'to Select' : 'untuk Memilih'}</span>
               </div>
             </div>
           </div>
         )}
 
-        {/* =================================================================== */}
-        {/* VIEW 2: PENYIAPAN PETUALANG (2 Karakter: Ezzel & Ezzy) */}
-        {/* =================================================================== */}
+        {/* VIEW 2: PENYIAPAN PETUALANG */}
         {menuView === 'play' && (
-          <div className="w-full max-w-[460px] sm:max-w-[500px] md:max-w-[520px] bg-[#121626]/95 border-2 border-amber-500/90 rounded-[22px] sm:rounded-[24px] shadow-[0_0_40px_rgba(245,158,11,0.2)] p-4 sm:p-5 flex flex-col gap-2.5 sm:gap-3 animate-fade-in-slide-up">
-            {/* Header: PENYIAPAN PETUALANG */}
-            <div className="text-center pt-0.5 pb-0.5">
-              <span className="font-pixel text-amber-400 text-xs sm:text-sm tracking-[0.2em] font-bold">
+          <div className="w-full max-w-[300px] sm:max-w-[460px] md:max-w-[500px] bg-[#121626]/95 border-2 border-amber-500/90 rounded-2xl sm:rounded-[24px] shadow-[0_0_35px_rgba(245,158,11,0.2)] p-2.5 sm:p-5 flex flex-col gap-1.5 sm:gap-3 animate-fade-in-slide-up start-menu-card start-menu-play-card">
+            {/* Header */}
+            <div className="text-center pt-0.5 pb-0.5 start-menu-play-header">
+              <span className="font-pixel text-amber-400 text-[9px] sm:text-sm tracking-wider font-bold">
                 {ui.charCustomizationTitle}
               </span>
             </div>
 
-            {/* Section 1: Nickname Input */}
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="character-nickname-input"
-                  className="font-pixel text-[10px] sm:text-xs text-amber-300 font-bold"
-                >
-                  {ui.nicknameLabel}
-                </label>
-                <span className="text-[10px] font-sans text-slate-400">
-                  {ui.maxChars}
+            {/* In mobile landscape, these sections sit side-by-side in start-menu-play-columns */}
+            <div className="start-menu-play-columns flex flex-col gap-1.5 sm:gap-3">
+              {/* Column 1: Character Selection Cards */}
+              <div className="start-menu-play-avatars-col flex flex-col gap-1 sm:gap-1.5">
+                <span className="font-pixel text-[8px] sm:text-[11px] text-slate-300">
+                  {lang === 'en' ? 'CHOOSE ADVENTURER AVATAR:' : 'PILIH KARAKTER PETUALANG:'}
                 </span>
-              </div>
 
-              {/* Glowing Neon Cyan Input */}
-              <div className="relative w-full flex items-center">
-                <input
-                  id="character-nickname-input"
-                  type="text"
-                  autoFocus
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value.slice(0, 12))}
-                  onKeyDown={(e) => {
-                    e.stopPropagation();
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleStart();
-                    }
-                  }}
-                  placeholder={lang === 'en' ? 'Type here...' : 'Ketik di sini...'}
-                  maxLength={12}
-                  className="w-full bg-slate-950/90 border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.3)] focus:shadow-[0_0_22px_rgba(34,211,238,0.5)] focus:border-cyan-300 rounded-xl px-3.5 py-2 text-cyan-100 font-pixel text-xs sm:text-sm focus:outline-none transition-all placeholder:text-slate-600 placeholder:font-sans"
-                />
+                <div className="grid grid-cols-2 gap-2 sm:gap-4 start-menu-avatar-grid">
+                  {/* 1. EZZEL (Petualang Laki-Laki) */}
+                  <button
+                    type="button"
+                    id="avatar-select-ezzel"
+                    onClick={() => handleSelectAvatar('boy')}
+                    className={`p-1.5 sm:p-3 rounded-lg sm:rounded-xl border-2 transition-all flex flex-col items-center justify-between gap-1 cursor-pointer text-center relative start-menu-avatar-btn ${
+                      playerAvatar === 'boy'
+                        ? 'bg-emerald-950/70 border-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.4)] scale-[1.02]'
+                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 opacity-75 hover:opacity-100'
+                    }`}
+                  >
+                    {playerAvatar === 'boy' && (
+                      <div className="absolute top-1 right-1 bg-emerald-400 text-slate-950 rounded-full p-0.5 shadow-md">
+                        <svg className="w-2.5 h-2.5 text-slate-950 stroke-[3]" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="2.5 7 5.5 10 11.5 3.5" />
+                        </svg>
+                      </div>
+                    )}
 
-                {/* Reset button inside input */}
-                <button
-                  type="button"
-                  onClick={() => setPlayerName(getDefaultNameForAvatar(playerAvatar))}
-                  title={lang === 'en' ? 'Use default name' : 'Gunakan nama bawaan'}
-                  className="absolute right-2.5 px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-amber-300 font-pixel text-[8px] border border-slate-700 transition cursor-pointer flex items-center gap-1"
-                >
-                  <RotateCcw className="w-2.5 h-2.5" />
-                  <span>{ui.reset}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Section 2: Character Selection Cards (2 Karakter: Ezzel & Ezzy) */}
-            <div className="flex flex-col gap-1.5">
-              <span className="font-pixel text-[10px] sm:text-[11px] text-slate-300">
-                {lang === 'en' ? 'CHOOSE ADVENTURER AVATAR:' : 'PILIH KARAKTER PETUALANG:'}
-              </span>
-
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                {/* 1. EZZEL (Petualang Laki-Laki) */}
-                <button
-                  type="button"
-                  id="avatar-select-ezzel"
-                  onClick={() => handleSelectAvatar('boy')}
-                  className={`p-2.5 sm:p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-between gap-1.5 cursor-pointer text-center relative ${
-                    playerAvatar === 'boy'
-                      ? 'bg-emerald-950/70 border-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.4)] scale-[1.02]'
-                      : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 opacity-75 hover:opacity-100'
-                  }`}
-                >
-                  {playerAvatar === 'boy' && (
-                    <div className="absolute top-1.5 right-1.5 bg-emerald-400 text-slate-950 rounded-full p-0.5 shadow-md">
-                      <Check className="w-3 h-3 stroke-[3]" />
+                    <div className="w-10 h-10 sm:w-15 sm:h-15 flex items-center justify-center my-0.5 start-menu-avatar-portrait">
+                      <CharacterPortrait sprite="player_boy" size="dialogue" className="!w-10 !h-10 sm:!w-14 sm:!h-14" />
                     </div>
-                  )}
 
-                  <div className="w-13 h-13 sm:w-15 sm:h-15 flex items-center justify-center my-0.5">
-                    <CharacterPortrait sprite="player_boy" size="dialogue" />
-                  </div>
-
-                  <div className="flex flex-col items-center">
-                    <span className="font-pixel text-xs sm:text-sm font-bold text-emerald-300">
-                      EZZEL
-                    </span>
-                    <span className="font-sans text-[10px] text-slate-300">
-                      {ui.boyTitle}
-                    </span>
-                  </div>
-                </button>
-
-                {/* 2. EZZY (Petualang Perempuan) */}
-                <button
-                  type="button"
-                  id="avatar-select-ezzy"
-                  onClick={() => handleSelectAvatar('girl')}
-                  className={`p-2.5 sm:p-3 rounded-xl border-2 transition-all flex flex-col items-center justify-between gap-1.5 cursor-pointer text-center relative ${
-                    playerAvatar === 'girl'
-                      ? 'bg-cyan-950/70 border-cyan-400 shadow-[0_0_18px_rgba(34,211,238,0.4)] scale-[1.02]'
-                      : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 opacity-75 hover:opacity-100'
-                  }`}
-                >
-                  {playerAvatar === 'girl' && (
-                    <div className="absolute top-1.5 right-1.5 bg-cyan-400 text-slate-950 rounded-full p-0.5 shadow-md">
-                      <Check className="w-3 h-3 stroke-[3]" />
+                    <div className="flex flex-col items-center">
+                      <span className="font-pixel text-[9px] sm:text-sm font-bold text-emerald-300">
+                        EZZEL
+                      </span>
+                      <span className="font-sans text-[8px] sm:text-[10px] text-slate-300">
+                        {ui.boyTitle}
+                      </span>
                     </div>
-                  )}
+                  </button>
 
-                  <div className="w-13 h-13 sm:w-15 sm:h-15 flex items-center justify-center my-0.5">
-                    <CharacterPortrait sprite="player_girl" size="dialogue" />
-                  </div>
+                  {/* 2. EZZY (Petualang Perempuan) */}
+                  <button
+                    type="button"
+                    id="avatar-select-ezzy"
+                    onClick={() => handleSelectAvatar('girl')}
+                    className={`p-1.5 sm:p-3 rounded-lg sm:rounded-xl border-2 transition-all flex flex-col items-center justify-between gap-1 cursor-pointer text-center relative start-menu-avatar-btn ${
+                      playerAvatar === 'girl'
+                        ? 'bg-cyan-950/70 border-cyan-400 shadow-[0_0_18px_rgba(34,211,238,0.4)] scale-[1.02]'
+                        : 'bg-slate-900/80 border-slate-800 hover:border-slate-600 opacity-75 hover:opacity-100'
+                    }`}
+                  >
+                    {playerAvatar === 'girl' && (
+                      <div className="absolute top-1 right-1 bg-cyan-400 text-slate-950 rounded-full p-0.5 shadow-md">
+                        <svg className="w-2.5 h-2.5 text-slate-950 stroke-[3]" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="2.5 7 5.5 10 11.5 3.5" />
+                        </svg>
+                      </div>
+                    )}
 
-                  <div className="flex flex-col items-center">
-                    <span className="font-pixel text-xs sm:text-sm font-bold text-cyan-300">
-                      EZZY
-                    </span>
-                    <span className="font-sans text-[10px] text-slate-300">
-                      {ui.girlTitle}
-                    </span>
-                  </div>
-                </button>
+                    <div className="w-10 h-10 sm:w-15 sm:h-15 flex items-center justify-center my-0.5 start-menu-avatar-portrait">
+                      <CharacterPortrait sprite="player_girl" size="dialogue" className="!w-10 !h-10 sm:!w-14 sm:!h-14" />
+                    </div>
+
+                    <div className="flex flex-col items-center">
+                      <span className="font-pixel text-[9px] sm:text-sm font-bold text-cyan-300">
+                        EZZY
+                      </span>
+                      <span className="font-sans text-[8px] sm:text-[10px] text-slate-300">
+                        {ui.girlTitle}
+                      </span>
+                    </div>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            {/* Section 3: Bottom Action Buttons (Kembali & Mulai Petualangan) */}
-            <div className="flex items-center gap-2.5 pt-1">
-              {/* KEMBALI BUTTON (Returns to Main Menu) */}
-              <button
-                type="button"
-                id="btn-back-to-main"
-                onClick={() => {
-                  sound.playMenuSelect();
-                  setMenuView('main');
-                }}
-                className="px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border-2 border-red-500/80 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-pixel text-[10px] sm:text-xs flex items-center gap-1.5 cursor-pointer transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)] active:scale-95 shrink-0"
-                title={lang === 'en' ? 'Back to Main Menu' : 'Kembali ke Menu Utama'}
-              >
-                <ArrowLeft className="w-3.5 h-3.5 text-red-400" />
-                <span>{lang === 'en' ? 'BACK' : 'KEMBALI'}</span>
-              </button>
+              {/* Column 2: Nickname Input & Bottom Actions */}
+              <div className="start-menu-play-nickname-col flex flex-col gap-1.5 sm:gap-2">
+                {/* Nickname Input Section */}
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center justify-between">
+                    <label
+                      htmlFor="character-nickname-input"
+                      className="font-pixel text-[8px] sm:text-xs text-amber-300 font-bold"
+                    >
+                      {ui.nicknameLabel}
+                    </label>
+                    <span className="text-[8px] sm:text-[10px] font-sans text-slate-400">
+                      {ui.maxChars}
+                    </span>
+                  </div>
 
-              {/* MULAI PETUALANGAN BUTTON */}
-              <button
-                type="button"
-                id="btn-confirm-start-adventure"
-                onClick={handleStart}
-                className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold shadow-[0_0_20px_rgba(245,158,11,0.45)] active:scale-[0.98] transition-transform duration-75 transition-colors duration-75 flex items-center justify-center gap-2 cursor-pointer group touch-manipulation"
-              >
-                <Play className="w-3.5 h-3.5 fill-slate-950 text-slate-950 shrink-0" />
-                <span className="font-pixel text-[11px] sm:text-xs tracking-wider truncate">
-                  {lang === 'en' ? 'START' : 'MULAI'}: [{currentDisplayNickname.toUpperCase()}]
-                </span>
-              </button>
+                  {/* Glowing Neon Cyan Input */}
+                  <div className="relative w-full flex items-center">
+                    <input
+                      id="character-nickname-input"
+                      type="text"
+                      autoFocus
+                      value={playerName}
+                      onChange={(e) => setPlayerName(e.target.value.slice(0, 12))}
+                      onKeyDown={(e) => {
+                        e.stopPropagation();
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleStart();
+                        }
+                      }}
+                      placeholder={lang === 'en' ? 'Type here...' : 'Ketik di sini...'}
+                      maxLength={12}
+                      className="w-full bg-slate-950/90 border-2 border-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.3)] focus:shadow-[0_0_18px_rgba(34,211,238,0.5)] focus:border-cyan-300 rounded-lg sm:rounded-xl px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-cyan-100 font-pixel text-[9px] sm:text-sm focus:outline-none transition-all placeholder:text-slate-600 placeholder:font-sans"
+                    />
+
+                    {/* Handcrafted Reset Button */}
+                    <button
+                      type="button"
+                      onClick={() => setPlayerName(getDefaultNameForAvatar(playerAvatar))}
+                      title={lang === 'en' ? 'Use default name' : 'Gunakan nama bawaan'}
+                      className="absolute right-2 px-1.5 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-amber-300 font-pixel text-[7px] sm:text-[8px] border border-slate-700 transition cursor-pointer flex items-center gap-1"
+                    >
+                      <svg className="w-2.5 h-2.5 text-slate-300" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2.5 6.5A4.5 4.5 0 1 1 3.8 9.8" />
+                        <polyline points="1.5 4 2.5 6.5 5 6.5" />
+                      </svg>
+                      <span>{ui.reset}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bottom Action Buttons */}
+                <div className="flex items-center gap-2 pt-0.5 start-menu-play-actions">
+                  {/* KEMBALI BUTTON */}
+                  <button
+                    type="button"
+                    id="btn-back-to-main"
+                    onClick={() => {
+                      sound.playMenuSelect();
+                      setMenuView('main');
+                    }}
+                    className="px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border-2 border-red-500/80 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-pixel text-[8px] sm:text-xs flex items-center gap-1 cursor-pointer transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)] active:scale-95 shrink-0"
+                    title={lang === 'en' ? 'Back to Main Menu' : 'Kembali ke Menu Utama'}
+                  >
+                    <svg className="w-3 h-3 text-red-400 shrink-0" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="11" y1="7" x2="3" y2="7" />
+                      <polyline points="6.5 3.5 3 7 6.5 10.5" />
+                    </svg>
+                    <span>{lang === 'en' ? 'BACK' : 'KEMBALI'}</span>
+                  </button>
+
+                  {/* MULAI PETUALANGAN BUTTON */}
+                  <button
+                    type="button"
+                    id="btn-confirm-start-adventure"
+                    onClick={handleStart}
+                    className="flex-1 py-1.5 sm:py-2.5 px-3 sm:px-4 rounded-lg sm:rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold shadow-[0_0_20px_rgba(245,158,11,0.45)] active:scale-[0.98] transition-transform duration-75 transition-colors duration-75 flex items-center justify-center gap-1.5 cursor-pointer group touch-manipulation"
+                  >
+                    <svg className="w-3 h-3 fill-slate-950 text-slate-950 shrink-0" viewBox="0 0 12 12">
+                      <polygon points="3,2 10,6 3,10" />
+                    </svg>
+                    <span className="font-pixel text-[9px] sm:text-xs tracking-wider truncate">
+                      {lang === 'en' ? 'START' : 'MULAI'}: {currentDisplayNickname.toUpperCase()}
+                    </span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Bottom Card Footer */}
-            <div className="w-full pt-1.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-slate-400 text-[10px] font-sans">
+            <div className="w-full pt-1 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-slate-400 text-[8px] sm:text-[10px] font-sans start-menu-footer">
               <div className="flex items-center gap-1">
-                <div className="w-3.5 h-3.5 rounded-full border border-emerald-400/80 flex items-center justify-center shrink-0">
+                <div className="w-3 h-3 rounded-full border border-emerald-400/80 flex items-center justify-center shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 </div>
                 <span>{ui.safeBrowserNote}</span>
               </div>
-              <div className="font-pixel text-[9px] text-amber-300/90">
-                {lang === 'en' ? 'Press [ENTER] to Start' : 'Tekan [ENTER] untuk Mulai'}
+              <div className="font-pixel text-[7px] sm:text-[9px] text-amber-300/90">
+                {lang === 'en' ? 'Press ENTER to Start' : 'Tekan ENTER untuk Mulai'}
               </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Subtle bottom spacing to ensure balance in 16:9 */}
-      <div className="h-1 sm:h-2" />
+      {/* Subtle bottom spacing */}
+      <div className="h-0.5 sm:h-2 shrink-0" />
 
-      {/* =================================================================== */}
-      {/* 3. MODAL DIALOG KONFIRMASI KELUAR */}
-      {/* =================================================================== */}
+      {/* MODAL DIALOG KONFIRMASI KELUAR */}
       {showExitModal && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in select-none">
-          <div className="w-full max-w-sm bg-[#121626] border-2 border-red-500/80 rounded-2xl p-5 text-center shadow-[0_0_35px_rgba(239,68,68,0.3)]">
-            <h3 className="font-pixel text-sm sm:text-base text-red-400 mb-1.5">
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 animate-fade-in select-none">
+          <div className="w-full max-w-[280px] sm:max-w-sm bg-[#121626] border-2 border-red-500/80 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 text-center shadow-[0_0_35px_rgba(239,68,68,0.3)]">
+            <h3 className="font-pixel text-xs sm:text-base text-red-400 mb-1">
               {ui.exitConfirmTitle}
             </h3>
-            <p className="font-sans text-xs text-slate-300 mb-5 leading-relaxed">
+            <p className="font-sans text-[10px] sm:text-xs text-slate-300 mb-3.5 leading-relaxed">
               {ui.exitConfirmDesc}
             </p>
-            <div className="flex gap-2.5">
+            <div className="flex gap-2">
               <button
                 type="button"
                 onClick={() => {
                   sound.playMenuSelect();
                   setShowExitModal(false);
                 }}
-                className="flex-1 py-2.5 px-3 rounded-xl border border-amber-500/80 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 font-pixel text-[11px] cursor-pointer transition active:scale-95"
+                className="flex-1 py-1.5 sm:py-2.5 px-2.5 rounded-lg sm:rounded-xl border border-amber-500/80 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 font-pixel text-[9px] sm:text-[11px] cursor-pointer transition active:scale-95"
               >
                 {ui.cancel}
               </button>
@@ -593,10 +608,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   try {
                     window.close();
                   } catch {
-                    // Ignore if browser prevents closing top tab
+                    // Ignore if browser prevents closing tab
                   }
                 }}
-                className="flex-1 py-2.5 px-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-pixel text-[11px] cursor-pointer shadow-md transition active:scale-95"
+                className="flex-1 py-1.5 sm:py-2.5 px-2.5 rounded-lg sm:rounded-xl bg-red-600 hover:bg-red-500 text-white font-pixel text-[9px] sm:text-[11px] cursor-pointer shadow-md transition active:scale-95"
               >
                 {ui.confirmExit}
               </button>
@@ -607,4 +622,3 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
     </div>
   );
 };
-

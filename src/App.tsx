@@ -97,8 +97,6 @@ export function getGameZoom(viewportWidth: number, viewportHeight: number): numb
   return Math.max(1.60, Math.min(2.85, Number(calculatedZoom.toFixed(2))));
 }
 
-export const GAME_ZOOM = 1.65; // Baseline fallback constant
-
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<GameRenderer | null>(null);
@@ -118,8 +116,6 @@ export default function App() {
     forest: false,
     tower: false,
   });
-  const zoneStatusRef = useRef<ZoneColorStatus>(zoneStatus);
-  zoneStatusRef.current = zoneStatus;
   const [inventory, setInventory] = useState<Item[]>(INITIAL_ITEMS);
   const [quests, setQuests] = useState<GameQuest[]>(INITIAL_QUESTS);
   const [stats, setStats] = useState<PlayerStats>({
@@ -132,7 +128,6 @@ export default function App() {
   const statsRef = useRef<PlayerStats>(stats);
   statsRef.current = stats;
 
-  const isFreeRoamActiveRef = useRef<boolean>(false);
   const [isMissionBannerMinimized, setIsMissionBannerMinimized] = useState<boolean>(false);
 
   // Count Clock Tower components collected so far (12 unique components from 12 villagers)
@@ -338,9 +333,6 @@ export default function App() {
   const hasSeenAllBadgesCelebrationRef = useRef<boolean>(false);
   const pendingAllBadgesCelebrationRef = useRef<boolean>(false);
   const [isFreeRoamActive, setIsFreeRoamActive] = useState<boolean>(false);
-  useEffect(() => {
-    isFreeRoamActiveRef.current = isFreeRoamActive;
-  }, [isFreeRoamActive]);
   const [endingType, setEndingType] = useState<'perfect' | 'resilient'>('perfect');
   const [branchChoice, setBranchChoice] = useState<string>('empathy_first');
   const [showMiniMap, setShowMiniMap] = useState<boolean>(() => !isMobileOrTabletDevice());
@@ -4309,14 +4301,14 @@ export default function App() {
         </div>
       </main>
 
-      {/* Dynamic Quest Tracker Banner - Positioned cleanly below the top header bar */}
+      {/* Dynamic Quest Tracker Banner (Desktop) / Mobile Quest Button (Positioned below top-right menu button) */}
       {!showStartMenu && hasCompletedIntroTutorial && !currentDialogue && (
         <div
           id="quest-tracker-banner"
-          className={`fixed top-21 sm:top-20 md:top-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none transition-all duration-300 animate-fade-in-slide-down ${
+          className={`fixed z-20 pointer-events-none transition-all duration-300 animate-fade-in-slide-down top-12 right-2 sm:top-14 sm:right-4 lg:top-16 lg:left-1/2 lg:-translate-x-1/2 lg:right-auto ${
             isMissionBannerMinimized
               ? 'w-auto max-w-fit'
-              : 'w-[94%] sm:w-[90%] max-w-sm sm:max-w-xl md:max-w-2xl lg:max-w-3xl'
+              : 'w-auto lg:w-[90%] max-w-fit lg:max-w-3xl'
           }`}
         >
           <div
@@ -4330,20 +4322,44 @@ export default function App() {
               }
             }}
             title={
-              isMissionBannerMinimized
-                ? (lang === 'en' ? 'Click to expand mission banner' : 'Klik untuk membuka tab misi')
-                : (lang === 'en' ? 'Click to view quest progress in Info Hub' : 'Klik untuk melihat progres misi di Pusat Informasi')
+              lang === 'en'
+                ? `Mission: ${currentMissionData.hint}`
+                : `Misi: ${currentMissionData.hint}`
             }
-            className="bg-gradient-to-r from-amber-300 via-amber-200 to-yellow-200 border-2 sm:border-3 border-amber-600 hover:border-amber-700 rounded-xl sm:rounded-2xl px-2.5 py-1.5 sm:px-4 sm:py-2 shadow-[0_6px_20px_rgba(245,158,11,0.45),0_0_0_2px_rgba(255,255,255,0.9)] flex items-center gap-2 sm:gap-3 pointer-events-auto cursor-pointer transition-all active:scale-[0.99] group text-slate-950"
+            aria-label={lang === 'en' ? 'Open Mission Progress' : 'Buka Progres Misi'}
+            className="relative pointer-events-auto cursor-pointer transition-all active:scale-95 group text-slate-950 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 lg:bg-gradient-to-r lg:from-amber-300 lg:via-amber-200 lg:to-yellow-200 border-2 lg:border-3 border-amber-600 hover:border-amber-700 rounded-xl lg:rounded-2xl shadow-[0_4px_14px_rgba(245,158,11,0.55),0_0_0_1.5px_rgba(255,255,255,0.7)] lg:shadow-[0_6px_20px_rgba(245,158,11,0.45),0_0_0_2px_rgba(255,255,255,0.9)] flex items-center justify-center lg:justify-start w-9 h-9 sm:w-10 sm:h-10 lg:w-auto lg:h-auto p-0 lg:px-4 lg:py-2 lg:gap-3"
           >
+            {/* MOBILE ONLY: Custom Hand-Drawn Exclamation Mark Icon */}
+            <div className="flex lg:hidden items-center justify-center w-full h-full">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-slate-950 drop-shadow-xs"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 4.2v8.5"
+                  stroke="currentColor"
+                  strokeWidth="3.4"
+                  strokeLinecap="round"
+                />
+                <circle cx="12" cy="18.5" r="1.9" fill="currentColor" />
+              </svg>
+              {/* Mission Step Badge Dot on Mobile */}
+              <span className="absolute -bottom-1 -left-1 flex items-center justify-center min-w-3.5 h-3.5 px-0.5 bg-rose-600 text-white font-pixel text-[6.5px] font-black rounded-md border border-rose-200 shadow-xs">
+                {currentMissionData.step <= 4 ? currentMissionData.step : '✓'}
+              </span>
+            </div>
+
+            {/* DESKTOP ONLY: Full Quest Tracker Details */}
             {/* Scarlet/Crimson Badge */}
-            <div className="flex items-center gap-1 sm:gap-1.5 bg-rose-600 border border-rose-300 rounded-lg sm:rounded-xl px-2 sm:px-3 py-0.5 sm:py-1 text-white font-pixel text-[8px] sm:text-[10px] shrink-0 font-black shadow-sm group-hover:bg-rose-500 transition-colors">
+            <div className="hidden lg:flex items-center gap-1.5 bg-rose-600 border border-rose-300 rounded-xl px-3 py-1 text-white font-pixel text-[10px] shrink-0 font-black shadow-sm group-hover:bg-rose-500 transition-colors">
               <span>{currentMissionData.step <= 4 ? (lang === 'en' ? `MISSION ${currentMissionData.step}/4` : `MISI ${currentMissionData.step}/4`) : (lang === 'en' ? 'COMPLETED' : 'SELESAI')}</span>
             </div>
 
             {/* Clock Components Badge */}
             <div
-              className="flex items-center gap-1 bg-amber-900/90 text-amber-200 border border-amber-500/50 rounded-lg sm:rounded-xl px-1.5 sm:px-2 py-0.5 sm:py-1 font-pixel text-[8px] sm:text-[10px] font-bold shrink-0 shadow-sm"
+              className="hidden lg:flex items-center gap-1 bg-amber-900/90 text-amber-200 border border-amber-500/50 rounded-xl px-2 py-1 font-pixel text-[10px] font-bold shrink-0 shadow-sm"
               title={lang === 'en' ? `Clock Tower Components: ${clockComponentsCount}/12 Restored` : `Komponen Menara Jam: ${clockComponentsCount}/12 Terkumpul`}
             >
               <span>{clockComponentsCount}/12</span>
@@ -4360,8 +4376,8 @@ export default function App() {
                 textAlign: 'justify',
                 ...(isMissionBannerMinimized ? { display: 'none' } : {}),
               }}
-              className={`tracking-tight break-words flex-1 select-text line-clamp-2 sm:line-clamp-none animate-fade-in ${
-                isMissionBannerMinimized ? 'hidden' : ''
+              className={`hidden lg:block tracking-tight break-words flex-1 select-text animate-fade-in ${
+                isMissionBannerMinimized ? 'lg:hidden' : ''
               }`}
             >
               {currentMissionData.hint}
@@ -4375,7 +4391,7 @@ export default function App() {
                   e.stopPropagation();
                   handleGuideToMission(currentMissionData.step);
                 }}
-                className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-slate-950 hover:bg-slate-900 active:scale-95 text-amber-300 hover:text-amber-200 border border-amber-400 font-pixel text-[8px] sm:text-[10px] font-bold shadow-sm transition flex items-center gap-1 shrink-0 cursor-pointer"
+                className="hidden lg:flex px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-900 active:scale-95 text-amber-300 hover:text-amber-200 border border-amber-400 font-pixel text-[10px] font-bold shadow-sm transition items-center gap-1 shrink-0 cursor-pointer"
                 title={lang === 'en' ? 'Auto-guide character towards mission target' : 'Tuntun karakter otomatis berjalan ke target misi'}
               >
                 <span>{lang === 'en' ? 'Guide' : 'Tuntun'}</span>
@@ -4390,7 +4406,7 @@ export default function App() {
                 sound.playMenuSelect();
                 setIsMissionBannerMinimized((prev) => !prev);
               }}
-              className="p-1 sm:p-1.5 rounded-lg sm:rounded-xl bg-amber-400/80 hover:bg-amber-500 hover:text-slate-950 active:scale-95 text-slate-800 border border-amber-600/50 shadow-xs transition flex items-center justify-center shrink-0 cursor-pointer"
+              className="hidden lg:flex p-1.5 rounded-xl bg-amber-400/80 hover:bg-amber-500 hover:text-slate-950 active:scale-95 text-slate-800 border border-amber-600/50 shadow-xs transition items-center justify-center shrink-0 cursor-pointer"
               title={
                 isMissionBannerMinimized
                   ? (lang === 'en' ? 'Expand mission tab' : 'Perbesar tab misi')
@@ -4410,39 +4426,47 @@ export default function App() {
             </button>
           </div>
 
-          {/* Compass Activation Toast Feedback */}
+          {/* Compass Activation Toast Feedback (Desktop) */}
           {compassToast && (
-            <div className="mt-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-900/95 via-amber-800/95 to-amber-900/95 border-2 border-amber-300 rounded-xl text-amber-100 font-pixel text-[8.5px] sm:text-[9.5px] shadow-[0_4px_20px_rgba(245,158,11,0.6)] animate-fade-in flex items-center justify-center gap-2 pointer-events-auto">
+            <div className="hidden lg:flex mt-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-900/95 via-amber-800/95 to-amber-900/95 border-2 border-amber-300 rounded-xl text-amber-100 font-pixel text-[8.5px] sm:text-[9.5px] shadow-[0_4px_20px_rgba(245,158,11,0.6)] animate-fade-in items-center justify-center gap-2 pointer-events-auto">
               <Compass className="w-3.5 h-3.5 text-amber-300 animate-spin" style={{ animationDuration: '6s' }} />
               <span>{compassToast}</span>
             </div>
           )}
+        </div>
+      )}
 
-          {/* Social-Emotional Performance Score Toast Notification */}
-          {scoreToast && (
-            <div
-              id="score-change-toast"
-              className={`mt-1.5 px-3 py-1.5 rounded-xl border-2 font-pixel text-[8.5px] sm:text-[9.5px] shadow-[0_4px_20px_rgba(0,0,0,0.6)] animate-fade-in flex items-center justify-between gap-2.5 pointer-events-auto select-none ${
-                scoreToast.delta > 0
-                  ? 'bg-gradient-to-r from-emerald-950/95 via-slate-900/95 to-teal-950/95 border-emerald-400 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.35)]'
-                  : 'bg-gradient-to-r from-rose-950/95 via-slate-900/95 to-red-950/95 border-rose-500 text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.35)]'
-              }`}
-            >
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-sm shrink-0">{scoreToast.delta > 0 ? '💖' : '🧭'}</span>
-                <span className="truncate">{scoreToast.message}</span>
-              </div>
-              <span
-                className={`font-pixel text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-md shrink-0 ${
-                  scoreToast.delta > 0
-                    ? 'bg-emerald-500 text-slate-950'
-                    : 'bg-rose-500 text-slate-950'
-                }`}
-              >
-                {scoreToast.delta > 0 ? `+${scoreToast.delta}` : scoreToast.delta}
-              </span>
-            </div>
-          )}
+      {/* Compass Activation Toast Feedback (Mobile - Centered) */}
+      {!showStartMenu && compassToast && (
+        <div className="lg:hidden fixed top-22 left-1/2 -translate-x-1/2 z-30 px-3 py-1.5 bg-gradient-to-r from-amber-900/95 via-amber-800/95 to-amber-900/95 border-2 border-amber-300 rounded-xl text-amber-100 font-pixel text-[8.5px] shadow-[0_4px_20px_rgba(245,158,11,0.6)] animate-fade-in flex items-center justify-center gap-2 pointer-events-auto whitespace-nowrap">
+          <Compass className="w-3.5 h-3.5 text-amber-300 animate-spin" style={{ animationDuration: '6s' }} />
+          <span>{compassToast}</span>
+        </div>
+      )}
+
+      {/* Social-Emotional Performance Score Toast Notification */}
+      {scoreToast && (
+        <div
+          id="score-change-toast"
+          className={`fixed top-24 left-1/2 -translate-x-1/2 z-30 px-3 py-1.5 rounded-xl border-2 font-pixel text-[8.5px] sm:text-[9.5px] shadow-[0_4px_20px_rgba(0,0,0,0.6)] animate-fade-in flex items-center justify-between gap-2.5 pointer-events-auto select-none ${
+            scoreToast.delta > 0
+              ? 'bg-gradient-to-r from-emerald-950/95 via-slate-900/95 to-teal-950/95 border-emerald-400 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.35)]'
+              : 'bg-gradient-to-r from-rose-950/95 via-slate-900/95 to-red-950/95 border-rose-500 text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.35)]'
+          }`}
+        >
+          <div className="flex items-center gap-1.5 min-w-0">
+            <span className="text-sm shrink-0">{scoreToast.delta > 0 ? '💖' : '🧭'}</span>
+            <span className="truncate">{scoreToast.message}</span>
+          </div>
+          <span
+            className={`font-pixel text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-md shrink-0 ${
+              scoreToast.delta > 0
+                ? 'bg-emerald-500 text-slate-950'
+                : 'bg-rose-500 text-slate-950'
+            }`}
+          >
+            {scoreToast.delta > 0 ? `+${scoreToast.delta}` : scoreToast.delta}
+          </span>
         </div>
       )}
 
