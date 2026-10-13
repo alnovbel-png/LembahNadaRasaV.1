@@ -8054,16 +8054,10 @@ export class GameRenderer {
 
     const atmosphericIntensity = Math.max(0.0, Math.min(1.0, this.currentFogIntensity));
 
-    // Dynamic Global Wind Gust Engine:
-    // A rhythmic wind wave with periodic howling gusts
+    // Kecepatan angin ketika mode kabut konstan
     const time = this.tickCount;
-    // Gust oscillation: cycles periodically with dramatic surging peaks
-    const gustPulse = Math.sin(time * 0.022);
-    const isGusting = gustPulse > 0.28;
-    const gustMultiplier = isGusting
-      ? 1.0 + Math.pow((gustPulse - 0.28) / 0.72, 1.8) * 2.6
-      : 1.0;
-    const globalWindX = 1.5 * gustMultiplier * atmosphericIntensity;
+    const gustMultiplier = 1.0;
+    const globalWindX = 1.5 * atmosphericIntensity;
 
     ctx.save();
 
@@ -8282,8 +8276,8 @@ export class GameRenderer {
     deltaPlayerY: number
   ) {
     for (const s of this.fogWindStreaks) {
-      // Wind streaks surge in speed when gusts pick up, modulated by parallax depth
-      const currentSpeed = s.speed * (0.8 + gustMultiplier * 0.7) * intensity;
+      // Kecepatan angin konstan dan stabil pada seluruh lintasan hembusan kabut
+      const currentSpeed = s.speed * 1.5 * intensity;
       const parallaxShiftX = (1.0 - s.depth) * deltaPlayerX;
       const parallaxShiftY = (1.0 - s.depth) * deltaPlayerY;
       s.x += currentSpeed + parallaxShiftX;
@@ -8305,8 +8299,7 @@ export class GameRenderer {
         s.y = camY + h + 20;
       }
 
-      const gustAlphaBonus = Math.min(1.0, (gustMultiplier - 0.9) * 0.6);
-      const streakAlpha = (s.opacity + gustAlphaBonus * 0.25) * intensity;
+      const streakAlpha = s.opacity * intensity;
       if (streakAlpha <= 0.02) continue;
 
       ctx.save();
@@ -8323,8 +8316,8 @@ export class GameRenderer {
       ctx.quadraticCurveTo(midX, midY, endX, endY);
       ctx.stroke();
 
-      // Trailing subtle vapor bead during strong gusts or on foreground streaks
-      if (gustMultiplier > 1.3 || s.depth > 1.35) {
+      // Trailing subtle vapor bead on foreground streaks
+      if (s.depth > 1.35) {
         ctx.fillStyle = `rgba(241, 245, 249, ${streakAlpha * 0.85})`;
         ctx.beginPath();
         ctx.arc(endX + 2, endY, s.width * 0.8, 0, Math.PI * 2);
@@ -8342,7 +8335,7 @@ export class GameRenderer {
     w: number,
     h: number,
     _time: number,
-    gustMultiplier: number,
+    _gustMultiplier: number,
     intensity: number,
     deltaPlayerX: number,
     deltaPlayerY: number
@@ -8353,17 +8346,17 @@ export class GameRenderer {
       const parallaxShiftX = (1.0 - leaf.depth) * deltaPlayerX;
       const parallaxShiftY = (1.0 - leaf.depth) * deltaPlayerY;
 
-      // Horizontal drift boosted by wind gust, atmospheric intensity, and player movement parallax
-      const currentVx = (leaf.vx + (gustMultiplier - 1.0) * 2.2) * (0.4 + intensity * 0.6);
+      // Kecepatan angin dedaunan konstan dan berhembus stabil
+      const currentVx = leaf.vx * (0.4 + intensity * 0.6);
       leaf.x += currentVx + parallaxShiftX;
 
       // Vertical drift with sinusoidal floating wave and parallax
-      leaf.flutterPhase += leaf.flutterSpeed * (0.8 + (gustMultiplier - 1) * 0.5);
+      leaf.flutterPhase += leaf.flutterSpeed * 0.8;
       const waveVy = Math.sin(leaf.flutterPhase) * (0.6 + intensity * 0.7) + leaf.vy;
       leaf.y += waveVy + parallaxShiftY;
 
-      // Rotational spinning
-      leaf.angle += leaf.angularSpeed * (0.8 + (gustMultiplier - 1) * 0.8);
+      // Rotational spinning konstan
+      leaf.angle += leaf.angularSpeed * 0.8;
 
       // Wrap around camera bounds
       const margin = 50;

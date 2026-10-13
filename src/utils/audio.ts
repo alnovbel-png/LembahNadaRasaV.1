@@ -220,12 +220,12 @@ class SoundSystem {
         !this.isMuted && this.bgmPhase === 'fog' && this.isBgmPlaying ? 0.016 : 0.00001;
       this.windGainNode.gain.setValueAtTime(initialGain, this.ctx.currentTime);
 
-      // Slow organic swell LFO
+      // Ambient wind audio dengan frekuensi konstan stabil
       const lfo = this.ctx.createOscillator();
       const lfoGain = this.ctx.createGain();
       lfo.type = 'sine';
-      lfo.frequency.setValueAtTime(0.075, this.ctx.currentTime); // ~13s breathing period
-      lfoGain.gain.setValueAtTime(140, this.ctx.currentTime);
+      lfo.frequency.setValueAtTime(0.05, this.ctx.currentTime);
+      lfoGain.gain.setValueAtTime(0, this.ctx.currentTime);
       lfo.connect(lfoGain);
       lfoGain.connect(this.windFilterNode.frequency);
       lfo.start();

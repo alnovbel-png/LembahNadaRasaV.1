@@ -719,6 +719,35 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
     top: 36px !important;
     right: 8px !important;
   }
+
+  /* Loading Screens Mobile Landscape Optimization */
+  #prologue-loading-screen,
+  #mission-loading-screen {
+    padding: 6px 12px !important;
+  }
+
+  #prologue-loading-screen > div,
+  #mission-loading-screen > div {
+    max-height: 95vh !important;
+    padding: 8px 16px !important;
+    max-width: 440px !important;
+  }
+
+  #prologue-loading-screen h2,
+  #mission-loading-screen h3 {
+    font-size: 14px !important;
+    margin-top: 2px !important;
+  }
+
+  #prologue-loading-screen p {
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+  }
+
+  #prologue-loading-screen svg,
+  #mission-loading-screen svg {
+    max-height: 48px !important;
+  }
 }
 
 
