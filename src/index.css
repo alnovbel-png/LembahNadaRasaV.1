@@ -664,6 +664,61 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   .mission-modal-btn span {
     font-size: 8.5px !important;
   }
+
+  /* Pause Menu Modal Mobile Landscape UX Optimization */
+  #pause-menu-backdrop {
+    padding: 6px 12px !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  #pause-menu-backdrop > div:nth-child(2) {
+    padding: 10px 16px !important;
+    max-height: 94vh !important;
+    max-width: 320px !important;
+  }
+
+  #pause-menu-backdrop h1 {
+    font-size: 26px !important;
+    line-height: 1 !important;
+  }
+
+  #pause-menu-backdrop .my-4,
+  #pause-menu-backdrop .my-5 {
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+  }
+
+  #pause-menu-backdrop .mb-3 {
+    margin-bottom: 4px !important;
+    padding: 2px 8px !important;
+  }
+
+  #pause-menu-backdrop button[id^="pause-btn-"] {
+    font-size: 13px !important;
+    padding: 1px 0 !important;
+  }
+
+  /* Mobile Top HUD in Landscape */
+  #header-brand-pause-button {
+    padding: 2px 8px !important;
+    height: 26px !important;
+  }
+
+  #header-brand-pause-button span:last-child {
+    font-size: 11px !important;
+  }
+
+  #top-unified-menu-btn {
+    height: 26px !important;
+    padding: 2px 8px !important;
+    font-size: 8px !important;
+  }
+
+  #quest-tracker-banner {
+    top: 36px !important;
+    right: 8px !important;
+  }
 }
 
 
