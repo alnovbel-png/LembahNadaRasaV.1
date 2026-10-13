@@ -753,12 +753,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
             {/* Sentence Progress Indicator when there are multiple sentences */}
             {sentences.length > 1 && (
-              <div className="flex items-center justify-between text-[7.5px] sm:text-[8.5px] font-pixel text-slate-400 pb-0.5">
-                <span className="text-amber-300/90 font-bold">
-                  {lang === 'en'
-                    ? `Sentence ${sentenceIndex + 1} of ${sentences.length}`
-                    : `Kalimat ${sentenceIndex + 1} dari ${sentences.length}`}
-                </span>
+              <div className="flex items-center justify-end text-[7.5px] sm:text-[8.5px] font-pixel text-slate-400 pb-0.5">
                 <div className="flex items-center gap-1">
                   {sentences.map((_, idx) => (
                     <span
@@ -932,12 +927,6 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               ) : !isLastSentence ? (
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-slate-900/80 border border-amber-500/40 rounded-xl p-1.5 sm:p-2.5 animate-fade-in shadow-xs">
                   <div className="flex items-center gap-1.5 text-slate-300 font-pixel text-[8px] sm:text-[9px]">
-                    <span className="text-amber-400 font-bold">
-                      {lang === 'en'
-                        ? `Sentence ${sentenceIndex + 1} of ${sentences.length}`
-                        : `Kalimat ${sentenceIndex + 1} dari ${sentences.length}`}
-                    </span>
-                    <span className="text-slate-500">•</span>
                     <span>
                       {lang === 'en'
                         ? 'Click Continue to read the next sentence'
