@@ -182,51 +182,57 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                 </p>
               </div>
 
-              {/* Bab 2: Pudarnya Warna */}
+              {/* Bab 2: Akar Masalah & Munculnya Kabut Kelabu */}
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <span>🌫️</span>
-                  <h4>{lang === 'en' ? 'Chapter 2: The Mist of Prejudice & Fading of Colors' : 'Bab 2: Munculnya Kabut Prasangka & Pudarnya Warna'}</h4>
+                  <h4>{lang === 'en' ? 'Chapter 2: The Root of Discord & The Gray Mist' : 'Bab 2: Akar Masalah Lunturnya Empati & Kabut Kelabu'}</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   {lang === 'en'
-                    ? 'Over time, daily rush and differing opinions created fractures among villagers. When small disputes arose, people blamed each other instead of listening with open hearts. Pride and suspicion took root.'
-                    : 'Lama-kelamaan, kesibukan dan perbedaan pendapat membuat warga mulai berubah. Ketika terjadi masalah kecil, mereka lebih memilih saling menyalahkan daripada duduk bersama untuk saling mendengarkan. Ego dan prasangka buruk pun mulai tumbuh.'}
+                    ? 'The Clock Tower ticked on the rhythm of mutual listening and kindness. Over time, however, residents became busy with their own routines and empathy slowly waned. The peak of this disconnect occurred when Grandpa Ranu, exhausted from bridge repairs, harshly scolded young Bimo. Terrified and filled with guilt, Bimo fled into the Silent Forest.'
+                    : 'Menara Jam Harmoni berdetak menggunakan energi kerukunan dan rasa saling mendengarkan dari warganya. Namun belakangan ini, warga mulai sibuk sendiri hingga empati perlahan memudar. Puncak dari lunturnya empati terjadi saat Kakek Ranu yang sedang kelelahan membentak Bimo. Kejadian tersebut membuat Bimo ketakutan dan merasa sangat bersalah lalu lari bersembunyi ke Hutan Sunyi.'}
                 </p>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   {lang === 'en' ? (
                     <>
-                      Watching this unfold, <strong>Elder Wilis</strong>—the wise keeper of the Clock Tower—felt deep sorrow. The clock gears ground to a halt, and a <strong>Gray Mist of Prejudice</strong> drifted down to blanket the entire village. Nature turned dull: green meadows, flowing waters, and warm homes lost their color, turning gray and cold.
+                      Seeing this heartbreak, <strong>Elder Wilis</strong>—guardian of the tower—felt profound sorrow over the fading compassion. A heavy <strong>Gray Mist</strong> descended across the valley. Without harmony, the Clock Tower abruptly ground to a halt, launching its three core components outward: Kiki panicked and picked up the Clock Mainspring, Bimo unknowingly carried the Golden Gear into the forest, and Grandpa Ranu angrily locked the bridge holding the Clock Drive Axle.
                     </>
                   ) : (
                     <>
-                      Melihat hal itu, <strong>Nenek Wilis</strong>—sang penjaga Menara Jam yang bijaksana—merasa sangat sedih. Roda gigi jam berhenti berputar, dan seketika <strong>Kabut Abu-Abu Prasangka</strong> turun menyelimuti seluruh desa. Alam ikut meredup: rumput hijau, air sungai, bunga-bunga, dan rumah warga mendadak kehilangan warnanya, menjadi kelabu dan dingin.
+                      Melihat kejadian itu, <strong>Nenek Wilis</strong>—sang penjaga Menara Jam—merasa sangat kecewa dengan pudarnya rasa kasih sayang, sehingga kabut kelabu turun menutupi lembah. Akibat terputusnya energi harmoni, Menara Jam kehilangan keseimbangan dan berhenti mendadak hingga tiga komponen intinya terlempar keluar: Kiki panik memungut Pegas Detak Jam, Bimo tanpa sadar membawa Roda Gigi Emas ke hutan, dan Kakek Ranu yang marah menutup jembatan sambil menahan Poros Pengunci Jam.
                     </>
                   )}
                 </p>
               </div>
 
-              {/* Bab 3: Kompas Resonansi Hati */}
+              {/* Bab 3: Kompas Resonansi Hati & Ujian Kebijaksanaan */}
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <span>🧭</span>
-                  <h4>{lang === 'en' ? 'Chapter 3: The Sacred Compass of Heart Resonance' : 'Bab 3: Pusaka Ajaib Kompas Resonansi Hati'}</h4>
+                  <h4>{lang === 'en' ? 'Chapter 3: The Sacred Heart Compass & Test of Wisdom' : 'Bab 3: Pusaka Kompas Hati & Ujian Kebijaksanaan'}</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   {lang === 'en' ? (
                     <>
-                      Amidst the dim village, our young hero, <strong>Ezzel</strong>, discovered a glowing artifact near the Plaza Fountain: the <strong>Compass of Heart Resonance</strong>.
+                      To safeguard the clock machinery, <strong>Elder Wilis</strong> entrusted the remaining nine components to the valley elders and wise citizens as a sacred test of wisdom. The tower could only be restored by a child who not only calms the core conflict, but also journeys across the village to learn emotional regulation from others.
                     </>
                   ) : (
                     <>
-                      Di tengah desa yang suram, pahlawan cilik kita, <strong>Ezzel</strong>, menemukan sebuah benda ajaib yang bersinar di dekat Air Mancur Alun-Alun: <strong>Kompas Resonansi Hati</strong>.
+                      Untuk melindungi sisa mesin waktu, <strong>Nenek Wilis</strong> sengaja melepas dan menitipkan sembilan komponen jam lainnya kepada para sesepuh dan warga desa yang bijak (seperti Kak Citra, Kakek Damai, Pak Joko, dan Didi) sebagai ujian kebijaksanaan. Menara hanya bisa dipulihkan oleh seorang anak yang mampu meredakan krisis utama sekaligus mau belajar mengelola emosi dari warga lainnya.
                     </>
                   )}
                 </p>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'This compass revealed a deep secret of human emotions. Every person possesses two distinct emotional layers:'
-                    : 'Kompas ini membuka rahasia besar tentang hati manusia. Setiap orang memiliki dua lapisan emosi:'}
+                  {lang === 'en' ? (
+                    <>
+                      When <strong>Ezzel</strong> discovered the glowing <strong>Heart Compass</strong>, his path became crystal clear. The compass revealed the two emotional layers within every heart:
+                    </>
+                  ) : (
+                    <>
+                      Saat <strong>Ezzel</strong> menemukan Pusaka <strong>Kompas Hati</strong>, misinya menjadi sangat terarah. Kompas membimbingnya memahami dua lapisan emosi manusia:
+                    </>
+                  )}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2 text-[11px]">
                   <div className="bg-slate-900/80 border border-red-500/30 hover:border-red-400 hover:scale-[1.02] hover:shadow-[0_0_12px_rgba(239,68,68,0.3)] transition-all rounded-lg p-2.5">
@@ -234,35 +240,30 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                       {lang === 'en' ? '🔴 Surface Emotion (Outward):' : '🔴 Emosi Luar (Permukaan):'}
                     </span>
                     {lang === 'en'
-                      ? 'Emotions visible on the outside, such as anger, scowling, shouting, or defensive cold withdrawal.'
-                      : 'Emosi yang tampak di mata luar, seperti marah, cemberut, membentak, atau dingin menutup diri.'}
+                      ? 'Outward reactions such as shouting, scowling, or defensive withdrawal.'
+                      : 'Reaksi yang tampak di luar, seperti marah, membentak, atau dingin menutup diri.'}
                   </div>
                   <div className="bg-slate-900/80 border border-cyan-500/30 hover:border-cyan-400 hover:scale-[1.02] hover:shadow-[0_0_12px_rgba(6,182,212,0.3)] transition-all rounded-lg p-2.5">
                     <span className="font-bold text-cyan-300 block mb-1">
                       {lang === 'en' ? '💙 Core Emotion (Inner Heart):' : '💙 Emosi Dalam (Lubuk Hati):'}
                     </span>
                     {lang === 'en'
-                      ? 'True hidden feelings, like fear of failure, sadness, exhaustion, loneliness, or longing to be valued.'
-                      : 'Perasaan sejati yang tersembunyi, seperti rasa takut gagal, sedih, lelah, kesepian, atau rindu dihargai.'}
+                      ? 'Vulnerable inner feelings, like deep exhaustion, fear of failure, or longing to be understood.'
+                      : 'Perasaan rapuh terdalam, seperti rasa lelah mendalam, takut gagal, atau rindu dipahami.'}
                   </div>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'Guided by this compass, Ezzel learned never to meet anger with anger, but with understanding, patience, and gentle compassion.'
-                    : 'Dengan kompas ini, Ezzel belajar tidak membalas amarah dengan amarah, melainkan dengan pemahaman dan kelembutan hati.'}
-                </p>
               </div>
 
-              {/* Bab 4: Mengumpulkan Komponen Jam & Meluruskan Salah Paham */}
+              {/* Bab 4: Penyatuan Misi Ezzel & Pemulihan 12 Komponen Jam */}
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <span>⚙️</span>
-                  <h4>{lang === 'en' ? 'Chapter 4: Gathering Clock Components & Resolving Misunderstandings' : 'Bab 4: Mengumpulkan Komponen Jam & Meluruskan Salah Paham'}</h4>
+                  <h4>{lang === 'en' ? 'Chapter 4: Ezzel\'s Unified Mission & The 12 Clock Components' : 'Bab 4: Penyatuan Misi Ezzel & Pemulihan 12 Komponen Jam'}</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   {lang === 'en'
-                    ? 'Because of heated misunderstandings and emotional distress, the Clock Tower broke and its 12 components were scattered among the villagers. Each villager holds onto a component until someone truly listens and responds with empathy:'
-                    : 'Akibat salah paham hebat dan emosi yang meluap, Menara Jam Harmoni rusak dan 12 komponennya terpencar di tangan para warga desa. Setiap warga menyimpan satu komponen jam hingga ada yang bersedia mendengarkan dan memahami emosi mereka dengan respon yang benar:'}
+                    ? 'The compass guided Ezzel to resolve the core crisis first, then freely explore the village to learn social-emotional skills from all mentors:'
+                    : 'Kompas Hati membimbing Ezzel untuk menyelesaikan krisis utama terlebih dahulu, membuka jembatan, lalu leluasa berkeliling desa memanen kecakapan sosial emosional dari sembilan warga lainnya:'}
                 </p>
                 <div className="space-y-2 text-xs text-slate-300">
                   <div className="flex items-start gap-2 bg-slate-900/50 hover:bg-slate-900/80 hover:border-amber-400/50 hover:scale-[1.01] hover:shadow-[0_0_10px_rgba(245,158,11,0.2)] p-2.5 rounded-lg border border-slate-700/60 transition-all">
@@ -273,8 +274,8 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
                         {lang === 'en'
-                          ? 'Kiki panicked fearing everyone would blame him for the broken clock and lost mail. Ezzel validated his fear and guided him through mindful calming. Feeling safe, Kiki happily handed over the Clock Mainspring!'
-                          : 'Kiki panik karena takut disalahkan atas rusaknya Menara Jam dan surat yang berhamburan. Ezzel memvalidasi rasa takutnya tanpa menyalahkan. Merasa aman dan dihargai, Kiki menyerahkan Pegas Detak Jam!'}
+                          ? 'Kiki panicked after dropping letters when the clock stopped. Ezzel practiced mindful breathing with him, soothing his anxiety to safely retrieve the Mainspring.'
+                          : 'Kiki panik menjatuhkan surat pos saat menara jam berhenti mendadak. Ezzel mempraktikkan teknik napas bersamanya, menenangkan rasa paniknya dan menerima Pegas Detak Jam.'}
                       </p>
                     </div>
                   </div>
@@ -283,12 +284,12 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                     <span className="text-base shrink-0">🗝️</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '2. River Bridge — Grandpa Ranu (Drive Axle & Lever Key):' : '2. Jembatan Kayu — Kakek Ranu (Poros & Kunci Tuas Jam):'}
+                        {lang === 'en' ? '2. River Bridge — Grandpa Ranu (Drive Axle & Bridge Key):' : '2. Jembatan Kayu — Kakek Ranu (Poros Pengunci Jam):'}
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
                         {lang === 'en'
-                          ? 'Grandpa Ranu felt lonely and angry, believing his craft was taken for granted. Ezzel genuinely appreciated his dedication, melting the misunderstanding and receiving the Clock Drive Axle.'
-                          : 'Kakek Ranu merasa kesepian dan lelah karena mengira jerih payahnya tak dihargai. Ezzel mengapresiasi kerja kerasnya dengan tulus, meluruskan salah paham, dan menerima Poros Tuas Jam.'}
+                          ? 'Grandpa Ranu locked the bridge out of fatigue and grief over scolding Bimo. Ezzel validated his exhaustion, softening his heart to open the bridge and hand over the Drive Axle.'
+                          : 'Kakek Ranu menutup jembatan karena kelelahan dan rasa bersalah setelah membentak Bimo. Ezzel memvalidasi rasa lelahnya dengan kelembutan, membuka jembatan dan menerima Poros Pengunci Jam.'}
                       </p>
                     </div>
                   </div>
@@ -301,8 +302,8 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
                         {lang === 'en'
-                          ? 'Bimo fled in shame after making a mistake, terrified of being scolded. Ezzel nurtured a growth mindset—mistakes are how we learn! Bimo regained courage and handed over the Golden Master Gear.'
-                          : 'Bimo menyendiri di hutan karena takut dimarahi dan dicap anak gagal. Ezzel menumbuhkan Growth Mindset bahwa kesalahan adalah proses belajar. Bimo kembali percaya diri dan menyerahkan Roda Gigi Emas Jam.'}
+                          ? 'Bimo hid in fear and guilt after the scolding. Ezzel brought Grandpa Ranu\'s apology and instilled a Growth Mindset. Bimo regained courage and returned the Golden Gear.'
+                          : 'Bimo bersembunyi di hutan karena ketakutan dan merasa bersalah. Ezzel menyampaikan permohonan maaf Kakek Ranu dan menumbuhkan Growth Mindset. Bimo kembali percaya diri dan menyerahkan Roda Gigi Emas.'}
                       </p>
                     </div>
                   </div>
@@ -311,12 +312,12 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                     <span className="text-base shrink-0">💎</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '4. Clock Tower Summit — Elder Wilis (12/12 Components & Core Crystal):' : '4. Puncak Menara Jam — Nenek Wilis (12/12 Komponen & Kristal Inti):'}
+                        {lang === 'en' ? '4. Village Mentors & Clock Tower Summit — Elder Wilis (12/12 Components):' : '4. Warga Bijak Desa & Puncak Menara Jam — Nenek Wilis (12/12 Komponen):'}
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
                         {lang === 'en'
-                          ? 'At the summit, after all 12 clock components are collected from every villager across the village, Elder Wilis unites the mechanism, places the Core Crystal, and the chimes ring out to light up the tower and restore harmony 100%!'
-                          : 'Di puncak menara, setelah seluruh 12 komponen jam terkumpul lengkap dari semua warga desa, Nenek Wilis menyatukan mesin waktu desa, memasang Kristal Inti Jam, lonceng berdentang menggetarkan lembah, menara jam menyala terang, dan kabut abu-abu sirna digantikan warna pelangi 100%!'}
+                          ? 'With the core crisis resolved and bridge open, Ezzel freely visits the nine wise villagers to learn emotional skills and gather all remaining components. At the summit, Elder Wilis reassembles the clock, ringing the bells to dispel the mist and restore full harmony!'
+                          : 'Dengan krisis inti selesai dan jembatan terbuka, Ezzel berkeliling desa menemui sembilan warga bijak lainnya untuk memanen kecakapan sosial emosional dan mengumpulkan seluruh 12 komponen jam. Di puncak menara, Nenek Wilis merakit kembali jam harmoni, membunyikan dentang lonceng merdu, dan melenyapkan kabut kelabu selamanya!'}
                       </p>
                     </div>
                   </div>

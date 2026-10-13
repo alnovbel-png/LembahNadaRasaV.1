@@ -172,18 +172,18 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
       className="fixed inset-0 z-50 flex flex-col justify-between bg-[#0a0d18]/85 backdrop-blur-[2px] p-2 sm:p-5 md:p-6 overflow-y-auto animate-backdrop-fade-in select-none start-menu-modal-root"
     >
       {/* 1. TOP BAR */}
-      <div className="w-full flex items-center justify-between z-20 max-w-5xl mx-auto px-1 sm:px-2 shrink-0 start-menu-topbar">
+      <div className="w-full flex items-center justify-between z-20 max-w-5xl mx-auto px-1 sm:px-2 shrink-0 start-menu-topbar mt-6 sm:mt-0">
         {/* Left: RPG SOSIAL-EMOSIONAL Badge */}
-        <div className="inline-flex items-center gap-1.5 bg-[#251b14]/90 border border-amber-600/70 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 shadow-md">
+        <div className="inline-flex items-center gap-1.5 bg-[#251b14]/90 border border-amber-600/70 rounded-full px-2.5 py-1 sm:px-3 sm:py-1 shadow-md">
           {/* Handcrafted Compass Icon */}
-          <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" viewBox="0 0 16 16" fill="none">
+          <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" viewBox="0 0 16 16" fill="none">
             <circle cx="8" cy="8" r="7" stroke="#d97706" strokeWidth="1.2" fill="#1e130c" />
             <circle cx="8" cy="8" r="5" stroke="#f59e0b" strokeWidth="0.8" strokeDasharray="1.5 1.5" />
             <polygon points="8,2.5 9.8,7.2 8,6.2 6.2,7.2" fill="#ef4444" />
             <polygon points="8,13.5 9.8,8.8 8,9.8 6.2,8.8" fill="#38bdf8" />
             <circle cx="8" cy="8" r="1.3" fill="#fef08a" />
           </svg>
-          <span className="font-pixel text-[7px] sm:text-[9px] text-amber-300 font-bold tracking-wider">
+          <span className="font-pixel text-[9.5px] sm:text-[10px] text-amber-300 font-bold tracking-wider">
             {ui.genreBadge}
           </span>
         </div>
@@ -196,10 +196,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             id="btn-start-language-toggle"
             onClick={toggleLang}
             title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-            className="inline-flex items-center gap-1 bg-[#172033]/90 hover:bg-[#202c45] border border-amber-500/70 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 transition-transform duration-75 text-amber-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
+            className="inline-flex items-center gap-1 bg-[#172033]/90 hover:bg-[#202c45] border border-amber-500/70 rounded-full px-2.5 py-1 sm:px-3 sm:py-1 transition-transform duration-75 text-amber-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
           >
-            <span className="text-[10px] sm:text-xs">{lang === 'id' ? '🇮🇩' : '🇬🇧'}</span>
-            <span className="font-pixel text-[7px] sm:text-[9px] text-amber-300 font-bold uppercase tracking-wider">
+            <span className="text-xs sm:text-sm">{lang === 'id' ? '🇮🇩' : '🇬🇧'}</span>
+            <span className="font-pixel text-[9.5px] sm:text-[10px] text-amber-300 font-bold uppercase tracking-wider">
               {lang === 'id' ? 'ID' : 'EN'}
             </span>
           </button>
@@ -209,27 +209,27 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             type="button"
             onClick={toggleMute}
             title={isMuted ? (lang === 'en' ? 'Unmute Audio' : 'Nyalakan Audio') : (lang === 'en' ? 'Mute Audio' : 'Matikan Audio')}
-            className="inline-flex items-center gap-1 bg-[#10222a]/90 hover:bg-[#18333e] border border-cyan-700/70 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 transition-transform duration-75 text-cyan-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
+            className="inline-flex items-center gap-1 bg-[#10222a]/90 hover:bg-[#18333e] border border-cyan-700/70 rounded-full px-2.5 py-1 sm:px-3 sm:py-1 transition-transform duration-75 text-cyan-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
           >
             {isMuted ? (
               <>
                 {/* Handcrafted Muted Speaker Icon */}
-                <svg className="w-3 h-3 text-red-400 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+                <svg className="w-3.5 h-3.5 text-red-400 shrink-0" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M3 5.5H5.5L9 2.5V13.5L5.5 10.5H3C2.45 10.5 2 10.05 2 9.5V6.5C2 5.95 2.45 5.5 3 5.5Z" />
                   <line x1="11" y1="5.5" x2="14.5" y2="10.5" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round" />
                   <line x1="14.5" y1="5.5" x2="11" y2="10.5" stroke="#f87171" strokeWidth="1.5" strokeLinecap="round" />
                 </svg>
-                <span className="font-pixel text-[7px] sm:text-[9px] text-red-300">{ui.soundMute}</span>
+                <span className="font-pixel text-[9.5px] sm:text-[10px] text-red-300">{ui.soundMute}</span>
               </>
             ) : (
               <>
                 {/* Handcrafted Sound Speaker Icon */}
-                <svg className="w-3 h-3 text-cyan-400 shrink-0" viewBox="0 0 16 16" fill="currentColor">
+                <svg className="w-3.5 h-3.5 text-cyan-400 shrink-0" viewBox="0 0 16 16" fill="currentColor">
                   <path d="M3 5.5H5.5L9 2.5V13.5L5.5 10.5H3C2.45 10.5 2 10.05 2 9.5V6.5C2 5.95 2.45 5.5 3 5.5Z" />
                   <path d="M11 5C11.8 5.8 12.3 6.8 12.3 8C12.3 9.2 11.8 10.2 11 11" stroke="#38bdf8" strokeWidth="1.3" strokeLinecap="round" fill="none" />
                   <path d="M12.8 3.5C14 4.8 14.7 6.3 14.7 8C14.7 9.7 14 11.2 12.8 12.5" stroke="#38bdf8" strokeWidth="1.3" strokeLinecap="round" fill="none" />
                 </svg>
-                <span className="font-pixel text-[7px] sm:text-[9px] text-cyan-200">{ui.soundOn}</span>
+                <span className="font-pixel text-[9.5px] sm:text-[10px] text-cyan-200">{ui.soundOn}</span>
               </>
             )}
           </button>
@@ -239,17 +239,20 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
       {/* 2. CENTER CONTENT */}
       <div className="w-full flex flex-col items-center justify-center my-auto py-1 sm:py-2 z-10">
         {/* Game Title: Balanced and compact on mobile */}
-        <div className="text-center mb-1.5 sm:mb-3.5 start-menu-title">
-          <h1 className="font-pixel text-xs sm:text-2xl md:text-3xl text-amber-400 drop-shadow-[0_2px_0_#000] tracking-wider leading-snug">
+        <div className="text-center mb-1.5 sm:mb-3.5 start-menu-title flex justify-center">
+          <h1
+            style={{ height: '73.25px', width: '539px' }}
+            className="font-pixel text-[20px] sm:text-2xl md:text-3xl text-amber-400 drop-shadow-[0_2px_0_#000] tracking-wider leading-snug flex items-center justify-center max-w-full"
+          >
             {ui.gameTitle}
           </h1>
         </div>
 
         {/* VIEW 1: MENU UTAMA */}
         {menuView === 'main' && (
-          <div className="w-full max-w-[290px] sm:max-w-[460px] md:max-w-[500px] bg-[#121626]/95 border-2 border-amber-500/90 rounded-2xl sm:rounded-[24px] shadow-[0_0_35px_rgba(245,158,11,0.2)] p-2.5 sm:p-5 flex flex-col gap-1.5 sm:gap-3 animate-fade-in-slide-up start-menu-card">
+          <div className="w-full max-w-[320px] sm:max-w-[500px] md:max-w-[539px] bg-[#121626]/95 border-2 border-amber-500/90 rounded-2xl sm:rounded-[24px] shadow-[0_0_35px_rgba(245,158,11,0.2)] p-3.5 sm:p-6 flex flex-col gap-2.5 sm:gap-4 animate-fade-in-slide-up start-menu-card">
             {/* Menu Buttons Stack */}
-            <div className="flex flex-col gap-1.5 sm:gap-2.5 my-0.5">
+            <div className="flex flex-col gap-2 sm:gap-3 my-0.5">
               {/* 1. PLAY BUTTON */}
               <button
                 type="button"
@@ -259,14 +262,14 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   sound.playMenuSelect();
                   setMenuView('play');
                 }}
-                className={`w-full relative h-10 sm:h-[58px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation start-menu-btn ${
+                className={`w-full relative h-11 sm:h-[54px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation start-menu-btn ${
                   selectedMainMenuIndex === 0
                     ? 'bg-gradient-to-r from-[#2c1f14] via-[#352518] to-[#2c1f14] border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.5)] scale-[1.01]'
                     : 'bg-[#231810]/95 border-amber-600/70 hover:border-amber-400'
                 }`}
               >
                 {/* Handcrafted Pixel Play Icon */}
-                <div className="absolute left-3 sm:left-6 flex items-center justify-center pointer-events-none start-menu-btn-icon">
+                <div className="absolute left-3.5 sm:left-6 flex items-center justify-center pointer-events-none start-menu-btn-icon">
                   <svg className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="5" y="4" width="2" height="16" fill="#f59e0b" />
                     <rect x="7" y="5" width="2" height="14" fill="#fbbf24" />
@@ -284,11 +287,8 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
 
                 {/* Centered Text */}
                 <div className="w-full flex flex-col items-center justify-center">
-                  <span className="font-pixel text-[11px] sm:text-base md:text-lg text-white font-bold tracking-wider start-menu-btn-title">
+                  <span className="font-pixel text-sm sm:text-base md:text-lg text-white font-bold tracking-wider start-menu-btn-title">
                     {ui.play}
-                  </span>
-                  <span className="font-pixel text-[7px] sm:text-[10px] text-amber-400 tracking-wider mt-0.5 start-menu-btn-sub">
-                    {ui.startAdventure}
                   </span>
                 </div>
               </button>
@@ -303,14 +303,14 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   if (onOpenSettings) onOpenSettings();
                   else onOpenAudioSettings();
                 }}
-                className={`w-full relative h-10 sm:h-[58px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation start-menu-btn ${
+                className={`w-full relative h-11 sm:h-[54px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation start-menu-btn ${
                   selectedMainMenuIndex === 1
                     ? 'bg-gradient-to-r from-[#192434] via-[#212f45] to-[#192434] border-slate-400 shadow-[0_0_18px_rgba(148,163,184,0.35)] scale-[1.01]'
                     : 'bg-[#182130]/95 border-slate-600/80 hover:border-slate-400'
                 }`}
               >
                 {/* Handcrafted Settings Gear Icon */}
-                <div className="absolute left-3 sm:left-6 flex items-center justify-center pointer-events-none start-menu-btn-icon">
+                <div className="absolute left-3.5 sm:left-6 flex items-center justify-center pointer-events-none start-menu-btn-icon">
                   <svg className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-slate-300 group-hover:text-amber-400 transition-colors" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="3" />
                     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -319,11 +319,8 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
 
                 {/* Centered Text */}
                 <div className="w-full flex flex-col items-center justify-center">
-                  <span className="font-pixel text-[11px] sm:text-base md:text-lg text-[#cbd5e1] group-hover:text-white font-bold tracking-wider start-menu-btn-title">
+                  <span className="font-pixel text-sm sm:text-base md:text-lg text-[#cbd5e1] group-hover:text-white font-bold tracking-wider start-menu-btn-title">
                     {ui.settings}
-                  </span>
-                  <span className="font-pixel text-[7px] sm:text-[10px] text-[#94a3b8] tracking-wider mt-0.5 start-menu-btn-sub">
-                    {ui.gameOptions}
                   </span>
                 </div>
               </button>
@@ -337,14 +334,14 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   sound.playMenuSelect();
                   setShowExitModal(true);
                 }}
-                className={`w-full relative h-10 sm:h-[58px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation start-menu-btn ${
+                className={`w-full relative h-11 sm:h-[54px] rounded-xl sm:rounded-2xl border-2 transition-transform duration-75 transition-colors duration-75 flex items-center cursor-pointer text-center group active:scale-[0.98] touch-manipulation start-menu-btn ${
                   selectedMainMenuIndex === 2
                     ? 'bg-gradient-to-r from-[#2c1319] via-[#381820] to-[#2c1319] border-red-500 shadow-[0_0_18px_rgba(239,68,68,0.4)] scale-[1.01]'
                     : 'bg-[#241116]/95 border-red-700/80 hover:border-red-500'
                 }`}
               >
                 {/* Handcrafted Exit Door Icon */}
-                <div className="absolute left-3 sm:left-6 flex items-center justify-center pointer-events-none start-menu-btn-icon">
+                <div className="absolute left-3.5 sm:left-6 flex items-center justify-center pointer-events-none start-menu-btn-icon">
                   <svg className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-red-400 group-hover:text-red-300 transition-colors" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                     <polyline points="16 17 21 12 16 7" />
@@ -354,18 +351,15 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
 
                 {/* Centered Text */}
                 <div className="w-full flex flex-col items-center justify-center">
-                  <span className="font-pixel text-[11px] sm:text-base md:text-lg text-[#f87171] font-bold tracking-wider start-menu-btn-title">
+                  <span className="font-pixel text-sm sm:text-base md:text-lg text-[#f87171] font-bold tracking-wider start-menu-btn-title">
                     {ui.exit}
-                  </span>
-                  <span className="font-pixel text-[7px] sm:text-[10px] text-[#ef4444]/90 tracking-wider mt-0.5 start-menu-btn-sub">
-                    {ui.closeGame}
                   </span>
                 </div>
               </button>
             </div>
 
             {/* Bottom Card Footer */}
-            <div className="w-full pt-1.5 sm:pt-2.5 mt-0.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-slate-400 text-[8px] sm:text-[11px] font-sans start-menu-footer">
+            <div className="w-full pt-2 sm:pt-3 mt-0.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-slate-400 text-[10px] sm:text-[11px] font-sans start-menu-footer">
               <div className="flex items-center gap-1.5">
                 <div className="w-3 h-3 rounded-full border border-emerald-400/80 flex items-center justify-center shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -374,7 +368,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
               </div>
               <div className="flex items-center gap-1 text-slate-400">
                 <span>{lang === 'en' ? 'Press' : 'Tekan'}</span>
-                <span className="font-pixel text-amber-400 font-bold text-[7px] sm:text-[9px] bg-amber-950/70 border border-amber-600/60 px-1 py-0.5 rounded">
+                <span className="font-pixel text-amber-400 font-bold text-[9px] sm:text-[10px] bg-amber-950/70 border border-amber-600/60 px-1.5 py-0.5 rounded">
                   ENTER
                 </span>
                 <span>{lang === 'en' ? 'to Select' : 'untuk Memilih'}</span>
@@ -387,8 +381,8 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
         {menuView === 'play' && (
           <div className="w-full max-w-[300px] sm:max-w-[460px] md:max-w-[500px] bg-[#121626]/95 border-2 border-amber-500/90 rounded-2xl sm:rounded-[24px] shadow-[0_0_35px_rgba(245,158,11,0.2)] p-2.5 sm:p-5 flex flex-col gap-1.5 sm:gap-3 animate-fade-in-slide-up start-menu-card start-menu-play-card">
             {/* Header */}
-            <div className="text-center pt-0.5 pb-0.5 start-menu-play-header">
-              <span className="font-pixel text-amber-400 text-[9px] sm:text-sm tracking-wider font-bold">
+            <div style={{ fontSize: '15px' }} className="text-center pt-0.5 pb-0.5 start-menu-play-header">
+              <span className="font-pixel text-amber-400 text-xs sm:text-sm tracking-wider font-bold">
                 {ui.charCustomizationTitle}
               </span>
             </div>
@@ -397,7 +391,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             <div className="start-menu-play-columns flex flex-col gap-1.5 sm:gap-3">
               {/* Column 1: Character Selection Cards */}
               <div className="start-menu-play-avatars-col flex flex-col gap-1 sm:gap-1.5">
-                <span className="font-pixel text-[8px] sm:text-[11px] text-slate-300">
+                <span
+                  style={{ lineHeight: '30.5px', textAlign: 'center' }}
+                  className="font-pixel text-[10px] sm:text-xs text-slate-300 font-bold block"
+                >
                   {lang === 'en' ? 'CHOOSE ADVENTURER AVATAR:' : 'PILIH KARAKTER PETUALANG:'}
                 </span>
 
@@ -407,6 +404,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                     type="button"
                     id="avatar-select-ezzel"
                     onClick={() => handleSelectAvatar('boy')}
+                    style={{ paddingBottom: '12px', marginTop: '6px' }}
                     className={`p-1.5 sm:p-3 rounded-lg sm:rounded-xl border-2 transition-all flex flex-col items-center justify-between gap-1 cursor-pointer text-center relative start-menu-avatar-btn ${
                       playerAvatar === 'boy'
                         ? 'bg-emerald-950/70 border-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.4)] scale-[1.02]'
@@ -426,10 +424,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center">
-                      <span className="font-pixel text-[9px] sm:text-sm font-bold text-emerald-300">
+                      <span className="font-pixel text-xs sm:text-sm font-bold text-emerald-300">
                         EZZEL
                       </span>
-                      <span className="font-sans text-[8px] sm:text-[10px] text-slate-300">
+                      <span className="font-sans text-[10px] sm:text-[11px] text-slate-300">
                         {ui.boyTitle}
                       </span>
                     </div>
@@ -440,6 +438,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                     type="button"
                     id="avatar-select-ezzy"
                     onClick={() => handleSelectAvatar('girl')}
+                    style={{ paddingBottom: '12px', marginTop: '6px' }}
                     className={`p-1.5 sm:p-3 rounded-lg sm:rounded-xl border-2 transition-all flex flex-col items-center justify-between gap-1 cursor-pointer text-center relative start-menu-avatar-btn ${
                       playerAvatar === 'girl'
                         ? 'bg-cyan-950/70 border-cyan-400 shadow-[0_0_18px_rgba(34,211,238,0.4)] scale-[1.02]'
@@ -459,10 +458,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                     </div>
 
                     <div className="flex flex-col items-center">
-                      <span className="font-pixel text-[9px] sm:text-sm font-bold text-cyan-300">
+                      <span className="font-pixel text-xs sm:text-sm font-bold text-cyan-300">
                         EZZY
                       </span>
-                      <span className="font-sans text-[8px] sm:text-[10px] text-slate-300">
+                      <span className="font-sans text-[10px] sm:text-[11px] text-slate-300">
                         {ui.girlTitle}
                       </span>
                     </div>
@@ -477,11 +476,12 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   <div className="flex items-center justify-between">
                     <label
                       htmlFor="character-nickname-input"
-                      className="font-pixel text-[8px] sm:text-xs text-amber-300 font-bold"
+                      style={{ fontSize: '7.5px', lineHeight: '30px' }}
+                      className="font-pixel text-[10.5px] sm:text-xs text-amber-300 font-bold"
                     >
                       {ui.nicknameLabel}
                     </label>
-                    <span className="text-[8px] sm:text-[10px] font-sans text-slate-400">
+                    <span className="text-[10px] sm:text-[11px] font-sans text-slate-400">
                       {ui.maxChars}
                     </span>
                   </div>
@@ -503,7 +503,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                       }}
                       placeholder={lang === 'en' ? 'Type here...' : 'Ketik di sini...'}
                       maxLength={12}
-                      className="w-full bg-slate-950/90 border-2 border-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.3)] focus:shadow-[0_0_18px_rgba(34,211,238,0.5)] focus:border-cyan-300 rounded-lg sm:rounded-xl px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-cyan-100 font-pixel text-[9px] sm:text-sm focus:outline-none transition-all placeholder:text-slate-600 placeholder:font-sans"
+                      className="w-full bg-slate-950/90 border-2 border-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.3)] focus:shadow-[0_0_18px_rgba(34,211,238,0.5)] focus:border-cyan-300 rounded-lg sm:rounded-xl px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-cyan-100 font-pixel text-xs sm:text-sm focus:outline-none transition-all placeholder:text-slate-600 placeholder:font-sans"
                     />
 
                     {/* Handcrafted Reset Button */}
@@ -511,7 +511,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                       type="button"
                       onClick={() => setPlayerName(getDefaultNameForAvatar(playerAvatar))}
                       title={lang === 'en' ? 'Use default name' : 'Gunakan nama bawaan'}
-                      className="absolute right-2 px-1.5 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-amber-300 font-pixel text-[7px] sm:text-[8px] border border-slate-700 transition cursor-pointer flex items-center gap-1"
+                      className="absolute right-2 px-2 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-amber-300 font-pixel text-[9px] sm:text-[10px] border border-slate-700 transition cursor-pointer flex items-center gap-1"
                     >
                       <svg className="w-2.5 h-2.5 text-slate-300" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M2.5 6.5A4.5 4.5 0 1 1 3.8 9.8" />
@@ -532,7 +532,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                       sound.playMenuSelect();
                       setMenuView('main');
                     }}
-                    className="px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border-2 border-red-500/80 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-pixel text-[8px] sm:text-xs flex items-center gap-1 cursor-pointer transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)] active:scale-95 shrink-0"
+                    className="px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg sm:rounded-xl border-2 border-red-500/80 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-pixel text-[10.5px] sm:text-xs flex items-center gap-1 cursor-pointer transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)] active:scale-95 shrink-0"
                     title={lang === 'en' ? 'Back to Main Menu' : 'Kembali ke Menu Utama'}
                   >
                     <svg className="w-3 h-3 text-red-400 shrink-0" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -547,12 +547,15 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                     type="button"
                     id="btn-confirm-start-adventure"
                     onClick={handleStart}
-                    className="flex-1 py-1.5 sm:py-2.5 px-3 sm:px-4 rounded-lg sm:rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold shadow-[0_0_20px_rgba(245,158,11,0.45)] active:scale-[0.98] transition-transform duration-75 transition-colors duration-75 flex items-center justify-center gap-1.5 cursor-pointer group touch-manipulation"
+                    className="flex-1 py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg sm:rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold shadow-[0_0_20px_rgba(245,158,11,0.45)] active:scale-[0.98] transition-transform duration-75 transition-colors duration-75 flex items-center justify-center gap-1.5 cursor-pointer group touch-manipulation"
                   >
                     <svg className="w-3 h-3 fill-slate-950 text-slate-950 shrink-0" viewBox="0 0 12 12">
                       <polygon points="3,2 10,6 3,10" />
                     </svg>
-                    <span className="font-pixel text-[9px] sm:text-xs tracking-wider truncate">
+                    <span
+                      style={{ fontSize: '9px' }}
+                      className="font-pixel text-xs sm:text-sm tracking-wider truncate"
+                    >
                       {lang === 'en' ? 'START' : 'MULAI'}: {currentDisplayNickname.toUpperCase()}
                     </span>
                   </button>
@@ -561,14 +564,17 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
             </div>
 
             {/* Bottom Card Footer */}
-            <div className="w-full pt-1 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-slate-400 text-[8px] sm:text-[10px] font-sans start-menu-footer">
+            <div className="w-full pt-1.5 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-1 text-slate-400 text-[10px] sm:text-[11px] font-sans start-menu-footer">
               <div className="flex items-center gap-1">
                 <div className="w-3 h-3 rounded-full border border-emerald-400/80 flex items-center justify-center shrink-0">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 </div>
                 <span>{ui.safeBrowserNote}</span>
               </div>
-              <div className="font-pixel text-[7px] sm:text-[9px] text-amber-300/90">
+              <div
+                style={{ fontSize: '6px' }}
+                className="font-pixel text-[9px] sm:text-[10px] text-amber-300/90 font-bold"
+              >
                 {lang === 'en' ? 'Press ENTER to Start' : 'Tekan ENTER untuk Mulai'}
               </div>
             </div>
@@ -583,10 +589,10 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
       {showExitModal && (
         <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 animate-fade-in select-none">
           <div className="w-full max-w-[280px] sm:max-w-sm bg-[#121626] border-2 border-red-500/80 rounded-xl sm:rounded-2xl p-3.5 sm:p-5 text-center shadow-[0_0_35px_rgba(239,68,68,0.3)]">
-            <h3 className="font-pixel text-xs sm:text-base text-red-400 mb-1">
+            <h3 className="font-pixel text-sm sm:text-base text-red-400 mb-1 font-bold">
               {ui.exitConfirmTitle}
             </h3>
-            <p className="font-sans text-[10px] sm:text-xs text-slate-300 mb-3.5 leading-relaxed">
+            <p className="font-sans text-xs sm:text-sm text-slate-300 mb-3.5 leading-relaxed">
               {ui.exitConfirmDesc}
             </p>
             <div className="flex gap-2">
@@ -596,7 +602,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   sound.playMenuSelect();
                   setShowExitModal(false);
                 }}
-                className="flex-1 py-1.5 sm:py-2.5 px-2.5 rounded-lg sm:rounded-xl border border-amber-500/80 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 font-pixel text-[9px] sm:text-[11px] cursor-pointer transition active:scale-95"
+                className="flex-1 py-2 sm:py-2.5 px-2.5 rounded-lg sm:rounded-xl border border-amber-500/80 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 font-pixel text-xs sm:text-sm cursor-pointer transition active:scale-95 font-bold"
               >
                 {ui.cancel}
               </button>
@@ -611,7 +617,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                     // Ignore if browser prevents closing tab
                   }
                 }}
-                className="flex-1 py-1.5 sm:py-2.5 px-2.5 rounded-lg sm:rounded-xl bg-red-600 hover:bg-red-500 text-white font-pixel text-[9px] sm:text-[11px] cursor-pointer shadow-md transition active:scale-95"
+                className="flex-1 py-2 sm:py-2.5 px-2.5 rounded-lg sm:rounded-xl bg-red-600 hover:bg-red-500 text-white font-pixel text-xs sm:text-sm cursor-pointer shadow-md transition active:scale-95 font-bold"
               >
                 {ui.confirmExit}
               </button>

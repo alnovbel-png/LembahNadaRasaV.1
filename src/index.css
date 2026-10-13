@@ -383,7 +383,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .start-menu-title h1 {
-    font-size: 11px !important;
+    font-size: 20px !important;
     line-height: 1.2 !important;
   }
 
@@ -409,18 +409,18 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .start-menu-btn-title {
-    font-size: 10px !important;
+    font-size: 13px !important;
     line-height: 1.1 !important;
   }
 
   .start-menu-btn-sub {
-    font-size: 7px !important;
+    font-size: 9px !important;
     margin-top: 1px !important;
   }
 
   .start-menu-footer {
     padding-top: 2px !important;
-    font-size: 7.5px !important;
+    font-size: 9.5px !important;
   }
 
   /* Play View (Pilih Karakter & Nama Panggilan) Landscape UX Optimization */
@@ -437,7 +437,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .start-menu-play-header span {
-    font-size: 9px !important;
+    font-size: 11.5px !important;
   }
 
   .start-menu-play-columns {
@@ -452,7 +452,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .start-menu-play-avatars-col span.font-pixel {
-    font-size: 7.5px !important;
+    font-size: 10px !important;
   }
 
   .start-menu-avatar-grid {
@@ -476,11 +476,11 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .start-menu-avatar-btn span.font-pixel {
-    font-size: 8px !important;
+    font-size: 11px !important;
   }
 
   .start-menu-avatar-btn span.font-sans {
-    font-size: 7px !important;
+    font-size: 9.5px !important;
   }
 
   .start-menu-play-nickname-col {
@@ -491,12 +491,12 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .start-menu-play-nickname-col label {
-    font-size: 7.5px !important;
+    font-size: 10.5px !important;
   }
 
   .start-menu-play-nickname-col input {
     padding: 4px 8px !important;
-    font-size: 9px !important;
+    font-size: 12px !important;
     height: 28px !important;
     border-radius: 8px !important;
   }
@@ -508,14 +508,14 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 
   .start-menu-play-actions button#btn-back-to-main {
     padding: 4px 8px !important;
-    font-size: 8px !important;
+    font-size: 10.5px !important;
     height: 28px !important;
     border-radius: 8px !important;
   }
 
   .start-menu-play-actions button#btn-confirm-start-adventure {
     padding: 4px 10px !important;
-    font-size: 8.5px !important;
+    font-size: 11px !important;
     height: 28px !important;
     border-radius: 8px !important;
   }
@@ -542,33 +542,33 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .mission-badge-tag {
-    font-size: 8px !important;
+    font-size: 10px !important;
     padding: 1px 6px !important;
   }
 
   .mission-badge-step {
-    font-size: 8.5px !important;
+    font-size: 10px !important;
     padding: 1px 6px !important;
   }
 
   .mission-modal-close-btn {
-    width: 22px !important;
-    height: 22px !important;
+    width: 24px !important;
+    height: 24px !important;
     border-width: 1.5px !important;
   }
 
   .mission-modal-close-btn svg {
-    width: 11px !important;
-    height: 11px !important;
+    width: 12px !important;
+    height: 12px !important;
   }
 
   .mission-modal-title {
-    font-size: 11px !important;
+    font-size: 13px !important;
     line-height: 1.2 !important;
   }
 
   .mission-modal-location {
-    font-size: 8px !important;
+    font-size: 10px !important;
     margin-top: 0 !important;
   }
 
@@ -578,12 +578,12 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .mission-modal-stepper-heading {
-    font-size: 7px !important;
+    font-size: 9px !important;
     margin-bottom: 2px !important;
   }
 
   .mission-modal-stepper-heading span:last-child {
-    font-size: 6.5px !important;
+    font-size: 8.5px !important;
     padding: 0 4px !important;
   }
 
@@ -597,11 +597,11 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .mission-modal-step-item span.font-black {
-    font-size: 7px !important;
+    font-size: 9px !important;
   }
 
   .mission-modal-step-item span.font-sans {
-    font-size: 6.5px !important;
+    font-size: 8.5px !important;
     margin-top: 0 !important;
   }
 
@@ -628,7 +628,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .mission-modal-char-name {
-    font-size: 7.5px !important;
+    font-size: 9.5px !important;
     line-height: 1.1 !important;
   }
 
@@ -637,18 +637,18 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .mission-modal-hint-text {
-    font-size: 9.5px !important;
+    font-size: 11.5px !important;
     line-height: 1.25 !important;
   }
 
   .mission-modal-tip-box {
     padding: 2px 6px !important;
-    font-size: 7.5px !important;
+    font-size: 9.5px !important;
     margin-top: 1px !important;
   }
 
   .mission-modal-tip-box span {
-    font-size: 8.5px !important;
+    font-size: 10.5px !important;
     line-height: 1.2 !important;
   }
 
@@ -665,7 +665,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   .mission-modal-btn span {
-    font-size: 8.5px !important;
+    font-size: 10.5px !important;
   }
 
   /* Pause Menu Modal Mobile Landscape UX Optimization */
@@ -709,13 +709,13 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 
   #header-brand-pause-button span:last-child {
-    font-size: 11px !important;
+    font-size: 12.5px !important;
   }
 
   #top-unified-menu-btn {
     height: 26px !important;
     padding: 2px 8px !important;
-    font-size: 8px !important;
+    font-size: 10.5px !important;
   }
 
   #quest-tracker-banner {

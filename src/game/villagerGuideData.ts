@@ -221,7 +221,7 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
     personality: 'Bijaksana, penuh welas asih, namun memendam duka mendalam saat persatuan warga terkoyak.',
     favoriteQuote: '"Harmoni bukanlah ketiadaan perbedaan nada, melainkan kerelaan untuk saling mendengarkan dalam simfoni."',
     sprite: 'spirit_elder',
-    bio: 'Nenek Wilis adalah pustakawan sepuh yang menjaga denting jam harmoni. Merasa pilu melihat warga saling menyalahkan saat menghadapi kesulitan, ia menyelimuti menara dengan kabut agar warga merenungkan makna empati.',
+    bio: 'Nenek Wilis adalah penjaga Menara Jam Harmoni. Merasa pilu saat Kakek Ranu yang kelelahan membentak Bimo dan empati memudar, kabut kelabu turun. Demi melindungi sisa mesin waktu, ia sengaja menitipkan sembilan komponen jam kepada warga bijak sebagai ujian kebijaksanaan pemulihan desa.',
     surfaceEmotion: {
       type: 'kecewa',
       label: 'Kekecewaan Mendalam & Ketertutupan',
@@ -232,7 +232,7 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
       label: 'Duka atas Hilangnya Kerukunan Desa',
       description: 'Merindukan tawa riang dan toleransi hangat yang dulu menyatukan semua warga Lembah Nada Rasa.',
     },
-    storyReason: 'Warga desa melupakan Kompas Empati dan lebih sibuk membenarkan diri sendiri, membuat jam harmoni kehilangan ketukannya.',
+    storyReason: 'Puncak lunturnya empati terjadi saat Kakek Ranu membentak Bimo hingga Bimo lari ketakutan ke hutan, membuat energi harmoni terputus dan Menara Jam berhenti berdetak.',
     selConcept: {
       pillar: 'Pengambilan Keputusan Bertanggung Jawab',
       title: 'Restorasi Komunitas Melalui Rekonsiliasi Empatik',

@@ -293,13 +293,13 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                           <MousePointer className="w-4 h-4 text-cyan-400" />
                           <span>Klik Lantai (Pathfinding)</span>
                         </div>
-                        <p className="text-[11px] text-slate-400 mb-2">
+                        <p className="text-xs text-slate-300 mb-2 leading-relaxed">
                           {lang === 'en'
                             ? 'Click or tap anywhere on the ground. Character will auto-walk around obstacles!'
                             : 'Klik atau ketuk di lantai mana saja. Karakter akan otomatis berjalan menghindari rintangan!'}
                         </p>
                       </div>
-                      <div className="p-2 rounded-lg bg-cyan-950/50 border border-cyan-800/60 text-center text-[10.5px] text-cyan-200 font-medium">
+                      <div className="p-2 rounded-lg bg-cyan-950/50 border border-cyan-800/60 text-center text-xs text-cyan-200 font-medium">
                         ✨ {lang === 'en' ? 'Smart Auto-Pathfinding' : 'Navigasi Otomatis Pintar'}
                       </div>
                     </div>
@@ -307,17 +307,17 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                     {/* Mobile Joystick */}
                     <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
                       <div>
-                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-300 mb-2">
+                        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-300 mb-2">
                           <Smartphone className="w-4 h-4 text-emerald-400" />
                           <span>Joystick Layar Sentuh (HP)</span>
                         </div>
-                        <p className="text-[11px] text-slate-400 mb-2">
+                        <p className="text-xs text-slate-300 mb-2 leading-relaxed">
                           {lang === 'en'
                             ? 'Touch and drag the analog thumbstick at the bottom-left corner on mobile/tablet.'
                             : 'Sentuh dan geser analog virtual di sudut kiri bawah layar HP atau tablet.'}
                         </p>
                       </div>
-                      <div className="p-2 rounded-lg bg-emerald-950/50 border border-emerald-800/60 text-center text-[10.5px] text-emerald-200 font-medium">
+                      <div className="p-2 rounded-lg bg-emerald-950/50 border border-emerald-800/60 text-center text-xs text-emerald-200 font-medium">
                         🕹️ {lang === 'en' ? 'Analog 360° Joystick' : 'Joystick Analog 360°'}
                       </div>
                     </div>
@@ -338,8 +338,8 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
                         {lang === 'en'
-                          ? '13 unique villagers live in the Valley! When someone is upset or carrying a clock part, a speech bubble appears above their head.'
-                          : 'Terdapat 13 warga unik di Lembah! Ketika seorang warga sedang mengalami emosi berat atau memegang komponen jam, balon dialog akan muncul di atas kepalanya.'}
+                          ? 'Harmony faded when Grandpa Ranu harshly scolded Bimo out of exhaustion, causing Bimo to flee into the forest and Elder Wilis to summon the gray mist. Talk to villagers with speech bubbles to heal their hearts!'
+                          : 'Harmoni lembah memudar saat Kakek Ranu yang lelah membentak Bimo, hingga Bimo lari ke hutan dan Nenek Wilis menurunkan kabut kelabu. Temui warga dengan balon dialog untuk memulihkan kerukunan!'}
                       </p>
                     </div>
                   </div>
@@ -354,7 +354,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                       <ul className="text-xs text-slate-300 space-y-1.5 list-disc list-inside leading-relaxed">
                         <li>
                           {lang === 'en'
-                            ? 'Walk close to a villager until interaction icon appears.'
+                            ? 'Walk close to a villager until interaction prompt appears.'
                             : 'Dekati warga sampai tombol interaksi muncul.'}
                         </li>
                         <li>
@@ -368,10 +368,8 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                         </li>
                         <li>
                           {lang === 'en'
-                            ? 'On mobile: Tap the round '
-                            : 'Pada HP: Ketuk tombol bulat '}
-                          <span className="font-bold text-amber-300">[Aksi / Bicara]</span>{' '}
-                          {lang === 'en' ? 'button on the right.' : 'di kanan bawah layar.'}
+                            ? 'On mobile: Tap the round Action button on the right.'
+                            : 'Pada HP: Ketuk tombol bulat Aksi atau Bicara di kanan bawah layar.'}
                         </li>
                       </ul>
                     </div>
@@ -388,12 +386,12 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                     </div>
                     <div>
                       <h3 className="font-bold text-base sm:text-lg text-amber-200">
-                        {lang === 'en' ? '3. Activate Heart Resonance Compass' : '3. Aktifkan Kompas Resonansi Hati'}
+                        {lang === 'en' ? '3. Activate Heart Resonance Compass' : '3. Aktifkan Pusaka Kompas Hati'}
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
                         {lang === 'en'
                           ? 'The ancient Heart Compass reveals hidden emotions behind harsh words using the Emotional Iceberg concept!'
-                          : 'Kompas Resonansi Hati adalah pusaka ajaib yang mengungkap emosi tersembunyi di balik kata-kata kasar warga menggunakan Konsep Gunung Es Emosi!'}
+                          : 'Pusaka Kompas Hati membimbing pemain memahami emosi terdalam di balik kata-kata kasar warga menggunakan Konsep Gunung Es Emosi!'}
                       </p>
                     </div>
                   </div>
@@ -406,7 +404,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                         <span>Gunung Es Emosi (Iceberg Theory)</span>
                       </span>
                       <span className="text-[10px] font-mono bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/40">
-                        Tombol [C]
+                        Tombol C
                       </span>
                     </div>
 
@@ -416,8 +414,8 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                           <span>🌊</span>
                           <span>Emosi Permukaan (Tampak Luar)</span>
                         </div>
-                        <p className="text-slate-400 text-[11px] leading-relaxed">
-                          Teriakan, membentak, panik teriak-teriak, atau mengurung diri. Banyak orang salah paham karena hanya melihat permukaan ini.
+                        <p className="text-slate-400 text-xs sm:text-[13px] leading-relaxed">
+                          Teriakan, bentakan, atau mengurung diri karena lelah. Banyak orang salah paham karena hanya melihat kemarahan di luar.
                         </p>
                       </div>
 
@@ -426,18 +424,18 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                           <span>🧭</span>
                           <span>Suara Hati Terdalam (Terbaca Kompas)</span>
                         </div>
-                        <p className="text-slate-300 text-[11px] leading-relaxed">
-                          Rasa takut disalahkan, lelah bekerja keras sendirian, butuh dihargai, atau rindu teman. Responi suara hati terdalam ini untuk meraih <strong>+10 s/d +20 Poin Empati</strong>!
+                        <p className="text-slate-300 text-xs sm:text-[13px] leading-relaxed">
+                          Rasa lelah bekerja keras sendirian, takut disalahkan, atau butuh didengarkan. Berikan respon penuh empati untuk memulihkan hubungan!
                         </p>
                       </div>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-400/40 text-[11px] text-amber-200 flex items-center gap-2">
+                    <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-400/40 text-xs text-amber-200 flex items-center gap-2">
                       <Compass className="w-4 h-4 text-amber-400 shrink-0" />
                       <span>
                         {lang === 'en'
-                          ? 'Compass Mechanic: Exploring around is free. When choosing dialogue responses with compass active, it marks wrong options only and applies a -5 score deduction.'
-                          : 'Mekanik Kompas: Melihat sekitar gratis tanpa potongan skor. Pengurangan -5 poin hanya berlaku jika kompas aktif saat memilih respon dialog (menandai opsi salah saja).'}
+                          ? 'Compass Mechanic: Exploring is free. When selecting responses with compass active, it guides your heart toward the wisest choices.'
+                          : 'Mekanik Kompas: Menjelajah lembah gratis tanpa pengurangan poin. Kompas membimbing pilihan dialogmu agar senantiasa bijak dan berempati.'}
                       </span>
                     </div>
                   </div>
@@ -457,8 +455,8 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
                         {lang === 'en'
-                          ? 'When a villager is overwhelmed, guide them through an interactive relaxation exercise before solving problems!'
-                          : 'Ketika warga mengalami banjir emosi, ajak mereka melakukan latihan relaksasi interaktif sebelum mencari solusi bersama!'}
+                          ? 'Practice breathing with Kiki to soothe panic, and guide overwhelmed villagers with interactive relaxation exercises!'
+                          : 'Praktikkan teknik napas bersama Kiki si tupai untuk meredakan panik, dan ajak warga lainnya melakukan relaksasi sebelum menyelesaikan masalah!'}
                       </p>
                     </div>
                   </div>
@@ -470,8 +468,8 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                         <span>🌬️</span>
                         <span>Napas Kotak Balon (4-4-4)</span>
                       </div>
-                      <p className="text-[11px] text-slate-300 leading-relaxed">
-                        Tarik napas 4 detik saat balon mengembang, tahan 4 detik, lalu hembuskan perlahan 4 detik. Menurunkan detak jantung seketika.
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Tarik napas 4 detik saat balon mengembang, tahan 4 detik, lalu hembuskan perlahan 4 detik untuk meredakan detak jantung panik.
                       </p>
                     </div>
 
@@ -480,7 +478,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                         <span>👁️</span>
                         <span>Grounding Panca Indra 5-4-3-2-1</span>
                       </div>
-                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                      <p className="text-xs text-slate-300 leading-relaxed">
                         Mengamati 5 benda di sekitar, 4 sentuhan, 3 suara, 2 aroma, dan 1 rasa untuk menghentikan serangan cemas.
                       </p>
                     </div>
@@ -490,30 +488,30 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                         <span>🛑</span>
                         <span>Jeda Darurat STOP</span>
                       </div>
-                      <p className="text-[11px] text-slate-300 leading-relaxed">
-                        <strong>S</strong>top sejenak, <strong>T</strong>arik napas, <strong>O</strong>bservasi emosi, <strong>P</strong>roceed melangkah bijak.
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Berhenti sejenak, Tarik napas, Observasi perasaan, dan Melangkah bijak dengan pikiran yang jernih.
                       </p>
                     </div>
 
                     <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/40 space-y-1">
                       <div className="font-bold text-emerald-300 flex items-center gap-1.5">
                         <span>⚡</span>
-                        <span>Goyang Lepas Beban (Shakeout)</span>
+                        <span>Goyang Lepas Beban</span>
                       </div>
-                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                      <p className="text-xs text-slate-300 leading-relaxed">
                         Ketuk layar mengikuti ritme untuk mengibaskan ketegangan otot bahu dan lengan yang kaku saat cemas.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                    <span>💡 Kamu bisa berlatih kapan saja dengan menekan tombol <strong>[R]</strong> di bilah atas layar.</span>
-                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300 font-bold shrink-0">[R]</span>
+                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                    <span>💡 Kamu bisa berlatih relaksasi kapan saja dengan menekan Tombol R pada keyboard.</span>
+                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300 font-bold shrink-0">Tombol R</span>
                   </div>
                 </div>
               )}
 
-              {/* STEP 5: MISI 12 KOMPONEN JAM & MEMULIHKAN ALAM */}
+              {/* STEP 5: MISI PENYATUAN EZZEL & 12 KOMPONEN JAM */}
               {currentStep === 5 && (
                 <div className="bg-slate-950/70 border border-amber-500/30 rounded-2xl p-4 sm:p-5 space-y-4 animate-fade-in">
                   <div className="flex items-start gap-3">
@@ -522,12 +520,12 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                     </div>
                     <div>
                       <h3 className="font-bold text-base sm:text-lg text-amber-200">
-                        {lang === 'en' ? '5. Collect 12 Clock Pieces & Restore Colors 100%' : '5. Kumpulkan 12 Komponen Jam & Pulihkan Warna Alam'}
+                        {lang === 'en' ? '5. Ezzel\'s Unified Mission & The 12 Clock Components' : '5. Penyatuan Misi Ezzel: Pulihkan 12 Komponen Jam'}
                       </h3>
                       <p className="text-xs sm:text-sm text-slate-300 mt-1 leading-relaxed">
                         {lang === 'en'
-                          ? 'Each reconciled friend gives you a lost component of Ki Waskita’s Clock Tower. Watch the gray fog fade away as colors return!'
-                          : 'Setiap warga yang terbantu akan menyerahkan komponen Menara Jam Ki Waskita. Saksikan kabut kelabu lenyap dan warna-warni alam kembali mekar bercahaya!'}
+                          ? 'Resolve the core crisis first to unlock the bridge, then freely explore to collect components from wise villagers entrusted by Elder Wilis!'
+                          : 'Selesaikan krisis utama terlebih dahulu untuk membuka jembatan, lalu leluasa berkeliling menemui sembilan warga bijak yang dititipi komponen jam oleh Nenek Wilis!'}
                       </p>
                     </div>
                   </div>
@@ -536,17 +534,17 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                     <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
                       <div className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                         <MapPin className="w-4 h-4 text-rose-400" />
-                        <span>Alat Navigasi Petualangan:</span>
+                        <span>Fase 1: Tiga Komponen Inti Krisis</span>
                       </div>
                       <ul className="text-[11px] text-slate-300 space-y-1.5 list-disc list-inside">
                         <li>
-                          <strong>Banner Misi (Atas Layar):</strong> Menampilkan target aktif dan tombol <em>"Tuntun"</em> untuk berjalan otomatis ke lokasi.
+                          <strong>Kiki di Alun-Alun:</strong> Latihan napas tenang untuk mengambil Pegas Detak Jam.
                         </li>
                         <li>
-                          <strong>Peta Lembah [M]:</strong> Melihat posisi 13 warga dan 4 zona utama secara langsung.
+                          <strong>Kakek Ranu di Jembatan:</strong> Validasi lelahnya agar jembatan dibuka dan menyerahkan Poros Pengunci Jam.
                         </li>
                         <li>
-                          <strong>Panduan Warga (People Guide):</strong> Membaca profil, peran, kutipan, dan tips dialog ke-13 teman desa.
+                          <strong>Bimo di Hutan Sunyi:</strong> Kembalikan percaya dirinya untuk menerima Roda Gigi Emas.
                         </li>
                       </ul>
                     </div>
@@ -554,10 +552,10 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                     <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-2">
                       <div className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
                         <Award className="w-4 h-4 text-emerald-400" />
-                        <span>Tujuan Akhir & Kelulusan:</span>
+                        <span>Fase 2: Ujian Kebijaksanaan Nenek Wilis</span>
                       </div>
                       <p className="text-[11px] text-slate-300 leading-relaxed">
-                        Setelah 12 komponen jam terkumpul lengkap, temui <strong>Nenek Wilis</strong> di Puncak Menara Jam untuk merakit jam dan mengaktifkan dentingan melodi harmoni! Kamu akan menerima <strong>Sertifikat Piagam Duta Empati Emas</strong>!
+                        Nenek Wilis sengaja menitipkan sembilan komponen jam lainnya kepada para sesepuh desa (Kak Citra, Kakek Damai, Pak Joko, Didi, Pak Teguh, Bung Jala, Ibu Sari, Moka, Prof. Kotek). Temui mereka untuk memanen keterampilan sosial emosional, lalu rakit jam di puncak menara bersama Nenek Wilis!
                       </p>
                     </div>
                   </div>
@@ -588,65 +586,65 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
-                  <span className="text-slate-300">Bergerak / Melangkah</span>
+                  <span className="text-slate-300">Bergerak atau Melangkah</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-amber-300 border border-slate-700 font-bold">
-                    W / A / S / D  atau  ↑ / ← / ↓ / →
+                    Tombol WASD atau Panah Arah
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
-                  <span className="text-slate-300">Bicara / Interaksi / Lanjut Dialog</span>
+                  <span className="text-slate-300">Bicara, Interaksi, atau Lanjut Dialog</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-amber-300 border border-slate-700 font-bold">
-                    SPASI / ENTER / [E]
+                    Tombol SPASI, ENTER, atau E
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
-                  <span className="text-slate-300">Nyalakan / Matikan Kompas Hati</span>
+                  <span className="text-slate-300">Nyalakan atau Matikan Kompas Hati</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-amber-300 border border-slate-700 font-bold">
-                    [C]
+                    Tombol C
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
                   <span className="text-slate-300">Studio Regulasi Emosi (Latihan Mandiri)</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-cyan-300 border border-slate-700 font-bold">
-                    [R]
+                    Tombol R
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
-                  <span className="text-slate-300">Buka / Tutup Peta Lembah</span>
+                  <span className="text-slate-300">Buka atau Tutup Peta Lembah</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-amber-300 border border-slate-700 font-bold">
-                    [M]
+                    Tombol M
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
                   <span className="text-slate-300">Buka Jurnal Petualang & Tas</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-amber-300 border border-slate-700 font-bold">
-                    [J]
+                    Tombol J
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
                   <span className="text-slate-300">Buka Menu Pengaturan & Audio</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-amber-300 border border-slate-700 font-bold">
-                    [O]
+                    Tombol O
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
                   <span className="text-slate-300">Buka Tutorial Cara Bermain Ini</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-emerald-300 border border-slate-700 font-bold">
-                    [H]  atau  [?]
+                    Tombol H atau Tanda Tanya
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
-                  <span className="text-slate-300">Tutup Jendela / Menu Pause</span>
+                  <span className="text-slate-300">Tutup Jendela atau Menu Jeda</span>
                   <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-rose-300 border border-slate-700 font-bold">
-                    [ESC]
+                    Tombol ESC
                   </span>
                 </div>
 
@@ -669,7 +667,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                     <strong>Gerak:</strong> Tarik Analog di sudut kiri bawah layar atau ketuk lantai.
                   </div>
                   <div className="p-2 rounded bg-slate-900 border border-slate-800">
-                    <strong>Bicara:</strong> Ketuk tombol bulat [Bicara / Aksi] di kanan bawah layar.
+                    <strong>Bicara:</strong> Ketuk tombol bulat Bicara atau Aksi di kanan bawah layar.
                   </div>
                   <div className="p-2 rounded bg-slate-900 border border-slate-800">
                     <strong>Menu:</strong> Ketuk tombol ikon Kompas, Jurnal, Peta, atau Pengaturan di bilah atas.
