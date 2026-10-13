@@ -357,6 +357,28 @@ export default function App() {
     hasCompletedIntroTutorialRef.current = hasCompletedIntroTutorial;
   }, [hasCompletedIntroTutorial]);
 
+  // Game Play Time Timer (Menghitung durasi permainan secara realtime dan otomatis jeda saat menu pause/settings terbuka)
+  const [gameTimeSeconds, setGameTimeSeconds] = useState<number>(0);
+
+  useEffect(() => {
+    if (showStartMenu) return;
+
+    const timer = setInterval(() => {
+      // Jeda timer saat pause menu, modal kuis, tutorial, atau pengaturan aktif
+      if (
+        showSettingsRef.current ||
+        showPauseMenuRef.current ||
+        showInGameTutorialRef.current ||
+        showEndingQuizRef.current
+      ) {
+        return;
+      }
+      setGameTimeSeconds((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [showStartMenu]);
+
   // Capture Moment state
   const [showCaptureMoment, setShowCaptureMoment] = useState<boolean>(false);
   const [screenshotDataUrl, setScreenshotDataUrl] = useState<string | null>(null);
@@ -3955,6 +3977,7 @@ export default function App() {
     hasCompletedIntroTutorialRef.current = false;
     setShowMissionModal(false);
     lastStepRef.current = 1;
+    setGameTimeSeconds(0);
   };
 
   // Enter free roam mode after game completion
@@ -4482,6 +4505,7 @@ export default function App() {
           onCompassToggle={handleToggleCompass}
           isCompassActive={isCompassActive}
           empathyScore={stats.empathyScore}
+          gameTimeSeconds={gameTimeSeconds}
           onOpenPSEScore={handleOpenPSEScore}
           onOpenJournal={() => handleOpenInfoHub('journal')}
           onOpenInfoHub={handleOpenInfoHub}
@@ -4700,6 +4724,7 @@ export default function App() {
             branchTag={branchChoice}
             endingType={endingType}
             playerName={playerName}
+            playTimeSeconds={gameTimeSeconds}
           />
         )}
 
@@ -4748,6 +4773,7 @@ export default function App() {
       <PauseMenuModal
         isOpen={showPauseMenu}
         empathyScore={stats.empathyScore}
+        playTimeSeconds={gameTimeSeconds}
         onResume={() => {
           sound.playMenuSelect();
           setShowPauseMenu(false);

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { sound } from '../utils/audio';
 import { useLanguage } from '../game/localization';
 
+import { formatGameTime, IconTimer } from './VirtualControls';
+
 interface PauseMenuModalProps {
   isOpen: boolean;
   onResume: () => void;
@@ -9,6 +11,7 @@ interface PauseMenuModalProps {
   onOpenMainMenu: () => void;
   onOpenTutorial?: () => void;
   empathyScore?: number;
+  playTimeSeconds?: number;
 }
 
 export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
@@ -18,6 +21,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
   onOpenMainMenu,
   onOpenTutorial,
   empathyScore = 0,
+  playTimeSeconds = 0,
 }) => {
   const { lang } = useLanguage();
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
@@ -126,13 +130,24 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
             </div>
 
             {/* Social-Emotional Performance Score Indicator */}
-            <div className="mb-3 px-3 py-1.5 rounded-lg bg-[#1c1319] border border-pink-500/40 shadow-inner flex items-center justify-between gap-2 text-xs">
+            <div className="mb-2 px-3 py-1.5 rounded-lg bg-[#1c1319] border border-pink-500/40 shadow-inner flex items-center justify-between gap-2 text-xs">
               <span className="flex items-center gap-1.5 text-pink-300 font-pixel text-[8.5px]">
                 <span>💖</span>
                 <span>{lang === 'en' ? 'SEL Score:' : 'Skor PSE:'}</span>
               </span>
               <span className="font-pixel text-[11px] font-bold text-amber-300">
                 {empathyScore} {lang === 'en' ? 'Pts' : 'Poin'}
+              </span>
+            </div>
+
+            {/* Adventure Play Time Indicator */}
+            <div className="mb-2 px-3 py-1.5 rounded-lg bg-[#1a1410] border border-amber-500/40 shadow-inner flex items-center justify-between gap-2 text-xs">
+              <span className="flex items-center gap-1.5 text-amber-300 font-pixel text-[8.5px]">
+                <IconTimer className="w-3.5 h-3.5 text-amber-400" />
+                <span>{lang === 'en' ? 'Play Time:' : 'Waktu Bermain:'}</span>
+              </span>
+              <span className="font-pixel text-[11px] font-bold text-amber-300">
+                {formatGameTime(playTimeSeconds)}
               </span>
             </div>
             <p className="text-[8.5px] text-stone-400 font-sans mb-3 text-center">

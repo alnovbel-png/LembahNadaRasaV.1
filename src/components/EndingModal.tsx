@@ -3,6 +3,7 @@ import { RotateCcw, Sparkles, CheckCircle, Download, Compass, X, BookOpen } from
 import { PlayerStats } from '../types/game';
 import { downloadCertificateAsJpg } from '../utils/certificateGenerator';
 import { useLanguage } from '../game/localization';
+import { formatGameTime } from './VirtualControls';
 
 interface EndingModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface EndingModalProps {
   branchTag?: string;
   endingType: 'perfect' | 'resilient';
   playerName?: string;
+  playTimeSeconds?: number;
 }
 
 export const EndingModal: React.FC<EndingModalProps> = ({
@@ -24,6 +26,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
   branchTag,
   endingType,
   playerName = 'Ezzel',
+  playTimeSeconds = 0,
 }) => {
   const { lang } = useLanguage();
   const [studentName, setStudentName] = useState(playerName);
@@ -149,10 +152,14 @@ export const EndingModal: React.FC<EndingModalProps> = ({
               </ul>
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-slate-700/60 text-[11px]">
+            <div className="flex justify-between items-center gap-2 pt-3 border-t border-slate-700/60 text-[11px]">
               <div>
-                <span className="text-slate-400 block">{lang === 'en' ? 'Total SEL Score (Performance):' : 'Total Skor Sosial Emosional (PSE):'}</span>
+                <span className="text-slate-400 block">{lang === 'en' ? 'Total SEL Score:' : 'Total Skor PSE:'}</span>
                 <span className="font-bold text-amber-400 text-sm">{stats.empathyScore} {lang === 'en' ? 'Pts' : 'Poin'}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block">{lang === 'en' ? 'Play Time:' : 'Waktu Petualangan:'}</span>
+                <span className="font-bold text-amber-300 text-sm">{formatGameTime(playTimeSeconds)}</span>
               </div>
               <div>
                 <span className="text-slate-400 block">{lang === 'en' ? 'Decision Path:' : 'Jalur Keputusan:'}</span>

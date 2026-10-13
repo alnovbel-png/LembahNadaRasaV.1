@@ -108,6 +108,33 @@ const IconClose = ({ className = "w-4 h-4" }: { className?: string }) => (
   </svg>
 );
 
+export const IconTimer = ({ className = "w-4 h-4" }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+    <circle cx="12" cy="13" r="8.5" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M12 2.5V4.5M10 2.5H14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    <path d="M18.5 6.5L19.8 5.2M5.5 6.5L4.2 5.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="12" cy="13" r="1.3" fill="currentColor" />
+    <path d="M12 13V8M12 13L15.5 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
+export function formatGameTime(seconds: number = 0): string {
+  const safeSec = Math.max(0, Math.floor(seconds));
+  const mins = Math.floor(safeSec / 60);
+  const secs = safeSec % 60;
+  if (mins >= 60) {
+    const hrs = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    const h = hrs.toString().padStart(2, '0');
+    const m = remMins.toString().padStart(2, '0');
+    const s = secs.toString().padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  }
+  const m = mins.toString().padStart(2, '0');
+  const s = secs.toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
 /* =========================================================================
    TYPES & HELPERS
    ========================================================================= */
@@ -131,6 +158,7 @@ interface VirtualControlsProps {
   onOpenStartMenu?: () => void;
   onOpenPauseMenu?: () => void;
   empathyScore?: number;
+  gameTimeSeconds?: number;
   onOpenPSEScore?: () => void;
   onOpenInfoHub?: (tab?: 'quests' | 'regulation' | 'achievements' | 'journal') => void;
   isPauseOpen?: boolean;
@@ -166,6 +194,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   onOpenStartMenu,
   onOpenPauseMenu,
   empathyScore = 0,
+  gameTimeSeconds = 0,
   onOpenPSEScore,
   onOpenInfoHub,
   isPauseOpen = false,
@@ -434,6 +463,42 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 style={{ fontSize: isPortrait ? '16px' : '15px' }}
               >
                 {empathyScore}
+              </span>
+            </div>
+          </div>
+
+          {/* Game Play Timer Badge */}
+          <div
+            id="header-game-timer-badge"
+            title={
+              lang === 'en'
+                ? `Adventure Time: ${formatGameTime(gameTimeSeconds)}`
+                : `Waktu Petualangan: ${formatGameTime(gameTimeSeconds)}`
+            }
+            className={`bg-slate-950/95 border border-amber-500/70 hover:border-amber-400 hover:bg-slate-900 rounded-xl px-2 sm:px-2.5 py-1 sm:py-1.5 shadow-xl hover:shadow-[0_0_16px_rgba(245,158,11,0.35)] backdrop-blur-md flex items-center gap-1.5 shrink-0 transition-all duration-75 select-none pointer-events-auto cursor-default ${
+              isPortrait
+                ? 'absolute left-[76px] sm:left-[86px] top-[38px] sm:top-[44px]'
+                : 'relative'
+            }`}
+          >
+            <div className="text-amber-400 shrink-0">
+              <IconTimer className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
+            </div>
+            <div className="flex flex-col items-center justify-center leading-none">
+              <span
+                className="text-amber-300/80 font-bold tracking-tight whitespace-nowrap hidden sm:inline"
+                style={{
+                  fontFamily: 'Galindo, cursive, sans-serif',
+                  fontSize: '9.5px',
+                }}
+              >
+                {lang === 'en' ? 'Time' : 'Waktu'}
+              </span>
+              <span
+                className="font-pixel text-amber-300 font-extrabold tracking-tight text-center leading-none"
+                style={{ fontSize: isPortrait ? '13px' : '14px' }}
+              >
+                {formatGameTime(gameTimeSeconds)}
               </span>
             </div>
           </div>
@@ -711,6 +776,17 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                         : 'Bantuan kompas -5 • Jawaban mandiri skor utuh'}
                     </div>
                   </div>
+                </div>
+
+                {/* Adventure Play Time Stat Row */}
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-pink-500/30 text-[10px]">
+                  <span className="flex items-center gap-1.5 text-slate-300">
+                    <IconTimer className="w-3.5 h-3.5 text-amber-400" />
+                    {lang === 'en' ? 'Play Time' : 'Waktu Bermain'}
+                  </span>
+                  <span className="font-pixel text-amber-300 text-[11px] font-bold">
+                    {formatGameTime(gameTimeSeconds)}
+                  </span>
                 </div>
               </div>
 
