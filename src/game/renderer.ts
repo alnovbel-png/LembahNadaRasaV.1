@@ -224,6 +224,13 @@ export class GameRenderer {
   private fogRibbonParallaxX: number[] = [0, 0, 0];
   private fogRibbonParallaxY: number[] = [0, 0, 0];
   private readonly timeOfDayProgress: number = 0.0;
+  // Struktur memori yang digunakan ulang tanpa alokasi array baru di setiap frame (Zero Garbage Collection)
+  private structuresToRender: Array<{ tile: number; x: number; y: number; isColored: boolean; r: number; c: number }> = [];
+  private cachedHazeGrad: CanvasGradient | null = null;
+  private cachedHazeKey: string = '';
+  private cachedVignetteGrad: CanvasGradient | null = null;
+  private cachedVignetteKey: string = '';
+  private cachedLampGlowCanvas: HTMLCanvasElement | null = null;
 
   public setTimeOfDay(_time?: 'day' | 'night', _instant: boolean = false) {}
 
@@ -691,7 +698,7 @@ export class GameRenderer {
     ctx.fillRect(undercoatX, undercoatY, undercoatW, undercoatH);
 
     // 1. Draw Map Base & Floor Tiles
-    const structuresToRender: Array<{ tile: number; x: number; y: number; isColored: boolean; r: number; c: number }> = [];
+    this.structuresToRender.length = 0;
 
     for (let r = startRow; r <= endRow; r++) {
       for (let c = startCol; c <= endCol; c++) {
@@ -705,7 +712,7 @@ export class GameRenderer {
         if (tile === TILE.FOUNTAIN || tile === TILE.GRAND_OAK) {
           // Render plaza mosaic/border floor under the structure so floor extends continuously
           this.drawTile(tile === TILE.FOUNTAIN ? TILE.PLAZA_MOSAIC : TILE.PLAZA_BORDER, screenX, screenY, isRestored, r, c);
-          structuresToRender.push({ tile, x: screenX, y: screenY, isColored: isRestored, r, c });
+          this.structuresToRender.push({ tile, x: screenX, y: screenY, isColored: isRestored, r, c });
         } else {
           this.drawTile(tile, screenX, screenY, isRestored, r, c);
         }
@@ -713,7 +720,8 @@ export class GameRenderer {
     }
 
     // 1b. Render Plaza Structures (Fountain) after all floor tiles so no floor tiles overlap
-    for (const s of structuresToRender) {
+    for (let i = 0; i < this.structuresToRender.length; i++) {
+      const s = this.structuresToRender[i];
       this.drawTile(s.tile, s.x, s.y, s.isColored, s.r, s.c);
     }
 
@@ -1631,15 +1639,28 @@ export class GameRenderer {
           const pulse = Math.sin(this.tickCount * 0.08 + (x + y) * 0.05);
           const haloAlpha = (0.2 + pulse * 0.05) * Math.max(0.4, nightGlow);
 
-          // Pendaran radial gradien memancar menembus lapisan kabut & kegelapan malam
-          const gradient = ctx.createRadialGradient(x + 16, y + 6, 2, x + 16, y + 6, 24);
-          gradient.addColorStop(0, `rgba(254, 240, 138, ${haloAlpha * 1.6})`);
-          gradient.addColorStop(0.5, `rgba(245, 158, 11, ${haloAlpha * 0.8})`);
-          gradient.addColorStop(1, 'rgba(245, 158, 11, 0)');
-          ctx.fillStyle = gradient;
-          ctx.beginPath();
-          ctx.arc(x + 16, y + 6, 24, 0, Math.PI * 2);
-          ctx.fill();
+          // Pendaran cahaya hangat menggunakan sprite kanvas cache (zero runtime allocation)
+          if (!this.cachedLampGlowCanvas) {
+            const c = document.createElement('canvas');
+            c.width = 48;
+            c.height = 48;
+            const gctx = c.getContext('2d');
+            if (gctx) {
+              const g = gctx.createRadialGradient(24, 24, 2, 24, 24, 24);
+              g.addColorStop(0, 'rgba(254, 240, 138, 0.45)');
+              g.addColorStop(0.5, 'rgba(245, 158, 11, 0.22)');
+              g.addColorStop(1, 'rgba(245, 158, 11, 0)');
+              gctx.fillStyle = g;
+              gctx.beginPath();
+              gctx.arc(24, 24, 24, 0, Math.PI * 2);
+              gctx.fill();
+            }
+            this.cachedLampGlowCanvas = c;
+          }
+          ctx.save();
+          ctx.globalAlpha = haloAlpha * 2.2;
+          ctx.drawImage(this.cachedLampGlowCanvas, x + 16 - 24, y + 6 - 24);
+          ctx.restore();
 
           // Kaca lentera menyala kuning keemasan terang
           ctx.fillStyle = '#fef08a';
@@ -7775,9 +7796,9 @@ export class GameRenderer {
 
   private updateAndDrawParticles() {
     const ctx = this.ctx;
-    // Cap active particles to prevent frame drops & GC spikes on lower-end devices
-    if (this.particles.length > 180) {
-      this.particles.splice(0, this.particles.length - 180);
+    // Batasi partikel aktif agar kinerja tetap lancar 60 FPS pada perangkat spesifikasi rendah
+    if (this.particles.length > 110) {
+      this.particles.splice(0, this.particles.length - 110);
     }
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];
@@ -7806,93 +7827,104 @@ export class GameRenderer {
         const px = Math.floor(p.x);
         const py = Math.floor(p.y);
 
-        ctx.save();
-        ctx.translate(px, py);
         if (p.rotation) {
+          ctx.save();
+          ctx.translate(px, py);
           ctx.rotate(p.rotation);
+
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = alpha * 0.35;
+          ctx.beginPath();
+          ctx.arc(0, 0, radius * 2.2, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.globalAlpha = alpha * 0.95;
+          ctx.beginPath();
+          ctx.moveTo(0, -radius * 2);
+          ctx.lineTo(radius * 0.35, -radius * 0.35);
+          ctx.lineTo(radius * 2, 0);
+          ctx.lineTo(radius * 0.35, radius * 0.35);
+          ctx.lineTo(0, radius * 2);
+          ctx.lineTo(-radius * 0.35, radius * 0.35);
+          ctx.lineTo(-radius * 2, 0);
+          ctx.lineTo(-radius * 0.35, -radius * 0.35);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.globalAlpha = alpha;
+          ctx.fillRect(-1, -1, 2, 2);
+          ctx.restore();
+        } else {
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = alpha * 0.35;
+          ctx.beginPath();
+          ctx.arc(px, py, radius * 2.2, 0, Math.PI * 2);
+          ctx.fill();
+
+          ctx.globalAlpha = alpha * 0.95;
+          ctx.beginPath();
+          ctx.moveTo(px, py - radius * 2);
+          ctx.lineTo(px + radius * 0.35, py - radius * 0.35);
+          ctx.lineTo(px + radius * 2, py);
+          ctx.lineTo(px + radius * 0.35, py + radius * 0.35);
+          ctx.lineTo(px, py + radius * 2);
+          ctx.lineTo(px - radius * 0.35, py + radius * 0.35);
+          ctx.lineTo(px - radius * 2, py);
+          ctx.lineTo(px - radius * 0.35, py - radius * 0.35);
+          ctx.closePath();
+          ctx.fill();
+
+          ctx.fillStyle = '#ffffff';
+          ctx.globalAlpha = alpha;
+          ctx.fillRect(px - 1, py - 1, 2, 2);
         }
-
-        // Soft atmospheric glow bloom
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = alpha * 0.35;
-        ctx.beginPath();
-        ctx.arc(0, 0, radius * 2.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 4-pointed radiant sparkle diamond star
-        ctx.globalAlpha = alpha * 0.95;
-        ctx.beginPath();
-        ctx.moveTo(0, -radius * 2);
-        ctx.lineTo(radius * 0.35, -radius * 0.35);
-        ctx.lineTo(radius * 2, 0);
-        ctx.lineTo(radius * 0.35, radius * 0.35);
-        ctx.lineTo(0, radius * 2);
-        ctx.lineTo(-radius * 0.35, radius * 0.35);
-        ctx.lineTo(-radius * 2, 0);
-        ctx.lineTo(-radius * 0.35, -radius * 0.35);
-        ctx.closePath();
-        ctx.fill();
-
-        // Bright pure white center glint
-        ctx.fillStyle = '#ffffff';
-        ctx.globalAlpha = alpha;
-        ctx.fillRect(-1, -1, 2, 2);
-
-        ctx.restore();
       } else if (p.shape === 'circle') {
-        ctx.save();
         ctx.fillStyle = p.color;
         ctx.globalAlpha = alpha * 0.8;
         ctx.beginPath();
         ctx.arc(Math.floor(p.x), Math.floor(p.y), currentSize, 0, Math.PI * 2);
         ctx.fill();
-        ctx.restore();
       } else if (p.shape === 'ring') {
-        ctx.save();
         ctx.strokeStyle = p.color;
         ctx.lineWidth = 1.2;
         ctx.globalAlpha = alpha * 0.75;
         ctx.beginPath();
         ctx.arc(Math.floor(p.x), Math.floor(p.y), currentSize, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.restore();
       } else if (p.shape === 'heart') {
         const px = Math.floor(p.x);
         const py = Math.floor(p.y);
-        ctx.save();
         ctx.fillStyle = p.color;
         ctx.globalAlpha = alpha * 0.9;
-        // Floating pixel heart
         ctx.fillRect(px - 2, py - 2, 2, 2);
         ctx.fillRect(px + 1, py - 2, 2, 2);
         ctx.fillRect(px - 3, py - 1, 7, 2);
         ctx.fillRect(px - 2, py + 1, 5, 2);
         ctx.fillRect(px - 1, py + 3, 3, 1);
         ctx.fillRect(px, py + 4, 1, 1);
-        ctx.restore();
       } else if (p.shape === 'note') {
         const px = Math.floor(p.x);
         const py = Math.floor(p.y);
-        ctx.save();
         ctx.fillStyle = p.color;
         ctx.globalAlpha = alpha * 0.9;
-        // Floating musical note ♪
-        ctx.fillRect(px - 1, py + 1, 3, 2); // note head
-        ctx.fillRect(px + 1, py - 4, 1, 5); // note stem
-        ctx.fillRect(px + 2, py - 4, 2, 1); // note flag
+        ctx.fillRect(px - 1, py + 1, 3, 2);
+        ctx.fillRect(px + 1, py - 4, 1, 5);
+        ctx.fillRect(px + 2, py - 4, 2, 1);
         ctx.fillRect(px + 3, py - 3, 1, 1);
-        ctx.restore();
       } else {
+        const px = Math.floor(p.x);
+        const py = Math.floor(p.y);
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = alpha;
-        ctx.fillRect(Math.floor(p.x), Math.floor(p.y), currentSize, currentSize);
-        ctx.globalAlpha = 1.0;
+        ctx.globalAlpha = alpha * 0.85;
+        ctx.fillRect(px, py, currentSize, currentSize);
       }
 
       if (p.life >= p.maxLife) {
         this.particles.splice(i, 1);
       }
     }
+    ctx.globalAlpha = 1.0;
   }
 
   // Initialize dynamic atmospheric fog particle pools with distinct depth tiers for parallax
@@ -8136,31 +8168,47 @@ export class GameRenderer {
     const fogG = Math.round(163 * (1 - np) + 34 * np);
     const fogB = Math.round(184 * (1 - np) + 58 * np);
 
-    // Top atmospheric cold haze
-    const topGrad = ctx.createLinearGradient(0, camY, 0, camY + h * 0.35);
-    topGrad.addColorStop(0, `rgba(${fogR}, ${fogG}, ${fogB}, ${(0.16 + 0.12 * np) * intensity})`);
-    topGrad.addColorStop(1, `rgba(${fogR}, ${fogG}, ${fogB}, 0)`);
-    ctx.fillStyle = topGrad;
-    ctx.fillRect(camX, camY, w, h * 0.35);
+    // Top atmospheric cold haze dengan gradien cache (hemat memori GPU)
+    const hazeKey = `${w}_${h}_${Math.round(intensity * 10)}`;
+    if (this.cachedHazeKey !== hazeKey || !this.cachedHazeGrad) {
+      const topGrad = ctx.createLinearGradient(0, 0, 0, h * 0.35);
+      topGrad.addColorStop(0, `rgba(${fogR}, ${fogG}, ${fogB}, ${(0.16 + 0.12 * np) * intensity})`);
+      topGrad.addColorStop(1, `rgba(${fogR}, ${fogG}, ${fogB}, 0)`);
+      this.cachedHazeGrad = topGrad;
+      this.cachedHazeKey = hazeKey;
+    }
+    ctx.save();
+    ctx.translate(0, camY);
+    ctx.fillStyle = this.cachedHazeGrad;
+    ctx.fillRect(camX, 0, w, h * 0.35);
+    ctx.restore();
 
     // Soft atmospheric peripheral mist vignette surrounding the viewport in fog mode
     if (intensity > 0.02) {
+      const innerRadius = Math.round(Math.min(w, h) * 0.35);
+      const outerRadius = Math.round(Math.max(w, h) * 0.72);
+      const vigKey = `${innerRadius}_${outerRadius}_${Math.round(intensity * 10)}`;
+      if (this.cachedVignetteKey !== vigKey || !this.cachedVignetteGrad) {
+        const vignetteGrad = ctx.createRadialGradient(
+          0,
+          0,
+          innerRadius,
+          0,
+          0,
+          outerRadius
+        );
+        vignetteGrad.addColorStop(0, `rgba(${fogR}, ${fogG}, ${fogB}, 0)`);
+        vignetteGrad.addColorStop(1, `rgba(${fogR}, ${fogG}, ${fogB}, ${(0.12 + 0.18 * np) * intensity})`);
+        this.cachedVignetteGrad = vignetteGrad;
+        this.cachedVignetteKey = vigKey;
+      }
       const centerX = camX + w * 0.5;
       const centerY = camY + h * 0.5;
-      const innerRadius = Math.min(w, h) * 0.35;
-      const outerRadius = Math.max(w, h) * 0.72;
-      const vignetteGrad = ctx.createRadialGradient(
-        centerX,
-        centerY,
-        innerRadius,
-        centerX,
-        centerY,
-        outerRadius
-      );
-      vignetteGrad.addColorStop(0, `rgba(${fogR}, ${fogG}, ${fogB}, 0)`);
-      vignetteGrad.addColorStop(1, `rgba(${fogR}, ${fogG}, ${fogB}, ${(0.12 + 0.18 * np) * intensity})`);
-      ctx.fillStyle = vignetteGrad;
-      ctx.fillRect(camX, camY, w, h);
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      ctx.fillStyle = this.cachedVignetteGrad;
+      ctx.fillRect(-w * 0.5, -h * 0.5, w, h);
+      ctx.restore();
     }
 
     // Rolling fog bands across screen with sinusoidal height, drift, and parallax depth

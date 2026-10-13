@@ -65,6 +65,7 @@ export const MiniMap: React.FC<MiniMapProps> = ({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const staticMapCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const [currentZoneName, setCurrentZoneName] = useState<string>('Alun-Alun Nada');
+  const lastZoneNameRef = useRef<string>('Alun-Alun Nada');
   const [hoveredInfo, setHoveredInfo] = useState<HoveredTargetInfo | null>(null);
 
   // Zoom & Pan System:
@@ -252,6 +253,13 @@ export const MiniMap: React.FC<MiniMapProps> = ({
 
     const renderMiniMap = () => {
       tick++;
+      // Optimasi performa untuk perangkat spesifikasi rendah & hemat baterai:
+      // Render peta mini pada kecepatan ideal 30 FPS tanpa membebani GPU perangkat
+      if (tick % 2 !== 0) {
+        animId = requestAnimationFrame(renderMiniMap);
+        return;
+      }
+
       const canvas = canvasRef.current;
       if (!canvas) {
         animId = requestAnimationFrame(renderMiniMap);
@@ -797,23 +805,27 @@ export const MiniMap: React.FC<MiniMapProps> = ({
         ctx.restore();
       }
 
-      // Calculate current zone name dynamically for player
+      // Kalkulasi nama zona terkini secara hemat daya (hanya update state jika zona berganti)
+      let newZone = lang === 'en' ? 'Valley of Harmony' : 'Lembah Nada Rasa';
       if (tileCol >= 26 && tileRow <= 10) {
-        setCurrentZoneName(lang === 'en' ? 'Clock Tower of Harmony' : 'Menara Jam Harmoni');
+        newZone = lang === 'en' ? 'Clock Tower of Harmony' : 'Menara Jam Harmoni';
       } else if (tileCol < 15 && tileRow < 10) {
-        setCurrentZoneName(lang === 'en' ? 'Silent Forest of Reflection' : 'Hutan Sunyi Refleksi');
+        newZone = lang === 'en' ? 'Silent Forest of Reflection' : 'Hutan Sunyi Refleksi';
       } else if (tileCol >= 19 && tileCol <= 25 && tileRow >= 12 && tileRow <= 18) {
-        setCurrentZoneName(lang === 'en' ? "Grandpa Ranu's Wooden Bridge" : 'Jembatan Kayu Ranu');
+        newZone = lang === 'en' ? "Grandpa Ranu's Wooden Bridge" : 'Jembatan Kayu Ranu';
       } else if (tileCol <= 14 && tileRow >= 19) {
-        setCurrentZoneName(lang === 'en' ? 'Hope Garden & Farmland' : 'Kebun Harapan & Pertanian');
+        newZone = lang === 'en' ? 'Hope Garden & Farmland' : 'Kebun Harapan & Pertanian';
       } else if (tileCol >= 20 && tileRow >= 19) {
-        setCurrentZoneName(lang === 'en' ? 'Fresh Fruit Orchard' : 'Perkebunan Buah Segar');
+        newZone = lang === 'en' ? 'Fresh Fruit Orchard' : 'Perkebunan Buah Segar';
       } else if (tileCol >= 4 && tileCol <= 18 && tileRow >= 10 && tileRow <= 21) {
-        setCurrentZoneName(lang === 'en' ? 'Melody Plaza' : 'Alun-Alun Nada Rasa');
+        newZone = lang === 'en' ? 'Melody Plaza' : 'Alun-Alun Nada Rasa';
       } else if (tileCol >= 21 && tileCol <= 25) {
-        setCurrentZoneName(lang === 'en' ? 'Babbling Riverbank' : 'Tepi Sungai Gemericik');
-      } else {
-        setCurrentZoneName(lang === 'en' ? 'Valley of Harmony' : 'Lembah Nada Rasa');
+        newZone = lang === 'en' ? 'Babbling Riverbank' : 'Tepi Sungai Gemericik';
+      }
+
+      if (lastZoneNameRef.current !== newZone) {
+        lastZoneNameRef.current = newZone;
+        setCurrentZoneName(newZone);
       }
 
       animId = requestAnimationFrame(renderMiniMap);

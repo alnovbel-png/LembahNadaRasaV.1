@@ -38,8 +38,6 @@ import { MiniMap } from './components/MiniMap';
 import { StartMenuModal } from './components/StartMenuModal';
 import { PauseMenuModal } from './components/PauseMenuModal';
 import { MissionNotificationModal, MissionStepData } from './components/MissionNotificationModal';
-import { PrologueLoadingScreen } from './components/PrologueLoadingScreen';
-import { MissionLoadingScreen } from './components/MissionLoadingScreen';
 
 // Code-split heavy modals to significantly shrink initial bundle and boost performance on mobile & low-end devices
 const PSEScoreModal = React.lazy(() =>
@@ -351,34 +349,6 @@ export default function App() {
   const [showMissionModal, setShowMissionModal] = useState<boolean>(false);
   const [isNewMissionUnlock, setIsNewMissionUnlock] = useState<boolean>(false);
   const lastStepRef = useRef<number>(1);
-
-  // Dedicated Story & Mission Loading Screen states
-  const [showPrologueLoading, setShowPrologueLoading] = useState<boolean>(false);
-  const [showMissionLoading, setShowMissionLoading] = useState<boolean>(false);
-  const showPrologueLoadingRef = useRef<boolean>(false);
-  const showMissionLoadingRef = useRef<boolean>(false);
-
-  useEffect(() => {
-    showPrologueLoadingRef.current = showPrologueLoading;
-    if (showPrologueLoading) {
-      keysPressed.current = {};
-      joystickVectorRef.current = null;
-      targetPosRef.current = null;
-      rendererRef.current?.clearDestination();
-      playerRef.current.isMoving = false;
-    }
-  }, [showPrologueLoading]);
-
-  useEffect(() => {
-    showMissionLoadingRef.current = showMissionLoading;
-    if (showMissionLoading) {
-      keysPressed.current = {};
-      joystickVectorRef.current = null;
-      targetPosRef.current = null;
-      rendererRef.current?.clearDestination();
-      playerRef.current.isMoving = false;
-    }
-  }, [showMissionLoading]);
   // Intro / Narrator & Petunjuk Awal completion tracker
   const [hasCompletedIntroTutorial, setHasCompletedIntroTutorial] = useState<boolean>(false);
   const hasCompletedIntroTutorialRef = useRef<boolean>(false);
@@ -626,29 +596,17 @@ export default function App() {
     setShowInGameTutorial(false);
     if (isTutorialFirstTimeAfterCharSelectRef.current) {
       isTutorialFirstTimeAfterCharSelectRef.current = false;
-      // Masuk ke loading screen sebelum prolog cerita game
-      setShowPrologueLoading(true);
+      // Masuk ke prolog cerita game dengan dialog narasi awal & kilauan emas
+      setTimeout(() => {
+        setCurrentDialogue(GAME_DIALOGUES.intro_start);
+        rendererRef.current?.addSparkle(
+          playerRef.current.x + 16,
+          playerRef.current.y + 16,
+          '#f59e0b',
+          30
+        );
+      }, 120);
     }
-  }, []);
-
-  // Handler when prologue loading screen completes
-  const handlePrologueLoadingComplete = useCallback(() => {
-    setShowPrologueLoading(false);
-    sound.playCompassChime();
-    setCurrentDialogue(GAME_DIALOGUES.intro_start);
-    rendererRef.current?.addSparkle(
-      playerRef.current.x + 16,
-      playerRef.current.y + 16,
-      '#f59e0b',
-      30
-    );
-  }, []);
-
-  // Handler when new mission loading screen completes
-  const handleMissionLoadingComplete = useCallback(() => {
-    setShowMissionLoading(false);
-    setShowMissionModal(true);
-    sound.playSecretFound();
   }, []);
 
   const handleOpenRegulation = useCallback(
@@ -1552,7 +1510,7 @@ export default function App() {
   // Click / Tap on Floor or NPC/Props to walk there automatically
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (currentDialogue || showSettings || showStartMenu || showPauseMenu || showInGameTutorial || showEndingQuiz || showPrologueLoading || showMissionLoading) return; // In active dialogue, paused settings, tutorial, quiz, loading screens, or start menu, don't walk
+      if (currentDialogue || showSettings || showStartMenu || showPauseMenu || showInGameTutorial || showEndingQuiz) return; // In active dialogue, paused settings, tutorial, quiz, or start menu, don't walk
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -2075,7 +2033,7 @@ export default function App() {
   // Mouse move handler for interactive object hover hints and cursor styling
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (currentDialogue || showSettings || showStartMenu || showInGameTutorial || showEndingQuiz || showPrologueLoading || showMissionLoading) {
+      if (currentDialogue || showSettings || showStartMenu || showInGameTutorial || showEndingQuiz) {
         rendererRef.current?.setHover(null);
         return;
       }
@@ -2239,7 +2197,8 @@ export default function App() {
       if (prev) return prev;
       hasCompletedIntroTutorialRef.current = true;
       setIsNewMissionUnlock(true);
-      setShowMissionLoading(true);
+      setShowMissionModal(true);
+      sound.playSecretFound();
       return true;
     });
   }, []);
@@ -2931,8 +2890,8 @@ export default function App() {
   }, [showEndingQuiz]);
 
   const handleJoystickMove = useCallback((vec: { x: number; y: number } | null) => {
-    // Cannot interact with controls if settings/pause/tutorial/quiz/loading is open (game paused) or in start menu
-    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current || showPrologueLoadingRef.current || showMissionLoadingRef.current) return;
+    // Cannot interact with controls if settings/pause/tutorial/quiz is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current) return;
 
     joystickVectorRef.current = vec;
     if (vec && (Math.abs(vec.x) > 0.05 || Math.abs(vec.y) > 0.05)) {
@@ -2949,8 +2908,8 @@ export default function App() {
     dir: 'up' | 'down' | 'left' | 'right',
     pressed: boolean
   ) => {
-    // Cannot interact with controls if settings/pause/tutorial/quiz/loading is open (game paused) or in start menu
-    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current || showPrologueLoadingRef.current || showMissionLoadingRef.current) return;
+    // Cannot interact with controls if settings/pause/tutorial/quiz is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current) return;
 
     const keyMap = {
       up: 'ArrowUp',
@@ -2981,7 +2940,7 @@ export default function App() {
 
       // 1. Tampilan pemilihan karakter, tutorial in-game, kuis akhir, dan saat mengetik nama:
       // Matikan fungsi kontrol luar agar tidak bentrok
-      if (showStartMenu || showInGameTutorial || showEndingQuiz || isTypingInInput || showPrologueLoading || showMissionLoading) {
+      if (showStartMenu || showInGameTutorial || showEndingQuiz || isTypingInInput) {
         keysPressed.current = {};
         return;
       }
@@ -3144,7 +3103,7 @@ export default function App() {
       // 0. GAME DALAM STATUS PAUSE SAAT MENU PENGATURAN, PAUSE, TUTORIAL, ATAU KUIS TERBUKA:
       // Seluruh simulasi dunia berhenti (pergerakan player, NPC, waypoint, suara langkah).
       // Render frame statis tetap dijalankan agar kanvas tetap tampil stabil di balik dialog jeda.
-      if (showSettingsRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current || showPrologueLoadingRef.current || showMissionLoadingRef.current) {
+      if (showSettingsRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current) {
         p.isMoving = false;
         keysPressed.current = {};
         if (rendererRef.current) {
@@ -3889,55 +3848,57 @@ export default function App() {
           isFreeRoamActive ||
           (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower);
 
-        // Update active sequential quest target for on-screen NPC beacon & off-screen arrow guide
-        if (isMissionCompleted || !hasCompletedIntroTutorialRef.current) {
-          rendererRef.current.setActiveQuestTarget(null);
-        } else if (!zoneStatus.plaza) {
-          const kiki = npcs.find((n) => n.id === 'kiki');
-          rendererRef.current.setActiveQuestTarget({
-            npcId: 'kiki',
-            stepNumber: 1,
-            label: 'Kiki',
-            targetX: (kiki?.x ?? 8) * TILE_SIZE + 16,
-            targetY: (kiki?.y ?? 14) * TILE_SIZE + 16,
-          });
-        } else if (!zoneStatus.bridge) {
-          const ranu = npcs.find((n) => n.id === 'kakek_ranu');
-          rendererRef.current.setActiveQuestTarget({
-            npcId: 'kakek_ranu',
-            stepNumber: 2,
-            label: 'Kakek Ranu',
-            targetX: (ranu?.x ?? 20) * TILE_SIZE + 16,
-            targetY: (ranu?.y ?? 15) * TILE_SIZE + 16,
-          });
-        } else if (!zoneStatus.forest) {
-          const bimo = npcs.find((n) => n.id === 'bimo');
-          rendererRef.current.setActiveQuestTarget({
-            npcId: 'bimo',
-            stepNumber: 3,
-            label: 'Bimo',
-            targetX: (bimo?.x ?? 7) * TILE_SIZE + 16,
-            targetY: (bimo?.y ?? 6) * TILE_SIZE + 16,
-          });
-        } else if (!zoneStatus.tower) {
-          if (clockComponentsCount < 12 && nextMissingClockNPC) {
-            const missingNpc = npcs.find((n) => n.id === nextMissingClockNPC.npcId);
+        // Update active sequential quest target secara periodik untuk menghemat alokasi memori GC
+        if (stepCounterRef.current % 18 === 0) {
+          if (isMissionCompleted || !hasCompletedIntroTutorialRef.current) {
+            rendererRef.current.setActiveQuestTarget(null);
+          } else if (!zoneStatus.plaza) {
+            const kiki = npcs.find((n) => n.id === 'kiki');
             rendererRef.current.setActiveQuestTarget({
-              npcId: nextMissingClockNPC.npcId,
-              stepNumber: 4,
-              label: nextMissingClockNPC.hintName,
-              targetX: (missingNpc?.x ?? nextMissingClockNPC.targetCoords.x) * TILE_SIZE + 16,
-              targetY: (missingNpc?.y ?? nextMissingClockNPC.targetCoords.y) * TILE_SIZE + 16,
+              npcId: 'kiki',
+              stepNumber: 1,
+              label: 'Kiki',
+              targetX: (kiki?.x ?? 8) * TILE_SIZE + 16,
+              targetY: (kiki?.y ?? 14) * TILE_SIZE + 16,
             });
-          } else {
-            const penjaga = npcs.find((n) => n.id === 'penjaga_kabut');
+          } else if (!zoneStatus.bridge) {
+            const ranu = npcs.find((n) => n.id === 'kakek_ranu');
             rendererRef.current.setActiveQuestTarget({
-              npcId: 'penjaga_kabut',
-              stepNumber: 4,
-              label: lang === 'en' ? 'Grandma Wilis' : 'Nenek Wilis',
-              targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
-              targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
+              npcId: 'kakek_ranu',
+              stepNumber: 2,
+              label: 'Kakek Ranu',
+              targetX: (ranu?.x ?? 20) * TILE_SIZE + 16,
+              targetY: (ranu?.y ?? 15) * TILE_SIZE + 16,
             });
+          } else if (!zoneStatus.forest) {
+            const bimo = npcs.find((n) => n.id === 'bimo');
+            rendererRef.current.setActiveQuestTarget({
+              npcId: 'bimo',
+              stepNumber: 3,
+              label: 'Bimo',
+              targetX: (bimo?.x ?? 7) * TILE_SIZE + 16,
+              targetY: (bimo?.y ?? 6) * TILE_SIZE + 16,
+            });
+          } else if (!zoneStatus.tower) {
+            if (clockComponentsCount < 12 && nextMissingClockNPC) {
+              const missingNpc = npcs.find((n) => n.id === nextMissingClockNPC.npcId);
+              rendererRef.current.setActiveQuestTarget({
+                npcId: nextMissingClockNPC.npcId,
+                stepNumber: 4,
+                label: nextMissingClockNPC.hintName,
+                targetX: (missingNpc?.x ?? nextMissingClockNPC.targetCoords.x) * TILE_SIZE + 16,
+                targetY: (missingNpc?.y ?? nextMissingClockNPC.targetCoords.y) * TILE_SIZE + 16,
+              });
+            } else {
+              const penjaga = npcs.find((n) => n.id === 'penjaga_kabut');
+              rendererRef.current.setActiveQuestTarget({
+                npcId: 'penjaga_kabut',
+                stepNumber: 4,
+                label: lang === 'en' ? 'Grandma Wilis' : 'Nenek Wilis',
+                targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
+                targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
+              });
+            }
           }
         }
 
@@ -3993,8 +3954,6 @@ export default function App() {
     setHasCompletedIntroTutorial(false);
     hasCompletedIntroTutorialRef.current = false;
     setShowMissionModal(false);
-    setShowPrologueLoading(false);
-    setShowMissionLoading(false);
     lastStepRef.current = 1;
   };
 
@@ -4282,7 +4241,8 @@ export default function App() {
     if (currentStep !== lastStepRef.current && currentStep <= 4) {
       lastStepRef.current = currentStep;
       setIsNewMissionUnlock(true);
-      setShowMissionLoading(true);
+      setShowMissionModal(true);
+      sound.playSecretFound();
     }
   }, [currentMissionData.step, showStartMenu, hasCompletedIntroTutorial]);
 
@@ -4358,11 +4318,9 @@ export default function App() {
               if (isMissionBannerMinimized) {
                 sound.playMenuSelect();
                 setIsMissionBannerMinimized(false);
-              } else if (isNewMissionUnlock) {
-                setShowMissionLoading(true);
               } else {
-                sound.playMenuSelect();
-                setShowMissionModal(true);
+                setIsNewMissionUnlock(false);
+                handleOpenInfoHub('quests');
               }
             }}
             title={
@@ -4816,25 +4774,9 @@ export default function App() {
         }}
       />
 
-      {/* Loading Screen before Story Prologue */}
-      <PrologueLoadingScreen
-        isOpen={showPrologueLoading}
-        onComplete={handlePrologueLoadingComplete}
-        playerName={playerName}
-        playerAvatar={playerAvatar}
-      />
-
-      {/* Loading Screen before New Mission Guidance Card */}
-      <MissionLoadingScreen
-        isOpen={showMissionLoading}
-        mission={currentMissionData}
-        onComplete={handleMissionLoadingComplete}
-        isNewUnlock={isNewMissionUnlock}
-      />
-
       {/* Prominent Sequential Mission Guidance Pop-Up for Kids */}
       <MissionNotificationModal
-        isOpen={showMissionModal && !showMissionLoading && hasCompletedIntroTutorial && !showStartMenu && !currentDialogue}
+        isOpen={showMissionModal && hasCompletedIntroTutorial && !showStartMenu && !currentDialogue}
         onClose={() => setShowMissionModal(false)}
         mission={currentMissionData}
         onNavigateToTarget={() => {
