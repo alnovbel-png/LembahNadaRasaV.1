@@ -67,9 +67,7 @@ const CaptureMomentModal = React.lazy(() =>
 const InGameTutorialModal = React.lazy(() =>
   import('./components/InGameTutorialModal').then((m) => ({ default: m.InGameTutorialModal }))
 );
-const EndingQuizModal = React.lazy(() =>
-  import('./components/EndingQuizModal').then((m) => ({ default: m.EndingQuizModal }))
-);
+
 import { Compass, ChevronDown, Minus } from 'lucide-react';
 import { isMobileOrTabletDevice, useIsPortrait } from './utils/device';
 import { PSE_ACHIEVEMENTS } from './game/constants';
@@ -2775,7 +2773,7 @@ export default function App() {
       }
 
       // Trigger Climax Ending Modal ONLY AFTER the player finishes reading the final dialogue!
-      // Shows the fullscreen core understanding quiz test first
+      // Shows the ending celebration and certificate modal directly
       if (
         finishedId === 'ending_summary_perfect' ||
         finishedId === 'ending_summary_resilient'
@@ -2789,7 +2787,7 @@ export default function App() {
           30
         );
         setTimeout(() => {
-          setShowEndingQuiz(true);
+          setShowEnding(true);
         }, 400);
       } else if (pendingAllBadgesCelebrationRef.current) {
         setTimeout(() => {
@@ -2826,7 +2824,7 @@ export default function App() {
       completeIntroTutorial();
     }
 
-    // If closed during climax ending, trigger fullscreen quiz test smoothly
+    // If closed during climax ending, trigger ending modal directly
     if (
       closedId === 'ending_summary_perfect' ||
       closedId === 'ending_summary_resilient'
@@ -2840,7 +2838,7 @@ export default function App() {
         30
       );
       setTimeout(() => {
-        setShowEndingQuiz(true);
+        setShowEnding(true);
       }, 400);
     } else if (pendingAllBadgesCelebrationRef.current) {
       setTimeout(() => {
@@ -4515,7 +4513,7 @@ export default function App() {
           isSettingsOpen={showSettings}
           onToggleMiniMap={() => setShowMiniMap((prev) => !prev)}
           isMiniMapOpen={showMiniMap}
-          onOpenEnding={() => setShowEndingQuiz(true)}
+          onOpenEnding={() => setShowEnding(true)}
           isGameCompleted={
             isFreeRoamActive ||
             (zoneStatus.plaza && zoneStatus.bridge && zoneStatus.forest && zoneStatus.tower)
@@ -4651,7 +4649,7 @@ export default function App() {
             }}
             onOpenEndingCertificate={() => {
               setShowInfoHub(false);
-              setShowEndingQuiz(true);
+              setShowEnding(true);
             }}
           />
         )}
@@ -4716,34 +4714,11 @@ export default function App() {
             isOpen={showEnding}
             onRestart={handleRestart}
             onFreeRoam={handleFreeRoam}
-            onOpenQuiz={() => {
-              setShowEnding(false);
-              setShowEndingQuiz(true);
-            }}
             stats={stats}
             branchTag={branchChoice}
             endingType={endingType}
             playerName={playerName}
             playTimeSeconds={gameTimeSeconds}
-          />
-        )}
-
-        {/* Fullscreen Core Game Understanding Quiz Modal (5 Pertanyaan Pilihan Ganda A, B, C) */}
-        {showEndingQuiz && (
-          <EndingQuizModal
-            isOpen={showEndingQuiz}
-            playerName={playerName}
-            empathyScore={stats.empathyScore}
-            resonanceUses={stats.resonanceUses}
-            onProceedToEnding={() => {
-              setShowEndingQuiz(false);
-              setShowEnding(true);
-            }}
-            onClose={() => setShowEndingQuiz(false)}
-            onFreeRoam={() => {
-              setShowEndingQuiz(false);
-              handleFreeRoam();
-            }}
           />
         )}
 

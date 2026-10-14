@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, Sparkles, CheckCircle, Download, Compass, X, BookOpen } from 'lucide-react';
+import { RotateCcw, Sparkles, CheckCircle, Download, Compass, X } from 'lucide-react';
 import { PlayerStats } from '../types/game';
 import { downloadCertificateAsJpg } from '../utils/certificateGenerator';
 import { useLanguage } from '../game/localization';
@@ -21,7 +21,6 @@ export const EndingModal: React.FC<EndingModalProps> = ({
   isOpen,
   onRestart,
   onFreeRoam,
-  onOpenQuiz,
   stats,
   branchTag,
   endingType,
@@ -185,17 +184,7 @@ export const EndingModal: React.FC<EndingModalProps> = ({
             <span>{lang === 'en' ? 'Free Roam Mode' : 'Mode Jelajah Bebas (Free Roam)'}</span>
           </button>
 
-          {/* Ujian Pemahaman Kuis Akhir */}
-          {onOpenQuiz && (
-            <button
-              id="open-ending-quiz-btn"
-              onClick={onOpenQuiz}
-              className="px-4 sm:px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-750 text-amber-300 border border-amber-400/60 font-bold text-xs sm:text-sm flex items-center gap-2 shadow transition hover:scale-105 active:scale-95 cursor-pointer"
-            >
-              <BookOpen className="w-4 h-4 text-amber-400" />
-              <span>{lang === 'en' ? 'Review Final Quiz' : 'Tes Pemahaman Cerita'}</span>
-            </button>
-          )}
+
 
           {/* Restart / Mainkan Lagi */}
           <button
