@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { sound, useAudioSettings } from '../utils/audio';
 import { CharacterPortrait } from './CharacterPortrait';
 import { useLanguage } from '../game/localization';
+import startMenuBg from '../assets/images/start_menu_bg.svg';
 
 export type MenuView = 'main' | 'play';
 
@@ -169,7 +170,13 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
   return (
     <div
       id="start-menu-backdrop"
-      className="fixed inset-0 z-50 flex flex-col justify-between bg-[#0a0d18]/85 backdrop-blur-[2px] p-2 sm:p-5 md:p-6 overflow-y-auto animate-backdrop-fade-in select-none start-menu-modal-root"
+      style={{
+        backgroundImage: `radial-gradient(ellipse at center, rgba(10, 13, 24, 0.35) 0%, rgba(10, 13, 24, 0.78) 100%), url(${startMenuBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+      className="fixed inset-0 z-50 flex flex-col justify-between bg-[#0a0d18] p-2 sm:p-5 md:p-6 overflow-y-auto animate-backdrop-fade-in select-none start-menu-modal-root"
     >
       {/* 1. TOP BAR */}
       <div className="w-full flex items-center justify-between z-20 max-w-5xl mx-auto px-1 sm:px-2 shrink-0 start-menu-topbar">

@@ -725,4 +725,10 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   }
 }
 
+/* Main Menu Backdrop Wallpaper */
+#start-menu-backdrop {
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
 
