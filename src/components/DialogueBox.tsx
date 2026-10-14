@@ -519,11 +519,11 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           <div className="absolute -bottom-12 -right-12 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
           {/* Prologue header tag */}
-          <div className="dialogue-top-banner flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-pixel text-[10px] sm:text-xs tracking-wider shadow-xs">
+          <div className="dialogue-top-banner flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 font-pixel text-[8px] sm:text-[9.5px] tracking-wider shadow-xs">
             <IconSparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '6s' }} />
             <span>{lang === 'en' ? 'STORY PROLOGUE' : 'PROLOG CERITA'}</span>
             <span className="text-amber-500">•</span>
-            <span className="text-amber-200 font-bold">
+            <span className="text-amber-200">
               {sentenceIndex + 1} / {sentences.length}
             </span>
           </div>
@@ -534,8 +534,13 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             className="min-h-[50px] sm:min-h-[76px] flex items-center justify-center animate-fade-in duration-500 px-2 sm:px-3 select-text"
           >
             <p
-              style={{ fontFamily: 'Galindo, cursive, sans-serif' }}
-              className="text-[14px] sm:text-[16px] leading-relaxed text-amber-50 font-medium tracking-wide text-center"
+              style={{
+                fontFamily: 'Galindo, cursive, sans-serif',
+                fontSize: '15px',
+                lineHeight: '1.4',
+                textAlign: 'justify',
+              }}
+              className="text-[12.5px] sm:text-[15px] leading-relaxed text-amber-50 font-medium tracking-wide text-justify"
             >
               "{narratorSentence}"
             </p>
@@ -559,16 +564,16 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
           {/* Minimalist Continue action bar */}
           <div className="dialogue-bottom-bar flex items-center justify-between w-full pt-1.5 sm:pt-2 border-t border-slate-800/80">
-            <span className="text-[9.5px] sm:text-xs text-slate-400 font-pixel">
+            <span className="text-[7.5px] sm:text-[9px] text-slate-500 font-pixel">
               {lang === 'en' ? 'Press Space or Enter' : 'Tekan Spasi atau Enter'}
             </span>
             <button
               id="narrator-continue-btn"
               onClick={handleNextSentence}
-              className="dialogue-action-btn px-4 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-pixel text-[10.5px] sm:text-xs font-bold shadow-[0_3px_15px_rgba(245,158,11,0.4)] active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer hover:shadow-[0_4px_20px_rgba(245,158,11,0.6)]"
+              className="dialogue-action-btn px-3.5 sm:px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-pixel text-[8.5px] sm:text-[10px] font-bold shadow-[0_3px_15px_rgba(245,158,11,0.4)] active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer hover:shadow-[0_4px_20px_rgba(245,158,11,0.6)]"
             >
               <span>{lang === 'en' ? 'Continue' : 'Lanjut'}</span>
-              <span className="text-xs leading-none">➔</span>
+              <span className="text-[10px] leading-none">➔</span>
             </button>
           </div>
         </div>
@@ -635,7 +640,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
         <div className="dialogue-header flex items-center justify-between border-b border-slate-800 pb-1.5 sm:pb-2">
           <div className="flex items-center gap-1.5 sm:gap-2">
             <span
-              className={`font-pixel text-xs sm:text-sm font-bold tracking-wider ${
+              className={`font-pixel text-[10px] sm:text-xs font-bold tracking-wider ${
                 feedbackStatus === 'wrong'
                   ? 'text-rose-300'
                   : feedbackStatus === 'correct'
@@ -647,14 +652,14 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             >
               {processedSpeaker}
             </span>
-            <span className="font-pixel text-[9.5px] sm:text-[10px] bg-slate-800/90 text-slate-300 px-2 py-0.5 rounded border border-slate-700">
+            <span className="font-pixel text-[7.5px] sm:text-[9px] bg-slate-800/90 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">
               {processedRole}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
             {dialogue.emotionAura && (
-              <div className="flex items-center gap-1 text-[9.5px] sm:text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-pixel hover:scale-105 hover:shadow-[0_0_10px_rgba(245,158,11,0.35)] transition-all">
+              <div className="flex items-center gap-1 text-[7.5px] sm:text-[9px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-pixel hover:scale-105 hover:shadow-[0_0_10px_rgba(245,158,11,0.35)] transition-all">
                 <IconSparkles className="w-3 h-3 text-amber-400" />
                 <span>AURA: {dialogue.emotionAura.toUpperCase()}</span>
               </div>
@@ -663,7 +668,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               id="dialogue-header-close-btn"
               onClick={handleExitOrSkip}
               disabled={feedbackStatus !== 'idle'}
-              className="px-2.5 py-0.5 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-500/50 text-[9.5px] sm:text-[10px] font-pixel transition-all duration-200 hover:scale-105 hover:shadow-[0_0_12px_rgba(244,63,94,0.45)] active:scale-95 flex items-center gap-1 cursor-pointer disabled:opacity-40"
+              className="px-2 py-0.5 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-200 border border-slate-700 hover:border-rose-500/50 text-[7.5px] sm:text-[9px] font-pixel transition-all duration-200 hover:scale-105 hover:shadow-[0_0_12px_rgba(244,63,94,0.45)] active:scale-95 flex items-center gap-1 cursor-pointer disabled:opacity-40"
               title="Tutup / Lewati Dialog (ESC)"
             >
               <span>{isTyping ? ui.skip : ui.closeEsc}</span>
@@ -684,7 +689,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               <div className="bg-indigo-950/90 border border-indigo-500/50 rounded-lg p-1.5 sm:p-2 text-indigo-200 flex items-start gap-1.5 sm:gap-2 shadow-inner hover:scale-[1.015] hover:shadow-[0_0_14px_rgba(99,102,241,0.35)] transition-all duration-200">
                 <IconEye className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
                 <div className="min-w-0">
-                  <p className="font-pixel text-[10.5px] sm:text-xs leading-relaxed italic text-indigo-100 break-words">
+                  <p className="font-pixel text-[8.5px] sm:text-[10px] leading-relaxed italic text-indigo-100 break-words">
                     "{processedThought}"
                   </p>
                 </div>
@@ -693,7 +698,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
 
             {/* Sentence Progress Indicator when there are multiple sentences */}
             {sentences.length > 1 && (
-              <div className="flex items-center justify-end text-[9.5px] sm:text-[10px] font-pixel text-slate-400 pb-0.5">
+              <div className="flex items-center justify-end text-[7.5px] sm:text-[8.5px] font-pixel text-slate-400 pb-0.5">
                 <div className="flex items-center gap-1">
                   {sentences.map((_, idx) => (
                     <span
@@ -717,8 +722,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               style={{
                 fontFamily: 'Galindo, cursive, sans-serif',
                 fontSize: '15px',
+                lineHeight: '1.4',
+                textAlign: 'justify',
               }}
-              className="text-slate-100 min-h-[40px] sm:min-h-[46px] tracking-normal break-words select-text leading-snug sm:leading-normal"
+              className="text-slate-100 min-h-[40px] sm:min-h-[46px] tracking-normal break-words select-text leading-snug sm:leading-normal text-justify"
             >
               {displayedText}
               {isTyping && <span className="inline-block w-2 h-3.5 bg-amber-400 ml-1.5 animate-pulse align-middle" />}
@@ -728,7 +735,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               <button
                 id="dialogue-fast-forward-btn"
                 onClick={finishTypingInstantly}
-                className="self-end text-[9.5px] sm:text-[10px] font-pixel text-amber-400 hover:text-amber-200 bg-slate-900/80 hover:bg-amber-950/40 px-2.5 py-0.5 rounded border border-amber-500/30 hover:border-amber-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all duration-200 flex items-center gap-1 cursor-pointer font-bold"
+                className="self-end text-[7.5px] sm:text-[8px] font-pixel text-amber-400 hover:text-amber-200 bg-slate-900/80 hover:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/30 hover:border-amber-400 hover:scale-105 hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] active:scale-95 transition-all duration-200 flex items-center gap-1 cursor-pointer"
               >
                 <span>{ui.showAllText}</span>
               </button>
@@ -743,7 +750,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
               <div className="flex flex-col gap-1.5 sm:gap-2 animate-fade-in-slide-up">
                 <div className="flex items-center justify-between">
                   <span
-                    className={`font-pixel text-[10px] sm:text-xs font-semibold flex items-center gap-1.5 ${
+                    className={`font-pixel text-[8px] sm:text-[9px] font-semibold flex items-center gap-1.5 ${
                       feedbackStatus === 'wrong'
                         ? 'text-rose-300'
                         : feedbackStatus === 'correct'
@@ -751,18 +758,18 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         : 'text-amber-400'
                     }`}
                   >
-                    <IconMessage className="w-3.5 h-3.5" />
+                    <IconMessage className="w-3 h-3" />
                     {(wrongChoiceIdsRef.current[dialogue.id]?.length ?? 0) > 0
                       ? (lang === 'en'
                           ? `Try choosing a wiser response (1-${dialogue.choices.length} or click):`
-                          : `Coba pilih respon lain yang lebih bijak (1-${dialogue.choices.length} atau klik):`)
+                          : `Coba pilih respons lain yang lebih bijak (1-${dialogue.choices.length} atau klik):`)
                       : (lang === 'en'
                           ? `Choose Your Response (1-${dialogue.choices.length} or click):`
-                          : `Pilih Responmu (1-${dialogue.choices.length} atau klik):`)}
+                          : `Pilih Responsmu (1-${dialogue.choices.length} atau klik):`)}
                   </span>
                   <button
                     onClick={() => setShowChoices(false)}
-                    className="text-[9.5px] sm:text-[10px] font-pixel text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
+                    className="text-[7.5px] sm:text-[9px] font-pixel text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
                     title="Kembali membaca ucapan karakter"
                   >
                     {ui.reReadText}
@@ -799,10 +806,10 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         id={`choice-${choice.id}`}
                         onClick={() => handleChoiceClick(choice)}
                         disabled={feedbackStatus !== 'idle'}
-                        className={`dialogue-choice-btn w-full text-left px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg font-pixel text-[10.5px] sm:text-xs transition-transform duration-75 flex items-center gap-2 cursor-pointer active:scale-[0.97] group disabled:cursor-not-allowed ${btnStyle}`}
+                        className={`dialogue-choice-btn w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg font-pixel text-[8.5px] sm:text-[10px] transition-transform duration-75 flex items-center gap-2 cursor-pointer active:scale-[0.97] group disabled:cursor-not-allowed ${btnStyle}`}
                       >
                         <span
-                          className={`rounded px-1.5 py-0.5 text-[10.5px] font-pixel shrink-0 transition-colors ${
+                          className={`rounded px-1.5 py-0.5 text-[8.5px] font-pixel shrink-0 transition-colors ${
                             isSelected && feedbackStatus === 'wrong'
                               ? 'bg-red-500 text-white border border-red-300'
                               : isSelected && feedbackStatus === 'correct'
@@ -819,10 +826,11 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         <span
                           style={{
                             fontFamily: 'Galindo, cursive, sans-serif',
-                            fontSize: '14px',
-                            lineHeight: '18px',
+                            fontSize: '15px',
+                            lineHeight: '1.4',
+                            textAlign: 'justify',
                           }}
-                          className="flex-1"
+                          className="flex-1 text-justify"
                         >
                           {formatName(choice.text)}
                         </span>
@@ -831,16 +839,16 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                             title={
                               lang === 'en'
                                 ? 'Heart Compass warning: This response option is incorrect or unwise'
-                                : 'Peringatan Kompas Hati: Opsi respon ini salah atau kurang bijak'
+                                : 'Peringatan Kompas Hati: Opsi respons ini salah atau kurang bijak'
                             }
-                            className="text-[9px] sm:text-[10px] font-pixel bg-rose-500/20 text-rose-300 border border-rose-400/80 px-2 py-0.5 rounded flex items-center gap-1 shrink-0 ml-1 animate-pulse"
+                            className="text-[7px] sm:text-[8px] font-pixel bg-rose-500/20 text-rose-300 border border-rose-400/80 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 ml-1 animate-pulse"
                           >
                             <IconAlert className="w-2.5 h-2.5 text-rose-400 shrink-0" />
-                            <span>{lang === 'en' ? 'Wrong Option' : 'Respon Salah'}</span>
+                            <span>{lang === 'en' ? 'Wrong Option' : 'Respons Kurang Tepat'}</span>
                           </span>
                         )}
                         {isPreviouslyWrong && !isCompassFlaggedWrong && (
-                          <span className="text-[9px] sm:text-[10px] bg-red-950/90 text-rose-300 border border-red-600/60 px-2 py-0.5 rounded font-bold shrink-0 ml-1">
+                          <span className="text-[7px] sm:text-[8px] bg-red-950/90 text-rose-300 border border-red-600/60 px-1.5 py-0.5 rounded font-bold shrink-0 ml-1">
                             {lang === 'en' ? 'Incorrect' : 'Kurang Tepat'}
                           </span>
                         )}
@@ -852,21 +860,21 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
             ) : (
               isTyping ? (
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-                  <div className="flex items-center gap-1.5 text-slate-400 font-pixel text-[10px] sm:text-xs">
+                  <div className="flex items-center gap-1.5 text-slate-400 font-pixel text-[8px] sm:text-[9px]">
                     <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping shrink-0" />
                     <span>{lang === 'en' ? 'Listening to character speaking...' : 'Mendengarkan ucapan karakter...'}</span>
                   </div>
                   <button
                     id="dialogue-finish-typing-btn"
                     onClick={finishTypingInstantly}
-                    className="dialogue-action-btn w-full sm:w-auto px-3.5 py-2 rounded-lg font-pixel text-[10.5px] sm:text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center justify-center gap-1.5 transition-transform duration-75 active:scale-95 cursor-pointer shrink-0 touch-manipulation font-bold"
+                    className="dialogue-action-btn w-full sm:w-auto px-3 py-1.5 rounded-lg font-pixel text-[8.5px] sm:text-[9px] bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 flex items-center justify-center gap-1.5 transition-transform duration-75 active:scale-95 cursor-pointer shrink-0 touch-manipulation"
                   >
                     <span>{lang === 'en' ? '⚡ Skip Text Animation' : '⚡ Lewati Animasi Teks'}</span>
                   </button>
                 </div>
               ) : !isLastSentence ? (
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-slate-900/80 border border-amber-500/40 rounded-xl p-2 sm:p-2.5 animate-fade-in shadow-xs">
-                  <div className="flex items-center gap-1.5 text-slate-300 font-pixel text-[10px] sm:text-xs">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-slate-900/80 border border-amber-500/40 rounded-xl p-1.5 sm:p-2.5 animate-fade-in shadow-xs">
+                  <div className="flex items-center gap-1.5 text-slate-300 font-pixel text-[8px] sm:text-[9px]">
                     <span>
                       {lang === 'en'
                         ? 'Click Continue to read the next sentence'
@@ -876,17 +884,17 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   <button
                     id="dialogue-next-sentence-btn"
                     onClick={handleNextSentence}
-                    className="dialogue-action-btn w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[11px] sm:text-xs bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)] flex items-center justify-center gap-1.5 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+                    className="dialogue-action-btn w-full sm:w-auto px-4 py-1.5 rounded-xl font-pixel font-bold text-[8.5px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_15px_rgba(245,158,11,0.5)] flex items-center justify-center gap-1.5 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                   >
-                    <span>{lang === 'en' ? 'CONTINUE' : 'LANJUT'}</span>
+                    <span>{lang === 'en' ? 'CONTINUE' : 'LANJUTKAN'}</span>
                     <span className="text-xs">▶</span>
                   </button>
                 </div>
               ) : (
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-amber-950/30 border border-amber-500/40 rounded-xl p-2 sm:p-2.5 animate-fade-in">
-                  <div className="flex items-center gap-1.5 text-amber-200 font-pixel text-[10px] sm:text-xs">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-amber-950/30 border border-amber-500/40 rounded-xl p-1.5 sm:p-2.5 animate-fade-in">
+                  <div className="flex items-center gap-1.5 text-amber-200 font-pixel text-[8px] sm:text-[9px]">
                     <IconMessage className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>{lang === 'en' ? 'Finished reading. Click button to choose your response:' : 'Teks selesai dibaca. Klik tombol untuk memilih respon tanggapanmu:'}</span>
+                    <span>{lang === 'en' ? 'Finished reading. Click button to choose your response:' : 'Teks selesai dibaca. Klik tombol untuk menentukan respons tanggapanmu:'}</span>
                   </div>
                   <button
                     id="dialogue-show-choices-btn"
@@ -894,9 +902,9 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                       sound.playMenuSelect();
                       setShowChoices(true);
                     }}
-                    className="dialogue-action-btn w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[11px] sm:text-xs bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.6)] flex items-center justify-center gap-2 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+                    className="dialogue-action-btn w-full sm:w-auto px-4 py-2 rounded-xl font-pixel font-bold text-[8.5px] sm:text-[10px] bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 shadow-[0_0_18px_rgba(245,158,11,0.6)] flex items-center justify-center gap-2 transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
                   >
-                    <span>{lang === 'en' ? 'CHOOSE RESPONSE' : 'KLIK PILIH RESPON'}</span>
+                    <span>{lang === 'en' ? 'CHOOSE RESPONSE' : 'KLIK PILIH RESPONS'}</span>
                     <span className="text-xs">💬 ▶</span>
                   </button>
                 </div>
@@ -905,7 +913,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           ) : (
             <div className="flex justify-between items-center gap-2">
               {sentences.length > 1 ? (
-                <div className="flex items-center gap-1.5 text-slate-400 font-pixel text-[10px] sm:text-xs">
+                <div className="flex items-center gap-1.5 text-slate-400 font-pixel text-[8px] sm:text-[9px]">
                   <span className="text-amber-300 font-bold">
                     {sentenceIndex + 1}/{sentences.length}
                   </span>
@@ -923,7 +931,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   <button
                     id="dialogue-skip-regulation-btn"
                     onClick={onSkipRegulation}
-                    className="dialogue-action-btn px-3 py-1.5 rounded-lg font-pixel text-[9.5px] sm:text-xs text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-transform duration-75 border border-slate-700 cursor-pointer active:scale-95 touch-manipulation font-bold"
+                    className="dialogue-action-btn px-2.5 py-1.5 rounded-lg font-pixel text-[7.5px] sm:text-[9px] text-slate-400 hover:text-slate-200 hover:bg-slate-800 hover:scale-105 hover:shadow-[0_0_10px_rgba(148,163,184,0.3)] transition-transform duration-75 border border-slate-700 cursor-pointer active:scale-95 touch-manipulation"
                     title={lang === 'en' ? 'Skip exercise and continue to next conversation' : 'Lewati latihan dan langsung lanjut ke percakapan berikutnya'}
                   >
                     {lang === 'en' ? 'Skip Exercise ▶' : 'Lewati Latihan ▶'}
@@ -932,7 +940,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                 <button
                   id="dialogue-next-btn"
                   onClick={handleNextSentence}
-                  className={`dialogue-action-btn px-4 py-2 rounded-lg font-pixel font-bold text-[11px] sm:text-xs flex items-center gap-1.5 shadow transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer ${
+                  className={`dialogue-action-btn px-3.5 py-1.5 rounded-lg font-pixel font-bold text-[8.5px] sm:text-[10px] flex items-center gap-1.5 shadow transition-transform duration-75 hover:scale-105 active:scale-95 cursor-pointer ${
                     isEndingDialogue && !isTyping && isLastSentence
                       ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.55)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
                       : isRegulationTrigger && !isTyping && isLastSentence

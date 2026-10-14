@@ -58,15 +58,15 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
       number: 1,
       title: lang === 'en' ? 'Calm Balloon Rhythm' : 'Irama Balon Tenang',
       subtitle: lang === 'en' ? '4-4-4 Box Breathing' : 'Napas Berirama 4-4-4',
-      category: lang === 'en' ? 'Breath Rhythm & Balance' : 'Ritme & Keseimbangan Napas',
+      category: lang === 'en' ? 'Breath Rhythm & Balance' : 'Ritme dan Keseimbangan Napas',
       description:
         lang === 'en'
           ? 'Hold breath for exactly 4s to inflate balloon to the ring, keep cursor in vibrating green zone for 4s, then exhale smoothly.'
-          : 'Tahan napas tepat 4 detik agar balon menyentuh cincin target, jaga kursor di zona hijau yang bergetar 4 detik, lalu hembuskan perlahan.',
+          : 'Tahan napas tepat 4 detik agar balon menyentuh cincin target, jaga kursor di zona hijau yang bergetar 4 detik, lalu embuskan perlahan.',
       mechanics:
         lang === 'en'
           ? 'Rhythmic Hold · Stabilizer Track · Deflation Timing'
-          : 'Tahan Berirama · Jalur Penstabil · Waktu Hembus',
+          : 'Tahan Berirama · Jalur Penstabil · Waktu Embus',
       duration: lang === 'en' ? '4s Per Phase' : '4 Detik per Fase',
       icon: <Wind className="w-6 h-6 text-cyan-300" />,
       borderTheme: 'border-cyan-500/40 hover:border-cyan-400',
@@ -79,7 +79,7 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
       id: 'grounding',
       number: 2,
       title: lang === 'en' ? 'Sensory Magnifying Glass' : 'Kaca Pembesar Indra',
-      subtitle: lang === 'en' ? '5-4-3-2-1 Sensory Grounding' : 'Grounding 5-4-3-2-1',
+      subtitle: lang === 'en' ? '5-4-3-2-1 Sensory Grounding' : 'Pembumian Pancaindra 5-4-3-2-1',
       category: lang === 'en' ? 'Moving Object Search (Hidden Object)' : 'Pencarian Objek Bergerak (Hidden Object)',
       description:
         lang === 'en'
@@ -101,8 +101,8 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
       id: 'stop',
       number: 3,
       title: lang === 'en' ? 'S-T-O-P Reaction Brake' : 'Rem Reaksi S-T-O-P',
-      subtitle: lang === 'en' ? 'Inhibit Impulsive Reaction' : 'Cegah Respon Impulsif',
-      category: lang === 'en' ? 'Quick Time Event & Letter Tracing' : 'Quick Time Event & Tracing Huruf',
+      subtitle: lang === 'en' ? 'Inhibit Impulsive Reaction' : 'Cegah Respons Impulsif',
+      category: lang === 'en' ? 'Quick Time Event & Letter Tracing' : 'Quick Time Event dan Penelusuran Huruf',
       description:
         lang === 'en'
           ? 'Chase and smash the bouncing red STOP button! Freeze time then trace letters S, T, O, and P sequentially.'
@@ -110,7 +110,7 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
       mechanics:
         lang === 'en'
           ? 'Smash Bouncing Button · Time-Freeze · Letter Tracing'
-          : 'Tekan Tombol Pantul · Pembekuan Waktu · Tracing Huruf',
+          : 'Tekan Tombol Pantul · Pembekuan Waktu · Penelusuran Huruf',
       duration: lang === 'en' ? '4 Consecutive Letters' : '4 Huruf Berurutan',
       icon: <ShieldAlert className="w-6 h-6 text-rose-300" />,
       borderTheme: 'border-rose-500/40 hover:border-rose-400',

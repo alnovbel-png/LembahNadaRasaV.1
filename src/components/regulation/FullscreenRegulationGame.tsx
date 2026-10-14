@@ -89,11 +89,11 @@ export const FullscreenRegulationGame: React.FC<FullscreenRegulationGameProps> =
       successMessage:
         lang === 'en'
           ? 'All 5 sensory objects captured through the mist! Mind re-centers on the present moment and dispels anxiety.'
-          : 'Kelima objek panca indera berhasil ditangkap menembus kabut! Pikiran kembali fokus pada saat ini dan bebas dari cemas berlebih.',
+          : 'Kelima objek pancaindra berhasil ditangkap menembus kabut! Pikiran kembali fokus pada saat ini dan bebas dari cemas berlebih.',
     },
     stop: {
       number: 3,
-      title: lang === 'en' ? 'S-T-O-P Reaction Brake & Tracing' : 'Rem Reaksi & Tracing S-T-O-P',
+      title: lang === 'en' ? 'S-T-O-P Reaction Brake & Tracing' : 'Rem Reaksi dan Penelusuran S-T-O-P',
       subtitle: lang === 'en' ? 'Quick Time Event & Time Freeze Mechanics' : 'Mekanik Quick Time Event & Time Freeze',
       icon: <ShieldAlert className="w-5 h-5 text-rose-300" />,
       themeColor: 'rose',

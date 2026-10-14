@@ -103,7 +103,7 @@ export const ENDING_QUIZ_QUESTIONS: QuizQuestion[] = [
     ],
     correctKey: 'C',
     explanationId:
-      'Di bawah permukaan gunung es emosi, kata-kata kasar atau kemarahan tampak luar sebenarnya bersumber dari perasaan rentan di dalam lubuk hati: rasa takut diabaikan, kelelahan, dan kerinduan untuk dimengerti.',
+      'Di bawah permukaan gunung es emosi, kata-kata kasar atau kemarahan tampak luar sebenarnya bersumber dari perasaan rentan di dalam lubuk hati: rasa takut diabaikan, kelelahan, dan kerinduan untuk dipahami.',
     explanationEn:
       'Beneath the surface of the emotional iceberg, harsh words or outward anger are rooted in vulnerable inner emotions: fear of being ignored, exhaustion, and longing to be appreciated.',
     badgeHintId: 'Pelajaran: Konsep Gunung Es Emosi (Iceberg)',
@@ -684,7 +684,7 @@ export const EndingQuizModal: React.FC<EndingQuizModalProps> = ({
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <span>
-                    <strong>Kekuatan Validasi & Empati:</strong> Warga menyerahkan komponen jam karena merasa didengarkan dan dimengerti dengan tulus.
+                    <strong>Kekuatan Validasi dan Empati:</strong> Warga menyerahkan komponen jam karena merasa didengarkan dan dipahami dengan tulus.
                   </span>
                 </li>
                 <li className="flex items-start gap-2">

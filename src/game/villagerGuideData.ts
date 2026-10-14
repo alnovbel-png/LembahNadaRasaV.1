@@ -60,7 +60,7 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
     locationCoordinates: { x: 8, y: 13 },
     locationHint: 'Berada di sebelah barat air mancur alun-alun, di samping tiang lentera desa.',
     personality: 'Cekatan, penuh dedikasi, namun rentan dilanda panik bila rencana terganggu tiba-tiba.',
-    favoriteQuote: '"Satu hembusan napas tenang bernilai seribu surat yang teratur kembali."',
+    favoriteQuote: '"Satu embusan napas tenang bernilai seribu surat yang teratur kembali."',
     sprite: 'squirrel',
     bio: 'Kiki adalah kurir pos cilik yang mengantarkan surat persahabatan ke seluruh penjuru Lembah Nada Rasa. Ketika kabut abu-abu tiba dan angin kencang menerbangkan tas posnya, ia panik luar biasa.',
     surfaceEmotion: {
@@ -86,7 +86,7 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
       steps: [
         'Tarik napas perlahan lewat hidung selama 4 detik, rasakan perut mengembang seperti balon.',
         'Tahan napas sejenak selama 4 detik dengan lembut dan rileks.',
-        'Hembuskan perlahan lewat mulut selama 6 detik seolah menerbangkan balon udara ke langit biru.',
+        'Embuskan perlahan lewat mulut selama 6 detik seolah menerbangkan balon udara ke langit biru.',
       ],
     },
     dialogueTips: {
@@ -341,14 +341,14 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
     selConcept: {
       pillar: 'Manajemen Diri (Self-Management)',
       title: 'Lingkaran Kendali (Circle of Control)',
-      insight: 'Memisahkan hal di dalam kendali (respon, perkataan, usaha kita) vs di luar kendali (pikiran orang lain, cuaca, kejadian masa lalu) adalah kunci pencegah kelelahan mental.',
+      insight: 'Memisahkan hal di dalam kendali (respons, perkataan, usaha kita) vs di luar kendali (pikiran orang lain, cuaca, kejadian masa lalu) adalah kunci pencegah kelelahan mental.',
     },
     calmTechnique: {
       name: 'Teknik Pemilahan Lingkaran Kendali',
       icon: '🧘🏻‍♂️',
       summary: 'Menggambar dua lingkaran imajiner untuk melepaskan beban yang bukan urusan kita.',
       steps: [
-        'Bayangkan lingkaran kecil di dadamu: ini adalah kata-katamu, usahamu, dan responmu.',
+        'Bayangkan lingkaran kecil di dadamu: ini adalah kata-katamu, usahamu, dan responsmu.',
         'Bayangkan lingkaran besar di luar: ini adalah perkataan orang lain dan peristiwa yang terjadi.',
         'Tarik napas dan katakan: "Aku hanya bertanggung jawab atas lingkaranku sendiri."',
       ],
@@ -553,11 +553,11 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
     calmTechnique: {
       name: 'Jeda 90 Detik & Taruh Kapak',
       icon: '🪓',
-      summary: 'Menghentikan respon verbal seketika saat dada mulai terasa panas mendidih.',
+      summary: 'Menghentikan respons verbal seketika saat dada mulai terasa panas mendidih.',
       steps: [
         'Katakan pada diri sendiri: "STOP! Dadaku sedang panas, jangan bicara apa-apa dulu."',
         'Mundurlah tiga langkah dari orang yang memancing emosimu.',
-        'Minum segelas air putih dan hembuskan napas panjang hingga hitungan sepuluh.',
+        'Minum segelas air putih dan embuskan napas panjang hingga hitungan sepuluh.',
       ],
     },
     dialogueTips: {
@@ -711,7 +711,7 @@ export const VILLAGER_GUIDE_DATA: Record<string, VillagerGuideProfile> = {
       icon: '🐔',
       summary: 'Melihat sisi lucu dari kejadian yang membuatmu kesal agar tidak terlalu tegang.',
       steps: [
-        'Tarik napas, lalu hembuskan sambil membuat suara senyuman "Hi-hi-hi" atau "Ha-ha-ha".',
+        'Tarik napas, lalu embuskan sambil membuat suara senyuman "Hi-hi-hi" atau "Ha-ha-ha".',
         'Bayangkan masalahmu disuarakan oleh ayam berkacamata yang sedang berkokok ceria.',
         'Rasakan ketegangan di bahumu runtuh dan berubah menjadi rasa geli yang melegakan.',
       ],

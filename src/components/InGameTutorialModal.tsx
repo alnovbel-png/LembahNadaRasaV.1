@@ -293,13 +293,13 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                           <MousePointer className="w-4 h-4 text-cyan-400" />
                           <span>Klik Lantai (Pathfinding)</span>
                         </div>
-                        <p className="text-xs text-slate-300 mb-2 leading-relaxed">
+                        <p className="text-[11px] text-slate-400 mb-2">
                           {lang === 'en'
                             ? 'Click or tap anywhere on the ground. Character will auto-walk around obstacles!'
                             : 'Klik atau ketuk di lantai mana saja. Karakter akan otomatis berjalan menghindari rintangan!'}
                         </p>
                       </div>
-                      <div className="p-2 rounded-lg bg-cyan-950/50 border border-cyan-800/60 text-center text-xs text-cyan-200 font-medium">
+                      <div className="p-2 rounded-lg bg-cyan-950/50 border border-cyan-800/60 text-center text-[10.5px] text-cyan-200 font-medium">
                         ✨ {lang === 'en' ? 'Smart Auto-Pathfinding' : 'Navigasi Otomatis Pintar'}
                       </div>
                     </div>
@@ -307,17 +307,17 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                     {/* Mobile Joystick */}
                     <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-col justify-between">
                       <div>
-                        <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-emerald-300 mb-2">
+                        <div className="flex items-center gap-2 text-xs font-bold text-emerald-300 mb-2">
                           <Smartphone className="w-4 h-4 text-emerald-400" />
                           <span>Joystick Layar Sentuh (HP)</span>
                         </div>
-                        <p className="text-xs text-slate-300 mb-2 leading-relaxed">
+                        <p className="text-[11px] text-slate-400 mb-2">
                           {lang === 'en'
                             ? 'Touch and drag the analog thumbstick at the bottom-left corner on mobile/tablet.'
                             : 'Sentuh dan geser analog virtual di sudut kiri bawah layar HP atau tablet.'}
                         </p>
                       </div>
-                      <div className="p-2 rounded-lg bg-emerald-950/50 border border-emerald-800/60 text-center text-xs text-emerald-200 font-medium">
+                      <div className="p-2 rounded-lg bg-emerald-950/50 border border-emerald-800/60 text-center text-[10.5px] text-emerald-200 font-medium">
                         🕹️ {lang === 'en' ? 'Analog 360° Joystick' : 'Joystick Analog 360°'}
                       </div>
                     </div>
@@ -414,7 +414,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                           <span>🌊</span>
                           <span>Emosi Permukaan (Tampak Luar)</span>
                         </div>
-                        <p className="text-slate-400 text-xs sm:text-[13px] leading-relaxed">
+                        <p className="text-slate-400 text-[11px] leading-relaxed">
                           Teriakan, bentakan, atau mengurung diri karena lelah. Banyak orang salah paham karena hanya melihat kemarahan di luar.
                         </p>
                       </div>
@@ -424,13 +424,13 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                           <span>🧭</span>
                           <span>Suara Hati Terdalam (Terbaca Kompas)</span>
                         </div>
-                        <p className="text-slate-300 text-xs sm:text-[13px] leading-relaxed">
+                        <p className="text-slate-300 text-[11px] leading-relaxed">
                           Rasa lelah bekerja keras sendirian, takut disalahkan, atau butuh didengarkan. Berikan respon penuh empati untuk memulihkan hubungan!
                         </p>
                       </div>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-400/40 text-xs text-amber-200 flex items-center gap-2">
+                    <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-400/40 text-[11px] text-amber-200 flex items-center gap-2">
                       <Compass className="w-4 h-4 text-amber-400 shrink-0" />
                       <span>
                         {lang === 'en'
@@ -468,17 +468,17 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                         <span>🌬️</span>
                         <span>Napas Kotak Balon (4-4-4)</span>
                       </div>
-                      <p className="text-xs text-slate-300 leading-relaxed">
-                        Tarik napas 4 detik saat balon mengembang, tahan 4 detik, lalu hembuskan perlahan 4 detik untuk meredakan detak jantung panik.
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
+                        Tarik napas 4 detik saat balon mengembang, tahan 4 detik, lalu embuskan perlahan 4 detik untuk meredakan detak jantung panik.
                       </p>
                     </div>
 
                     <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/40 space-y-1">
                       <div className="font-bold text-amber-300 flex items-center gap-1.5">
                         <span>👁️</span>
-                        <span>Grounding Panca Indra 5-4-3-2-1</span>
+                        <span>Pembumian Pancaindra (Grounding) 5-4-3-2-1</span>
                       </div>
-                      <p className="text-xs text-slate-300 leading-relaxed">
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
                         Mengamati 5 benda di sekitar, 4 sentuhan, 3 suara, 2 aroma, dan 1 rasa untuk menghentikan serangan cemas.
                       </p>
                     </div>
@@ -488,7 +488,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                         <span>🛑</span>
                         <span>Jeda Darurat STOP</span>
                       </div>
-                      <p className="text-xs text-slate-300 leading-relaxed">
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
                         Berhenti sejenak, Tarik napas, Observasi perasaan, dan Melangkah bijak dengan pikiran yang jernih.
                       </p>
                     </div>
@@ -498,13 +498,13 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                         <span>⚡</span>
                         <span>Goyang Lepas Beban</span>
                       </div>
-                      <p className="text-xs text-slate-300 leading-relaxed">
+                      <p className="text-[11px] text-slate-300 leading-relaxed">
                         Ketuk layar mengikuti ritme untuk mengibaskan ketegangan otot bahu dan lengan yang kaku saat cemas.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-400 flex items-center justify-between">
+                  <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
                     <span>💡 Kamu bisa berlatih relaksasi kapan saja dengan menekan Tombol R pada keyboard.</span>
                     <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300 font-bold shrink-0">Tombol R</span>
                   </div>

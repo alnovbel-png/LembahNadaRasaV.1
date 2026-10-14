@@ -295,7 +295,7 @@ export const RhythmicBreathingGame: React.FC<RhythmicBreathingGameProps> = ({
         🎈 <strong>{lang === 'en' ? 'Calm Balloon Rhythm (4-4-4)' : 'Irama Balon Tenang (4-4-4)'}</strong>:{' '}
         {lang === 'en'
           ? 'Hold the button for 4s to inflate the balloon, balance your breath in the green zone for 4s, then exhale gently!'
-          : 'Tahan tombol 4 detik untuk mengisi balon, seimbangkan napas di zona hijau 4 detik, lalu hembuskan perlahan!'}
+          : 'Tahan tombol 4 detik untuk mengisi balon, seimbangkan napas di zona hijau 4 detik, lalu embuskan perlahan!'}
       </div>
 
       {/* Main Interactive Stage */}

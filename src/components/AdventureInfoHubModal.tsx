@@ -395,7 +395,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
                       {lang === 'en'
                         ? 'Download official document containing every dialogue line from 13 NPCs, thoughts, empathy choices, and interactions with objects and animals.'
-                        : 'Unduh dokumen lengkap berisi seluruh kalimat dari 13 NPC, gelembung isi hati, opsi pilihan respon empati (PSE), serta interaksi dengan benda dan satwa.'}
+                        : 'Unduh dokumen lengkap berisi seluruh kalimat dari 13 NPC, gelembung isi hati, opsi pilihan respons empati (PSE), serta interaksi dengan benda dan satwa.'}
                     </p>
                     {pdfSuccess && (
                       <p className="text-[11px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1.5 animate-in fade-in">
@@ -461,7 +461,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                   <p className="text-xs text-slate-300 leading-relaxed">
                     {lang === 'en'
                       ? 'Inhale for 4 seconds as a gentle balloon expands in your belly, hold for 4 seconds, and exhale slowly for 4 seconds to calm your heart rate and clear racing thoughts.'
-                      : 'Tarik napas perlahan lewat hidung 4 detik (bayangkan balon mengembang di perut), tahan 4 detik di zona tenang, lalu hembuskan perlahan 4 detik untuk meredakan kecemasan seketika.'}
+                      : 'Tarik napas perlahan lewat hidung 4 detik (bayangkan balon mengembang di perut), tahan 4 detik di zona tenang, lalu embuskan perlahan 4 detik untuk meredakan kecemasan seketika.'}
                   </p>
                   <button
                     onClick={() => {
@@ -481,7 +481,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     className="font-pixel text-[12px] text-teal-200 font-bold"
                     style={{ fontSize: '12px' }}
                   >
-                    {lang === 'en' ? '5-4-3-2-1 Sensory Grounding' : 'Grounding Panca Indra 5-4-3-2-1'}
+                    {lang === 'en' ? '5-4-3-2-1 Sensory Grounding' : 'Pembumian Pancaindra 5-4-3-2-1'}
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     Kembalikan kesadaran ke saat ini dengan mencari 5 benda terlihat, 4 sentuhan, 3 suara, 2 aroma, dan 1 rasa syukur.
@@ -555,7 +555,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     {lang === 'en' ? '10 SEL Competency Badges' : '10 Lencana Kompetensi Sosial-Emosional'}
                   </h3>
                   <p className="text-xs text-slate-400">
-                    {lang === 'en' ? 'Collect badges by making wise empathetic choices.' : 'Raih lencana melalui pilihan respon berempati dan regulasi diri.'}
+                    {lang === 'en' ? 'Collect badges by making wise empathetic choices.' : 'Raih lencana melalui pilihan respons berempati dan regulasi diri.'}
                   </p>
                 </div>
                 <div className="font-pixel text-xs px-3 py-1 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-400/50">

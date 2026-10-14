@@ -41,7 +41,7 @@ export function getPSETierDetails(score: number, lang: 'id' | 'en') {
       description:
         lang === 'en'
           ? 'Growing in emotional literacy. Beginning to see beneath harsh outbursts and notice others’ unspoken vulnerabilities.'
-          : 'Mulai memahami literasi emosi. Mampu melihat bahwa teriakan atau amarah warga seringkali berakar dari kelelahan, rasa takut, atau butuh didengarkan.',
+          : 'Mulai memahami literasi emosi. Mampu melihat bahwa teriakan atau amarah warga sering kali berakar dari kelelahan, rasa takut, atau butuh didengarkan.',
     };
   }
   return {

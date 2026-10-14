@@ -526,7 +526,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                         <p className="text-[10.5px] text-slate-300">
                           {lang === 'en'
                             ? 'Every villager holds a piece of the Clock Tower. Empathize with their emotions to restore the clock!'
-                            : 'Setiap warga desa memegang satu komponen Menara Jam. Pahami emosi tiap NPC dan berikan respon yang benar untuk memulihkannya!'}
+                            : 'Setiap warga desa memegang satu komponen Menara Jam. Pahami emosi tiap NPC dan berikan respons yang benar untuk memulihkannya!'}
                         </p>
                       </div>
                     </div>
@@ -677,7 +677,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                 <p className="text-[11px] text-slate-300 leading-relaxed">
                   {lang === 'en'
                     ? 'Dialogue choices carry empathy weights. Selecting responses independently without compass guidance awards the full dialogue score. Exploring surroundings with the compass is free; the -5 point deduction only applies when choosing a response with compass assistance.'
-                    : 'Setiap pilihan dialog memiliki bobot nilai empati. Memilih respon secara mandiri tanpa kompas akan mendapatkan skor utuh. Menggunakan kompas untuk melihat sekitar bebas tanpa potongan skor; pemotongan -5 poin hanya berlaku saat memilih respon dialog dengan bantuan kompas aktif.'}
+                    : 'Setiap pilihan dialog memiliki bobot nilai empati. Memilih respons secara mandiri tanpa kompas akan mendapatkan skor utuh. Menggunakan kompas untuk melihat sekitar bebas tanpa potongan skor; pemotongan -5 poin hanya berlaku saat memilih respons dialog dengan bantuan kompas aktif.'}
                 </p>
                 <div className="flex items-center justify-between pt-1 border-t border-slate-800 text-[10.5px] text-slate-400">
                   <span>
