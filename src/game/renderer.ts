@@ -851,12 +851,13 @@ export class GameRenderer {
 
     ctx.restore();
 
-    // 11. Screen-space Directional Guide Arrow for Active Mission Target (Off-screen indicator for children)
-    this.drawOffScreenQuestArrow(cameraX, cameraY, viewportW, viewportH, zoom);
+    // 11. Directional Guide Gold Arrow for Active Mission Target placed near main character
+    this.drawQuestGuideArrow(player, cameraX, cameraY, viewportW, viewportH, zoom);
   }
 
-  // Draw bouncing off-screen directional arrow pointing toward active mission target
-  private drawOffScreenQuestArrow(
+  // Draw directional gold chevron arrow (desain awal) orbiting near the main character without obstructing player or name tag
+  private drawQuestGuideArrow(
+    player: Player,
     camX: number,
     camY: number,
     viewportW: number,
@@ -865,83 +866,102 @@ export class GameRenderer {
   ) {
     if (!this.activeQuestTarget || this.isAllMissionsCompleted) return;
 
-    const { targetX, targetY, stepNumber, label } = this.activeQuestTarget;
+    const { targetX, targetY } = this.activeQuestTarget;
     const ctx = this.ctx;
 
-    // Convert target world position to screen coordinates
-    const screenX = (targetX - camX) * zoom;
-    const screenY = (targetY - camY) * zoom;
+    // Player center in world coordinates
+    const px = player.x + 16;
+    const py = player.y + 16;
 
-    // Margin padding from screen edges
-    const marginX = 64;
-    const marginY = 64;
-    const isOffScreen =
-      screenX < marginX ||
-      screenX > viewportW - marginX ||
-      screenY < marginY ||
-      screenY > viewportH - marginY;
+    // World distance and angle from player to active quest target
+    const dxWorld = targetX - px;
+    const dyWorld = targetY - py;
+    const distWorld = Math.hypot(dxWorld, dyWorld);
+    const angle = Math.atan2(dyWorld, dxWorld);
 
-    if (!isOffScreen) return; // Target is visible inside view, no arrow needed
+    // If player is already within talking/interaction range (< 32px), no directional arrow needed
+    if (distWorld < 32) return;
+
+    // Convert player position to screen coordinates
+    const playerScreenX = (px - camX) * zoom;
+    const playerScreenY = (py - camY) * zoom;
+
+    // Safe distance from player center:
+    // When pointing upward (sin(angle) < 0), name tag is located at py - 14 with height 15 (around -14 to -29).
+    // In screen pixels, name banner reaches up to ~32px above player center.
+    // We adjust orbit radius dynamically: extra clearance when pointing upward so it never touches the name tag!
+    // Safe distance from player center:
+    // When pointing upward (sin(angle) < 0), name tag is located at py - 14 with height 15 (around -14 to -29).
+    // In screen pixels, name banner reaches up to ~32px above player center.
+    // We adjust orbit radius dynamically: extra clearance when pointing upward so it never touches the name tag!
+    const isPointingUp = Math.sin(angle) < -0.2;
+    const baseRadius = isPointingUp ? 74 : 54;
+    const pulseBounce = Math.sin(this.tickCount * 0.18) * 4.5;
+    const orbitDist = baseRadius + pulseBounce;
+
+    const rawArrowX = playerScreenX + Math.cos(angle) * orbitDist;
+    const rawArrowY = playerScreenY + Math.sin(angle) * orbitDist;
+    const arrowX = Math.max(22, Math.min(viewportW - 22, rawArrowX));
+    const arrowY = Math.max(22, Math.min(viewportH - 22, rawArrowY));
 
     ctx.save();
-    const centerX = viewportW / 2;
-    const centerY = viewportH / 2;
-    const dx = screenX - centerX;
-    const dy = screenY - centerY;
-    const angle = Math.atan2(dy, dx);
 
-    // Clamp indicator position to screen edges
-    const radiusX = viewportW / 2 - marginX;
-    const radiusY = viewportH / 2 - marginY;
-    const clampX = Math.max(marginX, Math.min(viewportW - marginX, centerX + Math.cos(angle) * radiusX));
-    const clampY = Math.max(marginY + 25, Math.min(viewportH - marginY - 15, centerY + Math.sin(angle) * radiusY));
-
-    const bounce = Math.sin(this.tickCount * 0.18) * 4;
-    const arrowX = clampX + Math.cos(angle) * bounce;
-    const arrowY = clampY + Math.sin(angle) * bounce;
-
-    // Glowing aura behind arrow
-    ctx.fillStyle = 'rgba(245, 158, 11, 0.45)';
+    // 1. Subtle warm golden aura behind the arrow for contrast on dark and light grounds
+    const glowRadius = 20 + Math.sin(this.tickCount * 0.2) * 2.5;
+    const radialGlow = ctx.createRadialGradient(arrowX, arrowY, 2, arrowX, arrowY, glowRadius);
+    radialGlow.addColorStop(0, 'rgba(251, 191, 36, 0.7)');
+    radialGlow.addColorStop(0.5, 'rgba(245, 158, 11, 0.3)');
+    radialGlow.addColorStop(1, 'rgba(245, 158, 11, 0)');
+    ctx.fillStyle = radialGlow;
     ctx.beginPath();
-    ctx.arc(arrowX, arrowY, 18, 0, Math.PI * 2);
+    ctx.arc(arrowX, arrowY, glowRadius, 0, Math.PI * 2);
     ctx.fill();
 
-    // Mission direction pill
-    const missionWord = this.lang === 'en' ? 'MISSION' : 'MISI';
-    const indicatorText = `➔ ${missionWord} ${stepNumber}: ${label}`;
-    ctx.font = 'bold 9px "Pixelify Sans", "Press Start 2P", monospace';
-    const textW = ctx.measureText(indicatorText).width;
-
-    ctx.fillStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.rect(arrowX - textW / 2 - 8, arrowY - 26, textW + 16, 18);
-    ctx.fill();
-    ctx.strokeStyle = '#fef08a';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.fillStyle = '#0f172a';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(indicatorText, arrowX, arrowY - 17);
-
-    // Pointer arrow tip pointing toward target direction
+    // 2. Original chevron arrow shape pointing forward along angle (enlarged for optimal visibility)
     ctx.save();
-    ctx.translate(arrowX, arrowY + 2);
+    ctx.translate(arrowX, arrowY);
     ctx.rotate(angle);
-    ctx.fillStyle = '#f59e0b';
-    ctx.strokeStyle = '#fef08a';
-    ctx.lineWidth = 1.5;
+
+    // Drop shadow (desain awal)
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
     ctx.beginPath();
-    ctx.moveTo(11, 0);
-    ctx.lineTo(-6, -7);
-    ctx.lineTo(-2, 0);
-    ctx.lineTo(-6, 7);
+    ctx.moveTo(16 + 2, 2);
+    ctx.lineTo(-9 + 2, -10 + 2);
+    ctx.lineTo(-3 + 2, 2);
+    ctx.lineTo(-9 + 2, 10 + 2);
+    ctx.closePath();
+    ctx.fill();
+
+    // Golden gradient fill (desain awal berkilau)
+    const arrowGrad = ctx.createLinearGradient(-9, 0, 16, 0);
+    arrowGrad.addColorStop(0, '#f59e0b');
+    arrowGrad.addColorStop(0.45, '#fbbf24');
+    arrowGrad.addColorStop(1, '#fef08a');
+    ctx.fillStyle = arrowGrad;
+
+    // Dark solid border outline
+    ctx.strokeStyle = '#78350f';
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'miter';
+
+    // Original chevron shape geometry (scaled up gracefully):
+    // Tip at (16, 0), top wing at (-9, -10), inner notch at (-3, 0), bottom wing at (-9, 10)
+    ctx.beginPath();
+    ctx.moveTo(16, 0);
+    ctx.lineTo(-9, -10);
+    ctx.lineTo(-3, 0);
+    ctx.lineTo(-9, 10);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
-    ctx.restore();
 
+    // Inner bright center glint
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(2, 0, 1.8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
     ctx.restore();
   }
 
