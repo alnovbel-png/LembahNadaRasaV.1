@@ -325,8 +325,6 @@ export default function App() {
   const [showPauseMenu, setShowPauseMenu] = useState<boolean>(false);
   const showPauseMenuRef = useRef<boolean>(false);
   const [showEnding, setShowEnding] = useState<boolean>(false);
-  const [showEndingQuiz, setShowEndingQuiz] = useState<boolean>(false);
-  const showEndingQuizRef = useRef<boolean>(false);
   const [showAllBadgesCelebration, setShowAllBadgesCelebration] = useState<boolean>(false);
   const hasSeenAllBadgesCelebrationRef = useRef<boolean>(false);
   const pendingAllBadgesCelebrationRef = useRef<boolean>(false);
@@ -362,12 +360,11 @@ export default function App() {
     if (showStartMenu) return;
 
     const timer = setInterval(() => {
-      // Jeda timer saat pause menu, modal kuis, tutorial, atau pengaturan aktif
+      // Jeda timer saat pause menu, tutorial, atau pengaturan aktif
       if (
         showSettingsRef.current ||
         showPauseMenuRef.current ||
-        showInGameTutorialRef.current ||
-        showEndingQuizRef.current
+        showInGameTutorialRef.current
       ) {
         return;
       }
@@ -787,7 +784,7 @@ export default function App() {
         rendererRef.current.setActiveQuestTarget({
           npcId: 'penjaga_kabut',
           stepNumber: 4,
-          label: lang === 'en' ? 'Grandma Wilis' : 'Nenek Wilis',
+          label: 'Nenek Wilis',
           targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
           targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
         });
@@ -889,23 +886,19 @@ export default function App() {
         }
 
         setCompassToast(
-          lang === 'en'
-            ? '🧭 Heart Compass active! In dialogue, it reveals wrong options (-5 SEL Score penalty on response).'
-            : '🧭 Kompas Hati aktif! Saat memilih respon, kompas menandai opsi salah (-5 skor pada respon).'
+          '🧭 Kompas Hati aktif! Saat memilih respon, kompas menandai opsi salah (-5 skor pada respon).'
         );
         setTimeout(() => setCompassToast(null), 3500);
       } else {
         sound.playMenuSelect();
         setCompassToast(
-          lang === 'en'
-            ? 'Heart Compass standby. Press [C] or button to reactivate.'
-            : 'Kompas Hati nonaktif. Tekan [C] atau tombol untuk mengaktifkan kembali.'
+          'Kompas Hati nonaktif. Tekan tombol C atau tombol kompas untuk mengaktifkan kembali.'
         );
         setTimeout(() => setCompassToast(null), 2500);
       }
       return next;
     });
-  }, [lang]);
+  }, []);
 
   // Check collision against map tiles & bridge obstacle
   // ignoreDecorative: if true, allows passing through decorative elements (trees, plants, benches)
@@ -1530,7 +1523,7 @@ export default function App() {
   // Click / Tap on Floor or NPC/Props to walk there automatically
   const handleCanvasClick = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (currentDialogue || showSettings || showStartMenu || showPauseMenu || showInGameTutorial || showEndingQuiz) return; // In active dialogue, paused settings, tutorial, quiz, or start menu, don't walk
+      if (currentDialogue || showSettings || showStartMenu || showPauseMenu || showInGameTutorial) return; // In active dialogue, paused settings, tutorial, or start menu, don't walk
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -2053,7 +2046,7 @@ export default function App() {
   // Mouse move handler for interactive object hover hints and cursor styling
   const handleCanvasMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
-      if (currentDialogue || showSettings || showStartMenu || showInGameTutorial || showEndingQuiz) {
+      if (currentDialogue || showSettings || showStartMenu || showInGameTutorial) {
         rendererRef.current?.setHover(null);
         return;
       }
@@ -2245,36 +2238,24 @@ export default function App() {
         setScoreToast({
           delta: finalScoreDelta,
           message: wasCompassActive
-            ? (lang === 'en'
-                ? `🧭 +${finalScoreDelta} SEL Score (Compass Assisted: -5 from full ${rawScore})`
-                : `🧭 +${finalScoreDelta} Skor PSE (Bantuan Kompas: -5 dari skor utuh ${rawScore})`)
-            : (lang === 'en'
-                ? `💖 +${finalScoreDelta} SEL Score (Full Independent Score!)`
-                : `💖 +${finalScoreDelta} Skor PSE (Skor Utuh Tanpa Bantuan Kompas!)`),
+            ? `🧭 +${finalScoreDelta} Skor PSE (Bantuan Kompas: -5 dari skor utuh ${rawScore})`
+            : `💖 +${finalScoreDelta} Skor PSE (Skor Utuh Tanpa Bantuan Kompas!)`,
         });
         setTimeout(() => setScoreToast(null), 3500);
       } else if (finalScoreDelta === 0) {
         setScoreToast({
           delta: 0,
           message: wasCompassActive
-            ? (lang === 'en'
-                ? `🧭 +0 SEL Score (Compass Assisted: -5 from ${rawScore})`
-                : `🧭 +0 Skor PSE (Bantuan Kompas: -5 dari skor ${rawScore})`)
-            : (lang === 'en'
-                ? `+0 SEL Score`
-                : `+0 Skor PSE`),
+            ? `🧭 +0 Skor PSE (Bantuan Kompas: -5 dari skor ${rawScore})`
+            : `+0 Skor PSE`,
         });
         setTimeout(() => setScoreToast(null), 3500);
       } else {
         setScoreToast({
           delta: finalScoreDelta,
           message: wasCompassActive
-            ? (lang === 'en'
-                ? `⚠️ ${finalScoreDelta} SEL Score (Compass Assisted: -5 from ${rawScore})`
-                : `⚠️ ${finalScoreDelta} Skor PSE (Bantuan Kompas: -5 dari skor ${rawScore})`)
-            : (lang === 'en'
-                ? `⚠️ ${finalScoreDelta} SEL Score (Non-Empathetic Response)`
-                : `⚠️ ${finalScoreDelta} Skor PSE (Respon Kurang Empati)`),
+            ? `⚠️ ${finalScoreDelta} Skor PSE (Bantuan Kompas: -5 dari skor ${rawScore})`
+            : `⚠️ ${finalScoreDelta} Skor PSE (Respon Kurang Empati)`,
         });
         setTimeout(() => setScoreToast(null), 3500);
       }
@@ -2479,11 +2460,7 @@ export default function App() {
       setInventory((prev) => {
         if (prev.some((i) => i.id === newItem.id)) return prev;
         sound.playSecretFound();
-        setCompassToast(
-          lang === 'en'
-            ? `🌟 Acquired Clock Component: ${newItem.name}!`
-            : `🌟 Mendapatkan Komponen Jam: ${newItem.name}!`
-        );
+        setCompassToast(`🌟 Mendapatkan Komponen Jam: ${newItem.name}!`);
         setTimeout(() => setCompassToast(null), 4000);
         return [...prev, newItem];
       });
@@ -2898,20 +2875,9 @@ export default function App() {
     }
   }, [showInGameTutorial]);
 
-  useEffect(() => {
-    showEndingQuizRef.current = showEndingQuiz;
-    if (showEndingQuiz) {
-      keysPressed.current = {};
-      joystickVectorRef.current = null;
-      targetPosRef.current = null;
-      rendererRef.current?.clearDestination();
-      playerRef.current.isMoving = false;
-    }
-  }, [showEndingQuiz]);
-
   const handleJoystickMove = useCallback((vec: { x: number; y: number } | null) => {
-    // Cannot interact with controls if settings/pause/tutorial/quiz is open (game paused) or in start menu
-    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current) return;
+    // Cannot interact with controls if settings/pause/tutorial is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current) return;
 
     joystickVectorRef.current = vec;
     if (vec && (Math.abs(vec.x) > 0.05 || Math.abs(vec.y) > 0.05)) {
@@ -2928,8 +2894,8 @@ export default function App() {
     dir: 'up' | 'down' | 'left' | 'right',
     pressed: boolean
   ) => {
-    // Cannot interact with controls if settings/pause/tutorial/quiz is open (game paused) or in start menu
-    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current) return;
+    // Cannot interact with controls if settings/pause/tutorial is open (game paused) or in start menu
+    if (showSettingsRef.current || showStartMenuRef.current || showPauseMenuRef.current || showInGameTutorialRef.current) return;
 
     const keyMap = {
       up: 'ArrowUp',
@@ -2958,9 +2924,9 @@ export default function App() {
         target?.tagName === 'TEXTAREA' ||
         Boolean(target?.isContentEditable);
 
-      // 1. Tampilan pemilihan karakter, tutorial in-game, kuis akhir, dan saat mengetik nama:
+      // 1. Tampilan pemilihan karakter, tutorial in-game, dan saat mengetik nama:
       // Matikan fungsi kontrol luar agar tidak bentrok
-      if (showStartMenu || showInGameTutorial || showEndingQuiz || isTypingInInput) {
+      if (showStartMenu || showInGameTutorial || isTypingInInput) {
         keysPressed.current = {};
         return;
       }
@@ -3120,10 +3086,10 @@ export default function App() {
     const gameLoop = () => {
       const p = playerRef.current;
 
-      // 0. GAME DALAM STATUS PAUSE SAAT MENU PENGATURAN, PAUSE, TUTORIAL, ATAU KUIS TERBUKA:
+      // 0. GAME DALAM STATUS PAUSE SAAT MENU PENGATURAN, PAUSE, ATAU TUTORIAL TERBUKA:
       // Seluruh simulasi dunia berhenti (pergerakan player, NPC, waypoint, suara langkah).
       // Render frame statis tetap dijalankan agar kanvas tetap tampil stabil di balik dialog jeda.
-      if (showSettingsRef.current || showPauseMenuRef.current || showInGameTutorialRef.current || showEndingQuizRef.current) {
+      if (showSettingsRef.current || showPauseMenuRef.current || showInGameTutorialRef.current) {
         p.isMoving = false;
         keysPressed.current = {};
         if (rendererRef.current) {
@@ -3914,7 +3880,7 @@ export default function App() {
               rendererRef.current.setActiveQuestTarget({
                 npcId: 'penjaga_kabut',
                 stepNumber: 4,
-                label: lang === 'en' ? 'Grandma Wilis' : 'Nenek Wilis',
+                label: 'Nenek Wilis',
                 targetX: (penjaga?.x ?? 29) * TILE_SIZE + 16,
                 targetY: (penjaga?.y ?? 8) * TILE_SIZE + 16,
               });
@@ -4217,42 +4183,24 @@ export default function App() {
         if (!isAll12Collected && nextMissingClockNPC) {
           return {
             ...q,
-            title:
-              lang === 'en'
-                ? `Mission 4: Collect 12 Clock Pieces (${clockComponentsCount}/12)`
-                : `Misi 4: Kumpulkan 12 Komponen Jam (${clockComponentsCount}/12)`,
+            title: `Misi 4: Kumpulkan 12 Komponen Jam (${clockComponentsCount}/12)`,
             targetNPC: nextMissingClockNPC.npcId,
-            description:
-              lang === 'en'
-                ? `Collect all 12 clock components from village friends (${clockComponentsCount}/12 collected, ${12 - clockComponentsCount} remaining). Meet ${nextMissingClockNPC.hintName} to receive the next clock component!`
-                : `Kumpulkan seluruh 12 komponen jam dari para warga desa (${clockComponentsCount}/12 terkumpul, tersisa ${12 - clockComponentsCount} komponen lagi). Temui ${nextMissingClockNPC.hintName} untuk mendapatkan komponen jam berikutnya!`,
-            stepHint:
-              lang === 'en'
-                ? `Approach ${nextMissingClockNPC.hintName} to receive the next clock piece (${clockComponentsCount}/12)!`
-                : `Temui ${nextMissingClockNPC.hintName} untuk mendapatkan komponen jam berikutnya (${clockComponentsCount}/12)!`,
+            description: `Kumpulkan seluruh 12 komponen jam dari para warga desa (${clockComponentsCount}/12 terkumpul, tersisa ${12 - clockComponentsCount} komponen lagi). Temui ${nextMissingClockNPC.hintName} untuk mendapatkan komponen jam berikutnya!`,
+            stepHint: `Temui ${nextMissingClockNPC.hintName} untuk mendapatkan komponen jam berikutnya (${clockComponentsCount}/12)!`,
           };
         } else {
           return {
             ...q,
-            title:
-              lang === 'en'
-                ? 'Mission 4: Light Up Harmony Clock Tower (12/12)'
-                : 'Misi 4: Nyalakan Menara Jam Harmoni (12/12)',
+            title: 'Misi 4: Nyalakan Menara Jam Harmoni (12/12)',
             targetNPC: 'penjaga_kabut',
-            description:
-              lang === 'en'
-                ? 'All 12 clock pieces are assembled! Bring them to Grandma Wilis at the Clock Tower summit to light up the tower and restore harmony 100%!'
-                : 'Seluruh 12 komponen jam telah terkumpul lengkap! Bawa ke Nenek Wilis di Menara Jam untuk merakit dan menyalakan kembali Menara Jam Harmoni!',
-            stepHint:
-              lang === 'en'
-                ? 'Meet Grandma Wilis at the Clock Tower (12/12 Pieces Ready)!'
-                : 'Temui Nenek Wilis di Menara Jam (12/12 Komponen Siap)!',
+            description: 'Seluruh 12 komponen jam telah terkumpul lengkap! Bawa ke Nenek Wilis di Menara Jam untuk merakit dan menyalakan kembali Menara Jam Harmoni!',
+            stepHint: 'Temui Nenek Wilis di Menara Jam (12/12 Komponen Siap)!',
           };
         }
       }
       return q;
     });
-  }, [quests, clockComponentsCount, nextMissingClockNPC, lang]);
+  }, [quests, clockComponentsCount, nextMissingClockNPC]);
 
   // Auto celebratory popup when completing previous step and unlocking next sequential mission
 
@@ -4344,12 +4292,8 @@ export default function App() {
                 handleOpenInfoHub('quests');
               }
             }}
-            title={
-              lang === 'en'
-                ? `Mission: ${currentMissionData.hint}`
-                : `Misi: ${currentMissionData.hint}`
-            }
-            aria-label={lang === 'en' ? 'Open Mission Progress' : 'Buka Progres Misi'}
+            title={`Misi: ${currentMissionData.hint}`}
+            aria-label="Buka Progres Misi"
             className="relative pointer-events-auto cursor-pointer transition-all active:scale-95 group text-slate-950 bg-gradient-to-b from-amber-300 via-amber-400 to-amber-500 lg:bg-gradient-to-r lg:from-amber-300 lg:via-amber-200 lg:to-yellow-200 border-2 lg:border-3 border-amber-600 hover:border-amber-700 rounded-xl lg:rounded-2xl shadow-[0_4px_14px_rgba(245,158,11,0.55),0_0_0_1.5px_rgba(255,255,255,0.7)] lg:shadow-[0_6px_20px_rgba(245,158,11,0.45),0_0_0_2px_rgba(255,255,255,0.9)] flex items-center justify-center lg:justify-start w-9 h-9 sm:w-10 sm:h-10 lg:w-auto lg:h-auto p-0 lg:px-4 lg:py-2 lg:gap-3"
           >
             {/* MOBILE ONLY: Custom Hand-Drawn Exclamation Mark Icon */}
@@ -4377,13 +4321,13 @@ export default function App() {
             {/* DESKTOP ONLY: Full Quest Tracker Details */}
             {/* Scarlet/Crimson Badge */}
             <div className="hidden lg:flex items-center gap-1.5 bg-rose-600 border border-rose-300 rounded-xl px-3 py-1 text-white font-pixel text-[10px] shrink-0 font-black shadow-sm group-hover:bg-rose-500 transition-colors">
-              <span>{currentMissionData.step <= 4 ? (lang === 'en' ? `MISSION ${currentMissionData.step}/4` : `MISI ${currentMissionData.step}/4`) : (lang === 'en' ? 'COMPLETED' : 'SELESAI')}</span>
+              <span>{currentMissionData.step <= 4 ? `MISI ${currentMissionData.step}/4` : 'SELESAI'}</span>
             </div>
 
             {/* Clock Components Badge */}
             <div
               className="hidden lg:flex items-center gap-1 bg-amber-900/90 text-amber-200 border border-amber-500/50 rounded-xl px-2 py-1 font-pixel text-[10px] font-bold shrink-0 shadow-sm"
-              title={lang === 'en' ? `Clock Tower Components: ${clockComponentsCount}/12 Restored` : `Komponen Menara Jam: ${clockComponentsCount}/12 Terkumpul`}
+              title={`Komponen Menara Jam: ${clockComponentsCount}/12 Terkumpul`}
             >
               <span>{clockComponentsCount}/12</span>
             </div>
@@ -4415,9 +4359,9 @@ export default function App() {
                   handleGuideToMission(currentMissionData.step);
                 }}
                 className="hidden lg:flex px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-900 active:scale-95 text-amber-300 hover:text-amber-200 border border-amber-400 font-pixel text-[10px] font-bold shadow-sm transition items-center gap-1 shrink-0 cursor-pointer"
-                title={lang === 'en' ? 'Auto-guide character towards mission target' : 'Tuntun karakter otomatis berjalan ke target misi'}
+                title="Tuntun karakter otomatis berjalan ke target misi"
               >
-                <span>{lang === 'en' ? 'Guide' : 'Tuntun'}</span>
+                <span>Tuntun</span>
               </button>
             )}
 
@@ -4432,13 +4376,13 @@ export default function App() {
               className="hidden lg:flex p-1.5 rounded-xl bg-amber-400/80 hover:bg-amber-500 hover:text-slate-950 active:scale-95 text-slate-800 border border-amber-600/50 shadow-xs transition items-center justify-center shrink-0 cursor-pointer"
               title={
                 isMissionBannerMinimized
-                  ? (lang === 'en' ? 'Expand mission tab' : 'Perbesar tab misi')
-                  : (lang === 'en' ? 'Minimize mission tab' : 'Perkecil tab misi')
+                  ? 'Perbesar tab misi'
+                  : 'Perkecil tab misi'
               }
               aria-label={
                 isMissionBannerMinimized
-                  ? (lang === 'en' ? 'Expand mission tab' : 'Perbesar tab misi')
-                  : (lang === 'en' ? 'Minimize mission tab' : 'Perkecil tab misi')
+                  ? 'Perbesar tab misi'
+                  : 'Perkecil tab misi'
               }
             >
               {isMissionBannerMinimized ? (
@@ -4607,8 +4551,7 @@ export default function App() {
                   processDialogueTriggers(afterNode);
                   setCurrentDialogue(afterNode);
                 }
-              } else {
-                setCompassToast(lang === 'en' ? '🌟 Regulation Complete! Mind is clear, calm, and ready to explore.' : '🌟 Latihan Regulasi Selesai! Pikiranmu jernih, tenang, dan siap berpetualang.');
+                setCompassToast('🌟 Latihan Regulasi Selesai! Pikiranmu jernih, tenang, dan siap berpetualang.');
                 setTimeout(() => setCompassToast(null), 4000);
               }
             }}

@@ -26,7 +26,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
   initialPlayerAvatar = 'boy',
 }) => {
   const { isMuted, toggleMute } = useAudioSettings();
-  const { lang, toggleLang, ui } = useLanguage();
+  const { ui } = useLanguage();
   const [menuView, setMenuView] = useState<MenuView>('main');
   const [selectedMainMenuIndex, setSelectedMainMenuIndex] = useState<number>(0);
   const [playerName, setPlayerName] = useState<string>(initialPlayerName);
@@ -195,27 +195,13 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
           </span>
         </div>
 
-        {/* Right: Language & Sound Buttons */}
+        {/* Right: Sound Button */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Language Toggle Button */}
-          <button
-            type="button"
-            id="btn-start-language-toggle"
-            onClick={toggleLang}
-            title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-            className="inline-flex items-center gap-1 bg-[#172033]/90 hover:bg-[#202c45] border border-amber-500/70 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 transition-transform duration-75 text-amber-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
-          >
-            <span className="text-[10px] sm:text-xs">{lang === 'id' ? '🇮🇩' : '🇬🇧'}</span>
-            <span className="font-pixel text-[7px] sm:text-[9px] text-amber-300 font-bold uppercase tracking-wider">
-              {lang === 'id' ? 'ID' : 'EN'}
-            </span>
-          </button>
-
           {/* Sound Toggle Button */}
           <button
             type="button"
             onClick={toggleMute}
-            title={isMuted ? (lang === 'en' ? 'Unmute Audio' : 'Nyalakan Audio') : (lang === 'en' ? 'Mute Audio' : 'Matikan Audio')}
+            title={isMuted ? 'Nyalakan Audio' : 'Matikan Audio'}
             className="inline-flex items-center gap-1 bg-[#10222a]/90 hover:bg-[#18333e] border border-cyan-700/70 rounded-full px-2 py-0.5 sm:px-3 sm:py-1 transition-transform duration-75 text-cyan-200 cursor-pointer shadow-md active:scale-95 touch-manipulation"
           >
             {isMuted ? (
@@ -374,11 +360,11 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 <span>{ui.safeBrowserNote}</span>
               </div>
               <div className="flex items-center gap-1 text-slate-400">
-                <span>{lang === 'en' ? 'Press' : 'Tekan'}</span>
+                <span>Tekan</span>
                 <span className="font-pixel text-amber-400 font-bold text-[7px] sm:text-[9px] bg-amber-950/70 border border-amber-600/60 px-1 py-0.5 rounded">
                   ENTER
                 </span>
-                <span>{lang === 'en' ? 'to Select' : 'untuk Memilih'}</span>
+                <span>untuk Memilih</span>
               </div>
             </div>
           </div>
@@ -402,7 +388,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                   style={{ lineHeight: '30.5px' }}
                   className="font-pixel text-[8px] sm:text-[11px] text-slate-300"
                 >
-                  {lang === 'en' ? 'CHOOSE ADVENTURER AVATAR:' : 'PILIH KARAKTER PETUALANG:'}
+                  PILIH KARAKTER PETUALANG:
                 </span>
 
                 <div className="grid grid-cols-2 gap-2 sm:gap-4 start-menu-avatar-grid">
@@ -508,7 +494,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                           handleStart();
                         }
                       }}
-                      placeholder={lang === 'en' ? 'Type here...' : 'Ketik di sini...'}
+                      placeholder="Ketik di sini..."
                       maxLength={12}
                       className="w-full bg-slate-950/90 border-2 border-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.3)] focus:shadow-[0_0_18px_rgba(34,211,238,0.5)] focus:border-cyan-300 rounded-lg sm:rounded-xl px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-cyan-100 font-pixel text-[9px] sm:text-sm focus:outline-none transition-all placeholder:text-slate-600 placeholder:font-sans"
                     />
@@ -517,7 +503,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setPlayerName(getDefaultNameForAvatar(playerAvatar))}
-                      title={lang === 'en' ? 'Use default name' : 'Gunakan nama bawaan'}
+                      title="Gunakan nama bawaan"
                       className="absolute right-2 px-1.5 py-0.5 rounded bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-amber-300 font-pixel text-[7px] sm:text-[8px] border border-slate-700 transition cursor-pointer flex items-center gap-1"
                     >
                       <svg className="w-2.5 h-2.5 text-slate-300" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -540,13 +526,13 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                       setMenuView('main');
                     }}
                     className="px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl border-2 border-red-500/80 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-pixel text-[8px] sm:text-xs flex items-center gap-1 cursor-pointer transition-all shadow-[0_0_10px_rgba(239,68,68,0.2)] active:scale-95 shrink-0"
-                    title={lang === 'en' ? 'Back to Main Menu' : 'Kembali ke Menu Utama'}
+                    title="Kembali ke Menu Utama"
                   >
                     <svg className="w-3 h-3 text-red-400 shrink-0" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="11" y1="7" x2="3" y2="7" />
                       <polyline points="6.5 3.5 3 7 6.5 10.5" />
                     </svg>
-                    <span>{lang === 'en' ? 'BACK' : 'KEMBALI'}</span>
+                    <span>KEMBALI</span>
                   </button>
 
                   {/* MULAI PETUALANGAN BUTTON */}
@@ -560,7 +546,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                       <polygon points="3,2 10,6 3,10" />
                     </svg>
                     <span className="font-pixel text-[9px] sm:text-xs tracking-wider truncate">
-                      {lang === 'en' ? 'START' : 'MULAI'}: {currentDisplayNickname.toUpperCase()}
+                      MULAI: {currentDisplayNickname.toUpperCase()}
                     </span>
                   </button>
                 </div>
@@ -576,7 +562,7 @@ export const StartMenuModal: React.FC<StartMenuModalProps> = ({
                 <span>{ui.safeBrowserNote}</span>
               </div>
               <div className="font-pixel text-[7px] sm:text-[9px] text-amber-300/90">
-                {lang === 'en' ? 'Press ENTER to Start' : 'Tekan ENTER untuk Mulai'}
+                Tekan ENTER untuk Mulai
               </div>
             </div>
           </div>

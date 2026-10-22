@@ -1,7 +1,7 @@
 import { TILE, TILE_SIZE, MAP_COLS, MAP_ROWS } from './constants';
 import { NPC, ZoneColorStatus, EmotionType } from '../types/game';
 import { freeRoamWorld } from './freeRoamWorld';
-import { getLocalizedNpcName, getLocalizedSpeaker } from './localization';
+import { getLocalizedNpcName, getLocalizedSpeaker, GameLanguage } from './localization';
 
 export interface Player {
   x: number;
@@ -196,7 +196,7 @@ export function isZoneTileColored(
 }
 
 export class GameRenderer {
-  public lang: 'id' | 'en' = 'id';
+  public lang: GameLanguage = 'id';
   public readonly canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private tickCount: number = 0;
@@ -851,8 +851,10 @@ export class GameRenderer {
 
     ctx.restore();
 
-    // 11. Directional Guide Gold Arrow for Active Mission Target placed near main character
-    this.drawQuestGuideArrow(player, cameraX, cameraY, viewportW, viewportH, zoom);
+    // 11. Directional Guide Gold Arrow for Active Mission Target - only shown when player activates Heart Compass
+    if (isCompassActive) {
+      this.drawQuestGuideArrow(player, cameraX, cameraY, viewportW, viewportH, zoom);
+    }
   }
 
   // Draw directional gold chevron arrow (desain awal) orbiting near the main character without obstructing player or name tag
@@ -5105,7 +5107,7 @@ export class GameRenderer {
       const badgeY = py - 20 + Math.round(bob * 0.5);
       const pulseAlpha = 0.8 + Math.sin(this.tickCount * 0.2) * 0.2;
       ctx.fillStyle = `rgba(254, 240, 138, ${pulseAlpha})`;
-      ctx.fillText(this.lang === 'en' ? '✨ RESONANCE ✨' : '✨ RESONANSI ✨', px + 16, badgeY);
+      ctx.fillText('✨ RESONANSI ✨', px + 16, badgeY);
       ctx.restore();
     }
 
@@ -6958,7 +6960,7 @@ export class GameRenderer {
 
       // Bold Red/Gold "★ MISI X" Pill Badge
       const stepNum = this.activeQuestTarget?.stepNumber || 1;
-      const badgeText = `${this.lang === 'en' ? '★ MISSION' : '★ MISI'} ${stepNum}`;
+      const badgeText = `★ MISI ${stepNum}`;
       ctx.font = 'bold 8px "Pixelify Sans", "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -7468,7 +7470,7 @@ export class GameRenderer {
 
         // Overhead objective tag
         const steps = Math.round(distToTarget / 32);
-        const tagText = `🎯 ${this.activeQuestTarget.label} (${steps} ${this.lang === 'en' ? 'steps' : 'langkah'})`;
+        const tagText = `🎯 ${this.activeQuestTarget.label} (${steps} langkah)`;
         ctx.font = 'bold 8px "Pixelify Sans", sans-serif';
         ctx.textAlign = 'center';
         const tagW = ctx.measureText(tagText).width + 14;
@@ -7591,13 +7593,8 @@ export class GameRenderer {
 
     const isSurfaceGembira = npc.emotionProfile.surfaceEmotion === 'gembira';
     const isDeepTenang = npc.emotionProfile.deepEmotion === 'tenang';
-
-    const surfaceEmotionStr = this.lang === 'en'
-      ? (emotionNameEn[npc.emotionProfile.surfaceEmotion] || npc.emotionProfile.surfaceEmotion.toUpperCase())
-      : npc.emotionProfile.surfaceEmotion.toUpperCase();
-    const deepEmotionStr = this.lang === 'en'
-      ? (emotionNameEn[npc.emotionProfile.deepEmotion] || npc.emotionProfile.deepEmotion.toUpperCase())
-      : npc.emotionProfile.deepEmotion.toUpperCase();
+    const surfaceEmotionStr = npc.emotionProfile.surfaceEmotion.toUpperCase();
+    const deepEmotionStr = npc.emotionProfile.deepEmotion.toUpperCase();
 
     // Floating bobbing effect for lively RPG atmosphere
     const floatY = Math.sin(this.tickCount * 0.08) * 2;
@@ -7676,11 +7673,11 @@ export class GameRenderer {
     if (isResolved) {
       ctx.font = 'bold 7px "Galindo", cursive, sans-serif';
       ctx.fillStyle = '#fef08a';
-      ctx.fillText(this.lang === 'en' ? '✨ OPEN HEART ✨' : '✨ HATI TERBUKA ✨', nx, headerY + 2.5);
+      ctx.fillText('✨ HATI TERBUKA ✨', nx, headerY + 2.5);
     } else {
       ctx.font = 'bold 6.5px "Press Start 2P", monospace';
       ctx.fillStyle = '#cbd5e1';
-      ctx.fillText(this.lang === 'en' ? 'KOMPAS HATI' : 'KOMPAS HATI', nx, headerY + 2);
+      ctx.fillText('KOMPAS HATI', nx, headerY + 2);
     }
 
     // 5. Row 1: Surface Emotion (Luar: GEMBIRA)
@@ -7722,7 +7719,7 @@ export class GameRenderer {
     ctx.textAlign = 'left';
     ctx.font = 'bold 7.5px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = isSurfaceGembira ? '#fed7aa' : '#cbd5e1';
-    const prefix1 = this.lang === 'en' ? 'Surface:' : 'Luar:';
+    const prefix1 = 'Luar:';
     ctx.fillText(prefix1, rowX + 14, row1Y + 9.5);
     const p1W = ctx.measureText(prefix1).width;
 
@@ -7733,7 +7730,7 @@ export class GameRenderer {
     if (isResolved) {
       ctx.font = '7px "Plus Jakarta Sans", sans-serif';
       ctx.fillStyle = '#86efac';
-      ctx.fillText(this.lang === 'en' ? '(RELIEVED)' : '(LEGA)', rowX + rowW - 32, row1Y + 9.5);
+      ctx.fillText('(LEGA)', rowX + rowW - 32, row1Y + 9.5);
     }
 
     // 6. Row 2: Deep Emotion (Hati: TENANG)
@@ -7768,7 +7765,7 @@ export class GameRenderer {
     ctx.textAlign = 'left';
     ctx.font = 'bold 7.5px "Plus Jakarta Sans", sans-serif';
     ctx.fillStyle = isDeepTenang ? '#a7f3d0' : '#cbd5e1';
-    const prefix2 = this.lang === 'en' ? 'Inner:' : 'Hati:';
+    const prefix2 = 'Hati:';
     ctx.fillText(prefix2, rowX + 14, row2Y + 9.5);
     const p2W = ctx.measureText(prefix2).width;
 
@@ -7779,7 +7776,7 @@ export class GameRenderer {
     if (isResolved) {
       ctx.font = '7px "Plus Jakarta Sans", sans-serif';
       ctx.fillStyle = '#fde047';
-      ctx.fillText(this.lang === 'en' ? '(PEACEFUL)' : '(DAMAI)', rowX + rowW - 32, row2Y + 9.5);
+      ctx.fillText('(DAMAI)', rowX + rowW - 32, row2Y + 9.5);
     }
 
     ctx.restore();
@@ -8664,7 +8661,7 @@ export class GameRenderer {
       ctx.font = '7px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#fef08a';
-      ctx.fillText(this.lang === 'en' ? '💬 TALK' : '💬 BICARA', x, bubbleY - 3);
+      ctx.fillText('💬 BICARA', x, bubbleY - 3);
 
     } else if (type === 'examine') {
       // --- EXAMINE (Fountain, Signpost, Tree): Emerald Inspection Halo & Magnifier ---
@@ -8702,7 +8699,7 @@ export class GameRenderer {
       ctx.font = '7px "Press Start 2P", monospace';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#6ee7b7';
-      ctx.fillText(this.lang === 'en' ? '🔍 EXAMINE' : '🔍 PERIKSA', x, bubbleY - 3);
+      ctx.fillText('🔍 PERIKSA', x, bubbleY - 3);
     }
 
     ctx.restore();
@@ -8728,14 +8725,12 @@ export class GameRenderer {
     const borderColor = isTower || isWindmill ? '#f59e0b' : isAnimal || isRiver ? '#38bdf8' : isNPC ? '#f59e0b' : '#10b981';
     const textColor = isTower || isWindmill ? '#fef08a' : isAnimal || isRiver ? '#e0f2fe' : isNPC ? '#fef08a' : '#a7f3d0';
     const icon = isTower ? '🕰️' : isWindmill ? '🌾' : isAnimal ? '🐮' : isRiver ? '🐟' : isNPC ? '💬' : '🔍';
-    const actionLabel = this.lang === 'en'
-      ? (isTower ? 'Click to Examine' : isWindmill ? 'Click to Examine' : isAnimal ? 'Click to Approach' : isRiver ? 'Click to Observe' : isNPC ? 'Click to Talk' : 'Click to Examine')
-      : (isTower ? 'Klik Periksa Menara' : isWindmill ? 'Klik Periksa Kincir' : isAnimal ? 'Klik Dekati' : isRiver ? 'Klik Amati' : isNPC ? 'Klik Bicara' : 'Klik Periksa');
+    const actionLabel = isTower ? 'Klik Periksa Menara' : isWindmill ? 'Klik Periksa Kincir' : isAnimal ? 'Klik Dekati' : isRiver ? 'Klik Amati' : isNPC ? 'Klik Bicara' : 'Klik Periksa';
 
     ctx.font = '7px "Press Start 2P", monospace';
     ctx.textAlign = 'center';
     const localizedTargetName = getLocalizedSpeaker(name, this.lang) || name;
-    const labelText = `${icon} ${localizedTargetName} [${actionLabel}]`;
+    const labelText = `${icon} ${localizedTargetName} • ${actionLabel}`;
     const textW = ctx.measureText(labelText).width;
 
     // Background pill

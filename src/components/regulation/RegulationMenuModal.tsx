@@ -44,30 +44,23 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
   onSelectMode,
   targetName = 'Pemain',
 }) => {
-  const { lang } = useLanguage();
   if (!isOpen) return null;
 
   const isSelfPractice = targetName === 'Pemain' || targetName === 'Karakter Utama';
-  const localizedTarget = isSelfPractice
-    ? (lang === 'en' ? 'Player' : 'Pemain')
-    : getLocalizedNpcName(targetName.toLowerCase(), lang, true, targetName);
+  const localizedTarget = isSelfPractice ? 'Pemain' : targetName;
 
   const menuItems: RegulationItem[] = [
     {
       id: 'breathing',
       number: 1,
-      title: lang === 'en' ? 'Calm Balloon Rhythm' : 'Irama Balon Tenang',
-      subtitle: lang === 'en' ? '4-4-4 Box Breathing' : 'Napas Berirama 4-4-4',
-      category: lang === 'en' ? 'Breath Rhythm & Balance' : 'Ritme dan Keseimbangan Napas',
+      title: 'Irama Balon Tenang',
+      subtitle: 'Napas Berirama 4-4-4',
+      category: 'Ritme dan Keseimbangan Napas',
       description:
-        lang === 'en'
-          ? 'Hold breath for exactly 4s to inflate balloon to the ring, keep cursor in vibrating green zone for 4s, then exhale smoothly.'
-          : 'Tahan napas tepat 4 detik agar balon menyentuh cincin target, jaga kursor di zona hijau yang bergetar 4 detik, lalu embuskan perlahan.',
+        'Tahan napas tepat 4 detik agar balon menyentuh cincin target, jaga kursor di zona hijau yang bergetar 4 detik, lalu embuskan perlahan.',
       mechanics:
-        lang === 'en'
-          ? 'Rhythmic Hold · Stabilizer Track · Deflation Timing'
-          : 'Tahan Berirama · Jalur Penstabil · Waktu Embus',
-      duration: lang === 'en' ? '4s Per Phase' : '4 Detik per Fase',
+        'Tahan Berirama · Jalur Penstabil · Waktu Embus',
+      duration: '4 Detik per Fase',
       icon: <Wind className="w-6 h-6 text-cyan-300" />,
       borderTheme: 'border-cyan-500/40 hover:border-cyan-400',
       bgGlow: 'from-cyan-950/60 to-slate-900',
@@ -78,18 +71,14 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
     {
       id: 'grounding',
       number: 2,
-      title: lang === 'en' ? 'Sensory Magnifying Glass' : 'Kaca Pembesar Indra',
-      subtitle: lang === 'en' ? '5-4-3-2-1 Sensory Grounding' : 'Pembumian Pancaindra 5-4-3-2-1',
-      category: lang === 'en' ? 'Moving Object Search (Hidden Object)' : 'Pencarian Objek Bergerak (Hidden Object)',
+      title: 'Kaca Pembesar Indra',
+      subtitle: 'Pembumian Pancaindra 5-4-3-2-1',
+      category: 'Pencarian Objek Bergerak (Hidden Object)',
       description:
-        lang === 'en'
-          ? 'Control the magnifying glass to pierce panic fog and catch 5 fast-moving natural objects before time runs out.'
-          : 'Kendalikan lensa kaca pembesar untuk menembus kabut kepanikan dan tangkap 5 objek alam yang bergerak cepat sebelum waktu habis.',
+        'Kendalikan lensa kaca pembesar untuk menembus kabut kepanikan dan tangkap 5 objek alam yang bergerak cepat sebelum waktu habis.',
       mechanics:
-        lang === 'en'
-          ? 'Spotlight Cursor · Moving Objects · 45s Countdown'
-          : 'Kursor Sorot · Objek Bergerak · Hitung Mundur 45 Detik',
-      duration: lang === 'en' ? '5 Hidden Objects' : '5 Objek Tersembunyi',
+        'Kursor Sorot · Objek Bergerak · Hitung Mundur 45 Detik',
+      duration: '5 Objek Tersembunyi',
       icon: <Eye className="w-6 h-6 text-emerald-300" />,
       borderTheme: 'border-emerald-500/40 hover:border-emerald-400',
       bgGlow: 'from-emerald-950/60 to-slate-900',
@@ -100,18 +89,14 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
     {
       id: 'stop',
       number: 3,
-      title: lang === 'en' ? 'S-T-O-P Reaction Brake' : 'Rem Reaksi S-T-O-P',
-      subtitle: lang === 'en' ? 'Inhibit Impulsive Reaction' : 'Cegah Respons Impulsif',
-      category: lang === 'en' ? 'Quick Time Event & Letter Tracing' : 'Quick Time Event dan Penelusuran Huruf',
+      title: 'Rem Reaksi S-T-O-P',
+      subtitle: 'Cegah Respons Impulsif',
+      category: 'Quick Time Event dan Penelusuran Huruf',
       description:
-        lang === 'en'
-          ? 'Chase and smash the bouncing red STOP button! Freeze time then trace letters S, T, O, and P sequentially.'
-          : 'Kejar dan smash tombol STOP merah yang memantul liar di layar! Bekukan waktu lalu tebalkan huruf S, T, O, dan P secara berurutan.',
+        'Kejar dan smash tombol STOP merah yang memantul liar di layar! Bekukan waktu lalu tebalkan huruf S, T, O, dan P secara berurutan.',
       mechanics:
-        lang === 'en'
-          ? 'Smash Bouncing Button · Time-Freeze · Letter Tracing'
-          : 'Tekan Tombol Pantul · Pembekuan Waktu · Penelusuran Huruf',
-      duration: lang === 'en' ? '4 Consecutive Letters' : '4 Huruf Berurutan',
+        'Tekan Tombol Pantul · Pembekuan Waktu · Penelusuran Huruf',
+      duration: '4 Huruf Berurutan',
       icon: <ShieldAlert className="w-6 h-6 text-rose-300" />,
       borderTheme: 'border-rose-500/40 hover:border-rose-400',
       bgGlow: 'from-rose-950/60 to-slate-900',
@@ -122,18 +107,14 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
     {
       id: 'shakeout',
       number: 4,
-      title: lang === 'en' ? 'Tension Vine Release' : 'Pembebas Sulur Ketegangan',
-      subtitle: lang === 'en' ? 'Kinesthetic Muscle Shake-Out' : 'Goyang Otot Kinestetik',
-      category: lang === 'en' ? 'Alternating Button Mash (L & R)' : 'Ketuk Tombol Bergantian (Kiri & Kanan)',
+      title: 'Pembebas Sulur Ketegangan',
+      subtitle: 'Goyang Otot Kinestetik',
+      category: 'Ketuk Tombol Bergantian (Kiri & Kanan)',
       description:
-        lang === 'en'
-          ? `Alternate Left and Right (A/D) keys as fast as possible to break free from tension and snap 5 stress vines on ${localizedTarget}.`
-          : `Tekan tombol Kiri dan Kanan (A/D) secara bergantian secepat mungkin layaknya membebaskan diri dari efek stun untuk memutuskan 5 sulur stres ${localizedTarget}.`,
+        `Tekan tombol Kiri dan Kanan (A/D) secara bergantian secepat mungkin layaknya membebaskan diri dari efek stun untuk memutuskan 5 sulur stres ${localizedTarget}.`,
       mechanics:
-        lang === 'en'
-          ? 'Rapid L/R Alternation · Tension Vine Break · Kinesthetic'
-          : 'Ganti Kiri/Kanan Cepat · Pemutus Sulur Stres · Kinestetik',
-      duration: lang === 'en' ? '5 Thorny Vines' : '5 Sulur Berduri',
+        'Ganti Kiri/Kanan Cepat · Pemutus Sulur Stres · Kinestetik',
+      duration: '5 Sulur Berduri',
       icon: <Zap className="w-6 h-6 text-purple-300" />,
       borderTheme: 'border-purple-500/40 hover:border-purple-400',
       bgGlow: 'from-purple-950/60 to-slate-900',
@@ -159,31 +140,29 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
           <div>
             <div className="flex items-center gap-2 text-amber-400 font-pixel font-bold tracking-wider text-[10px] sm:text-xs uppercase mb-1">
               <Sparkles className="w-4 h-4 text-amber-400 animate-pulse shrink-0" />
-              <span>{lang === 'en' ? 'Emotion Regulation & Calmness Mini-Game Studio' : 'Menu Mini-Game Regulasi Emosi & Ketenangan'}</span>
+              <span>Menu Mini-Game Regulasi Emosi & Ketenangan</span>
             </div>
             <h2 className="text-base sm:text-xl font-pixel font-bold text-white flex flex-wrap items-center gap-2">
-              <span>{lang === 'en' ? 'Choose Calm Regulation Technique' : 'Pilih Teknik Regulasi Ketenangan'}</span>
+              <span>Pilih Teknik Regulasi Ketenangan</span>
               <span
                 className="text-[10px] sm:text-xs font-normal text-slate-400"
                 style={{ fontFamily: "'Geist Pixel'" }}
               >
-                · {isSelfPractice ? (lang === 'en' ? 'Solo Character Practice' : 'Latihan Mandiri Pemain') : (lang === 'en' ? `Helping: ${localizedTarget}` : `Membantu: ${localizedTarget}`)}
+                · {isSelfPractice ? 'Latihan Mandiri Pemain' : `Membantu: ${localizedTarget}`}
               </span>
             </h2>
             <p
               className="text-[10px] sm:text-xs text-slate-300 mt-1 font-pixel leading-relaxed"
               style={{ fontFamily: "'Geist Pixel'" }}
             >
-              {lang === 'en'
-                ? <>Each technique presents a distinctive interactive mini-game rendered in <strong>fullscreen</strong> with dynamic feedback and mechanics.</>
-                : <>Setiap teknik menyajikan mini-game interaktif tersendiri yang akan ditampilkan secara <strong>fullscreen</strong> dengan rasio dan mekanik aksi dinamis.</>}
+              Setiap teknik menyajikan mini-game interaktif tersendiri yang akan ditampilkan secara <strong>fullscreen</strong> dengan rasio dan mekanik aksi dinamis.
             </p>
           </div>
 
           <button
             id="close-regulation-menu-btn"
             onClick={onClose}
-            title={lang === 'en' ? 'Close Menu [Esc]' : 'Tutup Menu [Esc]'}
+            title="Tutup Menu"
             className="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-950/80 hover:border-rose-500/50 hover:scale-110 text-slate-400 hover:text-slate-100 border border-slate-700 transition-all duration-200 shrink-0 cursor-pointer active:scale-95"
           >
             <X className="w-5 h-5" />
@@ -281,7 +260,7 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
                       fontSize: '14px',
                     }}
                   >
-                    {lang === 'en' ? 'PLAY FULLSCREEN MINI-GAME' : 'MAINKAN MINI-GAME SECARA FULLSCREEN'}
+                    MAINKAN MINI-GAME SECARA FULLSCREEN
                   </span>
                   <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                 </button>
@@ -295,9 +274,7 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
             <span style={{ fontFamily: "'Geist Pixel'" }}>
-              {lang === 'en'
-                ? 'Completing mini-games grants +25 Empathy Score and Calmness Mastery.'
-                : 'Menyelesaikan mini-game memberikan +25 Skor Empati dan Penguasaan Teknik Ketenangan.'}
+              Menyelesaikan mini-game memberikan +25 Skor Empati dan Penguasaan Teknik Ketenangan.
             </span>
           </div>
 
@@ -305,7 +282,7 @@ export const RegulationMenuModal: React.FC<RegulationMenuModalProps> = ({
             onClick={onClose}
             className="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer border border-slate-700 text-[10px]"
           >
-            {lang === 'en' ? 'Return to Village Adventure' : 'Kembali ke Petualangan Desa'}
+            Kembali ke Petualangan Desa
           </button>
         </div>
       </div>

@@ -78,50 +78,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
   const localizedBadges = getLocalizedAchievements(PSE_ACHIEVEMENTS, lang);
   const unlockedCount = localizedBadges.filter((b) => unlockedBadges.includes(b.id)).length;
 
-  const mentorAppreciations = lang === 'en' ? [
-    {
-      mentor: 'Kak Citra (Youth Counselor)',
-      role: 'Expert of 4 Emotion Zones',
-      avatar: '🌸',
-      quote:
-        '“Ezzel has learned that there is no wrong emotion. Knowing whether you are in the Yellow or Red Zone and finding your way back to the Green Zone is a truly precious life lantern!”',
-    },
-    {
-      mentor: 'Grandpa Damai (Mindful Elder)',
-      role: 'Guardian of the Circle of Control',
-      avatar: '🧘🏻‍♂️',
-      quote:
-        '“Inner calm does not mean an absence of storms, but the wisdom to distinguish what we can change from what we must let go. Ezzel commands self-awareness with great maturity.”',
-    },
-    {
-      mentor: 'Moka the Librarian Cat',
-      role: 'Empathetic Listener Friend',
-      avatar: '🐱',
-      quote:
-        '“Meoww! Listening without interrupting and validating a friend’s feelings is the greatest gift of friendship. Ezzel listens with both ears and an open heart.”',
-    },
-    {
-      mentor: 'Professor Kotek (Scholarly Rooster)',
-      role: 'Doctor of Humor & Endorphins',
-      avatar: '🐔',
-      quote:
-        '“Cock-a-doodle-doo! Hearty laughter and optimistic thoughts release natural endorphins that melt stress away. Thank you for spreading joy to every village corner!”',
-    },
-    {
-      mentor: 'Pak Joko & Pak Teguh',
-      role: 'Farmer of Hope & Patient Woodsman',
-      avatar: '🌱',
-      quote:
-        '“Step-by-step perseverance always bears fruit, and taking a mindful pause quenches anger before it hurts friendship. Ezzel is a shining role model for our youth!”',
-    },
-    {
-      mentor: 'Ibu Sari, Bung Jala, & Didi',
-      role: 'Ambassadors of Gratitude & Warmth',
-      avatar: '🍎',
-      quote:
-        '“A warm smile breaks down walls of awkwardness, and gratitude multiplies our joy. The Valley of Harmony is truly blessed to have you!”',
-    },
-  ] : [
+  const mentorAppreciations = [
     {
       mentor: 'Kak Citra (Konselor Cilik)',
       role: 'Pakar 4 Zona Emosi',
@@ -176,7 +133,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
         <button
           id="close-all-badges-modal-btn"
           onClick={onClose}
-          title={lang === 'en' ? 'Close Appreciation' : 'Tutup Apresiasi'}
+          title="Tutup Apresiasi"
           className="absolute top-4 right-4 p-1.5 rounded-lg bg-slate-800/90 hover:bg-rose-950/60 hover:border-rose-500/50 hover:scale-110 hover:shadow-[0_0_10px_rgba(244,63,94,0.4)] text-slate-400 hover:text-slate-100 border border-slate-700 transition-all duration-200 z-10 cursor-pointer"
         >
           <X className="w-4 h-4" />
@@ -187,9 +144,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2 shadow-sm animate-pulse">
             <Trophy className="w-4 h-4 text-amber-400" />
             <span>
-              {lang === 'en'
-                ? 'Grand Achievement: 10/10 SEL Badges Collected!'
-                : 'Pencapaian Agung: 10/10 Lencana Wawasan PSE Terkumpul!'}
+              Pencapaian Agung: 10/10 Lencana Wawasan PSE Terkumpul!
             </span>
           </div>
 
@@ -197,12 +152,10 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
             style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
             className="text-xl sm:text-2xl md:text-3xl font-black text-amber-300 tracking-wide"
           >
-            {lang === 'en' ? 'GRAND EMPATHY AMBASSADOR' : 'DUTA BESAR EMPATI PARIPURNA'}
+            DUTA BESAR EMPATI PARIPURNA
           </h2>
           <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-lg mx-auto">
-            {lang === 'en'
-              ? 'Congratulations! You have completed all emotional and social learning milestones in the Valley of Harmony.'
-              : 'Selamat! Kamu telah berhasil menuntaskan seluruh pembelajaran emosi dan interaksi sosial di Lembah Nada Rasa.'}
+            Selamat! Kamu telah berhasil menuntaskan seluruh pembelajaran emosi dan interaksi sosial di Lembah Nada Rasa.
           </p>
         </div>
 
@@ -218,7 +171,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
             }`}
           >
             <MessageSquareQuote className="w-4 h-4 text-amber-400" />
-            <span>{lang === 'en' ? 'Character Appreciations' : 'Dialog Apresiasi Para Tokoh'}</span>
+            <span>Dialog Apresiasi Para Tokoh</span>
           </button>
 
           <button
@@ -232,9 +185,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
           >
             <Award className="w-4 h-4 text-amber-400" />
             <span>
-              {lang === 'en'
-                ? `10 Badges Collection (${unlockedCount}/${totalBadges})`
-                : `Koleksi 10 Lencana (${unlockedCount}/${totalBadges})`}
+              {`Koleksi 10 Lencana (${unlockedCount}/${totalBadges})`}
             </span>
           </button>
 
@@ -248,7 +199,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
             }`}
           >
             <ShieldCheck className="w-4 h-4 text-amber-400" />
-            <span>{lang === 'en' ? 'Golden Certificate' : 'Piagam Apresiasi Emas'}</span>
+            <span>Piagam Apresiasi Emas</span>
           </button>
         </div>
 
@@ -266,16 +217,14 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="font-bold text-sm sm:text-base text-amber-300">
-                        {lang === 'en' ? 'Grandma Wilis (Village Elder)' : 'Nenek Wilis (Tetua Lembah Nada Rasa)'}
+                        Nenek Wilis (Tetua Lembah Nada Rasa)
                       </h3>
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-semibold border border-amber-500/40">
-                        {lang === 'en' ? 'Honor Message' : 'Pesan Kehormatan'}
+                        Pesan Kehormatan
                       </span>
                     </div>
                     <p className="text-[11px] text-amber-200/80 italic mt-0.5">
-                      {lang === 'en'
-                        ? '“The Harmony Compass chimes in exquisite, perfect accord...”'
-                        : '“Kompas Nada Rasa berdenting dalam harmoni nada sempurna...”'}
+                      “Kompas Nada Rasa berdenting dalam harmoni nada sempurna...”
                     </p>
                   </div>
                 </div>
@@ -283,23 +232,17 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                 <div className="bg-slate-900/90 border border-amber-500/30 rounded-xl p-3.5 text-xs sm:text-sm text-slate-100 leading-relaxed space-y-2">
                   <p>
                     <strong className="text-amber-300">
-                      {lang === 'en' ? '“O noble-hearted Ezzel...”' : '“Wahai Ezzel yang berhati mulia...”'}
+                      “Wahai Ezzel yang berhati mulia...”
                     </strong>
                   </p>
                   <p>
-                    {lang === 'en'
-                      ? 'Today, the ancient tower bell chimes with the sweetest melody ever heard in the history of our valley! The grey mist has completely cleared away, and flowers of fellowship blossom in every garden.'
-                      : 'Hari ini, lonceng menara kuno berdenting dengan nada termerdu yang pernah terdengar sepanjang sejarah lembah ini! Seluruh kabut kelabu telah sirna, dan bunga persahabatan mekar di setiap pekarangan.'}
+                    Hari ini, lonceng menara kuno berdenting dengan nada termerdu yang pernah terdengar sepanjang sejarah lembah ini! Seluruh kabut kelabu telah sirna, dan bunga persahabatan mekar di setiap pekarangan.
                   </p>
                   <p>
-                    {lang === 'en'
-                      ? 'Yet your greatest achievement is not merely restoring the village’s vibrant colors—it is how you collected all 10 Wisdom Badges of Social Emotional Learning (SEL).'
-                      : 'Namun pencapaian terbesarmu bukanlah sekadar mengembalikan warna desa—tetapi bagaimana kamu mengumpulkan seluruh 10 Lencana Kebijaksanaan Pembelajaran Sosial Emosional (PSE).'}
+                    Namun pencapaian terbesarmu bukanlah sekadar mengembalikan warna desa—tetapi bagaimana kamu mengumpulkan seluruh 10 Lencana Kebijaksanaan Pembelajaran Sosial Emosional (PSE).
                   </p>
                   <p className="text-amber-200 font-medium">
-                    {lang === 'en'
-                      ? 'You have proven that self-awareness, calm emotion regulation, non-judgmental listening, a growth mindset, and heartfelt gratitude are the eternal keys to true harmony.'
-                      : 'Kamu telah membuktikan bahwa keberanian untuk mengenali diri, mengelola amarah dengan tenang, mendengarkan cerita sesama tanpa menghakimi, menumbuhkan pola pikir berkembang, dan bersyukur adalah kunci utama harmoni sejati manusia.'}
+                    Kamu telah membuktikan bahwa keberanian untuk mengenali diri, mengelola amarah dengan tenang, mendengarkan cerita sesama tanpa menghakimi, menumbuhkan pola pikir berkembang, dan bersyukur adalah kunci utama harmoni sejati manusia.
                   </p>
                 </div>
               </div>
@@ -309,9 +252,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-300 px-1">
                   <Heart className="w-4 h-4 text-rose-400 fill-rose-400" />
                   <span>
-                    {lang === 'en'
-                      ? 'Appreciation Quotes from the Mentors of Valley of Harmony:'
-                      : 'Kutipan Apresiasi dari Para Mentor Lembah Nada Rasa:'}
+                    Kutipan Apresiasi dari Para Mentor Lembah Nada Rasa:
                   </span>
                 </div>
 
@@ -342,14 +283,10 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
               <div className="bg-amber-950/30 border border-amber-500/40 rounded-xl p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div className="text-xs text-slate-200 text-center sm:text-left">
                   <div className="font-bold text-amber-300">
-                    {lang === 'en'
-                      ? 'Want to inspect the 10 badges or print your official certificate?'
-                      : 'Ingin melihat rincian 10 lencana atau mencetak piagam?'}
+                    Ingin melihat rincian 10 lencana atau mencetak piagam?
                   </div>
                   <div className="text-[11px] text-slate-400 mt-0.5">
-                    {lang === 'en'
-                      ? 'Your honorary title and gold certificate are ready to save and show your parents or teachers.'
-                      : 'Gelar dan piagam apresiasi resmi siap kamu simpan dan tunjukkan kepada guru atau orang tua.'}
+                    Gelar dan piagam apresiasi resmi siap kamu simpan dan tunjukkan kepada guru atau orang tua.
                   </div>
                 </div>
 
@@ -358,7 +295,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                     onClick={() => setActiveTab('gallery')}
                     className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/50 transition cursor-pointer flex items-center gap-1"
                   >
-                    <span>{lang === 'en' ? 'Open Badges Gallery' : 'Buka Galeri Lencana'}</span>
+                    <span>Buka Galeri Lencana</span>
                     <ChevronRight className="w-3 h-3" />
                   </button>
                   <button
@@ -366,7 +303,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                     className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow transition cursor-pointer flex items-center gap-1"
                   >
                     <Download className="w-3 h-3" />
-                    <span>{lang === 'en' ? 'Golden Certificate' : 'Piagam Emas'}</span>
+                    <span>Piagam Emas</span>
                   </button>
                 </div>
               </div>
@@ -379,22 +316,20 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
               <div className="bg-slate-950/70 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between">
                 <div>
                   <span className="text-[11px] text-slate-400 block font-medium">
-                    {lang === 'en' ? 'Wisdom Mastery Status:' : 'Status Penguasaan Wawasan:'}
+                    Status Penguasaan Wawasan:
                   </span>
                   <span className="text-sm font-bold text-amber-300 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    {lang === 'en'
-                      ? '10 of 10 Badges Perfectly Unlocked (100%)'
-                      : '10 dari 10 Lencana Terbuka Sempurna (100%)'}
+                    10 dari 10 Lencana Terbuka Sempurna (100%)
                   </span>
                 </div>
                 <div className="text-right">
                   <span className="text-[11px] text-slate-400 block font-medium">
-                    {lang === 'en' ? 'Empathy Score:' : 'Skor Empati:'}
+                    Skor Empati:
                   </span>
                   <span className="text-sm font-bold text-rose-400 flex items-center gap-1 justify-end">
                     <Heart className="w-4 h-4 fill-rose-400" />
-                    {stats.empathyScore} {lang === 'en' ? 'Points' : 'Poin'}
+                    {stats.empathyScore} Poin
                   </span>
                 </div>
               </div>
@@ -419,17 +354,17 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                                 {badge.title}
                               </h4>
                               <div className="text-[10px] text-slate-400">
-                                {lang === 'en' ? 'Mentor:' : 'Mentor:'} {badge.mentor}
+                                Mentor: {badge.mentor}
                               </div>
                             </div>
                           </div>
                           <span className="text-[9px] px-1.5 py-0.5 rounded font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
-                            {isUnlocked ? (lang === 'en' ? 'Achieved ✨' : 'Tercapai ✨') : (lang === 'en' ? 'Unlocked' : 'Terbuka')}
+                            {isUnlocked ? 'Tercapai ✨' : 'Terbuka'}
                           </span>
                         </div>
 
                         <div className="text-[10px] font-semibold text-emerald-400 mb-1">
-                          {lang === 'en' ? 'Concept:' : 'Konsep:'} {badge.concept}
+                          Konsep: {badge.concept}
                         </div>
                         <p className="text-[11px] text-slate-300 leading-relaxed">
                           {badge.description}
@@ -456,29 +391,23 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
 
                 <div className="text-center border-b border-amber-400/30 pb-3">
                   <span className="text-[9px] uppercase font-bold tracking-widest text-amber-400 block mb-0.5">
-                    {lang === 'en'
-                      ? 'Ministry of Wisdom, Valley of Harmony & SEL Curriculum'
-                      : 'Kementerian Kebijaksanaan Lembah Nada Rasa & Kurikulum Merdeka PSE'}
+                    Kementerian Kebijaksanaan Lembah Nada Rasa & Kurikulum Merdeka PSE
                   </span>
                   <h3
                     style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
                     className="text-lg sm:text-xl font-bold text-amber-300 tracking-wide"
                   >
-                    {lang === 'en'
-                      ? 'CERTIFICATE OF HONOR: GRAND EMPATHY AMBASSADOR'
-                      : 'PIAGAM KEHORMATAN DUTA BESAR EMPATI PARIPURNA'}
+                    PIAGAM KEHORMATAN DUTA BESAR EMPATI PARIPURNA
                   </h3>
                   <p className="text-[10px] text-slate-300 italic mt-0.5">
-                    {lang === 'en' ? 'Certificate No: SEL-10BADGES-HARMONY-2026' : 'Nomor Piagam: PSE-10BADGES-HARMONI-2026'}
+                    Nomor Piagam: PSE-10BADGES-HARMONI-2026
                   </p>
                 </div>
 
                 <div className="space-y-2 text-xs text-slate-200">
                   <div>
                     <label className="block text-[11px] text-slate-400 mb-1 font-semibold">
-                      {lang === 'en'
-                        ? 'Proudly and gratefully awarded to:'
-                        : 'Dianugerahkan dengan penuh rasa bangga dan terima kasih kepada:'}
+                      Dianugerahkan dengan penuh rasa bangga dan terima kasih kepada:
                     </label>
                     <input
                       type="text"
@@ -486,72 +415,68 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                       value={studentName}
                       onChange={(e) => setStudentName(e.target.value)}
                       className="w-full bg-slate-900/90 border border-amber-400/60 rounded-lg px-3 py-1.5 text-sm font-bold text-amber-200 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                      placeholder={lang === 'en' ? 'Type your name...' : 'Ketik namamu...'}
+                      placeholder="Ketik namamu..."
                     />
                   </div>
 
                   <p className="text-[11px] text-slate-300 leading-relaxed pt-1">
-                    {lang === 'en' ? (
-                      <>Has completed the entire emotional journey and mastered all <strong>10 Wisdom Badges of Social Emotional Learning (SEL)</strong>:</>
-                    ) : (
-                      <>Telah menyelesaikan seluruh penjelajahan emosi dan menuntaskan <strong>10 Lencana Kebijaksanaan Pembelajaran Sosial Emosional (PSE)</strong> secara paripurna:</>
-                    )}
+                    Telah menyelesaikan seluruh penjelajahan emosi dan menuntaskan <strong>10 Lencana Kebijaksanaan Pembelajaran Sosial Emosional (PSE)</strong> secara paripurna:
                   </p>
 
                   <div className="grid grid-cols-2 gap-1.5 text-[10px] font-semibold text-amber-200/90 bg-slate-950/50 p-2.5 rounded-xl border border-slate-800">
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? '4 Emotion Regulation Zones' : '4 Zona Regulasi Emosi'}</span>
+                      <span>4 Zona Regulasi Emosi</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? 'Inner Circle of Control' : 'Lingkaran Kendali Diri'}</span>
+                      <span>Lingkaran Kendali Diri</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? 'Active Listening & Validation' : 'Mendengarkan Aktif & Validasi'}</span>
+                      <span>Mendengarkan Aktif & Validasi</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? 'Endorphin Hormone Release' : 'Pelepasan Hormon Endorfin'}</span>
+                      <span>Pelepasan Hormon Endorfin</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? 'Three Magic Friendship Words' : 'Tiga Kata Ajaib Persahabatan'}</span>
+                      <span>Tiga Kata Ajaib Persahabatan</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? 'Growth Mindset' : 'Pola Pikir Berkembang (Growth)'}</span>
+                      <span>Pola Pikir Berkembang (Growth)</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? 'Friendly Village Ambassador' : 'Duta Sapaan Ramah Desa'}</span>
+                      <span>Duta Sapaan Ramah Desa</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? 'Anger Management & Time-out' : 'Manajemen Amarah & Time-out'}</span>
+                      <span>Manajemen Amarah & Time-out</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? 'Gratitude & Generosity' : 'Rasa Syukur & Kedermawanan'}</span>
+                      <span>Rasa Syukur & Kedermawanan</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
-                      <span>{lang === 'en' ? 'Patience & Inner Peace' : 'Kesabaran & Ketenangan Batin'}</span>
+                      <span>Kesabaran & Ketenangan Batin</span>
                     </div>
                   </div>
 
                   <div className="flex justify-between items-center pt-2 border-t border-amber-400/30 text-[10px]">
                     <div>
-                      <span className="text-slate-400 block">{lang === 'en' ? 'Total Empathy Points:' : 'Total Poin Empati:'}</span>
+                      <span className="text-slate-400 block">Total Poin Empati:</span>
                       <span className="font-bold text-amber-300 text-xs">
-                        {stats.empathyScore} {lang === 'en' ? 'Points' : 'Poin'}
+                        {stats.empathyScore} Poin
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-slate-400 block">{lang === 'en' ? 'Elder Signature:' : 'Tanda Tangan Tetua:'}</span>
+                      <span className="text-slate-400 block">Tanda Tangan Tetua:</span>
                       <span className="font-bold text-emerald-400 text-xs font-serif">
-                        {lang === 'en' ? 'Grandma Wilis & The Mentors' : 'Nenek Wilis & Para Mentor'}
+                        Nenek Wilis & Para Mentor
                       </span>
                     </div>
                   </div>
@@ -565,15 +490,15 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                   onClick={handleDownloadJpg}
                   disabled={isDownloading}
                   className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-md transition cursor-pointer disabled:opacity-60"
-                  title={lang === 'en' ? 'Download certificate as a JPG photo file' : 'Unduh piagam sebagai file foto JPG yang mudah dibuka anak-anak'}
+                  title="Unduh piagam sebagai file foto JPG yang mudah dibuka anak-anak"
                 >
                   <Download className="w-3.5 h-3.5" />
                   <span>
                     {isDownloading
-                      ? (lang === 'en' ? 'Preparing Image...' : 'Menyiapkan Gambar...')
+                      ? 'Menyiapkan Gambar...'
                       : downloadSuccess
-                      ? (lang === 'en' ? '✓ Image Saved!' : '✓ Gambar Tersimpan!')
-                      : (lang === 'en' ? 'Save Certificate Image (JPG)' : 'Simpan Gambar Piagam (JPG)')}
+                      ? '✓ Gambar Tersimpan!'
+                      : 'Simpan Gambar Piagam (JPG)'}
                   </span>
                 </button>
 
@@ -583,7 +508,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                   className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-semibold text-xs flex items-center gap-1.5 transition cursor-pointer"
                 >
                   <Volume2 className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{lang === 'en' ? 'Replay Fanfare' : 'Putar Ulang Fanfare'}</span>
+                  <span>Putar Ulang Fanfare</span>
                 </button>
               </div>
             </div>
@@ -595,9 +520,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
             <span>
-              {lang === 'en'
-                ? 'Valley Harmony 100% Restored with Complete Wisdom'
-                : 'Harmoni Lembah Pulih 100% dengan Wawasan Lengkap'}
+              Harmoni Lembah Pulih 100% dengan Wawasan Lengkap
             </span>
           </div>
 
@@ -612,7 +535,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                 className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 hover:border-amber-400/50 hover:scale-105 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] text-slate-300 text-xs font-semibold border border-slate-700 transition-all duration-200 cursor-pointer flex items-center gap-1"
               >
                 <BookOpen className="w-3 h-3 text-cyan-400" />
-                <span>{lang === 'en' ? 'View in Journal' : 'Lihat di Jurnal'}</span>
+                <span>Lihat di Jurnal</span>
               </button>
             )}
 
@@ -626,7 +549,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
                 className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 hover:scale-105 hover:shadow-[0_0_16px_rgba(16,185,129,0.5)] active:scale-95 text-white text-xs font-bold transition-all duration-200 cursor-pointer flex items-center gap-1 shadow-sm"
               >
                 <Compass className="w-3 h-3 text-emerald-200" />
-                <span>{lang === 'en' ? 'Free Roam' : 'Jelajah Bebas'}</span>
+                <span>Jelajah Bebas</span>
               </button>
             )}
 
@@ -635,7 +558,7 @@ export const AllBadgesCelebrationModal: React.FC<AllBadgesCelebrationModalProps>
               onClick={onClose}
               className="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 hover:scale-105 hover:shadow-[0_0_18px_rgba(245,158,11,0.65)] active:scale-95 text-slate-950 text-xs font-bold transition-all duration-200 cursor-pointer shadow"
             >
-              {lang === 'en' ? 'Continue' : 'Lanjutkan'}
+              Lanjutkan
             </button>
           </div>
         </div>

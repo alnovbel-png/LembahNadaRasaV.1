@@ -17,22 +17,13 @@ interface TensionVine {
   angle: number; // degrees
 }
 
-const VINE_LABELS = {
-  id: [
-    'Sulur Bahu & Leher',
-    'Sulur Punggung',
-    'Sulur Lengan Kiri',
-    'Sulur Lengan Kanan',
-    'Sulur Pinggang & Kaki',
-  ],
-  en: [
-    'Shoulder & Neck Vine',
-    'Back Tension Vine',
-    'Left Arm Vine',
-    'Right Arm Vine',
-    'Waist & Leg Vine',
-  ],
-};
+const VINE_LABELS: string[] = [
+  'Sulur Bahu & Leher',
+  'Sulur Punggung',
+  'Sulur Lengan Kiri',
+  'Sulur Lengan Kanan',
+  'Sulur Pinggang & Kaki',
+];
 
 export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = ({
   targetName,
@@ -41,7 +32,7 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
   const { lang } = useLanguage();
   const localizedTarget =
     targetName === 'Pemain' || targetName === 'Karakter Utama'
-      ? (lang === 'en' ? 'Player' : 'Pemain')
+      ? 'Pemain'
       : getLocalizedNpcName(targetName.toLowerCase(), lang, true, targetName);
   // Alternating state: 'left' or 'right'
   const [nextExpectedSide, setNextExpectedSide] = useState<'left' | 'right'>('left');
@@ -169,17 +160,15 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
     <div className="space-y-3 select-none text-center">
       {/* Educational Banner */}
       <div className="bg-purple-950/40 border border-purple-500/30 rounded-xl p-2.5 text-xs text-purple-200">
-        ⚡ <strong>{lang === 'en' ? 'Tension Release (Alternating Shake-Out)' : 'Lepas Tegangan (Alternating Shake-Out)'}</strong>:{' '}
-        {lang === 'en'
-          ? `Tap LEFT and RIGHT alternately as fast as you can! Snap all tension vines binding ${localizedTarget}.`
-          : `Ketuk tombol KIRI dan KANAN bergantian secepat mungkin! Putuskan semua sulur ketegangan yang mengikat ${localizedTarget}.`}
+        ⚡ <strong>Lepas Tegangan (Alternating Shake-Out)</strong>:{' '}
+        Ketuk tombol KIRI dan KANAN bergantian secepat mungkin! Putuskan semua sulur ketegangan yang mengikat {localizedTarget}.
       </div>
 
       {/* Tension Gauge Bar */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-2.5 max-w-md mx-auto space-y-1.5 font-pixel">
         <div className="flex items-center justify-between text-xs font-bold">
           <span className="text-slate-400">
-            {lang === 'en' ? 'Muscle Tension Level:' : 'Tingkat Ketegangan Otot:'}
+            Tingkat Ketegangan Otot:
           </span>
           <span
             className={
@@ -190,7 +179,7 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
                 : 'text-emerald-400'
             }
           >
-            {tensionPercent}% {tensionPercent === 0 && (lang === 'en' ? '✨ FULLY RELAXED' : '✨ LEPAS SEUTUHNYA')}
+            {tensionPercent}% {tensionPercent === 0 && '✨ LEPAS SEUTUHNYA'}
           </span>
         </div>
 
@@ -276,10 +265,10 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
             {/* Character Mood Status Tag */}
             <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap bg-slate-900/95 font-pixel text-[8px] sm:text-[9px] px-2 py-0.5 rounded-full border border-purple-400 text-purple-200 shadow z-30">
               {isAllFree
-                ? (lang === 'en' ? '😄 Fit & Free!' : '😄 Bugar & Bebas!')
+                ? '😄 Bugar & Bebas!'
                 : tensionPercent > 50
-                ? (lang === 'en' ? '😖 Muscles Very Tense' : '😖 Otot Sangat Tegang')
-                : (lang === 'en' ? '🙂 Feeling Lighter' : '🙂 Mulai Terasa Ringan')}
+                ? '😖 Otot Sangat Tegang'
+                : '🙂 Mulai Terasa Ringan'}
             </div>
           </div>
         </div>
@@ -288,7 +277,7 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
         {!isAllFree && (
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-48 space-y-1 font-pixel text-[8px] text-slate-400 text-center z-20">
             <div className="flex justify-between">
-              <span>{lang === 'en' ? 'Shake Energy:' : 'Energi Goyang:'}</span>
+              <span>Energi Goyang:</span>
               <span className="text-amber-300 font-bold">{wiggleCharge}%</span>
             </div>
             <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden border border-slate-700">
@@ -307,12 +296,10 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
               ⚡
             </div>
             <h3 className="text-sm font-bold text-emerald-300 mb-0.5">
-              {lang === 'en' ? 'ALL TENSION VINES SNAPPED!' : 'SEMUA SULUR KETEGANGAN PUTUS!'}
+              SEMUA SULUR KETEGANGAN PUTUS!
             </h3>
             <p className="text-[10px] text-slate-200 max-w-xs">
-              {lang === 'en'
-                ? `Stress hormones in muscles have been discharged. ${localizedTarget}'s body is refreshed and ready for adventure!`
-                : `Hormon stres di otot bahu dan tangan telah terbuang tuntas. Tubuh ${localizedTarget} kini bugar dan siap berpetualang kembali!`}
+              Hormon stres di otot bahu dan tangan telah terbuang tuntas. Tubuh {localizedTarget} kini bugar dan siap berpetualang kembali!
             </p>
           </div>
         )}
@@ -335,7 +322,7 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
               }`}
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>[A] {lang === 'en' ? 'LEFT' : 'KIRI'}</span>
+              <span>KIRI (Tombol A)</span>
             </button>
 
             {/* Button KANAN */}
@@ -350,17 +337,13 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
                   : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-600'
               }`}
             >
-              <span>{lang === 'en' ? 'RIGHT' : 'KANAN'} [D]</span>
+              <span>KANAN (Tombol D)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
           <p className="font-pixel text-[9.5px] text-slate-400">
-            {lang === 'en' ? (
-              <>Press <strong>LEFT</strong> then <strong>RIGHT</strong> alternately (Keyboard: <strong>[A]</strong> & <strong>[D]</strong> or <strong>←</strong> & <strong>→</strong>)</>
-            ) : (
-              <>Tekan tombol <strong>KIRI</strong> lalu <strong>KANAN</strong> secara bergantian (Keyboard: <strong>[A]</strong> & <strong>[D]</strong> atau panah <strong>←</strong> & <strong>→</strong>)</>
-            )}
+            Tekan tombol <strong>KIRI</strong> lalu <strong>KANAN</strong> secara bergantian (Keyboard: tombol <strong>A</strong> & <strong>D</strong> atau panah <strong>←</strong> & <strong>→</strong>)
           </p>
         </div>
       ) : (
@@ -371,7 +354,7 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
             className="w-full sm:w-80 py-3 px-6 rounded-2xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-pixel font-black text-xs sm:text-sm shadow-[0_0_30px_rgba(16,185,129,0.85)] flex items-center justify-center gap-2 animate-bounce transition-all cursor-pointer"
           >
             <Sparkles className="w-4 h-4 text-slate-950" />
-            <span>{lang === 'en' ? 'APPLY RELAXED BODY TO CHARACTER!' : 'TERAPKAN TUBUH RILEKS KE KARAKTER!'}</span>
+            <span>TERAPKAN TUBUH RILEKS KE KARAKTER!</span>
           </button>
 
           <button
@@ -379,7 +362,7 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
             className="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-[10px] font-pixel flex items-center gap-1 border border-slate-700 cursor-pointer"
           >
             <RotateCcw className="w-3 h-3" />
-            <span>{lang === 'en' ? 'Practice Shake-Out Again' : 'Latihan Goyang Lagi'}</span>
+            <span>Latihan Goyang Lagi</span>
           </button>
         </div>
       )}
@@ -387,7 +370,7 @@ export const ShakeoutAlternatingGame: React.FC<ShakeoutAlternatingGameProps> = (
       {/* Vines List Status */}
       <div className="flex flex-wrap items-center justify-center gap-1.5 pt-1">
         {vines.map((vine) => {
-          const localizedVineLabel = VINE_LABELS[lang]?.[vine.id - 1] || vine.label;
+          const localizedVineLabel = VINE_LABELS[vine.id - 1] || vine.label;
           return (
             <div
               key={vine.id}

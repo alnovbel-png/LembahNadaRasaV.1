@@ -155,15 +155,13 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
             </div>
             <div>
               <h2 className="font-pixel text-xs sm:text-sm md:text-base font-bold text-amber-300 tracking-wide flex items-center gap-2">
-                <span>{lang === 'en' ? 'Adventurer Information Center' : 'Pusat Informasi & Petualangan'}</span>
+                <span>Pusat Informasi & Petualangan</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40 font-normal">
                   {playerName}
                 </span>
               </h2>
               <p className="text-[10px] sm:text-[11px] text-slate-400 font-sans">
-                {lang === 'en'
-                  ? 'Quest Progress • Emotion Regulation Studio • Badges • Heart Journal'
-                  : 'Progres Misi • Studio Regulasi • Lencana • Jurnal Hati'}
+                Progres Misi • Studio Regulasi • Lencana • Jurnal Hati
               </p>
             </div>
           </div>
@@ -192,7 +190,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
             }`}
           >
             <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="truncate">{lang === 'en' ? 'Missions' : 'Progres Misi'}</span>
+            <span className="truncate">Progres Misi</span>
           </button>
 
           {/* TAB 3: STUDIO REGULASI EMOSI (Pengganti tombol regulasi) */}
@@ -205,7 +203,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
             }`}
           >
             <Wind className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="truncate">{lang === 'en' ? 'Regulation' : 'Regulasi Diri'}</span>
+            <span className="truncate">Regulasi Diri</span>
           </button>
 
           {/* TAB 4: LENCANA & PENCAPAIAN (Pengganti tombol pencapaian) */}
@@ -218,7 +216,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
             }`}
           >
             <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="truncate">{lang === 'en' ? 'Badges' : 'Lencana'}</span>
+            <span className="truncate">Lencana</span>
           </button>
 
           {/* TAB 5: JURNAL HATI & WARGA (Pengganti tombol jurnal) */}
@@ -231,7 +229,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
             }`}
           >
             <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="truncate">{lang === 'en' ? 'Journal' : 'Jurnal Hati'}</span>
+            <span className="truncate">Jurnal Hati</span>
           </button>
         </div>
 
@@ -251,7 +249,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     <span className="text-2xl">🏆</span>
                     <div>
                       <h4 className="font-pixel text-xs sm:text-sm font-bold text-amber-300">
-                        {lang === 'en' ? 'Overall Adventure Completion' : 'Total Progres Petualangan Lembah'}
+                        Total Progres Petualangan Lembah
                       </h4>
                       <p className="text-[10.5px] text-slate-300">
                         {completedQuestsCount}/4 Misi Selesai • {clockGearsResolvedCount}/12 Komponen Jam • {unlockedBadges.length}/10 Lencana PSE
@@ -263,7 +261,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                       {overallProgressPercent}%
                     </span>
                     <span className="text-[9px] text-slate-400 font-pixel">
-                      {overallProgressPercent >= 100 ? (lang === 'en' ? 'COMPLETED' : 'TAMAT 100%') : (lang === 'en' ? 'IN PROGRESS' : 'BERJALAN')}
+                      {overallProgressPercent >= 100 ? 'TAMAT 100%' : 'BERJALAN'}
                     </span>
                   </div>
                 </div>
@@ -279,10 +277,10 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-pixel text-sm font-bold text-amber-300">
-                    {lang === 'en' ? 'Main Quest Line (Steps 1 - 4)' : 'Alur Misi Utama (Langkah 1 s/d 4)'}
+                    Alur Misi Utama (Langkah 1 s/d 4)
                   </h3>
                   <p className="text-xs text-slate-400">
-                    {lang === 'en' ? 'Restore colors to the valley and light up the Clock Tower.' : 'Pulihkan warna lembah dan nyalakan kembali Menara Jam Harmoni.'}
+                    Pulihkan warna lembah dan nyalakan kembali Menara Jam Harmoni.
                   </p>
                 </div>
                 <div className="font-pixel text-xs px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/50">
@@ -334,7 +332,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                             }}
                             className="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-pixel text-[9px] font-bold shrink-0 cursor-pointer flex items-center gap-1 active:scale-95"
                           >
-                            <span>{lang === 'en' ? 'Guide' : 'Tuntun'}</span>
+                            <span>Tuntun</span>
                             <ArrowRight className="w-3 h-3" />
                           </button>
                         )}
@@ -387,20 +385,18 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                   </div>
                   <div>
                     <h4 className="font-pixel text-xs sm:text-sm font-bold text-amber-300 flex items-center gap-2">
-                      <span>{lang === 'en' ? 'Game Dialogue & Interactions Script (PDF)' : 'Dokumen Naskah Dialog & Interaksi Lengkap (PDF)'}</span>
+                      <span>Dokumen Naskah Dialog & Interaksi Lengkap (PDF)</span>
                       <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40 font-normal">
                         PDF
                       </span>
                     </h4>
                     <p className="text-[11px] text-slate-300 mt-1 leading-relaxed">
-                      {lang === 'en'
-                        ? 'Download official document containing every dialogue line from 13 NPCs, thoughts, empathy choices, and interactions with objects and animals.'
-                        : 'Unduh dokumen lengkap berisi seluruh kalimat dari 13 NPC, gelembung isi hati, opsi pilihan respons empati (PSE), serta interaksi dengan benda dan satwa.'}
+                      Unduh dokumen lengkap berisi seluruh kalimat dari 13 NPC, gelembung isi hati, opsi pilihan respons empati (PSE), serta interaksi dengan benda dan satwa.
                     </p>
                     {pdfSuccess && (
                       <p className="text-[11px] text-emerald-400 font-bold mt-1.5 flex items-center gap-1.5 animate-in fade-in">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>{lang === 'en' ? 'PDF successfully downloaded!' : 'Dokumen PDF berhasil diunduh ke perangkatmu!'}</span>
+                        <span>Dokumen PDF berhasil diunduh ke perangkatmu!</span>
                       </p>
                     )}
                   </div>
@@ -418,12 +414,12 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                   {isGeneratingPdf ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-amber-400" />
-                      <span>{lang === 'en' ? 'Generating PDF...' : 'Menyiapkan PDF...'}</span>
+                      <span>Menyiapkan PDF...</span>
                     </>
                   ) : (
                     <>
                       <Download className="w-4 h-4" />
-                      <span>{lang === 'en' ? 'Download PDF Document' : 'Unduh Dokumen PDF'}</span>
+                      <span>Unduh Dokumen PDF</span>
                     </>
                   )}
                 </button>
@@ -439,12 +435,10 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-pixel text-sm font-bold text-cyan-300">
-                    {lang === 'en' ? 'Emotion Regulation Studio (4 Calming Modes)' : 'Studio Regulasi Emosi (4 Teknik Menenangkan Diri)'}
+                    Studio Regulasi Emosi (4 Teknik Menenangkan Diri)
                   </h3>
                   <p className="text-xs text-slate-400">
-                    {lang === 'en'
-                      ? 'Practice emotional grounding whenever you feel stressed or overwhelmed. Awards +25 SEL Score!'
-                      : 'Latih ketenangan batin kapan pun kamu merasa tegang atau emosi meluap. Dapatkan bonus +25 Skor PSE!'}
+                    Latih ketenangan batin kapan pun kamu merasa tegang atau emosi meluap. Dapatkan bonus +25 Skor PSE!
                   </p>
                 </div>
                 <div className="font-pixel text-xs px-3 py-1 rounded-xl bg-cyan-500/20 text-cyan-300 border border-cyan-400/50">
@@ -456,12 +450,10 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                 {/* 1. TEKNIK NAPAS BALON (SESUAI DENGAN DIALOG KIKI & MINIGAME) */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-cyan-950/70 to-slate-900 border border-cyan-500/50 space-y-2.5">
                   <h4 className="font-pixel text-sm text-cyan-200 font-bold">
-                    {lang === 'en' ? 'Calm Balloon Breathing (4-4-4)' : 'Teknik Napas Balon (4-4-4)'}
+                    Teknik Napas Balon (4-4-4)
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    {lang === 'en'
-                      ? 'Inhale for 4 seconds as a gentle balloon expands in your belly, hold for 4 seconds, and exhale slowly for 4 seconds to calm your heart rate and clear racing thoughts.'
-                      : 'Tarik napas perlahan lewat hidung 4 detik (bayangkan balon mengembang di perut), tahan 4 detik di zona tenang, lalu embuskan perlahan 4 detik untuk meredakan kecemasan seketika.'}
+                    Tarik napas perlahan lewat hidung 4 detik (bayangkan balon mengembang di perut), tahan 4 detik di zona tenang, lalu embuskan perlahan 4 detik untuk meredakan kecemasan seketika.
                   </p>
                   <button
                     onClick={() => {
@@ -471,7 +463,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     className="w-full py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-pixel text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-md"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{lang === 'en' ? 'Start Balloon Breathing' : 'Mulai Napas Balon'}</span>
+                    <span>Mulai Napas Balon</span>
                   </button>
                 </div>
 
@@ -481,7 +473,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     className="font-pixel text-[12px] text-teal-200 font-bold"
                     style={{ fontSize: '12px' }}
                   >
-                    {lang === 'en' ? '5-4-3-2-1 Sensory Grounding' : 'Pembumian Pancaindra 5-4-3-2-1'}
+                    Pembumian Pancaindra 5-4-3-2-1
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     Kembalikan kesadaran ke saat ini dengan mencari 5 benda terlihat, 4 sentuhan, 3 suara, 2 aroma, dan 1 rasa syukur.
@@ -494,7 +486,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     className="w-full py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-pixel text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-md"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{lang === 'en' ? 'Start Sensory Grounding' : 'Mulai Latihan Grounding'}</span>
+                    <span>Mulai Latihan Grounding</span>
                   </button>
                 </div>
 
@@ -504,7 +496,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     className="font-pixel text-[13px] text-indigo-200 font-bold"
                     style={{ fontSize: '13px' }}
                   >
-                    {lang === 'en' ? 'S.T.O.P. Mindful Pause' : 'Metode S.T.O.P. (Jeda Bijak)'}
+                    Metode S.T.O.P. (Jeda Bijak)
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     <strong>Stop:</strong> Berhenti sejenak. <strong>Take a breath:</strong> Tarik napas. <strong>Observe:</strong> Amati pikiran. <strong>Proceed:</strong> Lanjutkan dengan bijak.
@@ -517,14 +509,14 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     className="w-full py-2 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-slate-950 font-pixel text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-md"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{lang === 'en' ? 'Start S.T.O.P. Method' : 'Mulai Metode S.T.O.P.'}</span>
+                    <span>Mulai Metode S.T.O.P.</span>
                   </button>
                 </div>
 
                 {/* 4. GOYANG RILEKS SHAKE-OUT */}
                 <div className="p-4 rounded-2xl bg-gradient-to-br from-amber-950/70 to-slate-900 border border-amber-500/50 space-y-2.5">
                   <h4 className="font-pixel text-sm text-amber-200 font-bold">
-                    {lang === 'en' ? 'Somatic Shake-Out' : 'Goyang Rileks Shake-Out'}
+                    Goyang Rileks Shake-Out
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     Kibaskan tangan, bahu, dan kaki untuk melepaskan hormon stres dan ketegangan otot yang menumpuk di tubuh.
@@ -537,7 +529,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     className="w-full py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-pixel text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 shadow-md"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{lang === 'en' ? 'Start Shake-Out Exercise' : 'Mulai Goyang Rileks'}</span>
+                    <span>Mulai Goyang Rileks</span>
                   </button>
                 </div>
               </div>
@@ -552,10 +544,10 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-pixel text-sm font-bold text-purple-300">
-                    {lang === 'en' ? '10 SEL Competency Badges' : '10 Lencana Kompetensi Sosial-Emosional'}
+                    10 Lencana Kompetensi Sosial-Emosional
                   </h3>
                   <p className="text-xs text-slate-400">
-                    {lang === 'en' ? 'Collect badges by making wise empathetic choices.' : 'Raih lencana melalui pilihan respons berempati dan regulasi diri.'}
+                    Raih lencana melalui pilihan respons berempati dan regulasi diri.
                   </p>
                 </div>
                 <div className="font-pixel text-xs px-3 py-1 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-400/50">
@@ -570,7 +562,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     <span className="text-3xl animate-bounce">🏆</span>
                     <div>
                       <h4 className="font-pixel text-xs sm:text-sm font-bold text-amber-300">
-                        {lang === 'en' ? '100% Master of Harmony!' : 'Selamat! 10/10 Lencana Terkumpul!'}
+                        Selamat! 10/10 Lencana Terkumpul!
                       </h4>
                       <p className="text-[11px] text-slate-300">
                         Kamu telah menguasai seluruh kompetensi sosial-emosional Lembah Nada Rasa!
@@ -650,12 +642,10 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-pixel text-sm font-bold text-emerald-300">
-                    {lang === 'en' ? 'Heart Resonance Journal & Inventory' : 'Jurnal Resonansi Hati & Tas Inventaris'}
+                    Jurnal Resonansi Hati & Tas Inventaris
                   </h3>
                   <p className="text-xs text-slate-400">
-                    {lang === 'en'
-                      ? 'Empathy Iceberg notes of villagers and your collected clock components.'
-                      : 'Konsep Gunung Es Emosi warga dan barang pusaka Menara Jam yang terkumpul.'}
+                    Konsep Gunung Es Emosi warga dan barang pusaka Menara Jam yang terkumpul.
                   </p>
                 </div>
               </div>
@@ -721,13 +711,13 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
             ========================================================================= */}
         <div className="px-4 py-3 bg-slate-950 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
           <span className="text-[11px]">
-            {lang === 'en' ? 'Tip: Press [J] or [R] anytime to open this hub.' : 'Tips: Tekan tombol [J] atau [R] kapan saja untuk membuka pusat info ini.'}
+            Tips: Tekan tombol J atau R kapan saja untuk membuka pusat info ini.
           </span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-pixel text-xs font-bold cursor-pointer active:scale-95"
           >
-            {lang === 'en' ? 'Close [ESC]' : 'Tutup [ESC]'}
+            Tutup
           </button>
         </div>
       </div>

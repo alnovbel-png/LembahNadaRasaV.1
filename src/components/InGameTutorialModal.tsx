@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { sound } from '../utils/audio';
-import { useLanguage } from '../game/localization';
 
 export interface InGameTutorialModalProps {
   isOpen: boolean;
@@ -14,7 +13,6 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
   onClose,
   onNavigateToFirstQuest,
 }) => {
-  const { lang } = useLanguage();
   const [dontShowAgain, setDontShowAgain] = useState<boolean>(false);
   const [testedKey, setTestedKey] = useState<string | null>(null);
 
@@ -86,7 +84,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
             </div>
             <div>
               <span className="text-sm sm:text-base font-bold text-amber-300 uppercase tracking-wider bg-amber-950/80 px-3 py-1 rounded-lg border border-amber-500/40 inline-block shadow-sm">
-                {lang === 'en' ? 'GAMEPLAY GUIDE' : 'PANDUAN KONTROL DAN BERMAIN'}
+                PANDUAN KONTROL DAN BERMAIN
               </span>
             </div>
           </div>
@@ -118,15 +116,13 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
               </div>
               <div>
                 <h3 className="font-bold text-sm sm:text-base text-amber-200 flex items-center gap-2">
-                  <span>{lang === 'en' ? 'How to Interact with Villagers' : 'Cara Berinteraksi dan Mengobrol dengan Warga'}</span>
+                  <span>Cara Berinteraksi dan Mengobrol dengan Warga</span>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono">
-                    {lang === 'en' ? 'Essential' : 'Utama'}
+                    Utama
                   </span>
                 </h3>
                 <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                  {lang === 'en'
-                    ? 'Approach any villager with a question or speech bubble icon above their head to start meaningful conversations.'
-                    : 'Dekati warga desa yang memiliki tanda balon bicara di atas kepala mereka untuk memulai percakapan dan menyelesaikan misi empati.'}
+                  Dekati warga desa yang memiliki tanda balon bicara di atas kepala mereka untuk memulai percakapan dan menyelesaikan misi empati.
                 </p>
               </div>
             </div>
@@ -138,9 +134,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                   <span>1. Dekati Warga</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'Walk close until the interaction button or prompt appears.'
-                    : 'Berjalan mendekat hingga tombol aksi atau lingkaran interaksi muncul.'}
+                  Berjalan mendekat hingga tombol aksi atau lingkaran interaksi muncul.
                 </p>
               </div>
 
@@ -150,9 +144,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                   <span>2. Tekan Tombol Aksi</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'Press SPACE, ENTER, or E, or click directly on the villager.'
-                    : 'Tekan tombol SPASI, ENTER, atau E pada keyboard, atau klik langsung warga.'}
+                  Tekan tombol SPASI, ENTER, atau E pada keyboard, atau klik langsung warga.
                 </p>
               </div>
 
@@ -162,9 +154,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                   <span>3. Layar Sentuh HP</span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'Tap the circular Talk button at the bottom-right.'
-                    : 'Sentuh tombol bulat Bicara atau Aksi di sudut kanan bawah layar.'}
+                  Sentuh tombol bulat Bicara atau Aksi di sudut kanan bawah layar.
                 </p>
               </div>
             </div>
@@ -182,10 +172,10 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                   <line x1="18" y1="11" x2="18.01" y2="11" />
                   <rect x="2" y="6" width="20" height="12" rx="2" />
                 </svg>
-                <span>{lang === 'en' ? 'Keyboard and Mouse Shortcuts (PC or Laptop)' : 'Daftar Pintasan Tombol Keyboard dan Mouse'}</span>
+                <span>Daftar Pintasan Tombol Keyboard dan Mouse</span>
               </h3>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                {lang === 'en' ? 'Press keys on your keyboard to test:' : 'Uji coba menekan tombol keyboard di perangkat Anda:'}
+                Uji coba menekan tombol keyboard di perangkat Anda:
               </p>
             </div>
             {testedKey && (
@@ -276,7 +266,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                 <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
                 <line x1="12" y1="18" x2="12.01" y2="18" />
               </svg>
-              <span>{lang === 'en' ? 'Touch Controls for Mobile and Tablet' : 'Kontrol Layar Sentuh HP dan Tablet'}</span>
+              <span>Kontrol Layar Sentuh HP dan Tablet</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-300">
               <div className="p-2 rounded bg-slate-900 border border-slate-800">
@@ -305,7 +295,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
               }}
               className="w-3.5 h-3.5 rounded bg-slate-800 border-slate-600 text-amber-500 focus:ring-amber-400"
             />
-            <span>{lang === 'en' ? "Do not auto-open on new adventure" : 'Jangan buka otomatis saat petualangan baru dimulai'}</span>
+            <span>Jangan buka otomatis saat petualangan baru dimulai</span>
           </label>
 
           {/* Action Button */}
@@ -320,7 +310,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                 <circle cx="12" cy="12" r="10" />
                 <path d="m9 12 2 2 4-4" />
               </svg>
-              <span>{lang === 'en' ? 'Understood & Ready to Play!' : 'Saya Paham dan Siap Bermain!'}</span>
+              <span>Saya Paham dan Siap Bermain!</span>
             </button>
           </div>
         </div>

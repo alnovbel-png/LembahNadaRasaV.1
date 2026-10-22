@@ -35,7 +35,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onCaptureMoment,
   onOpenTutorial,
 }) => {
-  const { lang, toggleLang } = useLanguage();
   const [activeTab, setActiveTab] = useState<SettingsModalTab>(initialTab);
 
   const {
@@ -92,40 +91,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               style={{ fontFamily: "'Pixelify Sans', sans-serif" }}
               className="font-bold text-base text-amber-300 tracking-wide"
             >
-              {lang === 'en' ? 'Game & Adventure Settings' : 'Pengaturan Game & Petualangan'}
+              Pengaturan Game & Petualangan
             </h2>
             <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300 text-[9px] sm:text-[10px] font-pixel shadow-sm animate-pulse">
               <span>⏸️</span>
-              <span>{lang === 'en' ? 'GAME PAUSED' : 'GAME DI-PAUSE'}</span>
+              <span>GAME DI-PAUSE</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Language Switcher Button */}
-            <button
-              id="settings-language-toggle-btn"
-              onClick={toggleLang}
-              className="px-2.5 py-1.5 rounded-xl border border-amber-400/80 bg-slate-950 hover:bg-slate-900 active:scale-95 text-amber-300 font-pixel text-[9px] sm:text-[10px] flex items-center gap-1.5 cursor-pointer shadow transition"
-              title={lang === 'id' ? 'Switch to English' : 'Ganti ke Bahasa Indonesia'}
-            >
-              <span>🌐</span>
-              <span className="font-bold">{lang === 'id' ? 'ID 🇮🇩' : 'EN 🇬🇧'}</span>
-            </button>
-
             {onCaptureMoment && (
               <button
                 id="settings-header-capture-moment-btn"
                 onClick={onCaptureMoment}
                 className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 hover:scale-105 hover:shadow-[0_0_16px_rgba(245,158,11,0.6)] active:scale-95 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition-all duration-200 cursor-pointer"
-                title={lang === 'en' ? 'Take screenshot of current area with decorative frame' : 'Ambil screenshot area game saat ini dengan bingkai dekoratif'}
+                title="Ambil screenshot area game saat ini dengan bingkai dekoratif"
               >
                 <Camera className="w-4 h-4 text-slate-950" />
-                <span>{lang === 'en' ? 'Capture Moment' : 'Abadikan Momen'}</span>
+                <span>Abadikan Momen</span>
               </button>
             )}
             <button
               id="close-settings-btn"
               onClick={onClose}
-              aria-label={lang === 'en' ? 'Close settings menu' : 'Tutup menu pengaturan'}
+              aria-label="Tutup menu pengaturan"
               className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-rose-950/50 hover:scale-110 hover:shadow-[0_0_10px_rgba(244,63,94,0.4)] transition-all duration-200 cursor-pointer"
             >
               <X className="w-5 h-5" />
@@ -152,7 +140,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               }}
               className="truncate"
             >
-              {lang === 'en' ? 'Audio & Sound' : 'Audio & Efek Suara'}
+              Audio & Efek Suara
             </span>
           </button>
 
@@ -173,7 +161,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               }}
               className="truncate"
             >
-              {lang === 'en' ? 'Controls & Guide' : 'Kontrol Permainan'}
+              Kontrol Permainan
             </span>
           </button>
         </div>
@@ -514,16 +502,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-sm text-emerald-200">
-                          {lang === 'en' ? 'Interactive In-Game Tutorial' : 'Tutorial Interaktif Cara Bermain'}
+                          Tutorial Interaktif Cara Bermain
                         </h4>
                         <span className="text-[9px] font-bold bg-emerald-900 text-emerald-200 border border-emerald-500/40 px-1.5 py-0.5 rounded">
                           5 LANGKAH
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-300 mt-0.5">
-                        {lang === 'en'
-                          ? 'Step-by-step illustrated walkthrough of controls, talking to villagers, Heart Compass, and emotion regulation.'
-                          : 'Panduan bergambar langkah demi langkah: kontrol jalan, interaksi warga, Kompas Hati, dan regulasi emosi.'}
+                        Panduan bergambar langkah demi langkah: kontrol jalan, interaksi warga, Kompas Hati, dan regulasi emosi.
                       </p>
                     </div>
                   </div>
@@ -536,7 +522,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 text-slate-950 font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-emerald-200"
                   >
                     <BookOpen className="w-3.5 h-3.5" />
-                    <span>{lang === 'en' ? 'Open Tutorial [H]' : 'Buka Tutorial [H]'}</span>
+                    <span>Buka Tutorial (Tombol H)</span>
                   </button>
                 </div>
               )}
@@ -614,16 +600,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     • <strong>Ketuk Lantai:</strong> Karakter langsung berjalan ke titik yang kamu ketuk
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    • <strong>Joystick Virtual Analog:</strong> Navigasi analog 360° yang mulus di sisi kiri layar (mendukung mode vertikal & horizontal)
+                    • <strong>Joystick Virtual Analog:</strong> Navigasi analog 360° yang mulus di sisi kiri layar
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    • <strong>Tombol [AKSI]:</strong> Berinteraksi dengan warga desa, pohon, dan item
+                    • <strong>Tombol AKSI:</strong> Berinteraksi dengan warga desa, pohon, dan item
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    • <strong>Tombol [KOMPAS / HATI]:</strong> Mengaktifkan Kompas Hati untuk memindai emosi
+                    • <strong>Tombol KOMPAS / HATI:</strong> Mengaktifkan Kompas Hati untuk memindai emosi
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    • <strong>Tombol [MENU] Atas:</strong> Satu tombol ringkas untuk Peta, Pusat Informasi, dan Pengaturan
+                    • <strong>Tombol MENU Atas:</strong> Satu tombol ringkas untuk Peta, Pusat Informasi, dan Pengaturan
                   </div>
                 </div>
               </div>

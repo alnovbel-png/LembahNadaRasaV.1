@@ -53,12 +53,10 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
             </div>
             <div>
               <h2 className="font-bold text-base text-amber-300">
-                {lang === 'en' ? 'Heart Compass Journal & Story Lore' : 'Jurnal Kompas Hati & Lore Cerita'}
+                Jurnal Kompas Hati & Lore Cerita
               </h2>
               <p className="text-[11px] text-slate-400">
-                {lang === 'en'
-                  ? 'Complete story of the harmony valley, SEL badges, adventurer bag, & village harmony'
-                  : 'Kisah lengkap lembah harmoni, pencapaian lencana PSE, tas petualangan, & harmoni desa'}
+                Kisah lengkap lembah harmoni, pencapaian lencana PSE, tas petualangan, & harmoni desa
               </p>
             </div>
           </div>
@@ -83,7 +81,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
             }`}
           >
             <ScrollText className="w-4 h-4 shrink-0 text-amber-400" />
-            <span className="truncate">{lang === 'en' ? 'Story Lore' : 'Lore Cerita'}</span>
+            <span className="truncate">Lore Cerita</span>
           </button>
 
           <button
@@ -96,7 +94,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
             }`}
           >
             <Award className="w-4 h-4 shrink-0 text-amber-400" />
-            <span className="truncate">{lang === 'en' ? `Badges (${unlockedBadgesCount}/${localizedBadges.length})` : `Lencana (${unlockedBadgesCount}/${PSE_ACHIEVEMENTS.length})`}</span>
+            <span className="truncate">{`Lencana (${unlockedBadgesCount}/${PSE_ACHIEVEMENTS.length})`}</span>
           </button>
 
           <button
@@ -109,7 +107,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
             }`}
           >
             <BookOpen className="w-4 h-4 shrink-0 text-amber-400" />
-            <span className="truncate">{lang === 'en' ? `Bag (${items.length})` : `Tas (${items.length})`}</span>
+            <span className="truncate">{`Tas (${items.length})`}</span>
           </button>
 
           <button
@@ -122,7 +120,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
             }`}
           >
             <Sparkles className="w-4 h-4 shrink-0 text-amber-400" />
-            <span className="truncate">{lang === 'en' ? `Harmony (${harmonyPercent}%)` : `Harmoni (${harmonyPercent}%)`}</span>
+            <span className="truncate">{`Harmoni (${harmonyPercent}%)`}</span>
           </button>
         </div>
 
@@ -138,23 +136,15 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                   </div>
                   <div>
                     <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">
-                      {lang === 'en' ? 'Complete Valley Story' : 'Kisah Lengkap Lembah'}
+                      Kisah Lengkap Lembah
                     </span>
                     <h3 className="font-bold text-base sm:text-lg text-amber-200">
-                      {lang === 'en' ? 'Valley of Harmony: Melody & Heart Adventure' : 'Petualangan Lembah Harmoni Nada Rasa'}
+                      Petualangan Lembah Harmoni Nada Rasa
                     </h3>
                   </div>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en' ? (
-                    <>
-                      Welcome to the <strong>Valley of Harmony</strong>. This is the story of a village that once lost its vibrant colors because residents forgot how to listen to one another, and how a young hero named <strong>Ezzel</strong> restored it through the power of empathy and compassion.
-                    </>
-                  ) : (
-                    <>
-                      Selamat datang di <strong>Lembah Nada Rasa</strong>. Ini adalah kisah tentang sebuah desa yang sempat kehilangan warna-warninya karena warga lupa cara saling mendengarkan, dan bagaimana seorang anak bernama <strong>Ezzel</strong> memulihkannya dengan kekuatan empati dan kasih sayang.
-                    </>
-                  )}
+                  Selamat datang di <strong>Lembah Nada Rasa</strong>. Ini adalah kisah tentang sebuah desa yang sempat kehilangan warna-warninya karena warga lupa cara saling mendengarkan, dan bagaimana seorang anak bernama <strong>Ezzel</strong> memulihkannya dengan kekuatan empati dan kasih sayang.
                 </p>
               </div>
 
@@ -162,23 +152,13 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <span>🏛️</span>
-                  <h4>{lang === 'en' ? 'Chapter 1: The Valley Origins & The Harmony Clock Tower' : 'Bab 1: Asal Usul Lembah & Menara Jam Harmoni'}</h4>
+                  <h4>Bab 1: Asal Usul Lembah & Menara Jam Harmoni</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'Long ago, the Valley of Harmony was a lush, peaceful, and colorful haven. Pure streams flowed freely, whispering pine forests rustled softly, and villagers lived in mutual aid and goodwill.'
-                    : 'Dahulu kala, Lembah Nada Rasa adalah desa yang sangat asri, damai, dan penuh warna. Sungai mengalir jernih, pepohonan hutan pinus berbisik sejuk, dan warga hidup saling tolong-menolong.'}
+                  Dahulu kala, Lembah Nada Rasa adalah desa yang sangat asri, damai, dan penuh warna. Sungai mengalir jernih, pepohonan hutan pinus berbisik sejuk, dan warga hidup saling tolong-menolong.
                 </p>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en' ? (
-                    <>
-                      Atop the eastern hill stood the <strong>Harmony Clock Tower</strong> built by the founding elders. This was no ordinary clock: its bronze bells and rhythmic gears pulsed in harmony with the warmth in people's hearts. As long as kindness and harmony prevailed, colors across the valley flourished.
-                    </>
-                  ) : (
-                    <>
-                      Di puncak bukit timur, berdiri <strong>Menara Jam Harmoni</strong> yang dibangun oleh para sesepuh perintis desa (Ki Waskita). Menara jam ini bukanlah jam biasa: jarum jam dan lonceng perunggunya berdetak selaras dengan kehangatan hati warganya. Selama warga saling peduli dan hidup rukun, warna-warni di seluruh lembah akan terus mekar bersinar.
-                    </>
-                  )}
+                  Di puncak bukit timur, berdiri <strong>Menara Jam Harmoni</strong> yang dibangun oleh para sesepuh perintis desa (Ki Waskita). Menara jam ini bukanlah jam biasa: jarum jam dan lonceng perunggunya berdetak selaras dengan kehangatan hati warganya. Selama warga saling peduli dan hidup rukun, warna-warni di seluruh lembah akan terus mekar bersinar.
                 </p>
               </div>
 
@@ -186,23 +166,13 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <span>🌫️</span>
-                  <h4>{lang === 'en' ? 'Chapter 2: The Root of Discord & The Gray Mist' : 'Bab 2: Akar Masalah Lunturnya Empati & Kabut Kelabu'}</h4>
+                  <h4>Bab 2: Akar Masalah Lunturnya Empati & Kabut Kelabu</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'The Clock Tower ticked on the rhythm of mutual listening and kindness. Over time, however, residents became busy with their own routines and empathy slowly waned. The peak of this disconnect occurred when Grandpa Ranu, exhausted from bridge repairs, harshly scolded young Bimo. Terrified and filled with guilt, Bimo fled into the Silent Forest.'
-                    : 'Menara Jam Harmoni berdetak menggunakan energi kerukunan dan rasa saling mendengarkan dari warganya. Namun belakangan ini, warga mulai sibuk sendiri hingga empati perlahan memudar. Puncak dari lunturnya empati terjadi saat Kakek Ranu yang sedang kelelahan membentak Bimo. Kejadian tersebut membuat Bimo ketakutan dan merasa sangat bersalah lalu lari bersembunyi ke Hutan Sunyi.'}
+                  Menara Jam Harmoni berdetak menggunakan energi kerukunan dan rasa saling mendengarkan dari warganya. Namun belakangan ini, warga mulai sibuk sendiri hingga empati perlahan memudar. Puncak dari lunturnya empati terjadi saat Kakek Ranu yang sedang kelelahan membentak Bimo. Kejadian tersebut membuat Bimo ketakutan dan merasa sangat bersalah lalu lari bersembunyi ke Hutan Sunyi.
                 </p>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en' ? (
-                    <>
-                      Seeing this heartbreak, <strong>Elder Wilis</strong>—guardian of the tower—felt profound sorrow over the fading compassion. A heavy <strong>Gray Mist</strong> descended across the valley. Without harmony, the Clock Tower abruptly ground to a halt, launching its three core components outward: Kiki panicked and picked up the Clock Mainspring, Bimo unknowingly carried the Golden Gear into the forest, and Grandpa Ranu angrily locked the bridge holding the Clock Drive Axle.
-                    </>
-                  ) : (
-                    <>
-                      Melihat kejadian itu, <strong>Nenek Wilis</strong>—sang penjaga Menara Jam—merasa sangat kecewa dengan pudarnya rasa kasih sayang, sehingga kabut kelabu turun menutupi lembah. Akibat terputusnya energi harmoni, Menara Jam kehilangan keseimbangan dan berhenti mendadak hingga tiga komponen intinya terlempar keluar: Kiki panik memungut Pegas Detak Jam, Bimo tanpa sadar membawa Roda Gigi Emas ke hutan, dan Kakek Ranu yang marah menutup jembatan sambil menahan Poros Pengunci Jam.
-                    </>
-                  )}
+                  Melihat kejadian itu, <strong>Nenek Wilis</strong>—sang penjaga Menara Jam—merasa sangat kecewa dengan pudarnya rasa kasih sayang, sehingga kabut kelabu turun menutupi lembah. Akibat terputusnya energi harmoni, Menara Jam kehilangan keseimbangan dan berhenti mendadak hingga tiga komponen intinya terlempar keluar: Kiki panik memungut Pegas Detak Jam, Bimo tanpa sadar membawa Roda Gigi Emas ke hutan, dan Kakek Ranu yang marah menutup jembatan sambil menahan Poros Pengunci Jam.
                 </p>
               </div>
 
@@ -210,46 +180,26 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <span>🧭</span>
-                  <h4>{lang === 'en' ? 'Chapter 3: The Sacred Heart Compass & Test of Wisdom' : 'Bab 3: Pusaka Kompas Hati & Ujian Kebijaksanaan'}</h4>
+                  <h4>Bab 3: Pusaka Kompas Hati & Ujian Kebijaksanaan</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en' ? (
-                    <>
-                      To safeguard the clock machinery, <strong>Elder Wilis</strong> entrusted the remaining nine components to the valley elders and wise citizens as a sacred test of wisdom. The tower could only be restored by a child who not only calms the core conflict, but also journeys across the village to learn emotional regulation from others.
-                    </>
-                  ) : (
-                    <>
-                      Untuk melindungi sisa mesin waktu, <strong>Nenek Wilis</strong> sengaja melepas dan menitipkan sembilan komponen jam lainnya kepada para sesepuh dan warga desa yang bijak (seperti Kak Citra, Kakek Damai, Pak Joko, dan Didi) sebagai ujian kebijaksanaan. Menara hanya bisa dipulihkan oleh seorang anak yang mampu meredakan krisis utama sekaligus mau belajar mengelola emosi dari warga lainnya.
-                    </>
-                  )}
+                  Untuk melindungi sisa mesin waktu, <strong>Nenek Wilis</strong> sengaja melepas dan menitipkan sembilan komponen jam lainnya kepada para sesepuh dan warga desa yang bijak (seperti Kak Citra, Kakek Damai, Pak Joko, dan Didi) sebagai ujian kebijaksanaan. Menara hanya bisa dipulihkan oleh seorang anak yang mampu meredakan krisis utama sekaligus mau belajar mengelola emosi dari warga lainnya.
                 </p>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en' ? (
-                    <>
-                      When <strong>Ezzel</strong> discovered the glowing <strong>Heart Compass</strong>, his path became crystal clear. The compass revealed the two emotional layers within every heart:
-                    </>
-                  ) : (
-                    <>
-                      Saat <strong>Ezzel</strong> menemukan Pusaka <strong>Kompas Hati</strong>, misinya menjadi sangat terarah. Kompas membimbingnya memahami dua lapisan emosi manusia:
-                    </>
-                  )}
+                  Saat <strong>Ezzel</strong> menemukan Pusaka <strong>Kompas Hati</strong>, misinya menjadi sangat terarah. Kompas membimbingnya memahami dua lapisan emosi manusia:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2 text-[11px]">
                   <div className="bg-slate-900/80 border border-red-500/30 hover:border-red-400 hover:scale-[1.02] hover:shadow-[0_0_12px_rgba(239,68,68,0.3)] transition-all rounded-lg p-2.5">
                     <span className="font-bold text-red-300 block mb-1">
-                      {lang === 'en' ? '🔴 Surface Emotion (Outward):' : '🔴 Emosi Luar (Permukaan):'}
+                      🔴 Emosi Luar (Permukaan):
                     </span>
-                    {lang === 'en'
-                      ? 'Outward reactions such as shouting, scowling, or defensive withdrawal.'
-                      : 'Reaksi yang tampak di luar, seperti marah, membentak, atau dingin menutup diri.'}
+                    Reaksi yang tampak di luar, seperti marah, membentak, atau dingin menutup diri.
                   </div>
                   <div className="bg-slate-900/80 border border-cyan-500/30 hover:border-cyan-400 hover:scale-[1.02] hover:shadow-[0_0_12px_rgba(6,182,212,0.3)] transition-all rounded-lg p-2.5">
                     <span className="font-bold text-cyan-300 block mb-1">
-                      {lang === 'en' ? '💙 Core Emotion (Inner Heart):' : '💙 Emosi Dalam (Lubuk Hati):'}
+                      💙 Emosi Dalam (Lubuk Hati):
                     </span>
-                    {lang === 'en'
-                      ? 'Vulnerable inner feelings, like deep exhaustion, fear of failure, or longing to be understood.'
-                      : 'Perasaan rapuh terdalam, seperti rasa lelah mendalam, takut gagal, atau rindu dipahami.'}
+                    Perasaan rapuh terdalam, seperti rasa lelah mendalam, takut gagal, atau rindu dipahami.
                   </div>
                 </div>
               </div>
@@ -258,24 +208,20 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <span>⚙️</span>
-                  <h4>{lang === 'en' ? 'Chapter 4: Ezzel\'s Unified Mission & The 12 Clock Components' : 'Bab 4: Penyatuan Misi Ezzel & Pemulihan 12 Komponen Jam'}</h4>
+                  <h4>Bab 4: Penyatuan Misi Ezzel & Pemulihan 12 Komponen Jam</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'The compass guided Ezzel to resolve the core crisis first, then freely explore the village to learn social-emotional skills from all mentors:'
-                    : 'Kompas Hati membimbing Ezzel untuk menyelesaikan krisis utama terlebih dahulu, membuka jembatan, lalu leluasa berkeliling desa memanen kecakapan sosial emosional dari sembilan warga lainnya:'}
+                  Kompas Hati membimbing Ezzel untuk menyelesaikan krisis utama terlebih dahulu, membuka jembatan, lalu leluasa berkeliling desa memanen kecakapan sosial emosional dari sembilan warga lainnya:
                 </p>
                 <div className="space-y-2 text-xs text-slate-300">
                   <div className="flex items-start gap-2 bg-slate-900/50 hover:bg-slate-900/80 hover:border-amber-400/50 hover:scale-[1.01] hover:shadow-[0_0_10px_rgba(245,158,11,0.2)] p-2.5 rounded-lg border border-slate-700/60 transition-all">
                     <span className="text-base shrink-0">⏱️</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '1. Village Plaza — Kiki (Clock Mainspring):' : '1. Alun-Alun Desa — Kiki (Pegas Detak Jam):'}
+                        1. Alun-Alun Desa — Kiki (Pegas Detak Jam):
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
-                        {lang === 'en'
-                          ? 'Kiki panicked after dropping letters when the clock stopped. Ezzel practiced mindful breathing with him, soothing his anxiety to safely retrieve the Mainspring.'
-                          : 'Kiki panik menjatuhkan surat pos saat menara jam berhenti mendadak. Ezzel mempraktikkan teknik napas bersamanya, menenangkan rasa paniknya dan menerima Pegas Detak Jam.'}
+                        Kiki panik menjatuhkan surat pos saat menara jam berhenti mendadak. Ezzel mempraktikkan teknik napas bersamanya, menenangkan rasa paniknya dan menerima Pegas Detak Jam.
                       </p>
                     </div>
                   </div>
@@ -284,12 +230,10 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                     <span className="text-base shrink-0">🗝️</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '2. River Bridge — Grandpa Ranu (Drive Axle & Bridge Key):' : '2. Jembatan Kayu — Kakek Ranu (Poros Pengunci Jam):'}
+                        2. Jembatan Kayu — Kakek Ranu (Poros Pengunci Jam):
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
-                        {lang === 'en'
-                          ? 'Grandpa Ranu locked the bridge out of fatigue and grief over scolding Bimo. Ezzel validated his exhaustion, softening his heart to open the bridge and hand over the Drive Axle.'
-                          : 'Kakek Ranu menutup jembatan karena kelelahan dan rasa bersalah setelah membentak Bimo. Ezzel memvalidasi rasa lelahnya dengan kelembutan, membuka jembatan dan menerima Poros Pengunci Jam.'}
+                        Kakek Ranu menutup jembatan karena kelelahan dan rasa bersalah setelah membentak Bimo. Ezzel memvalidasi rasa lelahnya dengan kelembutan, membuka jembatan dan menerima Poros Pengunci Jam.
                       </p>
                     </div>
                   </div>
@@ -298,12 +242,10 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                     <span className="text-base shrink-0">⚙️</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '3. Silent Forest — Bimo (Golden Master Gear):' : '3. Hutan Sunyi — Bimo (Roda Gigi Emas Pusaka Jam):'}
+                        3. Hutan Sunyi — Bimo (Roda Gigi Emas Pusaka Jam):
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
-                        {lang === 'en'
-                          ? 'Bimo hid in fear and guilt after the scolding. Ezzel brought Grandpa Ranu\'s apology and instilled a Growth Mindset. Bimo regained courage and returned the Golden Gear.'
-                          : 'Bimo bersembunyi di hutan karena ketakutan dan merasa bersalah. Ezzel menyampaikan permohonan maaf Kakek Ranu dan menumbuhkan Growth Mindset. Bimo kembali percaya diri dan menyerahkan Roda Gigi Emas.'}
+                        Bimo bersembunyi di hutan karena ketakutan dan merasa bersalah. Ezzel menyampaikan permohonan maaf Kakek Ranu dan menumbuhkan Growth Mindset. Bimo kembali percaya diri dan menyerahkan Roda Gigi Emas.
                       </p>
                     </div>
                   </div>
@@ -312,12 +254,10 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                     <span className="text-base shrink-0">💎</span>
                     <div>
                       <strong className="text-amber-200">
-                        {lang === 'en' ? '4. Village Mentors & Clock Tower Summit — Elder Wilis (12/12 Components):' : '4. Warga Bijak Desa & Puncak Menara Jam — Nenek Wilis (12/12 Komponen):'}
+                        4. Warga Bijak Desa & Puncak Menara Jam — Nenek Wilis (12/12 Komponen):
                       </strong>
                       <p className="text-[11px] mt-0.5 text-slate-300">
-                        {lang === 'en'
-                          ? 'With the core crisis resolved and bridge open, Ezzel freely visits the nine wise villagers to learn emotional skills and gather all remaining components. At the summit, Elder Wilis reassembles the clock, ringing the bells to dispel the mist and restore full harmony!'
-                          : 'Dengan krisis inti selesai dan jembatan terbuka, Ezzel berkeliling desa menemui sembilan warga bijak lainnya untuk memanen kecakapan sosial emosional dan mengumpulkan seluruh 12 komponen jam. Di puncak menara, Nenek Wilis merakit kembali jam harmoni, membunyikan dentang lonceng merdu, dan melenyapkan kabut kelabu selamanya!'}
+                        Dengan krisis inti selesai dan jembatan terbuka, Ezzel berkeliling desa menemui sembilan warga bijak lainnya untuk memanen kecakapan sosial emosional dan mengumpulkan seluruh 12 komponen jam. Di puncak menara, Nenek Wilis merakit kembali jam harmoni, membunyikan dentang lonceng merdu, dan melenyapkan kabut kelabu selamanya!
                       </p>
                     </div>
                   </div>
@@ -328,52 +268,42 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <span>🤝</span>
-                  <h4>{lang === 'en' ? 'Chapter 5: Friends & Lessons in the Village' : 'Bab 5: Sahabat & Pembelajaran di Desa'}</h4>
+                  <h4>Bab 5: Sahabat & Pembelajaran di Desa</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'Beyond main quests, every village friend carries an invaluable life lesson:'
-                    : 'Selain misi utama, setiap warga di desa menyimpan pelajaran hidup yang berharga:'}
+                  Selain misi utama, setiap warga di desa menyimpan pelajaran hidup yang berharga:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
                   <div className="bg-slate-900/60 hover:bg-slate-900/90 hover:border-amber-400/50 hover:scale-[1.02] transition-all p-2.5 rounded-lg border border-slate-700/60">
                     <span className="font-bold text-amber-300 block">
-                      {lang === 'en' ? '📚 Kak Citra & Moka the Cat' : '📚 Kak Citra & Moka si Kucing'}
+                      📚 Kak Citra & Moka si Kucing
                     </span>
                     <span className="text-slate-300">
-                      {lang === 'en'
-                        ? 'Village counselor and friendly cat teaching how to recognize 4 emotion zones and listen with ears and heart.'
-                        : 'Konselor desa dan kucing ramah yang mengajarkan cara mengenali 4 zona emosi serta mendengarkan dengan telinga dan hati.'}
+                      Konselor desa dan kucing ramah yang mengajarkan cara mengenali 4 zona emosi serta mendengarkan dengan telinga dan hati.
                     </span>
                   </div>
                   <div className="bg-slate-900/60 hover:bg-slate-900/90 hover:border-amber-400/50 hover:scale-[1.02] transition-all p-2.5 rounded-lg border border-slate-700/60">
                     <span className="font-bold text-amber-300 block">
-                      {lang === 'en' ? '🪓 Pak Teguh & Ibu Sari' : '🪓 Pak Teguh & Ibu Sari'}
+                      🪓 Pak Teguh & Ibu Sari
                     </span>
                     <span className="text-slate-300">
-                      {lang === 'en'
-                        ? 'A woodcutter learning the pause to defuse anger and a fruit seller who multiplies joy through gratitude.'
-                        : 'Penebang kayu yang belajar jeda meredakan amarah dan pedagang buah yang gemar melipatgandakan sukacita dengan bersyukur.'}
+                      Penebang kayu yang belajar jeda meredakan amarah dan pedagang buah yang gemar melipatgandakan sukacita dengan bersyukur.
                     </span>
                   </div>
                   <div className="bg-slate-900/60 hover:bg-slate-900/90 hover:border-amber-400/50 hover:scale-[1.02] transition-all p-2.5 rounded-lg border border-slate-700/60">
                     <span className="font-bold text-amber-300 block">
-                      {lang === 'en' ? '🎣 Grandpa Damai & Bung Jala' : '🎣 Kakek Damai & Bung Jala'}
+                      🎣 Kakek Damai & Bung Jala
                     </span>
                     <span className="text-slate-300">
-                      {lang === 'en'
-                        ? 'Teaching the Circle of Control—distinguishing what we can influence from what we must let go.'
-                        : 'Mengajarkan lingkaran kendali—membedakan hal yang bisa kita kendalikan sendiri dengan hal yang harus kita ikhlaskan.'}
+                      Mengajarkan lingkaran kendali—membedakan hal yang bisa kita kendalikan sendiri dengan hal yang harus kita ikhlaskan.
                     </span>
                   </div>
                   <div className="bg-slate-900/60 hover:bg-slate-900/90 hover:border-amber-400/50 hover:scale-[1.02] transition-all p-2.5 rounded-lg border border-slate-700/60">
                     <span className="font-bold text-amber-300 block">
-                      {lang === 'en' ? '🌱 Pak Joko, Didi, & Prof. Kotek' : '🌱 Pak Joko, Didi, & Prof. Kotek'}
+                      🌱 Pak Joko, Didi, & Prof. Kotek
                     </span>
                     <span className="text-slate-300">
-                      {lang === 'en'
-                        ? 'Teaching a growth mindset, warm welcoming smiles, and cheerful humor as remedies for a weary spirit.'
-                        : 'Mengajarkan pola pikir berkembang (pantang menyerah), senyuman ramah pengelana, dan tawa ceria sebagai penawar lelah jiwa.'}
+                      Mengajarkan pola pikir berkembang, senyuman ramah pengelana, dan tawa ceria sebagai penawar lelah jiwa.
                     </span>
                   </div>
                 </div>
@@ -383,15 +313,13 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
               <div className="bg-gradient-to-r from-emerald-950/50 via-slate-900 to-amber-950/50 border border-emerald-500/40 hover:border-emerald-400 hover:scale-[1.015] hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] rounded-xl p-4 text-center space-y-1.5 transition-all duration-200">
                 <div className="text-xl">✨🕊️✨</div>
                 <h4 className="font-bold text-sm text-emerald-300">
-                  {lang === 'en' ? 'Core Wisdom: The Secret of True Harmony' : 'Pesan Inti: Rahasia Harmoni Sejati'}
+                  Pesan Inti: Rahasia Harmoni Sejati
                 </h4>
                 <blockquote className="text-xs italic text-slate-200 leading-relaxed font-serif max-w-lg mx-auto">
-                  {lang === 'en'
-                    ? '“Harmony is not the absence of differences, but the willingness to listen to and understand each other\'s feelings in a symphony of compassion.”'
-                    : '“Harmoni bukanlah ketiadaan perbedaan, melainkan kerelaan untuk saling mendengarkan dan memahami perasaan sesama dalam simfoni kasih sayang.”'}
+                  “Harmoni bukanlah ketiadaan perbedaan, melainkan kerelaan untuk saling mendengarkan dan memahami perasaan sesama dalam simfoni kasih sayang.”
                 </blockquote>
                 <p className="text-[10.5px] text-amber-300/80 pt-1">
-                  {lang === 'en' ? '— Elder Wilis, Guardian of the Harmony Clock Tower' : '— Nenek Wilis, Penjaga Menara Jam Harmoni'}
+                  — Nenek Wilis, Penjaga Menara Jam Harmoni
                 </p>
               </div>
             </div>
@@ -406,12 +334,10 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                     <div className="text-2xl p-1 bg-amber-500/20 rounded-lg border border-amber-400/40">👑</div>
                     <div>
                       <h4 className="font-bold text-amber-300 text-xs sm:text-sm">
-                        {lang === 'en' ? 'All 10 Badges Collected! (Empathy Ambassador)' : 'Seluruh 10 Lencana Terkumpul! (Duta Besar Empati)'}
+                        Seluruh 10 Lencana Terkumpul! (Duta Besar Empati)
                       </h4>
                       <p className="text-[11px] text-amber-200/80">
-                        {lang === 'en'
-                          ? 'You have mastered every Social-Emotional Learning dimension across the valley.'
-                          : 'Kamu telah menguasai seluruh dimensi Pembelajaran Sosial Emosional di lembah ini.'}
+                        Kamu telah menguasai seluruh dimensi Pembelajaran Sosial Emosional di lembah ini.
                       </p>
                     </div>
                   </div>
@@ -425,17 +351,13 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                       className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shrink-0 shadow hover:shadow-[0_0_18px_rgba(245,158,11,0.65)] hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <Trophy className="w-3.5 h-3.5" />
-                      <span>{lang === 'en' ? 'Open Celebration' : 'Buka Dialog Apresiasi'}</span>
+                      <span>Buka Dialog Apresiasi</span>
                     </button>
                   )}
                 </div>
               ) : (
                 <div className="bg-amber-950/40 border border-amber-500/40 hover:border-amber-400/70 hover:shadow-[0_0_12px_rgba(245,158,11,0.25)] hover:scale-[1.01] transition-all rounded-xl p-3 text-xs text-amber-200">
-                  {lang === 'en' ? (
-                    <>⭐ <strong>SEL Insight Badges</strong>: Speak with optional village mentors (Kak Citra at the Plaza, Grandpa Damai by the river, and Moka the Cat in the Forest) to gather wisdom and unlock all achievements!</>
-                  ) : (
-                    <>⭐ <strong>Lencana Wawasan PSE</strong>: Bicaralah dengan mentor opsional di desa (Kak Citra di Alun-alun, Kakek Damai di tepi sungai, dan Moka si Kucing di Hutan) untuk mengumpulkan pengetahuan dan membuka semua achievement!</>
-                  )}
+                  ⭐ <strong>Lencana Wawasan PSE</strong>: Bicaralah dengan mentor opsional di desa (Kak Citra di Alun-alun, Kakek Damai di tepi sungai, dan Moka si Kucing di Hutan) untuk mengumpulkan pengetahuan dan membuka semua pencapaian!
                 </div>
               )}
 
@@ -472,11 +394,11 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                           </h4>
                           {isUnlocked ? (
                             <span className="font-pixel text-[8px] px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 shrink-0 flex items-center gap-1 shadow-[0_0_8px_rgba(16,185,129,0.3)]">
-                              <CheckCircle2 className="w-3 h-3" /> {lang === 'en' ? 'UNLOCKED' : 'TERBUKA'}
+                              <CheckCircle2 className="w-3 h-3" /> TERBUKA
                             </span>
                           ) : (
                             <span className="font-pixel text-[8px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 shrink-0 flex items-center gap-1">
-                              <Lock className="w-3 h-3" /> {lang === 'en' ? 'LOCKED' : 'TERKUNCI'}
+                              <Lock className="w-3 h-3" /> TERKUNCI
                             </span>
                           )}
                         </div>
@@ -486,7 +408,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                         </p>
 
                         <div className="flex items-center gap-2 text-[10px] text-amber-400/80">
-                          <span>{lang === 'en' ? 'Mentor:' : 'Mentor:'} {badge.mentor}</span>
+                          <span>Mentor: {badge.mentor}</span>
                           <span>•</span>
                           <span className="italic">{badge.concept}</span>
                         </div>
@@ -519,14 +441,10 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                       </div>
                       <div>
                         <h4 className="font-bold text-amber-300 text-xs sm:text-sm font-pixel">
-                          {lang === 'en'
-                            ? `Clock Tower Components: ${clockItems.length}/12 Restored`
-                            : `Komponen Menara Jam: ${clockItems.length}/12 Terkumpul`}
+                          {`Komponen Menara Jam: ${clockItems.length}/12 Terkumpul`}
                         </h4>
                         <p className="text-[10.5px] text-slate-300">
-                          {lang === 'en'
-                            ? 'Every villager holds a piece of the Clock Tower. Empathize with their emotions to restore the clock!'
-                            : 'Setiap warga desa memegang satu komponen Menara Jam. Pahami emosi tiap NPC dan berikan respons yang benar untuk memulihkannya!'}
+                          Setiap warga desa memegang satu komponen Menara Jam. Pahami emosi tiap NPC dan berikan respons yang benar untuk memulihkannya!
                         </p>
                       </div>
                     </div>
@@ -541,9 +459,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
 
               {localizedItems.length === 0 ? (
                 <div className="text-center py-10 text-slate-500 text-xs">
-                  {lang === 'en'
-                    ? 'Your adventure bag is still empty. Complete missions or discover village secrets!'
-                    : 'Tas petualanganmu masih kosong. Selesaikan misi atau temukan rahasia desa!'}
+                  Tas petualanganmu masih kosong. Selesaikan misi atau temukan rahasia desa!
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -572,7 +488,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                             <h4 className="font-bold text-xs text-amber-300 truncate">{it.name}</h4>
                             {isClockComponent && (
                               <span className="text-[9px] font-pixel text-amber-300 bg-amber-500/20 border border-amber-400/40 rounded px-1 shrink-0">
-                                ⚙️ {lang === 'en' ? 'CLOCK PIECE' : 'KOMPONEN'}
+                                ⚙️ KOMPONEN
                               </span>
                             )}
                           </div>
@@ -598,7 +514,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
               {/* Progress bar */}
               <div className="bg-slate-800/80 p-3 rounded-xl border border-slate-700 hover:border-amber-400/50 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)] hover:scale-[1.01] transition-all duration-200">
                 <div className="flex justify-between text-xs font-bold mb-1.5">
-                  <span className="text-slate-300">{lang === 'en' ? 'Village Color Restoration Level:' : 'Tingkat Pemulihan Warna Desa:'}</span>
+                  <span className="text-slate-300">Tingkat Pemulihan Warna Desa:</span>
                   <span className="text-amber-400 font-pixel">{harmonyPercent}%</span>
                 </div>
                 <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden border border-slate-700">
@@ -612,53 +528,53 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
               {/* Zones status list */}
               <div className="space-y-2 text-xs">
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/60 border border-slate-700 hover:border-emerald-500/50 hover:scale-[1.015] hover:shadow-[0_0_12px_rgba(16,185,129,0.25)] transition-all duration-200">
-                  <span>{lang === 'en' ? 'Village Plaza & Fountain (Kiki)' : 'Alun-alun & Air Mancur Desa (Kiki)'}</span>
+                  <span>Alun-alun & Air Mancur Desa (Kiki)</span>
                   {zoneStatus.plaza ? (
                     <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> {lang === 'en' ? 'Vibrant & Colorful' : 'Berwarna & Hidup'}
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Berwarna & Hidup
                     </span>
                   ) : (
                     <span className="text-slate-500 flex items-center gap-1">
-                      <Lock className="w-3.5 h-3.5" /> {lang === 'en' ? 'Gray' : 'Abu-abu'}
+                      <Lock className="w-3.5 h-3.5" /> Abu-abu
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/60 border border-slate-700 hover:border-emerald-500/50 hover:scale-[1.015] hover:shadow-[0_0_12px_rgba(16,185,129,0.25)] transition-all duration-200">
-                  <span>{lang === 'en' ? 'River Wooden Bridge (Grandpa Ranu)' : 'Jembatan Kayu Sungai (Kakek Ranu)'}</span>
+                  <span>Jembatan Kayu Sungai (Kakek Ranu)</span>
                   {zoneStatus.bridge ? (
                     <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> {lang === 'en' ? 'Flowing Clear' : 'Mengalir Jernih'}
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Mengalir Jernih
                     </span>
                   ) : (
                     <span className="text-slate-500 flex items-center gap-1">
-                      <Lock className="w-3.5 h-3.5" /> {lang === 'en' ? 'Locked & Murky' : 'Terkunci & Keruh'}
+                      <Lock className="w-3.5 h-3.5" /> Terkunci & Keruh
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/60 border border-slate-700 hover:border-emerald-500/50 hover:scale-[1.015] hover:shadow-[0_0_12px_rgba(16,185,129,0.25)] transition-all duration-200">
-                  <span>{lang === 'en' ? 'Silent Forest & Friendship Tree (Bimo)' : 'Hutan Sunyi & Pohon Sahabat (Bimo)'}</span>
+                  <span>Hutan Sunyi & Pohon Sahabat (Bimo)</span>
                   {zoneStatus.forest ? (
                     <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> {lang === 'en' ? 'Lush & Blooming' : 'Asri & Mekar'}
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Asri & Mekar
                     </span>
                   ) : (
                     <span className="text-slate-500 flex items-center gap-1">
-                      <Lock className="w-3.5 h-3.5" /> {lang === 'en' ? 'Dim & Dark' : 'Redup & Gelap'}
+                      <Lock className="w-3.5 h-3.5" /> Redup & Gelap
                     </span>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-800/60 border border-slate-700 hover:border-emerald-500/50 hover:scale-[1.015] hover:shadow-[0_0_12px_rgba(16,185,129,0.25)] transition-all duration-200">
-                  <span>{lang === 'en' ? 'Ancient Clock Tower (Elder Wilis)' : 'Menara Jam Kuno (Nenek Wilis)'}</span>
+                  <span>Menara Jam Kuno (Nenek Wilis)</span>
                   {zoneStatus.tower ? (
                     <span className="text-emerald-400 font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> {lang === 'en' ? 'Chiming Melodiously' : 'Berdenting Merdu'}
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Berdenting Merdu
                     </span>
                   ) : (
                     <span className="text-slate-500 flex items-center gap-1">
-                      <Lock className="w-3.5 h-3.5" /> {lang === 'en' ? 'Shrouded in Mist' : 'Terselimut Kabut'}
+                      <Lock className="w-3.5 h-3.5" /> Terselimut Kabut
                     </span>
                   )}
                 </div>
@@ -668,24 +584,22 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-pixel text-pink-300 font-bold text-[10px]">
                     <span className="text-sm animate-pulse">💖</span>
-                    <span>{lang === 'en' ? 'Social-Emotional (SEL) Performance' : 'Performa Skor Sosial Emosional (PSE)'}</span>
+                    <span>Performa Skor Sosial Emosional (PSE)</span>
                   </span>
                   <span className="font-pixel text-sm font-black text-amber-300">
-                    {stats.empathyScore} <span className="text-[10px] text-pink-300 font-normal">{lang === 'en' ? 'Pts' : 'Poin'}</span>
+                    {stats.empathyScore} <span className="text-[10px] text-pink-300 font-normal">Poin</span>
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  {lang === 'en'
-                    ? 'Dialogue choices carry empathy weights. Selecting responses independently without compass guidance awards the full dialogue score. Exploring surroundings with the compass is free; the -5 point deduction only applies when choosing a response with compass assistance.'
-                    : 'Setiap pilihan dialog memiliki bobot nilai empati. Memilih respons secara mandiri tanpa kompas akan mendapatkan skor utuh. Menggunakan kompas untuk melihat sekitar bebas tanpa potongan skor; pemotongan -5 poin hanya berlaku saat memilih respons dialog dengan bantuan kompas aktif.'}
+                  Setiap pilihan dialog memiliki bobot nilai empati. Memilih respons secara mandiri tanpa kompas akan mendapatkan skor utuh. Menggunakan kompas untuk melihat sekitar bebas tanpa potongan skor; pemotongan -5 poin hanya berlaku saat memilih respons dialog dengan bantuan kompas aktif.
                 </p>
                 <div className="flex items-center justify-between pt-1 border-t border-slate-800 text-[10.5px] text-slate-400">
                   <span>
-                    🧭 {lang === 'en' ? 'Compass Guidance Used:' : 'Penggunaan Bantuan Kompas:'}{' '}
+                    🧭 Penggunaan Bantuan Kompas:{' '}
                     <strong className="text-amber-400 font-pixel">{stats.resonanceUses}x</strong>
                   </span>
                   <span>
-                    📉 {lang === 'en' ? 'Assistance Deduction:' : 'Total Potongan Kompas:'}{' '}
+                    📉 Total Potongan Kompas:{' '}
                     <strong className="text-rose-400 font-pixel">-{stats.resonanceUses * 5}</strong>
                   </span>
                 </div>
@@ -696,7 +610,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
 
         {/* Footer */}
         <div className="p-3 bg-slate-900 border-t border-slate-800 text-center text-[11px] text-slate-400">
-          {lang === 'en' ? 'Use the [Close] button or press ESC to return to your adventure.' : 'Gunakan tombol [Tutup] atau tekan ESC untuk kembali berpetualang.'}
+          Gunakan tombol Tutup atau tekan ESC untuk kembali berpetualang.
         </div>
       </div>
     </div>

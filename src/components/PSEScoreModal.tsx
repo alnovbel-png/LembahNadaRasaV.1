@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { X, Compass, Sparkles } from 'lucide-react';
 import { PlayerStats } from '../types/game';
-import { useLanguage } from '../game/localization';
 
 export interface PSEScoreModalProps {
   isOpen: boolean;
@@ -10,48 +9,40 @@ export interface PSEScoreModalProps {
   playerName?: string;
 }
 
-export function getPSETierDetails(score: number, lang: 'id' | 'en') {
+export function getPSETierDetails(score: number) {
   if (score >= 250) {
     return {
-      tier: lang === 'en' ? 'Master of Harmony' : 'Duta Harmoni',
+      tier: 'Duta Harmoni',
       badge: '🌟',
       color: 'text-amber-300 border-amber-400 bg-amber-950/80',
       description:
-        lang === 'en'
-          ? 'Exceptional emotional maturity. Capable of deep active listening, self-regulation, and creating peaceful consensus in any conflict.'
-          : 'Kematangan emosional luar biasa. Mampu mendengarkan aktif dengan tulus, menguasai regulasi diri yang tenang, serta membangun kesepakatan damai di tengah konflik warga.',
+        'Kematangan emosional luar biasa. Mampu mendengarkan aktif dengan tulus, menguasai regulasi diri yang tenang, serta membangun kesepakatan damai di tengah konflik warga.',
     };
   }
   if (score >= 150) {
     return {
-      tier: lang === 'en' ? 'Empathetic Heart' : 'Empati Bijak',
+      tier: 'Empati Bijak',
       badge: '💖',
       color: 'text-pink-300 border-pink-400 bg-pink-950/80',
       description:
-        lang === 'en'
-          ? 'Deeply aware of feelings beneath the surface. Values independent understanding and offers soothing compassion.'
-          : 'Peka terhadap emosi di balik kata-kata kasar warga. Menghargai pemahaman mandiri dan selalu mengedepankan kata-kata yang menyejukkan hati.',
+        'Peka terhadap emosi di balik kata-kata kasar warga. Menghargai pemahaman mandiri dan selalu mengedepankan kata-kata yang menyejukkan hati.',
     };
   }
   if (score >= 60) {
     return {
-      tier: lang === 'en' ? 'Mindful Observer' : 'Peka Rasa',
+      tier: 'Peka Rasa',
       badge: '🌱',
       color: 'text-emerald-300 border-emerald-400 bg-emerald-950/80',
       description:
-        lang === 'en'
-          ? 'Growing in emotional literacy. Beginning to see beneath harsh outbursts and notice others’ unspoken vulnerabilities.'
-          : 'Mulai memahami literasi emosi. Mampu melihat bahwa teriakan atau amarah warga sering kali berakar dari kelelahan, rasa takut, atau butuh didengarkan.',
+        'Mulai memahami literasi emosi. Mampu melihat bahwa teriakan atau amarah warga sering kali berakar dari kelelahan, rasa takut, atau butuh didengarkan.',
     };
   }
   return {
-    tier: lang === 'en' ? 'Young Explorer' : 'Penjelajah Belia',
+    tier: 'Penjelajah Belia',
     badge: '🧭',
     color: 'text-cyan-300 border-cyan-400 bg-cyan-950/80',
     description:
-      lang === 'en'
-        ? 'Embarking on the journey of social-emotional learning. Every dialogue and regulation exercise nurtures your inner heart strength.'
-        : 'Langkah awal perjalanan sosial-emosional. Setiap dialog bijak dan latihan menenangkan diri akan mengasah kepekaan kalbumu.',
+      'Langkah awal perjalanan sosial-emosional. Setiap dialog bijak dan latihan menenangkan diri akan mengasah kepekaan kalbumu.',
   };
 }
 
@@ -67,8 +58,6 @@ export const PSEScoreModal: React.FC<PSEScoreModalProps> = ({
   },
   playerName = 'Ezzel',
 }) => {
-  const { lang } = useLanguage();
-
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -83,7 +72,7 @@ export const PSEScoreModal: React.FC<PSEScoreModalProps> = ({
   if (!isOpen) return null;
 
   const empathyScore = stats.empathyScore || 0;
-  const tierInfo = getPSETierDetails(empathyScore, lang);
+  const tierInfo = getPSETierDetails(empathyScore);
 
   return (
     <div
@@ -103,15 +92,13 @@ export const PSEScoreModal: React.FC<PSEScoreModalProps> = ({
             </div>
             <div>
               <h2 className="font-pixel text-xs sm:text-sm md:text-base font-bold text-pink-300 tracking-wide flex items-center gap-2">
-                <span>{lang === 'en' ? 'SEL Score & Performance' : 'Rincian & Keterangan Skor PSE'}</span>
+                <span>Rincian & Keterangan Skor PSE</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-200 border border-pink-400/40 font-normal">
                   {playerName}
                 </span>
               </h2>
               <p className="text-[10px] sm:text-[11px] text-slate-400 font-sans">
-                {lang === 'en'
-                  ? 'Social-Emotional Learning Empathy Rating & Mechanics'
-                  : 'Tingkat Kemampuan Empati Pembelajaran Sosial Emosional (PSE)'}
+                Tingkat Kemampuan Empati Pembelajaran Sosial Emosional (PSE)
               </p>
             </div>
           </div>
@@ -136,7 +123,7 @@ export const PSEScoreModal: React.FC<PSEScoreModalProps> = ({
               <div>
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                   <span className="font-pixel text-[10px] text-pink-300 uppercase tracking-wider font-bold">
-                    {lang === 'en' ? 'Current SEL Performance Tier' : 'Tingkat Kemampuan PSE Saat Ini'}
+                    Tingkat Kemampuan PSE Saat Ini
                   </span>
                 </div>
                 <h3 className="font-pixel text-lg sm:text-xl font-black text-amber-300">
@@ -150,13 +137,13 @@ export const PSEScoreModal: React.FC<PSEScoreModalProps> = ({
 
             <div className="p-3.5 rounded-xl bg-slate-950/90 border border-pink-500/40 text-center shrink-0 min-w-[140px]">
               <span className="text-[10px] text-pink-200 font-pixel block">
-                {lang === 'en' ? 'Total SEL Score' : 'Total Skor PSE'}
+                Total Skor PSE
               </span>
               <span className="font-pixel text-2xl sm:text-3xl font-extrabold text-amber-300 block">
                 {empathyScore}
               </span>
               <span className="text-[9px] text-slate-400 font-pixel">
-                {lang === 'en' ? 'Empathy Points' : 'Poin Empati'}
+                Poin Empati
               </span>
             </div>
           </div>
@@ -167,34 +154,28 @@ export const PSEScoreModal: React.FC<PSEScoreModalProps> = ({
             <div className="p-4 rounded-xl bg-slate-950/70 border border-amber-500/40 space-y-2">
               <div className="flex items-center gap-2 text-amber-300 font-pixel font-bold text-xs">
                 <Compass className="w-4 h-4 text-amber-400" />
-                <span>{lang === 'en' ? 'Dialogue Response Scoring Rules' : 'Aturan Skor Respon Dialog'}</span>
+                <span>Aturan Skor Respon Dialog</span>
               </div>
               <ul className="text-slate-300 space-y-1.5 text-[11px] leading-relaxed">
                 <li className="flex items-start gap-1.5">
                   <span className="text-emerald-400 font-bold shrink-0">✓</span>
                   <span>
-                    <strong>{lang === 'en' ? 'Independent Response:' : 'Respon Mandiri:'}</strong>{' '}
-                    {lang === 'en'
-                      ? 'Choosing wisely without compass assistance awards the full dialogue score (+10 to +20 points).'
-                      : 'Memilih respon tanpa kompas memberikan skor utuh dari dialog tersebut (+10 s/d +20 poin).'}
+                    <strong>Respon Mandiri:</strong>{' '}
+                    Memilih respon tanpa kompas memberikan skor utuh dari dialog tersebut (+10 s/d +20 poin).
                   </span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-rose-400 font-bold shrink-0">🧭</span>
                   <span>
-                    <strong>{lang === 'en' ? 'With Compass Active:' : 'Dengan Bantuan Kompas:'}</strong>{' '}
-                    {lang === 'en'
-                      ? 'Compass marks incorrect options only. Applying this assistance deducts -5 points from your response reward.'
-                      : 'Kompas menandai opsi yang salah saja. Memilih respon saat kompas aktif dipotong -5 poin karena menggunakan bantuan.'}
+                    <strong>Dengan Bantuan Kompas:</strong>{' '}
+                    Kompas menandai opsi yang salah saja. Memilih respon saat kompas aktif dipotong -5 poin karena menggunakan bantuan.
                   </span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-cyan-400 font-bold shrink-0">🗺️</span>
                   <span>
-                    <strong>{lang === 'en' ? 'World Exploration:' : 'Melihat Sekitar di Peta:'}</strong>{' '}
-                    {lang === 'en'
-                      ? 'Using the compass to explore the village and find directions is 100% free with no score deduction.'
-                      : 'Menyalakan kompas untuk melihat arah dan menjelajah desa sepenuhnya gratis tanpa pengurangan skor.'}
+                    <strong>Melihat Sekitar di Peta:</strong>{' '}
+                    Menyalakan kompas untuk melihat arah dan menjelajah desa sepenuhnya gratis tanpa pengurangan skor.
                   </span>
                 </li>
               </ul>
@@ -204,19 +185,19 @@ export const PSEScoreModal: React.FC<PSEScoreModalProps> = ({
             <div className="p-4 rounded-xl bg-slate-950/70 border border-pink-500/40 space-y-2">
               <div className="flex items-center gap-2 text-pink-300 font-pixel font-bold text-xs">
                 <Sparkles className="w-4 h-4 text-pink-400" />
-                <span>{lang === 'en' ? 'Compass Assistance History' : 'Riwayat Bantuan Kompas'}</span>
+                <span>Riwayat Bantuan Kompas</span>
               </div>
               <div className="space-y-2 text-[11px] text-slate-300">
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
-                  <span>{lang === 'en' ? 'Assisted Responses Chosen:' : 'Respon Terbantu Kompas:'}</span>
+                  <span>Respon Terbantu Kompas:</span>
                   <strong className="text-amber-400 font-pixel text-sm">{stats.resonanceUses}x</strong>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
-                  <span>{lang === 'en' ? 'Total Assistance Deduction:' : 'Total Potongan Skor Kompas:'}</span>
+                  <span>Total Potongan Skor Kompas:</span>
                   <strong className="text-rose-400 font-pixel text-sm">-{stats.resonanceUses * 5} Poin</strong>
                 </div>
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
-                  <span>{lang === 'en' ? 'Calm Sessions Mastered:' : 'Sesi Relaksasi Mandiri:'}</span>
+                  <span>Sesi Relaksasi Mandiri:</span>
                   <strong className="text-cyan-300 font-pixel text-sm">+{stats.calmTechniquesMastered * 25} Poin</strong>
                 </div>
               </div>
@@ -227,7 +208,7 @@ export const PSEScoreModal: React.FC<PSEScoreModalProps> = ({
           <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
             <h4 className="font-pixel text-xs text-amber-300 font-bold flex items-center gap-1.5">
               <span>🏛️</span>
-              <span>{lang === 'en' ? '5 Pillars of CASEL Competencies' : '5 Pilar Kompetensi Sosial-Emosional (CASEL)'}</span>
+              <span>5 Pilar Kompetensi Sosial-Emosional (CASEL)</span>
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-slate-300 text-[11px]">
               <div className="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800">

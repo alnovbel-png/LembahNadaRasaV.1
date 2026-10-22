@@ -16,7 +16,7 @@ export interface CertificateData {
 
 export function generateCertificateDataUrl(data: CertificateData): Promise<string> {
   return new Promise((resolve) => {
-    const isEn = data.lang === 'en';
+    const isEn = false;
     const width = 1200;
     const height = 850;
     const canvas = document.createElement('canvas');
