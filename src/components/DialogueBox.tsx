@@ -684,17 +684,6 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           </div>
 
           <div className="flex-1 flex flex-col gap-1.5 sm:gap-2 min-w-0">
-            {/* Thought bubble if resonance is active */}
-            {processedThought && isCompassActive && (
-              <div className="bg-indigo-950/90 border border-indigo-500/50 rounded-lg p-1.5 sm:p-2 text-indigo-200 flex items-start gap-1.5 sm:gap-2 shadow-inner hover:scale-[1.015] hover:shadow-[0_0_14px_rgba(99,102,241,0.35)] transition-all duration-200">
-                <IconEye className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
-                <div className="min-w-0">
-                  <p className="font-pixel text-[8.5px] sm:text-[10px] leading-relaxed italic text-indigo-100 break-words">
-                    "{processedThought}"
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* Sentence Progress Indicator when there are multiple sentences */}
             {sentences.length > 1 && (
@@ -776,8 +765,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                   {dialogue.choices.map((choice, index) => {
                     const isSelected = selectedChoiceId === choice.id;
                     const isPreviouslyWrong = (wrongChoiceIdsRef.current[dialogue.id] || []).includes(choice.id);
-                    const isWrongOption = isChoiceIncorrect(choice);
-                    const isCompassFlaggedWrong = isCompassActive && isWrongOption;
+                    const isCompassFlaggedWrong = false;
 
                     let btnStyle =
                       'bg-slate-900/90 hover:bg-amber-950/70 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-amber-100';

@@ -202,7 +202,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
             </div>
 
             <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
-              <span className="text-slate-300">Nyalakan atau Matikan Kompas Hati</span>
+              <span className="text-slate-300">Nyalakan atau Matikan Kompas Penunjuk Arah</span>
               <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-amber-300 border border-slate-700 font-bold">
                 Tombol C
               </span>
@@ -212,13 +212,6 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
               <span className="text-slate-300">Studio Regulasi Emosi (Latihan)</span>
               <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-cyan-300 border border-slate-700 font-bold">
                 Tombol R
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/90 border border-slate-800">
-              <span className="text-slate-300">Buka atau Tutup Peta Lembah</span>
-              <span className="font-mono bg-slate-800 px-2.5 py-0.5 rounded text-amber-300 border border-slate-700 font-bold">
-                Tombol M
               </span>
             </div>
 
@@ -276,7 +269,7 @@ export const InGameTutorialModal: React.FC<InGameTutorialModalProps> = ({
                 <strong>Bicara:</strong> Ketuk tombol bulat Bicara atau Aksi di sudut kanan bawah layar.
               </div>
               <div className="p-2 rounded bg-slate-900 border border-slate-800">
-                <strong>Menu:</strong> Sentuh ikon Kompas, Jurnal, Peta, atau Pengaturan di bilah atas layar.
+                <strong>Menu:</strong> Sentuh ikon Kompas, Jurnal, atau Pengaturan di bilah atas layar.
               </div>
             </div>
           </div>

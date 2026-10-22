@@ -34,7 +34,6 @@ import type { RegulationMode } from './components/EmotionRegulationModal';
 import type { SettingsModalTab } from './components/SettingsModal';
 import type { InfoHubTab } from './components/AdventureInfoHubModal';
 import { VirtualControls } from './components/VirtualControls';
-import { MiniMap } from './components/MiniMap';
 import { StartMenuModal } from './components/StartMenuModal';
 import { PauseMenuModal } from './components/PauseMenuModal';
 import { MissionNotificationModal, MissionStepData } from './components/MissionNotificationModal';
@@ -331,7 +330,6 @@ export default function App() {
   const [isFreeRoamActive, setIsFreeRoamActive] = useState<boolean>(false);
   const [endingType, setEndingType] = useState<'perfect' | 'resilient'>('perfect');
   const [branchChoice, setBranchChoice] = useState<string>('empathy_first');
-  const [showMiniMap, setShowMiniMap] = useState<boolean>(() => !isMobileOrTabletDevice());
   const [compassToast, setCompassToast] = useState<string | null>(null);
   const [scoreToast, setScoreToast] = useState<{
     delta: number;
@@ -886,13 +884,13 @@ export default function App() {
         }
 
         setCompassToast(
-          '🧭 Kompas Hati aktif! Saat memilih respon, kompas menandai opsi salah (-5 skor pada respon).'
+          '🧭 Kompas Penunjuk Arah aktif! Panah emas dan jejak berkilau memandumu menuju sasaran misi.'
         );
         setTimeout(() => setCompassToast(null), 3500);
       } else {
         sound.playMenuSelect();
         setCompassToast(
-          'Kompas Hati nonaktif. Tekan tombol C atau tombol kompas untuk mengaktifkan kembali.'
+          'Kompas Penunjuk Arah nonaktif. Tekan tombol C atau tombol kompas untuk mengaktifkan kembali.'
         );
         setTimeout(() => setCompassToast(null), 2500);
       }
@@ -2221,15 +2219,12 @@ export default function App() {
     (choice: ChoiceOption) => {
       sound.playVoiceBlip();
 
-      // Bobot dialog: jika tanpa kompas mendapat skor utuh, jika dengan kompas berkurang -5
-      const rawScore = typeof choice.impactScore === 'number' ? choice.impactScore : 10;
-      const wasCompassActive = isCompassActiveRef.current || isCompassActive;
-      const finalScoreDelta = wasCompassActive ? rawScore - 5 : rawScore;
+      // Skor empati PSE dari respon dialog
+      const finalScoreDelta = typeof choice.impactScore === 'number' ? choice.impactScore : 10;
 
       // Update empathy / SEL performance score
       setStats((s) => ({
         ...s,
-        resonanceUses: wasCompassActive ? s.resonanceUses + 1 : s.resonanceUses,
         empathyScore: Math.max(0, s.empathyScore + finalScoreDelta),
       }));
 
@@ -2237,33 +2232,21 @@ export default function App() {
       if (finalScoreDelta > 0) {
         setScoreToast({
           delta: finalScoreDelta,
-          message: wasCompassActive
-            ? `🧭 +${finalScoreDelta} Skor PSE (Bantuan Kompas: -5 dari skor utuh ${rawScore})`
-            : `💖 +${finalScoreDelta} Skor PSE (Skor Utuh Tanpa Bantuan Kompas!)`,
+          message: '💖 +' + finalScoreDelta + ' Skor PSE (Respon Empati Tepat)',
         });
         setTimeout(() => setScoreToast(null), 3500);
       } else if (finalScoreDelta === 0) {
         setScoreToast({
           delta: 0,
-          message: wasCompassActive
-            ? `🧭 +0 Skor PSE (Bantuan Kompas: -5 dari skor ${rawScore})`
-            : `+0 Skor PSE`,
+          message: '+0 Skor PSE',
         });
         setTimeout(() => setScoreToast(null), 3500);
       } else {
         setScoreToast({
           delta: finalScoreDelta,
-          message: wasCompassActive
-            ? `⚠️ ${finalScoreDelta} Skor PSE (Bantuan Kompas: -5 dari skor ${rawScore})`
-            : `⚠️ ${finalScoreDelta} Skor PSE (Respon Kurang Empati)`,
+          message: '⚠️ ' + finalScoreDelta + ' Skor PSE (Respon Kurang Tepat)',
         });
         setTimeout(() => setScoreToast(null), 3500);
-      }
-
-      // Selesai menggunakan kompas pada pilihan ini, kembalikan kompas ke status siaga
-      if (wasCompassActive) {
-        setIsCompassActive(false);
-        isCompassActiveRef.current = false;
       }
 
       // Record branching tag
@@ -2601,7 +2584,7 @@ export default function App() {
   }, [resolveNPC]);
 
   // Auto-navigate using A* pathfinding to guarantee collision-free travel across the map
-  const handleMiniMapNavigate = useCallback(
+  const handleAutoNavigate = useCallback(
     (tileX: number, tileY: number, targetNPC?: NPC | null, isGuided: boolean = false) => {
       if (currentDialogue) return;
 
@@ -2711,9 +2694,9 @@ export default function App() {
       }
 
       sound.playSecretFound();
-      handleMiniMapNavigate(targetTile.x, targetTile.y, targetNpc, true);
+      handleAutoNavigate(targetTile.x, targetTile.y, targetNpc, true);
     },
-    [currentDialogue, zoneStatus, npcs, handleMiniMapNavigate, clockComponentsCount, nextMissingClockNPC]
+    [currentDialogue, zoneStatus, npcs, handleAutoNavigate, clockComponentsCount, nextMissingClockNPC]
   );
 
   // Advance dialogue when pressing Next or Spacebar
@@ -3011,11 +2994,6 @@ export default function App() {
         if (!currentDialogue) {
           handleOpenInfoHub('journal');
         }
-      }
-
-      // Toggle Mini-Map - Single dedicated key [M]
-      if (e.key === 'm' || e.key === 'M' || e.code === 'KeyM') {
-        setShowMiniMap((prev) => !prev);
       }
 
       // Open Emotional Regulation in Info Hub - Dedicated key [R]
@@ -4455,8 +4433,6 @@ export default function App() {
           onOpenTutorial={() => setShowInGameTutorial(true)}
           isDialogueOpen={!!currentDialogue}
           isSettingsOpen={showSettings}
-          onToggleMiniMap={() => setShowMiniMap((prev) => !prev)}
-          isMiniMapOpen={showMiniMap}
           onOpenEnding={() => setShowEnding(true)}
           isGameCompleted={
             isFreeRoamActive ||
@@ -4478,21 +4454,6 @@ export default function App() {
             setShowPauseMenu(true);
           }}
           isPauseOpen={showPauseMenu}
-        />
-      )}
-
-      {/* Toggleable Mini-Map Overlay in the Corner */}
-      {!showStartMenu && (
-        <MiniMap
-          isOpen={showMiniMap}
-          onToggle={() => setShowMiniMap((prev) => !prev)}
-          playerRef={playerRef}
-          npcs={npcs}
-          zoneStatus={zoneStatus}
-          mapLayout={mapLayout}
-          quests={getLocalizedQuests(currentQuests, lang)}
-          onNavigateToTile={handleMiniMapNavigate}
-          isCompassActive={isCompassActive}
         />
       )}
 
@@ -4585,7 +4546,7 @@ export default function App() {
               setShowInfoHub(false);
               handleOpenRegulation('Pemain', mode);
             }}
-            onNavigateToTile={handleMiniMapNavigate}
+            onNavigateToTile={handleAutoNavigate}
             onOpenAllBadgesCelebration={() => {
               setShowInfoHub(false);
               setShowAllBadgesCelebration(true);

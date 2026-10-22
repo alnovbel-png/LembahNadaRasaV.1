@@ -49,14 +49,6 @@ const IconSparkles = ({ className = "w-4 h-4" }: { className?: string }) => (
   </svg>
 );
 
-const IconMap = ({ className = "w-4 h-4" }: { className?: string }) => (
-  <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-    <path d="M3 6L9 3L15 6L21 3V18L15 21L9 18L3 21V6Z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M9 3V18M15 6V21" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.7" />
-    <circle cx="9" cy="10" r="1.2" fill="#ef4444" />
-    <circle cx="15" cy="14" r="1.2" fill="#10b981" />
-  </svg>
-);
 
 const IconInfoHub = ({ className = "w-4 h-4" }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
@@ -167,8 +159,6 @@ interface VirtualControlsProps {
   onOpenTutorial?: () => void;
   isDialogueOpen?: boolean;
   isSettingsOpen?: boolean;
-  onToggleMiniMap?: () => void;
-  isMiniMapOpen?: boolean;
   onOpenEnding?: () => void;
   isGameCompleted?: boolean;
   onOpenRegulation?: () => void;
@@ -203,8 +193,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
   onOpenTutorial,
   isDialogueOpen = false,
   isSettingsOpen = false,
-  onToggleMiniMap,
-  isMiniMapOpen = false,
   onOpenEnding,
   isGameCompleted = false,
   onOpenRegulation,
@@ -561,8 +549,8 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 }`}
               >
                 {isCompassActive
-                  ? 'Panduan Resonansi Aktif'
-                  : 'Sentuh untuk Menyalakan'}
+                  ? 'Menunjukkan Arah Misi'
+                  : 'Sentuh untuk Tunjuk Arah'}
               </span>
             </div>
           </button>
@@ -586,29 +574,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
           {/* DESKTOP ONLY: Full Toolbar for large screens */}
           <div className="hidden lg:flex items-center gap-1.5 sm:gap-2">
 
-            {onToggleMiniMap && (
-              <button
-                id="top-map-toggle-btn"
-                onClick={onToggleMiniMap}
-                title={isMiniMapOpen ? 'Sembunyikan Peta Mini' : 'Buka Peta Mini'}
-                className={`group px-2.5 py-1.5 group-hover:px-3 rounded-xl border shadow-md flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-all duration-200 ${
-                  isMiniMapOpen
-                    ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-[0_0_14px_rgba(245,158,11,0.6)]'
-                    : 'bg-slate-950/90 border-slate-700 hover:border-amber-400/60 hover:bg-slate-900 text-slate-300'
-                }`}
-              >
-                <IconMap className="w-4 h-4 text-amber-400 rounded-sm shrink-0" />
-                <span
-                  className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap inline-block"
-                  style={{ fontFamily: 'Galindo, cursive, sans-serif' }}
-                >
-                  {ui.map}
-                </span>
-                <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 text-[10px] text-slate-400 font-mono">
-                  M
-                </span>
-              </button>
-            )}
 
             {/* UNIFIED PUSAT INFORMASI */}
             {onOpenInfoHub ? (
@@ -800,38 +765,6 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
 
               {/* Action Buttons: 2 Columns in Landscape for Compact Ergonomics */}
               <div className={`gap-2 ${!isPortrait ? 'grid grid-cols-2' : 'flex flex-col'}`}>
-                {/* Option 1: Peta Mini Lembah */}
-                {onToggleMiniMap && (
-                  <button
-                    onClick={() => {
-                      onToggleMiniMap();
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full p-2 sm:p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-750 active:bg-slate-700 border border-slate-700 hover:border-amber-400/80 active:scale-95 shadow-md flex items-center justify-between text-left transition-transform duration-75 cursor-pointer touch-manipulation"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 shrink-0">
-                        <IconMap className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-xs text-amber-200 flex items-center gap-1.5">
-                          <span>Peta Lembah</span>
-                          {isMiniMapOpen && (
-                            <span className="text-[8.5px] bg-amber-500 text-slate-950 px-1.5 py-0.2 rounded font-bold shadow-xs">
-                              Aktif
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-[9.5px] text-slate-400 line-clamp-1">
-                          Lihat lokasi warga dan jembatan
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-[9px] text-slate-400 font-mono bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">
-                      M
-                    </span>
-                  </button>
-                )}
 
                 {/* Option 2: Pusat Informasi & Progres */}
                 {onOpenInfoHub ? (
@@ -1171,7 +1104,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               e.stopPropagation();
               onCompassToggle();
             }}
-            aria-label="Kompas Hati"
+            aria-label="Kompas Arah"
             className={`relative rounded-full border-2 flex flex-col items-center justify-center font-bold shadow-lg transition-transform duration-75 active:scale-90 cursor-pointer touch-manipulation mb-2.5 sm:mb-3 ${
               isPortrait ? 'w-12 h-12 sm:w-13 sm:h-13' : 'w-10 h-10 sm:w-11 sm:h-11'
             } ${
@@ -1186,11 +1119,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400" />
               </span>
             )}
-            {isCompassActive ? (
-              <IconSparkles className={`${isPortrait ? 'w-4.5 h-4.5' : 'w-4 h-4'} text-slate-950 animate-pulse`} />
-            ) : (
-              <IconCompass className={`${isPortrait ? 'w-4.5 h-4.5' : 'w-4 h-4'}`} active={isCompassActive} />
-            )}
+            <IconCompass className={`${isPortrait ? 'w-4.5 h-4.5' : 'w-4 h-4'}`} active={isCompassActive} />
             <span
               className={`font-pixel tracking-tighter leading-none mt-0.5 ${
                 isPortrait ? 'text-[7px]' : 'text-[6.5px]'

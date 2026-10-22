@@ -165,40 +165,29 @@ export const PSEScoreModal: React.FC<PSEScoreModalProps> = ({
                   </span>
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-rose-400 font-bold shrink-0">🧭</span>
+                  <span className="text-amber-400 font-bold shrink-0">🧭</span>
                   <span>
-                    <strong>Dengan Bantuan Kompas:</strong>{' '}
-                    Kompas menandai opsi yang salah saja. Memilih respon saat kompas aktif dipotong -5 poin karena menggunakan bantuan.
-                  </span>
-                </li>
-                <li className="flex items-start gap-1.5">
-                  <span className="text-cyan-400 font-bold shrink-0">🗺️</span>
-                  <span>
-                    <strong>Melihat Sekitar di Peta:</strong>{' '}
-                    Menyalakan kompas untuk melihat arah dan menjelajah desa sepenuhnya gratis tanpa pengurangan skor.
+                    <strong>Kompas Penunjuk Arah:</strong>{' '}
+                    Kompas berfungsi murni menuntun arah perjalanan menuju sasaran misi di desa. Fitur ini bebas digunakan kapan pun tanpa mengurangi skor.
                   </span>
                 </li>
               </ul>
             </div>
 
-            {/* Log Pemotongan & Penggunaan Kompas */}
-            <div className="p-4 rounded-xl bg-slate-950/70 border border-pink-500/40 space-y-2">
-              <div className="flex items-center gap-2 text-pink-300 font-pixel font-bold text-xs">
-                <Sparkles className="w-4 h-4 text-pink-400" />
-                <span>Riwayat Bantuan Kompas</span>
+            {/* Riwayat Eksplorasi & Latihan PSE */}
+            <div className="p-4 rounded-xl bg-slate-950/70 border border-emerald-500/40 space-y-2">
+              <div className="flex items-center gap-2 text-emerald-300 font-pixel font-bold text-xs">
+                <Sparkles className="w-4 h-4 text-emerald-400" />
+                <span>Pencapaian Regulasi dan Sikap Bijak</span>
               </div>
               <div className="space-y-2 text-[11px] text-slate-300">
                 <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
-                  <span>Respon Terbantu Kompas:</span>
-                  <strong className="text-amber-400 font-pixel text-sm">{stats.resonanceUses}x</strong>
-                </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
-                  <span>Total Potongan Skor Kompas:</span>
-                  <strong className="text-rose-400 font-pixel text-sm">-{stats.resonanceUses * 5} Poin</strong>
-                </div>
-                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
-                  <span>Sesi Relaksasi Mandiri:</span>
+                  <span>Sesi Relaksasi dan Regulasi:</span>
                   <strong className="text-cyan-300 font-pixel text-sm">+{stats.calmTechniquesMastered * 25} Poin</strong>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
+                  <span>Skor Empati Terkumpul:</span>
+                  <strong className="text-amber-400 font-pixel text-sm">{stats.empathyScore} Poin</strong>
                 </div>
               </div>
             </div>

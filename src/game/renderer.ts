@@ -795,33 +795,9 @@ export class GameRenderer {
     // 5. Draw Secret sparkle over Holy Tree if not yet inspected
     this.drawSecretSparkles(isCompassActive);
 
-    // 6. Draw Compass Resonance Aura overlay and continuous scan sparkles if active
+    // 6. Draw Compass Directional Guidance trail and destination beacon when compass is active
     if (isCompassActive) {
-      this.drawResonanceAuras(player, npcs);
-
-      // Continuous ambient sparkles rising from the Heart Compass during active scan
-      if (this.tickCount % 5 === 0) {
-        const pHeartX = player.x + 16 + (Math.random() - 0.5) * 12;
-        const pHeartY = player.y + 18 + (Math.random() - 0.5) * 10;
-        const colors = ['#fef08a', '#fbbf24', '#f59e0b', '#34d399', '#f472b6', '#38bdf8'];
-        this.particles.push({
-          x: pHeartX,
-          y: pHeartY,
-          vx: (Math.random() - 0.5) * 0.8,
-          vy: -0.7 - Math.random() * 0.9,
-          life: 0,
-          maxLife: 26 + Math.floor(Math.random() * 20),
-          color: colors[Math.floor(Math.random() * colors.length)],
-          size: 2.2 + Math.random() * 2.2,
-          gravity: -0.018,
-          drag: 0.95,
-          shrink: true,
-          shape: 'sparkle',
-          twinkle: true,
-          rotation: Math.random() * Math.PI,
-          vRot: (Math.random() - 0.5) * 0.1,
-        });
-      }
+      this.drawDirectionalGuidance(player);
     }
 
     // 7. Update and draw particles (bloom sparks, healing dust)
@@ -7350,449 +7326,91 @@ export class GameRenderer {
     ctx.restore();
   }
 
-  // Draw the Resonance Compass Auras & Deep Emotions
-  private drawResonanceAuras(player: Player, npcs: NPC[]) {
+  // Draw pure directional guidance trail, constellation steps, and destination beacon to active quest target
+  private drawDirectionalGuidance(player: Player) {
+    if (!this.activeQuestTarget || this.isAllMissionsCompleted) return;
     const ctx = this.ctx;
     const px = player.x + 16;
     const py = player.y + 16;
+    const tx = this.activeQuestTarget.targetX;
+    const ty = this.activeQuestTarget.targetY;
+    const distToTarget = Math.hypot(tx - px, ty - py);
 
-    // Dual expanding resonance pulse wave
-    const pulseRadius = (this.tickCount * 2) % 200;
-    const pulseFade = Math.max(0, 1 - pulseRadius / 200);
-
-    // Primary pulse wave (Radiant golden amber)
-    ctx.save();
-    ctx.strokeStyle = `rgba(250, 204, 21, ${0.5 * pulseFade})`;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.arc(px, py, pulseRadius, 0, Math.PI * 2);
-    ctx.stroke();
-
-    // Trailing inner wave (Emerald harmony)
-    if (pulseRadius > 20) {
-      ctx.strokeStyle = `rgba(52, 211, 153, ${0.35 * pulseFade})`;
-      ctx.lineWidth = 1.5;
+    if (distToTarget > 32) {
+      ctx.save();
+      // 1. Ethereal golden directional ray
+      ctx.strokeStyle = 'rgba(250, 204, 21, 0.45)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 6]);
+      ctx.lineDashOffset = -this.tickCount * 1.5;
       ctx.beginPath();
-      ctx.arc(px, py, pulseRadius - 20, 0, Math.PI * 2);
+      ctx.moveTo(px, py);
+      ctx.lineTo(tx, ty);
       ctx.stroke();
-    }
+      ctx.setLineDash([]);
 
-    // Sparkling resonance nodes along the expanding wave perimeter
-    const nodeCount = 8;
-    for (let i = 0; i < nodeCount; i++) {
-      const nodeAngle = (i / nodeCount) * Math.PI * 2 + this.tickCount * 0.04;
-      const sx = px + Math.cos(nodeAngle) * pulseRadius;
-      const sy = py + Math.sin(nodeAngle) * pulseRadius;
-      const twinkle = Math.sin(this.tickCount * 0.25 + i) * 0.4 + 0.6;
+      // 2. Stepping constellation nodes along the directional path
+      const nodeSpacing = 32;
+      const totalNodes = Math.min(30, Math.floor(distToTarget / nodeSpacing));
+      const flowOffset = ((this.tickCount * 1.5) % nodeSpacing) / distToTarget;
 
-      ctx.fillStyle = i % 2 === 0 ? '#fef08a' : '#34d399';
-      ctx.globalAlpha = pulseFade * twinkle;
-      const starR = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(sx, sy - starR * 1.6);
-      ctx.lineTo(sx + starR * 0.4, sy - starR * 0.4);
-      ctx.lineTo(sx + starR * 1.6, sy);
-      ctx.lineTo(sx + starR * 0.4, sy + starR * 0.4);
-      ctx.lineTo(sx, sy + starR * 1.6);
-      ctx.lineTo(sx - starR * 0.4, sy + starR * 0.4);
-      ctx.lineTo(sx - starR * 1.6, sy);
-      ctx.lineTo(sx - starR * 0.4, sy - starR * 0.4);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.restore();
+      for (let i = 1; i <= totalNodes; i++) {
+        const t = Math.min(0.96, (i * nodeSpacing) / distToTarget + flowOffset);
+        const nx = px + (tx - px) * t;
+        const ny = py + (ty - py) * t;
 
-    // Guidance Light Trail from Player to Active Quest Target (Resonance Navigation Path)
-    if (this.activeQuestTarget && !this.isAllMissionsCompleted) {
-      const tx = this.activeQuestTarget.targetX;
-      const ty = this.activeQuestTarget.targetY;
-      const distToTarget = Math.hypot(tx - px, ty - py);
+        const nodePulse = Math.sin(this.tickCount * 0.2 + i * 0.4) * 0.35 + 0.65;
+        const starR = 2.4 * nodePulse;
 
-      if (distToTarget > 32) {
-        ctx.save();
-        // 1. Ethereal golden resonance trail ray
-        ctx.strokeStyle = 'rgba(250, 204, 21, 0.45)';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([6, 6]);
-        ctx.lineDashOffset = -this.tickCount * 1.5;
+        // Glowing halo
+        ctx.fillStyle = 'rgba(251, 191, 36, 0.35)';
         ctx.beginPath();
-        ctx.moveTo(px, py);
-        ctx.lineTo(tx, ty);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // 2. Stepping constellation nodes along the path
-        const nodeSpacing = 32;
-        const totalNodes = Math.min(30, Math.floor(distToTarget / nodeSpacing));
-        const flowOffset = ((this.tickCount * 1.5) % nodeSpacing) / distToTarget;
-
-        for (let i = 1; i <= totalNodes; i++) {
-          const t = Math.min(0.96, (i * nodeSpacing) / distToTarget + flowOffset);
-          const nx = px + (tx - px) * t;
-          const ny = py + (ty - py) * t;
-
-          const nodePulse = Math.sin(this.tickCount * 0.2 + i * 0.4) * 0.35 + 0.65;
-          const starR = 2.4 * nodePulse;
-
-          // Glowing halo
-          ctx.fillStyle = 'rgba(251, 191, 36, 0.35)';
-          ctx.beginPath();
-          ctx.arc(nx, ny, starR * 2.5, 0, Math.PI * 2);
-          ctx.fill();
-
-          // 4-pointed golden sparkle
-          ctx.fillStyle = i % 2 === 0 ? '#fef08a' : '#67e8f9';
-          ctx.beginPath();
-          ctx.moveTo(nx, ny - starR * 1.6);
-          ctx.lineTo(nx + starR * 0.5, ny);
-          ctx.lineTo(nx, ny + starR * 1.6);
-          ctx.lineTo(nx - starR * 0.5, ny);
-          ctx.closePath();
-          ctx.fill();
-        }
-
-        // 3. Target Celestial Beacon Ring on active mission objective
-        const beaconPulse = Math.sin(this.tickCount * 0.16) * 3;
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(tx, ty, 20 + beaconPulse, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.strokeStyle = 'rgba(254, 240, 138, 0.7)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 4]);
-        ctx.lineDashOffset = this.tickCount * 0.8;
-        ctx.beginPath();
-        ctx.arc(tx, ty, 26 + beaconPulse, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.setLineDash([]);
-
-        // Overhead objective tag
-        const steps = Math.round(distToTarget / 32);
-        const tagText = `🎯 ${this.activeQuestTarget.label} (${steps} langkah)`;
-        ctx.font = 'bold 8px "Pixelify Sans", sans-serif';
-        ctx.textAlign = 'center';
-        const tagW = ctx.measureText(tagText).width + 14;
-        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
-        ctx.fillRect(tx - tagW / 2, ty - 44, tagW, 16);
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 1.2;
-        ctx.strokeRect(tx - tagW / 2, ty - 44, tagW, 16);
-        ctx.fillStyle = '#fde047';
-        ctx.fillText(tagText, tx, ty - 33);
-
-        ctx.restore();
-      }
-    }
-
-    // Scan NPCs within resonance radius
-    npcs.forEach((npc) => {
-      const nx = npc.x * TILE_SIZE + 16;
-      const ny = npc.y * TILE_SIZE + 16;
-      const dist = Math.hypot(nx - px, ny - py);
-
-      // Trigger sympathetic resonance sparkles on NPC when pulse reaches them
-      if (dist < 280 && Math.abs(dist - pulseRadius) < 18) {
-        if (this.tickCount % 6 === 0) {
-          const emotionColor = this.getEmotionColor(npc.emotionProfile.surfaceEmotion);
-          this.particles.push({
-            x: nx + (Math.random() - 0.5) * 20,
-            y: ny + (Math.random() - 0.5) * 20,
-            vx: (Math.random() - 0.5) * 0.6,
-            vy: -0.6 - Math.random() * 0.6,
-            life: 0,
-            maxLife: 22,
-            color: emotionColor,
-            size: 2.2,
-            shape: 'sparkle',
-            twinkle: true,
-          });
-        }
-      }
-
-      if (dist < 280) {
-        // Draw emotional spectrum aura
-        const isResolved = npc.isResolved;
-        const auraColor = isResolved
-          ? 'rgba(34, 197, 94, 1)' // Shimmering green harmony
-          : this.getEmotionColor(npc.emotionProfile.surfaceEmotion);
-        const deepColor = isResolved
-          ? 'rgba(250, 204, 21, 1)' // Warm golden gratitude
-          : this.getEmotionColor(npc.emotionProfile.deepEmotion);
-
-        // Flashing aura halo
-        const auraAlpha = isResolved
-          ? 0.5 + Math.sin(this.tickCount * 0.15) * 0.25
-          : 0.4 + Math.sin(this.tickCount * 0.1) * 0.2;
-        ctx.fillStyle = auraColor.replace('1)', `${auraAlpha})`);
-        ctx.beginPath();
-        ctx.arc(nx, ny - 4, isResolved ? 26 : 22, 0, Math.PI * 2);
+        ctx.arc(nx, ny, starR * 2.5, 0, Math.PI * 2);
         ctx.fill();
 
-        if (isResolved) {
-          // Extra rotating golden sparkle ring for resolved characters
-          ctx.strokeStyle = 'rgba(254, 240, 138, 0.7)';
-          ctx.lineWidth = 1.5;
-          ctx.setLineDash([4, 4]);
-          ctx.lineDashOffset = this.tickCount * 0.5;
-          ctx.beginPath();
-          ctx.arc(nx, ny - 4, 30, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        }
-
-        // Emotional iceberg indicator above NPC (Redesigned with custom badges, hand-drawn icons, and Galindo font)
-        this.drawEmotionalIcebergTag(npc, nx, ny, isResolved, auraColor, deepColor);
+        // 4-pointed golden sparkle
+        ctx.fillStyle = i % 2 === 0 ? '#fef08a' : '#67e8f9';
+        ctx.beginPath();
+        ctx.moveTo(nx, ny - starR * 1.6);
+        ctx.lineTo(nx + starR * 0.5, ny);
+        ctx.lineTo(nx, ny + starR * 1.6);
+        ctx.lineTo(nx - starR * 0.5, ny);
+        ctx.closePath();
+        ctx.fill();
       }
-    });
-  }
 
-  private drawRoundedRectPath(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    r: number
-  ) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-  }
-
-  private drawEmotionalIcebergTag(
-    npc: NPC,
-    nx: number,
-    ny: number,
-    isResolved: boolean,
-    auraColor: string,
-    deepColor: string
-  ) {
-    const ctx = this.ctx;
-    ctx.save();
-
-    const emotionNameEn: Record<string, string> = {
-      marah: 'ANGER',
-      cemas: 'ANXIETY',
-      sedih: 'SADNESS',
-      tenang: 'CALM',
-      gembira: 'JOY',
-      kecewa: 'DISAPPOINTMENT',
-      takut: 'FEAR',
-      haru: 'TOUCHED',
-    };
-
-    const isSurfaceGembira = npc.emotionProfile.surfaceEmotion === 'gembira';
-    const isDeepTenang = npc.emotionProfile.deepEmotion === 'tenang';
-    const surfaceEmotionStr = npc.emotionProfile.surfaceEmotion.toUpperCase();
-    const deepEmotionStr = npc.emotionProfile.deepEmotion.toUpperCase();
-
-    // Floating bobbing effect for lively RPG atmosphere
-    const floatY = Math.sin(this.tickCount * 0.08) * 2;
-    const tagW = isResolved ? 152 : 142;
-    const tagH = isResolved ? 48 : 45;
-    const tagX = nx - tagW / 2;
-    const tagY = ny - 62 + floatY;
-
-    // 1. Soft glowing drop shadow
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetY = 3;
-
-    // 2. Card background gradient
-    this.drawRoundedRectPath(ctx, tagX, tagY, tagW, tagH, 7);
-    const bgGrad = ctx.createLinearGradient(tagX, tagY, tagX, tagY + tagH);
-    bgGrad.addColorStop(0, 'rgba(15, 23, 42, 0.96)');
-    bgGrad.addColorStop(0.5, 'rgba(17, 24, 39, 0.95)');
-    bgGrad.addColorStop(1, 'rgba(30, 41, 59, 0.94)');
-    ctx.fillStyle = bgGrad;
-    ctx.fill();
-
-    // Pointer notch triangle pointing to character
-    ctx.beginPath();
-    ctx.moveTo(nx - 5, tagY + tagH);
-    ctx.lineTo(nx, tagY + tagH + 5);
-    ctx.lineTo(nx + 5, tagY + tagH);
-    ctx.closePath();
-    ctx.fill();
-
-    // Reset shadow
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-
-    // 3. Card border
-    if (isResolved) {
-      ctx.strokeStyle = '#22c55e';
-      ctx.lineWidth = 1.6;
-    } else if (isSurfaceGembira && isDeepTenang) {
-      // Warm sunset amber to vibrant emerald gradient border
-      const strokeGrad = ctx.createLinearGradient(tagX, tagY, tagX, tagY + tagH);
-      strokeGrad.addColorStop(0, '#f97316'); // Radiant orange
-      strokeGrad.addColorStop(1, '#22c55e'); // Emerald calm
-      ctx.strokeStyle = strokeGrad;
-      ctx.lineWidth = 1.6;
-    } else {
-      const strokeGrad = ctx.createLinearGradient(tagX, tagY, tagX, tagY + tagH);
-      strokeGrad.addColorStop(0, auraColor);
-      strokeGrad.addColorStop(1, deepColor);
-      ctx.strokeStyle = strokeGrad;
-      ctx.lineWidth = 1.4;
-    }
-    this.drawRoundedRectPath(ctx, tagX, tagY, tagW, tagH, 7);
-    ctx.stroke();
-
-    // Stroke the pointer notch
-    ctx.beginPath();
-    ctx.moveTo(nx - 5, tagY + tagH);
-    ctx.lineTo(nx, tagY + tagH + 5);
-    ctx.lineTo(nx + 5, tagY + tagH);
-    ctx.stroke();
-
-    // 4. Header title & mini custom hand-drawn icon
-    const headerY = tagY + 8;
-    // Hand-drawn mini diamond / heart emblem (no external icon)
-    ctx.fillStyle = isResolved ? '#fef08a' : '#f59e0b';
-    ctx.beginPath();
-    ctx.moveTo(nx - 46, headerY - 3.5);
-    ctx.lineTo(nx - 43, headerY);
-    ctx.lineTo(nx - 46, headerY + 3.5);
-    ctx.lineTo(nx - 49, headerY);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.textAlign = 'center';
-    if (isResolved) {
-      ctx.font = 'bold 7px "Galindo", cursive, sans-serif';
-      ctx.fillStyle = '#fef08a';
-      ctx.fillText('✨ HATI TERBUKA ✨', nx, headerY + 2.5);
-    } else {
-      ctx.font = 'bold 6.5px "Press Start 2P", monospace';
-      ctx.fillStyle = '#cbd5e1';
-      ctx.fillText('KOMPAS HATI', nx, headerY + 2);
-    }
-
-    // 5. Row 1: Surface Emotion (Luar: GEMBIRA)
-    const rowW = tagW - 8;
-    const rowX = tagX + 4;
-    const rowH = 13;
-    const row1Y = tagY + 14;
-
-    this.drawRoundedRectPath(ctx, rowX, row1Y, rowW, rowH, 3.5);
-    ctx.fillStyle = isSurfaceGembira ? 'rgba(249, 115, 22, 0.18)' : auraColor.replace('1)', '0.14)');
-    ctx.fill();
-    ctx.strokeStyle = isSurfaceGembira ? 'rgba(249, 115, 22, 0.45)' : auraColor.replace('1)', '0.35)');
-    ctx.lineWidth = 0.8;
-    ctx.stroke();
-
-    // Hand-drawn mini sun icon for Gembira / Surface
-    const icon1X = rowX + 7;
-    const icon1Y = row1Y + rowH / 2;
-    if (isSurfaceGembira) {
-      ctx.fillStyle = '#fbbf24';
+      // 3. Target Celestial Beacon Ring on active mission objective
+      const beaconPulse = Math.sin(this.tickCount * 0.16) * 3;
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(icon1X, icon1Y, 2.4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = '#f97316';
-      ctx.lineWidth = 0.9;
-      ctx.beginPath();
-      ctx.moveTo(icon1X - 3.8, icon1Y); ctx.lineTo(icon1X - 2.8, icon1Y);
-      ctx.moveTo(icon1X + 2.8, icon1Y); ctx.lineTo(icon1X + 3.8, icon1Y);
-      ctx.moveTo(icon1X, icon1Y - 3.8); ctx.lineTo(icon1X, icon1Y - 2.8);
-      ctx.moveTo(icon1X, icon1Y + 2.8); ctx.lineTo(icon1X, icon1Y + 3.8);
+      ctx.arc(tx, ty, 20 + beaconPulse, 0, Math.PI * 2);
       ctx.stroke();
-    } else {
-      ctx.fillStyle = auraColor;
+
+      ctx.strokeStyle = 'rgba(254, 240, 138, 0.7)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.lineDashOffset = this.tickCount * 0.8;
       ctx.beginPath();
-      ctx.arc(icon1X, icon1Y, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
+      ctx.arc(tx, ty, 26 + beaconPulse, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
-    ctx.textAlign = 'left';
-    ctx.font = 'bold 7.5px "Plus Jakarta Sans", sans-serif';
-    ctx.fillStyle = isSurfaceGembira ? '#fed7aa' : '#cbd5e1';
-    const prefix1 = 'Luar:';
-    ctx.fillText(prefix1, rowX + 14, row1Y + 9.5);
-    const p1W = ctx.measureText(prefix1).width;
-
-    ctx.font = 'bold 8.5px "Galindo", cursive, sans-serif';
-    ctx.fillStyle = isSurfaceGembira ? '#fb923c' : auraColor;
-    ctx.fillText(surfaceEmotionStr, rowX + 17 + p1W, row1Y + 9.5);
-
-    if (isResolved) {
-      ctx.font = '7px "Plus Jakarta Sans", sans-serif';
-      ctx.fillStyle = '#86efac';
-      ctx.fillText('(LEGA)', rowX + rowW - 32, row1Y + 9.5);
-    }
-
-    // 6. Row 2: Deep Emotion (Hati: TENANG)
-    const row2Y = row1Y + rowH + 2;
-
-    this.drawRoundedRectPath(ctx, rowX, row2Y, rowW, rowH, 3.5);
-    ctx.fillStyle = isDeepTenang ? 'rgba(34, 197, 94, 0.18)' : deepColor.replace('1)', '0.14)');
-    ctx.fill();
-    ctx.strokeStyle = isDeepTenang ? 'rgba(34, 197, 94, 0.45)' : deepColor.replace('1)', '0.35)');
-    ctx.lineWidth = 0.8;
-    ctx.stroke();
-
-    // Hand-drawn mini calm heart icon for Tenang / Deep
-    const icon2X = rowX + 7;
-    const icon2Y = row2Y + rowH / 2;
-    if (isDeepTenang) {
-      ctx.fillStyle = '#4ade80';
-      ctx.beginPath();
-      const hx = icon2X;
-      const hy = icon2Y - 1.5;
-      ctx.moveTo(hx, hy + 1);
-      ctx.bezierCurveTo(hx - 2.5, hy - 2, hx - 4, hy + 1, hx, hy + 4);
-      ctx.bezierCurveTo(hx + 4, hy + 1, hx + 2.5, hy - 2, hx, hy + 1);
-      ctx.fill();
-    } else {
-      ctx.fillStyle = deepColor;
-      ctx.beginPath();
-      ctx.arc(icon2X, icon2Y, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    ctx.textAlign = 'left';
-    ctx.font = 'bold 7.5px "Plus Jakarta Sans", sans-serif';
-    ctx.fillStyle = isDeepTenang ? '#a7f3d0' : '#cbd5e1';
-    const prefix2 = 'Hati:';
-    ctx.fillText(prefix2, rowX + 14, row2Y + 9.5);
-    const p2W = ctx.measureText(prefix2).width;
-
-    ctx.font = 'bold 8.5px "Galindo", cursive, sans-serif';
-    ctx.fillStyle = isDeepTenang ? '#34d399' : deepColor;
-    ctx.fillText(deepEmotionStr, rowX + 17 + p2W, row2Y + 9.5);
-
-    if (isResolved) {
-      ctx.font = '7px "Plus Jakarta Sans", sans-serif';
+      // Overhead objective tag
+      const steps = Math.round(distToTarget / 32);
+      const tagText = '🎯 ' + this.activeQuestTarget.label + ' (' + steps + ' langkah)';
+      ctx.font = 'bold 8px "Pixelify Sans", sans-serif';
+      ctx.textAlign = 'center';
+      const tagW = ctx.measureText(tagText).width + 14;
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+      ctx.fillRect(tx - tagW / 2, ty - 44, tagW, 16);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.2;
+      ctx.strokeRect(tx - tagW / 2, ty - 44, tagW, 16);
       ctx.fillStyle = '#fde047';
-      ctx.fillText('(DAMAI)', rowX + rowW - 32, row2Y + 9.5);
-    }
+      ctx.fillText(tagText, tx, ty - 33);
 
-    ctx.restore();
-  }
-
-  private getEmotionColor(emotion: EmotionType): string {
-    switch (emotion) {
-      case 'marah': return 'rgba(239, 68, 68, 1)';   // Red
-      case 'cemas': return 'rgba(234, 179, 8, 1)';   // Amber/Yellow
-      case 'sedih': return 'rgba(59, 130, 246, 1)';  // Blue
-      case 'takut': return 'rgba(168, 85, 247, 1)';  // Purple
-      case 'kecewa': return 'rgba(14, 165, 233, 1)'; // Cyan
-      case 'tenang': return 'rgba(34, 197, 94, 1)';  // Green
-      case 'gembira': return 'rgba(249, 115, 22, 1)';// Orange
-      case 'haru': return 'rgba(236, 72, 153, 1)';   // Pink
-      default: return 'rgba(255, 255, 255, 1)';
+      ctx.restore();
     }
   }
 

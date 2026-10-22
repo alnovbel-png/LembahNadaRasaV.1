@@ -555,16 +555,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">Angka 1 - 5</span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    <span className="text-slate-300">Kompas Resonansi Hati</span>
+                    <span className="text-slate-300">Kompas Penunjuk Arah</span>
                     <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">C</span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Studio Regulasi Emosi</span>
                     <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">R</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    <span className="text-slate-300">Buka Peta Mini</span>
-                    <span className="font-mono bg-slate-800 px-2 py-0.5 rounded text-amber-300">M</span>
                   </div>
                   <div className="flex items-center justify-between p-2 rounded-lg bg-slate-900/80 border border-slate-800">
                     <span className="text-slate-300">Buka Jurnal Kompas</span>
@@ -606,10 +602,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     • <strong>Tombol AKSI:</strong> Berinteraksi dengan warga desa, pohon, dan item
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    • <strong>Tombol KOMPAS / HATI:</strong> Mengaktifkan Kompas Hati untuk memindai emosi
+                    • <strong>Tombol KOMPAS:</strong> Mengaktifkan Kompas Penunjuk Arah untuk melihat arah sasaran misi
                   </div>
                   <div className="p-2 rounded-lg bg-slate-900/80 border border-slate-800">
-                    • <strong>Tombol MENU Atas:</strong> Satu tombol ringkas untuk Peta, Pusat Informasi, dan Pengaturan
+                    • <strong>Tombol MENU Atas:</strong> Satu tombol ringkas untuk Pusat Informasi dan Pengaturan
                   </div>
                 </div>
               </div>

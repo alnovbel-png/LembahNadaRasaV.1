@@ -1104,7 +1104,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Plang Kawasan Pertanian',
     speakerRole: 'Kebun Harapan Desa',
     portrait: 'signpost',
-    text: '📍 Plang Kawasan Pertanian & Perkebunan: [⬅️ Barat: Pondok Petani & Tumpukan Jerami] [⬇️ Selatan: Ladang Wortel, Kubis Segar, Gandum Emas & Sumur Air] [➡️ Timur: Alun-Alun & Perkebunan Apel/Jeruk].',
+    text: '📍 Plang Kawasan Pertanian & Perkebunan: (Barat: Pondok Petani & Tumpukan Jerami) • (Selatan: Ladang Wortel, Kubis Segar, Gandum Emas & Sumur Air) • (Timur: Alun-Alun & Perkebunan Apel/Jeruk).',
   },
 
   // --- MENARA JAM HARMONI (WORLD EXAMINE & ASPEK INFORMASI EDUKATIF) ---
@@ -1397,7 +1397,7 @@ export const GAME_DIALOGUES: Record<string, DialogueNode> = {
     speaker: 'Didi',
     speakerRole: 'Pengelana Cilik Desa',
     portrait: 'wandering_scout',
-    text: 'Hehehe! Di dalam tasku ada peta desa, kompas kecil, dan buku catatan teman-teman baru yang kujumpai sepanjang jalan!',
+    text: 'Hehehe! Di dalam tasku ada buku petualangan, kompas kecil, dan buku catatan teman-teman baru yang kujumpai sepanjang jalan!',
     nextId: 'didi_question',
   },
   didi_question: {

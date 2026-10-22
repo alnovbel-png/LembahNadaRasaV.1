@@ -492,7 +492,7 @@ export async function generateGameTranscriptPdf(playerName: string = 'Ezzel'): P
   // =========================================================================
   // BAB III: INTERAKSI DENGAN BENDA, BANGUNAN & LANDMARK LINGKUNGAN
   // =========================================================================
-  drawSectionBanner('BAB III: INTERAKSI BENDA, BANGUNAN & LANDMARK DESA', 'Seluruh teks observasi dan pesan refleksi saat memeriksa objek di peta dunia', [37, 99, 235]);
+  drawSectionBanner('BAB III: INTERAKSI BENDA, BANGUNAN & LANDMARK DESA', 'Seluruh teks observasi dan pesan refleksi saat memeriksa objek di lingkungan desa', [37, 99, 235]);
 
   const landmarkNodes = [
     { id: 'fountain_examine', name: 'Air Mancur Alun-Alun (Fountain of Reflection)' },
