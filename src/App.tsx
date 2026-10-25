@@ -334,6 +334,8 @@ export default function App() {
   const [scoreToast, setScoreToast] = useState<{
     delta: number;
     message: string;
+    isGreenNotice?: boolean;
+    badgeText?: string;
   } | null>(null);
   // In-Game Tutorial Modal state shown after character selection
   const [showInGameTutorial, setShowInGameTutorial] = useState<boolean>(false);
@@ -2219,34 +2221,55 @@ export default function App() {
     (choice: ChoiceOption) => {
       sound.playVoiceBlip();
 
-      // Skor empati PSE dari respon dialog
-      const finalScoreDelta = typeof choice.impactScore === 'number' ? choice.impactScore : 10;
+      const isStartAdventureChoice =
+        choice.id === 'c_start_help' ||
+        choice.text === 'Mulai Petualangan!' ||
+        currentDialogue?.id === 'intro_start_3';
 
-      // Update empathy / SEL performance score
-      setStats((s) => ({
-        ...s,
-        empathyScore: Math.max(0, s.empathyScore + finalScoreDelta),
-      }));
-
-      // Feedback notifikasi skor performa sosial emosional
-      if (finalScoreDelta > 0) {
-        setScoreToast({
-          delta: finalScoreDelta,
-          message: '💖 +' + finalScoreDelta + ' Skor PSE (Respon Empati Tepat)',
-        });
-        setTimeout(() => setScoreToast(null), 3500);
-      } else if (finalScoreDelta === 0) {
+      if (isStartAdventureChoice) {
+        // Notifikasi hijau untuk Mulai Petualangan tanpa penambahan skor sosem
         setScoreToast({
           delta: 0,
-          message: '+0 Skor PSE',
+          message: 'Mulai Petualangan! Ikuti petunjuk kompas emas.',
+          isGreenNotice: true,
+          badgeText: 'Mulai!',
         });
         setTimeout(() => setScoreToast(null), 3500);
+
+        setIsCompassActive(true);
+        isCompassActiveRef.current = true;
       } else {
-        setScoreToast({
-          delta: finalScoreDelta,
-          message: '⚠️ ' + finalScoreDelta + ' Skor PSE (Respon Kurang Tepat)',
-        });
-        setTimeout(() => setScoreToast(null), 3500);
+        // Skor empati PSE dari respon dialog
+        const finalScoreDelta = typeof choice.impactScore === 'number' ? choice.impactScore : 10;
+
+        // Update empathy / SEL performance score
+        setStats((s) => ({
+          ...s,
+          empathyScore: Math.max(0, s.empathyScore + finalScoreDelta),
+        }));
+
+        // Feedback notifikasi skor performa sosial emosional
+        if (finalScoreDelta > 0) {
+          setScoreToast({
+            delta: finalScoreDelta,
+            message: '💖 +' + finalScoreDelta + ' Skor PSE: Respon Empati Tepat',
+          });
+          setTimeout(() => setScoreToast(null), 3500);
+        } else if (finalScoreDelta === 0) {
+          setScoreToast({
+            delta: 0,
+            message: '🌱 Belajar Respon Empati Bersama Karakter',
+            isGreenNotice: true,
+            badgeText: 'Belajar',
+          });
+          setTimeout(() => setScoreToast(null), 3500);
+        } else {
+          setScoreToast({
+            delta: finalScoreDelta,
+            message: '🌱 Pelajaran Empati: Mendengarkan Bimbingan Karakter',
+          });
+          setTimeout(() => setScoreToast(null), 3500);
+        }
       }
 
       // Record branching tag
@@ -4389,29 +4412,51 @@ export default function App() {
         </div>
       )}
 
-      {/* Social-Emotional Performance Score Toast Notification */}
+      {/* Social-Emotional Performance Score & Adventure Toast Notification */}
       {scoreToast && (
         <div
           id="score-change-toast"
           className={`fixed top-24 left-1/2 -translate-x-1/2 z-30 px-3 py-1.5 rounded-xl border-2 font-pixel text-[8.5px] sm:text-[9.5px] shadow-[0_4px_20px_rgba(0,0,0,0.6)] animate-fade-in flex items-center justify-between gap-2.5 pointer-events-auto select-none ${
-            scoreToast.delta > 0
-              ? 'bg-gradient-to-r from-emerald-950/95 via-slate-900/95 to-teal-950/95 border-emerald-400 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.35)]'
+            scoreToast.isGreenNotice || scoreToast.delta > 0
+              ? 'bg-gradient-to-r from-emerald-950/95 via-slate-900/95 to-teal-950/95 border-emerald-400 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.4)]'
               : 'bg-gradient-to-r from-rose-950/95 via-slate-900/95 to-red-950/95 border-rose-500 text-rose-100 shadow-[0_0_20px_rgba(244,63,94,0.35)]'
           }`}
         >
           <div className="flex items-center gap-1.5 min-w-0">
-            <span className="text-sm shrink-0">{scoreToast.delta > 0 ? '💖' : '🧭'}</span>
+            {scoreToast.isGreenNotice ? (
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4 text-emerald-400 shrink-0"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <polygon points="12,7 15,12 12,17 9,12" fill="#34d399" />
+              </svg>
+            ) : (
+              <span className="text-sm shrink-0">{scoreToast.delta > 0 ? '💖' : '🧭'}</span>
+            )}
             <span className="truncate">{scoreToast.message}</span>
           </div>
-          <span
-            className={`font-pixel text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-md shrink-0 ${
-              scoreToast.delta > 0
-                ? 'bg-emerald-500 text-slate-950'
-                : 'bg-rose-500 text-slate-950'
-            }`}
-          >
-            {scoreToast.delta > 0 ? `+${scoreToast.delta}` : scoreToast.delta}
-          </span>
+          {scoreToast.isGreenNotice ? (
+            <span className="bg-emerald-500 text-slate-950 font-pixel text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-md shrink-0">
+              {scoreToast.badgeText || 'Mulai!'}
+            </span>
+          ) : (
+            <span
+              className={`font-pixel text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-md shrink-0 ${
+                scoreToast.delta > 0
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'bg-rose-500 text-slate-950'
+              }`}
+            >
+              {scoreToast.delta > 0 ? `+${scoreToast.delta}` : scoreToast.delta}
+            </span>
+          )}
         </div>
       )}
 

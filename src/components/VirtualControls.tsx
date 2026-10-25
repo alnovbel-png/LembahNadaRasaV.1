@@ -581,16 +581,16 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                 id="top-info-hub-btn"
                 onClick={() => onOpenInfoHub('quests')}
                 title="Pusat Informasi: Progres Misi, Regulasi, Lencana dan Jurnal"
-                className="group px-2.5 py-1.5 group-hover:px-3 rounded-xl bg-gradient-to-r from-amber-950/90 via-slate-950 to-pink-950/90 border-2 border-amber-400/80 hover:border-amber-300 hover:bg-slate-900 text-amber-300 hover:text-white shadow-[0_0_16px_rgba(245,158,11,0.3)] flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-all duration-200"
+                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-950/90 via-slate-950 to-pink-950/90 border-2 border-amber-400/80 hover:border-amber-300 hover:bg-slate-900 text-amber-300 hover:text-white shadow-[0_0_16px_rgba(245,158,11,0.3)] flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-all duration-200"
               >
                 <IconInfoHub className="w-4 h-4 text-amber-300 shrink-0" />
                 <span
-                  className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap inline-block"
+                  className="whitespace-nowrap inline-block"
                   style={{ fontFamily: 'Galindo, cursive, sans-serif' }}
                 >
                   Pusat Informasi
                 </span>
-                <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 text-[10px] text-amber-400/90 font-mono bg-slate-950 px-1 py-0.5 rounded border border-amber-500/30">
+                <span className="text-[10px] text-amber-400/90 font-mono bg-slate-950 px-1 py-0.5 rounded border border-amber-500/30">
                   I
                 </span>
               </button>
@@ -620,7 +620,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                   <button
                     id="top-journal-btn"
                     onClick={onOpenJournal}
-                    title="Buka Jurnal Kompas Hati dan Tas"
+                    title="Buka Jurnal Petualang dan Tas"
                     className="group px-2.5 py-1.5 group-hover:px-3 rounded-xl bg-slate-950/90 border border-amber-500/50 hover:border-amber-400 hover:bg-slate-900 text-amber-300 shadow-md flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-semibold cursor-pointer active:scale-95 transition-all duration-200"
                   >
                     <IconBook className="w-4 h-4 text-amber-400 shrink-0" />
@@ -657,16 +657,16 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
               id="top-settings-btn"
               onClick={() => onOpenSettings()}
               title="Pengaturan Game: Audio dan Kontrol"
-              className="group px-2.5 py-1.5 group-hover:px-3 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-md flex items-center justify-center gap-0 group-hover:gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-all duration-200"
+              className="px-3 py-1.5 rounded-xl bg-slate-950/95 border border-amber-400/80 hover:bg-slate-900 hover:border-amber-300 text-amber-300 shadow-md flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer active:scale-95 transition-all duration-200"
             >
               <IconSliders className="w-4 h-4 text-amber-400 shrink-0" />
               <span
-                className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 whitespace-nowrap inline-block"
+                className="whitespace-nowrap inline-block"
                 style={{ fontFamily: 'Galindo, cursive, sans-serif' }}
               >
                 {ui.settings}
               </span>
-              <span className="max-w-0 overflow-hidden opacity-0 group-hover:max-w-xs group-hover:opacity-100 transition-all duration-200 text-[10px] text-slate-400 font-mono">
+              <span className="text-[10px] text-amber-400/80 font-mono bg-slate-900 px-1 py-0.5 rounded border border-amber-500/30">
                 O
               </span>
             </button>
@@ -746,7 +746,7 @@ export const VirtualControls: React.FC<VirtualControlsProps> = ({
                       </span>
                     </div>
                     <div className="text-[9px] text-slate-400 font-sans mt-0.5">
-                      Bantuan kompas -5 • Jawaban mandiri skor utuh
+                      Respon empati mandiri • Penunjuk arah kompas bebas digunakan
                     </div>
                   </div>
                 </div>

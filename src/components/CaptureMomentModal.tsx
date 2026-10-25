@@ -183,7 +183,7 @@ export const CaptureMomentModal: React.FC<CaptureMomentModalProps> = ({
         ctx.font = 'bold 13px sans-serif';
         ctx.textAlign = 'left';
         ctx.fillText(
-          '🌸 LEMBAH NADA RASA • EKSPEDISI KOMPAS HATI',
+          '🌸 LEMBAH NADA RASA • EKSPEDISI PETUALANGAN HARMONI',
           frameSide + 4,
           30
         );

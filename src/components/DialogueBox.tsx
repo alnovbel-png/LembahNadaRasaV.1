@@ -493,8 +493,8 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
           step: 3,
           total: 4,
           icon: IconCompassBadge,
-          badgeId: 'PUSAKA LEMBAH • PESAN KOMPAS HATI',
-          badgeEn: 'VALLEY RELIC • HEART COMPASS MESSAGE',
+          badgeId: 'PUSAKA LEMBAH • KOMPAS PENUNJUK ARAH',
+          badgeEn: 'VALLEY RELIC • DIRECTIONAL COMPASS',
           color: 'yellow' as const,
         }
       : dialogue.id === 'kiki_wait'
@@ -748,9 +748,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                     }`}
                   >
                     <IconMessage className="w-3 h-3" />
-                    {(wrongChoiceIdsRef.current[dialogue.id]?.length ?? 0) > 0
-                      ? `Coba pilih respons lain yang lebih bijak (1-${dialogue.choices.length} atau klik):`
-                      : `Pilih Responsmu (1-${dialogue.choices.length} atau klik):`}
+                    Pilih Respons Tanggapanmu:
                   </span>
                   <button
                     onClick={() => setShowChoices(false)}
@@ -818,16 +816,7 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                         >
                           {formatName(choice.text)}
                         </span>
-                        {isCompassFlaggedWrong && (
-                          <span
-                            title="Peringatan Kompas Hati: Opsi respons ini salah atau kurang bijak"
-                            className="text-[7px] sm:text-[8px] font-pixel bg-rose-500/20 text-rose-300 border border-rose-400/80 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0 ml-1 animate-pulse"
-                          >
-                            <IconAlert className="w-2.5 h-2.5 text-rose-400 shrink-0" />
-                            <span>Respons Kurang Tepat</span>
-                          </span>
-                        )}
-                        {isPreviouslyWrong && !isCompassFlaggedWrong && (
+                        {isPreviouslyWrong && (
                           <span className="text-[7px] sm:text-[8px] bg-red-950/90 text-rose-300 border border-red-600/60 px-1.5 py-0.5 rounded font-bold shrink-0 ml-1">
                             Kurang Tepat
                           </span>
@@ -923,15 +912,11 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                       ? 'bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.55)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
                       : isRegulationTrigger && !isTyping && isLastSentence
                       ? 'bg-gradient-to-r from-cyan-400 via-emerald-400 to-teal-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 border border-cyan-200 shadow-[0_0_20px_rgba(6,182,212,0.55)] hover:shadow-[0_0_30px_rgba(6,182,212,0.85)]'
-                      : isWrongFeedback && isLastSentence
-                      ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 border border-amber-200 shadow-[0_0_20px_rgba(245,158,11,0.65)] hover:shadow-[0_0_30px_rgba(245,158,11,0.85)]'
                       : 'bg-amber-400 hover:bg-amber-300 text-slate-950 hover:shadow-[0_0_20px_rgba(245,158,11,0.65)]'
                   }`}
                 >
                   <span>
-                    {isWrongFeedback && isLastSentence
-                      ? 'COBA PILIH LAGI'
-                      : isTyping
+                    {isTyping
                       ? 'LEWATI EFEK'
                       : !isLastSentence
                       ? 'LANJUT'
@@ -946,8 +931,6 @@ export const DialogueBox: React.FC<DialogueBoxProps> = ({
                       ? '🏆'
                       : isRegulationTrigger && !isTyping && isLastSentence
                       ? '🧘'
-                      : isWrongFeedback && isLastSentence
-                      ? '↩'
                       : '▶'}
                   </span>
                 </button>

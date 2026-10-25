@@ -149,7 +149,7 @@ export const PauseMenuModal: React.FC<PauseMenuModalProps> = ({
               </span>
             </div>
             <p className="text-[8.5px] text-stone-400 font-sans mb-3 text-center">
-              Bantuan kompas: -5 • Jawaban mandiri: Skor Utuh
+              Tekan tombol C untuk menyalakan Kompas Penunjuk Arah
             </p>
 
             {/* Menu Items List */}

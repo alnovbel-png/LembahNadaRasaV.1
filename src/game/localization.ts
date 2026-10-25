@@ -16,9 +16,9 @@ export const UI_TEXT = {
     soundMute: 'Senyap',
     genreBadge: 'GIM PERAN SOSIAL-EMOSIONAL',
     gameTitle: 'LEMBAH NADA RASA',
-    gameSubtitle: 'Petualangan Harmoni & Resonansi Rasa',
+    gameSubtitle: 'Petualangan Harmoni dan Empati Rasa',
     synopsis:
-      'Sebuah kabut kelabu menyelimuti Lembah Nada Rasa. Sebagai penjelajah muda, kamu menemukan Pusaka Kompas Hati untuk memulihkan kepekaan rasa para warga desa.',
+      'Sebuah kabut kelabu menyelimuti Lembah Nada Rasa. Sebagai penjelajah muda, kamu memegang Pusaka Kompas Penunjuk Arah untuk menuntun langkahmu menemui para warga dan memulihkan harmoni desa.',
     empathy: 'Empati',
     breathRegulation: 'Regulasi Napas',
     emotionAwareness: 'Mengenal Emosi',
@@ -59,7 +59,7 @@ export const UI_TEXT = {
     closeEsc: 'TUTUP (ESC)',
     missionGuidanceHeader: 'PANDUAN ALUR MISI BERURUTAN',
     missionGuidanceSub: 'Wajib Selesaikan Satu per Satu',
-    innerHeartVoice: 'Suara Hati Terdalam (Kompas):',
+    innerHeartVoice: 'Petunjuk Arah Kompas:',
     showAllText: '⚡ Tampilkan Semua Teks (Spasi)',
     chooseResponse: 'Pilih Responsmu',
     reReadText: '← Baca Ulang Teks',
@@ -171,7 +171,7 @@ export const UI_TEXT = {
     closeStudio: 'Kembali ke Petualangan',
 
     // Compass Journal
-    journalTitle: 'Jurnal Kompas Hati dan Kisah Lembah',
+    journalTitle: 'Jurnal Petualangan dan Kisah Lembah',
     journalSubtitle: 'Kisah lengkap Lembah Harmoni, pencapaian lencana PSE, tas petualang, dan keharmonisan desa',
     tabLore: 'Kisah Lembah',
     tabBadges: 'Lencana',
@@ -192,7 +192,7 @@ export const UI_TEXT = {
     testSound: 'Uji Suara',
     keyboardWalk: 'Berjalan / Bergerak',
     keyboardAction: 'Interaksi / Berbicara / Lanjutkan Dialog',
-    keyboardCompass: 'Nyalakan / Matikan Kompas Hati',
+    keyboardCompass: 'Nyalakan / Matikan Kompas Penunjuk Arah',
     keyboardRegulation: 'Buka Studio Regulasi Napas dan Emosi',
     keyboardJournal: 'Buka Jurnal Kompas dan Panduan PSE',
     keyboardSettings: 'Buka / Tutup Menu Pengaturan dan Panduan',

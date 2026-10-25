@@ -839,7 +839,7 @@ export const INITIAL_QUESTS: GameQuest[] = [
     id: 'quest_start',
     title: 'Misi 1: Mengambil Pegas Detak Jam (Kiki)',
     targetNPC: 'kiki',
-    description: 'Menara Jam berhenti mendadak saat energi harmoni terputus dan tiga komponen inti terlempar keluar! Dekati Kiki si tupai yang panik menjatuhkan surat pos di alun-alun, tenangkan kecemasannya dengan Kompas Hati dan teknik napas agar ia memberikan Pegas Detak Jam.',
+    description: 'Menara Jam berhenti mendadak saat energi harmoni terputus dan tiga komponen inti terlempar keluar! Ikuti arah kompas untuk menjumpai Kiki si tupai di alun-alun, tenangkan kecemasannya dengan respons empati dan teknik napas agar ia memberikan Pegas Detak Jam.',
     isCompleted: false,
     stepHint: 'Dekati Kiki di barat air mancur Alun-Alun. Dengarkan rasa takutnya dengan empati dan bantu ia bernapas tenang untuk mendapatkan Pegas Detak Jam.',
   },

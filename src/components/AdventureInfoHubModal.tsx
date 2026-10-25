@@ -642,7 +642,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-pixel text-sm font-bold text-emerald-300">
-                    Jurnal Resonansi Hati & Tas Inventaris
+                    Jurnal Petualangan & Tas Inventaris
                   </h3>
                   <p className="text-xs text-slate-400">
                     Konsep Gunung Es Emosi warga dan barang pusaka Menara Jam yang terkumpul.

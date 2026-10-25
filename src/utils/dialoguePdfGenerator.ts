@@ -291,7 +291,7 @@ export async function generateGameTranscriptPdf(playerName: string = 'Ezzel'): P
   // =========================================================================
   // BAB I: PROLOG & ALUR PEMBUKA CERITA DESA
   // =========================================================================
-  drawSectionBanner('BAB I: PROLOG & AWAL PETUALANGAN LEMBAH', 'Kisah awal padamnya Menara Jam Harmoni dan penemuan Pusaka Kompas Hati', [180, 83, 9]);
+  drawSectionBanner('BAB I: PROLOG & AWAL PETUALANGAN LEMBAH', 'Kisah awal padamnya Menara Jam Harmoni dan penemuan Pusaka Kompas Penunjuk Arah', [180, 83, 9]);
 
   const prologueNodes = ['intro_start', 'intro_start_2', 'intro_start_3', 'kiki_wait'];
   prologueNodes.forEach((id) => {

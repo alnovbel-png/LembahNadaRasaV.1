@@ -509,7 +509,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-300 mt-0.5">
-                        Panduan bergambar langkah demi langkah: kontrol jalan, interaksi warga, Kompas Hati, dan regulasi emosi.
+                        Panduan bergambar langkah demi langkah: kontrol jalan, interaksi warga, Kompas Penunjuk Arah, dan regulasi emosi.
                       </p>
                     </div>
                   </div>

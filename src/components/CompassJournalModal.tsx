@@ -53,7 +53,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
             </div>
             <div>
               <h2 className="font-bold text-base text-amber-300">
-                Jurnal Kompas Hati & Lore Cerita
+                Jurnal Petualangan & Kisah Lembah
               </h2>
               <p className="text-[11px] text-slate-400">
                 Kisah lengkap lembah harmoni, pencapaian lencana PSE, tas petualangan, & harmoni desa
@@ -176,17 +176,17 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                 </p>
               </div>
 
-              {/* Bab 3: Kompas Resonansi Hati & Ujian Kebijaksanaan */}
+              {/* Bab 3: Pusaka Kompas Penunjuk Arah & Panduan Langkah Lembah */}
               <div className="bg-slate-800/70 border border-slate-700/80 hover:border-amber-400/60 hover:scale-[1.015] hover:shadow-[0_0_15px_rgba(245,158,11,0.25)] rounded-xl p-3.5 space-y-2 transition-all duration-200">
                 <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                   <span>🧭</span>
-                  <h4>Bab 3: Pusaka Kompas Hati & Ujian Kebijaksanaan</h4>
+                  <h4>Bab 3: Pusaka Kompas Penunjuk Arah & Panduan Langkah Lembah</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   Untuk melindungi sisa mesin waktu, <strong>Nenek Wilis</strong> sengaja melepas dan menitipkan sembilan komponen jam lainnya kepada para sesepuh dan warga desa yang bijak (seperti Kak Citra, Kakek Damai, Pak Joko, dan Didi) sebagai ujian kebijaksanaan. Menara hanya bisa dipulihkan oleh seorang anak yang mampu meredakan krisis utama sekaligus mau belajar mengelola emosi dari warga lainnya.
                 </p>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Saat <strong>Ezzel</strong> menemukan Pusaka <strong>Kompas Hati</strong>, misinya menjadi sangat terarah. Kompas membimbingnya memahami dua lapisan emosi manusia:
+                  Saat <strong>Ezzel</strong> memegang Pusaka <strong>Kompas Penunjuk Arah</strong>, perjalanannya menembus kabut lembah menjadi terpandu dengan pasti. Kompas emas menuntun langkahnya menuju sahabat dan warga desa yang membutuhkan bantuan, sementara Ezzel sendiri menggunakan kepekaan nuraninya untuk mendengarkan dua lapisan emosi manusia:
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2 text-[11px]">
                   <div className="bg-slate-900/80 border border-red-500/30 hover:border-red-400 hover:scale-[1.02] hover:shadow-[0_0_12px_rgba(239,68,68,0.3)] transition-all rounded-lg p-2.5">
@@ -211,7 +211,7 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                   <h4>Bab 4: Penyatuan Misi Ezzel & Pemulihan 12 Komponen Jam</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Kompas Hati membimbing Ezzel untuk menyelesaikan krisis utama terlebih dahulu, membuka jembatan, lalu leluasa berkeliling desa memanen kecakapan sosial emosional dari sembilan warga lainnya:
+                  Kompas Penunjuk Arah membimbing langkah Ezzel untuk menyelesaikan krisis utama terlebih dahulu, membuka jembatan, lalu leluasa berkeliling desa memanen kecakapan sosial emosional dari sembilan warga lainnya:
                 </p>
                 <div className="space-y-2 text-xs text-slate-300">
                   <div className="flex items-start gap-2 bg-slate-900/50 hover:bg-slate-900/80 hover:border-amber-400/50 hover:scale-[1.01] hover:shadow-[0_0_10px_rgba(245,158,11,0.2)] p-2.5 rounded-lg border border-slate-700/60 transition-all">
@@ -591,16 +591,16 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-relaxed">
-                  Setiap pilihan dialog memiliki bobot nilai empati. Memilih respons secara mandiri tanpa kompas akan mendapatkan skor utuh. Menggunakan kompas untuk melihat sekitar bebas tanpa potongan skor; pemotongan -5 poin hanya berlaku saat memilih respons dialog dengan bantuan kompas aktif.
+                  Setiap pilihan dialog memiliki bobot nilai empati murni berdasarkan ketulusan responsmu. Kompas berfungsi murni sebagai penunjuk arah sasaran misi di desa, bebas dinyalakan kapan pun tanpa mempengaruhi perolehan skor empati.
                 </p>
                 <div className="flex items-center justify-between pt-1 border-t border-slate-800 text-[10.5px] text-slate-400">
                   <span>
-                    🧭 Penggunaan Bantuan Kompas:{' '}
-                    <strong className="text-amber-400 font-pixel">{stats.resonanceUses}x</strong>
+                    🧭 Status Kompas Penunjuk Arah:{' '}
+                    <strong className="text-amber-400 font-pixel">Siaga Menuntun</strong>
                   </span>
                   <span>
-                    📉 Total Potongan Kompas:{' '}
-                    <strong className="text-rose-400 font-pixel">-{stats.resonanceUses * 5}</strong>
+                    💖 Skor Empati Murni:{' '}
+                    <strong className="text-emerald-400 font-pixel">{stats.empathyScore} Poin</strong>
                   </span>
                 </div>
               </div>
