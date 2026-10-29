@@ -21,6 +21,7 @@ import {
   ChoiceOption,
   ZoneColorStatus,
   PlayerStats,
+  JournalEntry,
   Item,
   GameQuest,
   NPC,
@@ -65,6 +66,9 @@ const CaptureMomentModal = React.lazy(() =>
 );
 const InGameTutorialModal = React.lazy(() =>
   import('./components/InGameTutorialModal').then((m) => ({ default: m.InGameTutorialModal }))
+);
+const DailyCheckInModal = React.lazy(() =>
+  import('./components/DailyCheckInModal').then((m) => ({ default: m.DailyCheckInModal }))
 );
 
 import { Compass, ChevronDown, Minus } from 'lucide-react';
@@ -115,12 +119,22 @@ export default function App() {
   });
   const [inventory, setInventory] = useState<Item[]>(INITIAL_ITEMS);
   const [quests, setQuests] = useState<GameQuest[]>(INITIAL_QUESTS);
-  const [stats, setStats] = useState<PlayerStats>({
-    empathyScore: 20,
-    resonanceUses: 0,
-    calmTechniquesMastered: 0,
-    secretsFound: 0,
-    unlockedBadges: [],
+  const [stats, setStats] = useState<PlayerStats>(() => {
+    let savedEntries: JournalEntry[] = [];
+    try {
+      const raw = localStorage.getItem('lembah_journal_entries');
+      if (raw) savedEntries = JSON.parse(raw);
+    } catch {
+      // fallback to empty list
+    }
+    return {
+      empathyScore: 20,
+      resonanceUses: 0,
+      calmTechniquesMastered: 0,
+      secretsFound: 0,
+      unlockedBadges: [],
+      journal_entries: savedEntries,
+    };
   });
   const statsRef = useRef<PlayerStats>(stats);
   statsRef.current = stats;
@@ -341,6 +355,8 @@ export default function App() {
   const [showInGameTutorial, setShowInGameTutorial] = useState<boolean>(false);
   const showInGameTutorialRef = useRef<boolean>(false);
   const isTutorialFirstTimeAfterCharSelectRef = useRef<boolean>(false);
+  // Daily Feeling Check-In Modal state shown when the game first launches
+  const [showDailyCheckIn, setShowDailyCheckIn] = useState<boolean>(false);
   // Dedicated Sequential Mission Pop-up state
   const [showMissionModal, setShowMissionModal] = useState<boolean>(false);
   const [isNewMissionUnlock, setIsNewMissionUnlock] = useState<boolean>(false);
@@ -602,8 +618,51 @@ export default function App() {
     sound.setBgmPhase(isStartColored ? 'restored' : 'fog', true);
     setShowStartMenu(false);
 
-    // Setelah memilih karakter, pemain bertemu dengan pop up screen tutorial in game
-    // yang menjelaskan cara menggerakan karakter, interaksi karakter, dan tombol2 game lainnya
+    // Saat game pertama kali diluncurkan, tampilkan modal pemeriksaan perasaan "How are you feeling today?"
+    setShowDailyCheckIn(true);
+  }, [zoneStatus, npcs, isFreeRoamActive]);
+
+  // Handler for recording daily feeling check-in into player state journal_entries
+  const handleSaveDailyCheckIn = useCallback((feeling: string, note?: string) => {
+    const newEntry: JournalEntry = {
+      id: `entry_${Date.now()}`,
+      question: 'How are you feeling today?',
+      feeling,
+      note,
+      createdAt: new Date().toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }),
+      timestamp: Date.now(),
+    };
+
+    setStats((prev) => {
+      const currentEntries = prev.journal_entries || [];
+      const updated = [newEntry, ...currentEntries];
+      try {
+        localStorage.setItem('lembah_journal_entries', JSON.stringify(updated));
+      } catch {
+        // ignore storage errors
+      }
+      return {
+        ...prev,
+        journal_entries: updated,
+      };
+    });
+
+    sound.playSecretFound();
+    setCompassToast('📖 Refleksi perasaan tersimpan di Jurnal Petualangmu!');
+    setTimeout(() => setCompassToast(null), 3500);
+
+    setShowDailyCheckIn(false);
+    isTutorialFirstTimeAfterCharSelectRef.current = true;
+    setShowInGameTutorial(true);
+  }, []);
+
+  const handleSkipDailyCheckIn = useCallback(() => {
+    setShowDailyCheckIn(false);
     isTutorialFirstTimeAfterCharSelectRef.current = true;
     setShowInGameTutorial(true);
   }, []);
@@ -3922,13 +3981,14 @@ export default function App() {
     });
     setInventory([]);
     setQuests(INITIAL_QUESTS);
-    setStats({
+    setStats((prev) => ({
       empathyScore: 20,
       resonanceUses: 0,
       calmTechniquesMastered: 0,
       secretsFound: 0,
       unlockedBadges: [],
-    });
+      journal_entries: prev.journal_entries || [],
+    }));
     playerRef.current.x = 11 * TILE_SIZE;
     playerRef.current.y = 15 * TILE_SIZE;
     targetPosRef.current = null;
@@ -4668,6 +4728,16 @@ export default function App() {
             endingType={endingType}
             playerName={playerName}
             playTimeSeconds={gameTimeSeconds}
+          />
+        )}
+
+        {/* Daily Feeling Check-In Modal ("How are you feeling today?") */}
+        {showDailyCheckIn && (
+          <DailyCheckInModal
+            isOpen={showDailyCheckIn}
+            playerName={playerName}
+            onSubmit={handleSaveDailyCheckIn}
+            onSkip={handleSkipDailyCheckIn}
           />
         )}
 

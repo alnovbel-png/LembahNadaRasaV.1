@@ -322,6 +322,57 @@ export const CompassJournalModal: React.FC<CompassJournalModalProps> = ({
                   — Nenek Wilis, Penjaga Menara Jam Harmoni
                 </p>
               </div>
+
+              {/* Catatan Refleksi Emosi Diri (Journal Entries) */}
+              <div className="bg-slate-800/80 border border-amber-500/40 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-amber-400 shrink-0" aria-hidden="true">
+                      <path
+                        d="M4 19.5V5C4 3.9 4.9 3 6 3H20V19H6C4.9 19 4 19.9 4 21"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path d="M4 19.5C4 20.3 4.7 21 5.5 21H20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      <path d="M8.5 7H16.5M8.5 11H13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                    <h4>Catatan Refleksi Emosi Diri (Journal Entries)</h4>
+                  </div>
+                  <span className="text-[10px] text-amber-400 font-mono bg-slate-900 px-2 py-0.5 rounded border border-amber-500/30">
+                    {stats?.journal_entries?.length || 0} Catatan
+                  </span>
+                </div>
+
+                {!stats?.journal_entries || stats.journal_entries.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic text-center py-2">
+                    Belum ada catatan refleksi perasaan. Catatan tersimpan saat kamu mengisi pemeriksaan rasa hati di awal petualangan.
+                  </p>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                    {stats.journal_entries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="bg-slate-900/90 border border-amber-500/30 rounded-lg p-2.5 text-xs space-y-1"
+                      >
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="font-bold text-amber-200">{entry.question}</span>
+                          <span className="text-[9.5px] text-slate-400 font-mono">{entry.createdAt}</span>
+                        </div>
+                        <div className="inline-block px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 text-[10.5px] font-semibold">
+                          Perasaan: {entry.feeling}
+                        </div>
+                        {entry.note && (
+                          <p className="text-slate-300 italic text-[11px] bg-slate-950/70 p-1.5 rounded border border-slate-800">
+                            "{entry.note}"
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

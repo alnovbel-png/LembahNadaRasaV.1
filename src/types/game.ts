@@ -93,11 +93,22 @@ export interface PSEAchievement {
   isUnlocked: boolean;
 }
 
+export interface JournalEntry {
+  id: string;
+  question: string;
+  feeling: string;
+  note?: string;
+  createdAt: string;
+  timestamp: number;
+}
+
 export interface PlayerStats {
   empathyScore: number;
   resonanceUses: number;
   calmTechniquesMastered: number;
   secretsFound: number;
   unlockedBadges: string[];
+  journal_entries?: JournalEntry[];
 }
+
 

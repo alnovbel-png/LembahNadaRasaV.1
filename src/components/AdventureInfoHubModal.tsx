@@ -47,6 +47,7 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
     calmTechniquesMastered: 0,
     secretsFound: 0,
     unlockedBadges: [],
+    journal_entries: [],
   },
   quests = [],
   zoneStatus = { plaza: false, bridge: false, forest: false, tower: false },
@@ -645,9 +646,64 @@ export const AdventureInfoHubModal: React.FC<AdventureInfoHubModalProps> = ({
                     Jurnal Petualangan & Tas Inventaris
                   </h3>
                   <p className="text-xs text-slate-400">
-                    Konsep Gunung Es Emosi warga dan barang pusaka Menara Jam yang terkumpul.
+                    Catatan refleksi emosi diri, konsep Gunung Es Emosi warga, dan barang pusaka Menara Jam yang terkumpul.
                   </p>
                 </div>
+              </div>
+
+              {/* CATATAN REFLEKSI DIRI (JOURNAL ENTRIES) */}
+              <div className="p-4 rounded-2xl bg-slate-950/80 border border-amber-500/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-pixel text-xs text-amber-300 font-bold flex items-center gap-1.5">
+                    <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 text-amber-400 shrink-0" aria-hidden="true">
+                      <path
+                        d="M4 19.5V5C4 3.9 4.9 3 6 3H20V19H6C4.9 19 4 19.9 4 21"
+                        stroke="currentColor"
+                        strokeWidth="1.8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                      <path d="M4 19.5C4 20.3 4.7 21 5.5 21H20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      <path d="M8.5 7H16.5M8.5 11H13.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+                    <span>Catatan Refleksi Perasaan (Journal Entries)</span>
+                  </h4>
+                  <span className="text-[10px] text-amber-400/90 font-mono bg-slate-900 px-2 py-0.5 rounded border border-amber-500/30">
+                    {stats?.journal_entries?.length || 0} Catatan
+                  </span>
+                </div>
+
+                {!stats?.journal_entries || stats.journal_entries.length === 0 ? (
+                  <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center text-slate-400 text-xs">
+                    Belum ada catatan refleksi perasaan. Catatan akan tersimpan saat kamu mengisi pemeriksaan rasa hati di awal permainan.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5 max-h-56 overflow-y-auto custom-scrollbar pr-1">
+                    {stats.journal_entries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        className="p-3 rounded-xl bg-gradient-to-r from-amber-950/30 via-slate-900 to-slate-950 border border-amber-500/30 space-y-1.5"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] font-bold text-amber-200">
+                            {entry.question}
+                          </span>
+                          <span className="text-[9.5px] text-slate-400 font-mono shrink-0">
+                            {entry.createdAt}
+                          </span>
+                        </div>
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-400/40 text-[11px] font-semibold">
+                          <span>Kondisi Emosi: {entry.feeling}</span>
+                        </div>
+                        {entry.note && (
+                          <p className="text-xs text-slate-300 italic bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+                            "{entry.note}"
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* KONSEP GUNUNG ES EMOSI */}
